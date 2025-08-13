@@ -1,0 +1,174 @@
+{
+    "connection": "products-kafka",
+    "name": "products",
+    "topic": "products",
+    "vars":{
+        "choice": {
+            "_gen": "cycle",
+            "sequence": [
+                {
+                        "product_id": "3001",
+                        "product_name": "Apple AirPods Pro 2, Wireless Earbuds, Active Noise Cancellation, Hearing Aid Feature",
+                        "price": 245.00,
+                        "department": "electronics & technology"
+                },
+                {
+                        "product_id": "3002",
+                        "product_name": "Apple AirTag - 1 Pack, Item Tracker with Apple Find My",
+                        "price": 30.00,
+                        "department": "electronics & technology"
+                },
+                {
+                        "product_id": "3003",
+                        "product_name": "Bose QuietComfort Headphones, Bluetooth Over Ear Noise Cancelling Headphones, Black",
+                        "price": 365.00,
+                        "department": "electronics & technology"
+                },
+                {
+                        "product_id": "3004",
+                        "product_name": "Official Hasbro Games Jenga Game with Digital Die, Wood Block Party Game, Family Games, 6+",
+                        "price": 28.00,
+                        "department": "toys & games"
+                },
+                {
+                        "product_id": "3005",
+                        "product_name": "Coca-Cola Classic Soda Pop, 12 fl oz Cans, 24 Pack",
+                        "price": 15.00,
+                        "department": "food & beverages"
+                },
+                {
+                        "product_id": "3006",
+                        "product_name": "Dawn EZ-Squeeze Ultra Dish Soap Dishwashing Liquid, Original Scent, 22.0 fl oz",
+                        "price": 5.00,
+                        "department": "household cleaning & home goods"
+                },
+                {
+                        "product_id": "3007",
+                        "product_name": "JBL Flip 7 - Portable waterproof and drop-proof speaker, Bold JBL Pro Sound with AI Sound Boost, 16Hrs of Playtime, and PushLock system with interchangeable accessories (Black)",
+                        "price": 165.00,
+                        "department": "electronics & technology"
+                },
+                {
+                        "product_id": "3008",
+                        "product_name": "Monopoly Board Game, Classic Game with Storage Tray and Larger Tokens, Family Games, 8+",
+                        "price": 20.00,
+                        "department": "toys & games"
+                },
+                {
+                        "product_id": "3009",
+                        "product_name": "Panasonic Eneloop BK-4MCCA4BA Pre-Charged Nickel Metal Hydride AAA Rechargeable Batteries, 4-Battery Pack",
+                        "price": 17.00,
+                        "department": "electronics & technology"
+                },
+                {
+                        "product_id": "3010",
+                        "product_name": "Scrabble Classic Crossword Board Game for Kids and Family Ages 8 and Up, 2-4 Players",
+                        "price": 30.00,
+                        "department": "toys & games"
+                },
+                {
+                        "product_id": "3011",
+                        "product_name": "UNO Card Game for Kids, Adults & Family Game Night, Original UNO Game of Matching Colors & Numbers",
+                        "price": 10.00,
+                        "department": "toys & games"
+                },
+                {
+                        "product_id": "3012",
+                        "product_name": "Wilson Evolution Official Game Basketball - 29.5\"",
+                        "price": 100.00,
+                        "department": "sports & recreation"
+                },
+                {
+                        "product_id": "3013",
+                        "product_name": "Magic 8 Ball Kids Toy, Novelty Fortune Teller Gag Gift, Ask a Question & Turn Over for Answer",
+                        "price": 15.00,
+                        "department": "toys & games"
+                },
+                {
+                        "product_id": "3014",
+                        "product_name": "Pyrex 1-cup Measuring Cup",
+                        "price": 15.00,
+                        "department": "household cleaning & home goods"
+                },
+                {
+                        "product_id": "3015",
+                        "product_name": "Penn Championship Extra Duty Tennis Balls (1 Can, 3 balls)",
+                        "price": 8.99,
+                        "department": "sports & recreation"
+                },
+                {
+                        "product_id": "3016",
+                        "product_name": "The Grand Budapest Hotel (Blu-ray), 20th Century Fox, Comedy",
+                        "price": 16.00,
+                        "department": "movies & entertainment"
+                },
+                {
+                        "product_id": "3017",
+                        "product_name": "The Wild Robot (Blu-ray + Digital Copy), Family, DreamWorks",
+                        "price": 23.99,
+                        "department": "movies & entertainment"
+                }
+            ]
+        }
+
+    },
+    "value": {
+        "product_id": {
+            "_gen": "var",
+            "var": "choice",
+            "path": ["product_id"]
+        },
+        "product_name": {
+            "_gen": "var",
+            "var": "choice",
+            "path": ["product_name"]
+        },
+        "price": {
+            "_gen": "var",
+            "var": "choice",
+            "path": ["price"]
+        },
+        "department": {
+            "_gen": "var",
+            "var": "choice",
+            "path": ["department"]
+        },
+        "updated_at" : {
+            "_gen": "now"
+        }
+    },
+    "localConfigs": {
+        "maxEvents": 16,
+        "kafkaValueAvroSchemaHint": {
+            "type": "record",
+            "name": "products",
+            "fields": [
+                {
+                    "name": "product_id",
+                    "type": "string"
+                },
+                {
+                    "name": "product_name",
+                    "type": "string"
+                },
+                {
+                    "name": "price",
+                    "type": "double"
+                },
+                {
+                    "name": "department",
+                    "type": "string"
+                },
+                {
+                    "name": "updated_at",
+                    "type": {
+                        "type" : "long",
+                        "flink.precision" : 3,
+                        "flink.version" : "1",
+                        "logicalType" : "timestamp-millis"
+                    }
+                }
+            ] 
+        }
+    }
+}
