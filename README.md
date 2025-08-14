@@ -230,7 +230,7 @@ terraform apply --auto-approve
 </details>
 
 
-## Set up Flink MCP connection
+## Set up Flink MCP connection and models
 
 The Terraform script has already created a Flink connection to your chosen LLM model (AWS or Azure).
 
@@ -270,6 +270,29 @@ To enable **Flink tool calling**, you also need to create a Flink connection to 
 
 Once complete, Flink will be connected to both the LLM model and the MCP server.
 
+3. Open a [Flink SQL Workspace in Confluent Cloud](https://confluent.cloud/workspaces/) and enter the `CREATE MODEL` commands found directly below the Flink connection command in `mcp_commands.txt`. They should look like this:
+
+   ```sql
+   CREATE MODEL `zapier_mcp_model`
+   INPUT (prompt STRING)
+   OUTPUT (response STRING)
+   WITH (
+     'provider' = 'azureopenai',
+     'task' = 'text_generation',
+     'azureopenai.connection' = 'streaming-agents-azure-openai-connection',
+     'mcp.connection' = 'zapier-mcp-connection'
+   );
+   
+   CREATE MODEL `llm_textgen_model`
+   INPUT (prompt STRING)
+   OUTPUT (response STRING)
+   WITH(
+     'provider' = 'azureopenai',
+     'task' = 'text_generation',
+     'azureopenai.connection' = 'streaming-agents-azure-openai-connection'
+   );
+   ```
+
 ## 📊 Data Generation
 
 After successful terraform deployment, generate sample data:
@@ -306,6 +329,80 @@ run.bat
 
 🎉 **Data is now flowing through your streaming pipeline!**
 
+## Run SQL queries to call tools
+
+After setting up the MCP connection and generating data, run these SQL queries in your Flink SQL Workspace to implement the streaming agent price match pipeline:
+
+### Step 1: Stream Recent Orders with Competitor Scraping
+
+```sql
+-- Get recent orders, scrape competitor website for same product
+SET 'sql.state-ttl' = '1 HOURS';
+CREATE TABLE recent_orders_scraped AS
+SELECT
+    o.order_id,
+    p.product_name,
+    c.customer_email,
+    o.price as order_price,
+    (AI_TOOL_INVOKE(
+        'zapier_mcp_model', 
+        CONCAT('Use the webhooks_by_zapier_get tool to extract page contents. Instructions: Extract the page contents from the following URL: https://www.walmart.com/search?q="', 
+               p.product_name, '"'),
+        MAP[],
+        MAP['webhooks_by_zapier_get', 'Fire off a single GET request with optional querystrings.'],
+        MAP['debug', 'true', 'on_error', 'continue']
+    ))['webhooks_by_zapier_get']['response'] as page_content
+FROM orders o
+JOIN customers c ON o.customer_id = c.customer_id  
+JOIN products p ON o.product_id = p.product_id;
+```
+
+### Step 2: Extract Competitor Prices from Scraped Content
+
+```sql
+-- Extract prices from scraped webpages using AI_COMPLETE
+CREATE TABLE streaming_competitor_prices AS
+SELECT
+    ros.order_id,
+    ros.product_name,
+    ros.customer_email,
+    ros.order_price,
+    llm.response as extracted_price
+FROM recent_orders_scraped ros
+CROSS JOIN LATERAL TABLE(
+    AI_COMPLETE('llm_textgen_model', 
+        CONCAT('Analyze this search results page for the following product name: "', ros.product_name, 
+               '", and extract the price of the product that most closely matches the product name. Return only the price in format: XX.XX. For example, return only: 29.95. Page content: ', 
+               ros.page_content)
+    )
+) AS llm
+WHERE ros.page_content IS NOT NULL 
+  AND ros.page_content NOT LIKE 'MCP error%'
+  AND ros.page_content <> '';
+```
+
+### Step 3: Generate and Send Email Notifications for Price Matches
+
+```sql
+-- Create and send email notifications for price matches
+CREATE TABLE price_match_email_results AS
+SELECT 
+    scp.order_id,
+    scp.customer_email,
+    scp.product_name,
+    scp.order_price,
+    CAST(scp.extracted_price AS DECIMAL(10,2)) as competitor_price,
+    AI_TOOL_INVOKE('zapier_mcp_model', 
+                   CONCAT('Use the gmail_send_email tool to send an email. Instructions: send yourself an email to your own email address, subject "Price match alert: Order #', scp.order_id, '", body "Original sale price: $', CAST(scp.order_price AS STRING), '. Price matched price: $', scp.extracted_price, '. Customer email address on file: ', scp.customer_email, '. Simulated customer notification: We have processed a price match refund for your ', scp.product_name, ' purchase."'), 
+                   MAP[], 
+                   MAP['gmail_send_email', 'Create and send a new email message'],
+                   MAP['debug', 'true']) as email_response 
+FROM streaming_competitor_prices scp
+WHERE scp.order_price > CAST(scp.extracted_price AS DECIMAL(10,2))
+  AND scp.extracted_price IS NOT NULL
+  AND scp.extracted_price <> ''
+  AND CAST(scp.extracted_price AS DECIMAL(10,2)) > 0;
+```
 
 ## Topics
 
