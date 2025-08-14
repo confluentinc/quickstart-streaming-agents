@@ -189,7 +189,7 @@ To enable **Claude 3.7 Sonnet** in your AWS account via Amazon Bedrock:
 macOS:
 
 ```bash
-mv roviders-azure.tf.disabled providers-azure.tf 
+mv providers-azure.tf.disabled providers-azure.tf 
 ```
 Windows:
 
@@ -213,7 +213,7 @@ terraform apply --auto-approve
 macOS:
 
 ```bash
-mv roviders-aws.tf.disabled providers-aws.tf 
+mv providers-aws.tf.disabled providers-aws.tf 
 ```
 Windows:
 
@@ -256,7 +256,7 @@ To enable **Flink tool calling**, you also need to create a Flink connection to 
    </details>
    
 3. Log in with Confluent CLI, then run the `confluent flink connection create` command at the top of `mcp_commands.txt`. It should look like this:
-   
+  
    ```bash
    confluent flink connection create zapier-mcp-connection \
      --cloud AZURE \
