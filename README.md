@@ -1,6 +1,8 @@
-# AI Streaming Agents Quickstart
+# Streaming Agents on Confluent Cloud Quickstart
 
-This repository demonstrates a demo for a fictional online retailer that uses Confluent Cloud Streaming Agents to perform real-time price matching on sales orders. Whenever a new order is placed, our AI agent automatically searches competitor websites via tool calling. If a competitor offers the same product at a lower price, the agent adjusts the order price accordingly and sends an updated confirmation email to the customer—also using tool calling.
+![Streaming Agents Intro Slide](./assets/streaming-agents-intro-slide.png)
+
+This repository demonstrates how an online retailer can use Streaming Agents on Confluent Cloud to perform real-time price matching on sales orders. Whenever a customer makes a purchase, the AI agent automatically scrapes a competitor's product page for the item via tool calling. If the competitor offers the same item at a lower price, the agent adjusts the order price accordingly, and sends an updated confirmation email to the customer — also using tool calling.
 
 ![Architecture Diagram](./assets/arch.png)
 
