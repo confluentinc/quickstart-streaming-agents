@@ -6,6 +6,10 @@ This repository demonstrates how an online retailer can use [Streaming Agents](h
 
 ![Architecture Diagram](./assets/arch.png)
 
+## Demo Video
+
+[![Watch on YouTube](https://img.youtube.com/vi/F4bUUsVDBVE/hqdefault.jpg)](https://www.youtube.com/watch?v=F4bUUsVDBVE "Watch on YouTube")
+
 ## 🎯 Essential Setup (Complete First!)
 
 Before proceeding with any other steps, you **must** complete these essential prerequisites:
