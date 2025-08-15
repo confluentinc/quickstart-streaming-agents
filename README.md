@@ -2,7 +2,7 @@
 
 ![Streaming Agents Intro Slide](./assets/streaming-agents-intro-slide.png)
 
-This repository demonstrates how an online retailer can use Streaming Agents on Confluent Cloud to perform real-time price matching on sales orders. Whenever a customer makes a purchase, the AI agent automatically scrapes a competitor's product page for the item via tool calling. If the competitor offers the same item at a lower price, the agent adjusts the order price accordingly, and sends an updated confirmation email to the customer — also using tool calling.
+This repository demonstrates how an online retailer can use [Streaming Agents](https://docs.confluent.io/cloud/current/ai/streaming-agents/overview.html) on Confluent Cloud to perform real-time price matching on sales orders. Whenever a customer makes a purchase, the AI agent automatically scrapes a competitor's product page for the item via tool calling. If the competitor offers the same item at a lower price, the agent adjusts the order price accordingly, and sends an updated confirmation email to the customer — also using tool calling.
 
 ![Architecture Diagram](./assets/arch.png)
 
@@ -329,82 +329,7 @@ run.bat
 
 </details>
 
-🎉 **Data is now flowing through your streaming pipeline!**
-
-## Run SQL queries to call tools
-
-After setting up the MCP connection and generating data, run these SQL queries in your Flink SQL Workspace to implement the streaming agent price match pipeline:
-
-### Step 1: Stream Recent Orders with Competitor Scraping
-
-```sql
--- Get recent orders, scrape competitor website for same product
-SET 'sql.state-ttl' = '1 HOURS';
-CREATE TABLE recent_orders_scraped AS
-SELECT
-    o.order_id,
-    p.product_name,
-    c.customer_email,
-    o.price as order_price,
-    (AI_TOOL_INVOKE(
-        'zapier_mcp_model', 
-        CONCAT('Use the webhooks_by_zapier_get tool to extract page contents. Instructions: Extract the page contents from the following URL: https://www.walmart.com/search?q="', 
-               p.product_name, '"'),
-        MAP[],
-        MAP['webhooks_by_zapier_get', 'Fire off a single GET request with optional querystrings.'],
-        MAP['debug', 'true', 'on_error', 'continue']
-    ))['webhooks_by_zapier_get']['response'] as page_content
-FROM orders o
-JOIN customers c ON o.customer_id = c.customer_id  
-JOIN products p ON o.product_id = p.product_id;
-```
-
-### Step 2: Extract Competitor Prices from Scraped Content
-
-```sql
--- Extract prices from scraped webpages using AI_COMPLETE
-CREATE TABLE streaming_competitor_prices AS
-SELECT
-    ros.order_id,
-    ros.product_name,
-    ros.customer_email,
-    ros.order_price,
-    llm.response as extracted_price
-FROM recent_orders_scraped ros
-CROSS JOIN LATERAL TABLE(
-    AI_COMPLETE('llm_textgen_model', 
-        CONCAT('Analyze this search results page for the following product name: "', ros.product_name, 
-               '", and extract the price of the product that most closely matches the product name. Return only the price in format: XX.XX. For example, return only: 29.95. Page content: ', 
-               ros.page_content)
-    )
-) AS llm
-WHERE ros.page_content IS NOT NULL 
-  AND ros.page_content NOT LIKE 'MCP error%'
-  AND ros.page_content <> '';
-```
-
-### Step 3: Generate and Send Email Notifications for Price Matches
-
-```sql
--- Create and send email notifications for price matches
-CREATE TABLE price_match_email_results AS
-SELECT 
-    scp.order_id,
-    scp.customer_email,
-    scp.product_name,
-    scp.order_price,
-    CAST(scp.extracted_price AS DECIMAL(10,2)) as competitor_price,
-    AI_TOOL_INVOKE('zapier_mcp_model', 
-                   CONCAT('Use the gmail_send_email tool to send an email. Instructions: send yourself an email to your own email address, subject "Price match alert: Order #', scp.order_id, '", body "Original sale price: $', CAST(scp.order_price AS STRING), '. Price matched price: $', scp.extracted_price, '. Customer email address on file: ', scp.customer_email, '. Simulated customer notification: We have processed a price match refund for your ', scp.product_name, ' purchase."'), 
-                   MAP[], 
-                   MAP['gmail_send_email', 'Create and send a new email message'],
-                   MAP['debug', 'true']) as email_response 
-FROM streaming_competitor_prices scp
-WHERE scp.order_price > CAST(scp.extracted_price AS DECIMAL(10,2))
-  AND scp.extracted_price IS NOT NULL
-  AND scp.extracted_price <> ''
-  AND CAST(scp.extracted_price AS DECIMAL(10,2)) > 0;
-```
+🎉 **Data is now flowing through your streaming pipeline! Proceed to the labs!**
 
 ## Topics
 
@@ -412,7 +337,7 @@ WHERE scp.order_price > CAST(scp.extracted_price AS DECIMAL(10,2))
 
 ## 🧹 Cleanup
 
-To destroy all resources when you're done:
+To destroy all resources when you're done with the labs:
 
 ```bash
 cd ../terraform

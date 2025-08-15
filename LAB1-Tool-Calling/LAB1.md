@@ -28,20 +28,21 @@ In the Flink workspace, register the model and bind the tool to it in the Conflu
 
 
 ```sql
-CREATE MODEL `zapier_mcp_model`
-INPUT (prompt STRING)
-OUTPUT (response STRING)
-WITH (
-  'provider' = 'azureopenai',
-  'task' = 'text_generation',
-  'azureopenai.connection' = 'streaming-agents-azure-openai-connection',
-  'mcp.connection' = 'zapier-mcp-connection'
-);
+  CREATE MODEL `zapier_mcp_model`
+  INPUT (prompt STRING)
+  OUTPUT (response STRING)
+  WITH (
+    'provider' = 'azureopenai',
+    'task' = 'text_generation',
+    'azureopenai.connection' = 'streaming-agents-azure-openai-connection',
+    'mcp.connection' = 'zapier-mcp-connection'
+  );
 ```
 
 Run this in Flink Workspace UI to start the first agent:
 
 ```sql
+-- Get recent orders, scrape competitor website for same product
 SET 'sql.state-ttl' = '1 HOURS';
 CREATE TABLE recent_orders_scraped AS
 SELECT
@@ -79,20 +80,20 @@ In Flink workspace, register the model for Agent 2 in Confluent catalog:
 > The example below uses Azure OpenAI. If you are using Amazon Bedrock, use the corresponding query from `mcp_commands.txt`.
 
 ```sql
-CREATE MODEL llm_textgen_model
-INPUT (prompt STRING)
-OUTPUT (response STRING)
-WITH(
-  'provider' = 'azureopenai',
-  'task' = 'text_generation',
-  'azureopenai.connection' = 'streaming-agents-azure-openai-connection',
-  'azureopenai.model_version' = '2025-04-14'
-);
+  CREATE MODEL `llm_textgen_model`
+  INPUT (prompt STRING)
+  OUTPUT (response STRING)
+  WITH(
+     'provider' = 'azureopenai',
+     'task' = 'text_generation',
+     'azureopenai.connection' = 'streaming-agents-azure-openai-connection'
+  );
 ```
 
 Start **Agent 2** to extract the competitor’s price from `page_content` and output it as a new field: `extracted_price`.
 
 ```sql
+-- Extract prices from scraped webpages using AI_COMPLETE
 CREATE TABLE streaming_competitor_prices AS
 SELECT
     ros.order_id,
@@ -102,7 +103,7 @@ SELECT
     llm.response as extracted_price
 FROM recent_orders_scraped ros
 CROSS JOIN LATERAL TABLE(
-    ML_PREDICT('llm_textgen_model', 
+    AI_COMPLETE('llm_textgen_model', 
         CONCAT('Analyze this search results page for the following product name: "', ros.product_name, 
                '", and extract the price of the product that most closely matches the product name. Return only the price in format: XX.XX. For example, return only: 29.95. Page content: ', 
                ros.page_content)
@@ -139,6 +140,7 @@ We don’t need to register a new model here. Instead, we’ll reuse the one fro
 Start Agent 3 by running:
 
 ```sql
+-- Create and send email notifications for price matches
 CREATE TABLE price_match_email_results AS
 SELECT 
     scp.order_id,
@@ -175,11 +177,3 @@ By chaining these agents together, we’ve built a realtime datapipeline that re
 **Next topic:** [Clean-up](../README.md#-cleanup)
 
 **Previous topic:** [Demo Introduction and Setup](../README.md)
-
-
-
-
-
-
-
-
