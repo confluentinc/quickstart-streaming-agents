@@ -29,7 +29,7 @@ Before proceeding with any other steps, you **must** complete these essential pr
 
 1. **Create Zapier Account**
 
-   - Sign up for an account at [https://zapier.com/sign-up.
+   - Sign up for an account at [https://zapier.com/sign-up].
    - Click the verification link they send to your email.
 
 2. **Create MCP Server**
@@ -144,7 +144,7 @@ Windows:
 notepad terraform.tfvars
 ```
 
-Fill in out the values for `prefix`, `cloud_provider`, `cloud_region`, `confluent_cloud_api_key`, `confluent_cloud_api_secret`, and `ZAPIER_SSE_ENDPOINT` and save the file.
+Fill out the values for `prefix`, `cloud_provider`, `cloud_region`, `confluent_cloud_api_key`, `confluent_cloud_api_secret`, and `ZAPIER_SSE_ENDPOINT` and save the file.
 
 <details>
 <summary><strong>📋 Supported Regions</strong> (Click to expand)</summary>
@@ -155,7 +155,7 @@ Fill in out the values for `prefix`, `cloud_provider`, `cloud_region`, `confluen
 - **Asia**: East Asia, Southeast Asia, Japan East, Japan West, Korea Central, Korea South
 
 **AWS Regions:**
-- **US**:us-east-1, us-east-2, us-west-2
+- **US**: us-east-1, us-east-2, us-west-2
 - **Europe**: eu-west-1, eu-west-2, eu-central-1
 - **Asia**: ap-southeast-1, ap-southeast-2, ap-northeast-1
 
@@ -186,7 +186,7 @@ To enable **Claude 3.7 Sonnet** in your AWS account via Amazon Bedrock:
 <details>
 <summary>Deploying on Azure</summary>
 
-1. Enable the the `providers-azure.tf` file
+1. Enable the `providers-azure.tf` file
 
 macOS:
 
@@ -210,7 +210,7 @@ terraform apply --auto-approve
 <details>
 <summary>Deploying on AWS</summary>
 
-1. Enable the the `providers-aws.tf` file
+1. Enable the `providers-aws.tf` file
 
 macOS:
 
@@ -308,7 +308,7 @@ run.bat
 
 ## Topics
 
-**Next topic:** [Lab1: Price Matching using Tool calling](./LAB1-Tool-Calling/LAB1.md)
+**Next topic:** [Lab1: Price Matching Using Tool Calling](./LAB1-Tool-Calling/LAB1.md)
 
 ## 🧹 Cleanup
 
@@ -325,7 +325,6 @@ terraform destroy --auto-approve
 
 - [ ] Created Confluent Cloud account with API keys
 - [ ] Set up Zapier MCP server and copied SSE endpoint URL
-- [ ] Obtained Firecrawl API key
 - [ ] Installed required software (Terraform, Confluent CLI, Docker)
 - [ ] Cloned repository and configured `terraform.tfvars`
 - [ ] [AWS only] Enabled Claude Sonnet 3.7 in Bedrock

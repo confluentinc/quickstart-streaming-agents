@@ -1,6 +1,6 @@
-## Lab 1: Price Matching using Tool calling 
+## Lab 1: Price Matching Using Tool Calling 
 
-In this lab, we’ll use Confluent Cloud’s Apache Flink tool-calling feature to look up products in real-time orders. The LLM, through tool calling, uses a Zapier MCP server to retrieve competitor prices, and if a competitor offers a better price, the agent automatically applies a price match.
+In this lab, we'll use Confluent Cloud's Apache Flink tool calling feature to look up products in real-time orders. The LLM, through tool calling, uses a Zapier MCP server to retrieve competitor prices, and if a competitor offers a better price, the agent automatically applies a price match.
 
 ![Architecture Diagram](./assets/arch.png)
 
@@ -63,13 +63,11 @@ JOIN customers c ON o.customer_id = c.customer_id
 JOIN products p ON o.product_id = p.product_id;
 ```
 
-![Agent 1 Screenshot](./assets/agent1-flink.png)
-
-This agent uses the `product_name` as an input to URL scraping tool. The output is the `page_content` of the same product on the competitior website.
+This agent uses the `product_name` as an input to URL scraping tool. The output is the `page_content` of the same product on the competitor website.
 
 ### Agent 2: Price Extractor Agent
 
-Agent 2 will take `recent_orders_scraped` topic as an input and extract the competitior price from the `page_content` field.
+Agent 2 will take `recent_orders_scraped` topic as an input and extract the competitor price from the `page_content` field.
 
 ![Agent 2: Price extractor agent](./assets/agent2-diagram.png)
 
@@ -113,8 +111,6 @@ WHERE ros.page_content IS NOT NULL
   AND ros.page_content NOT LIKE 'MCP error%'
   AND ros.page_content <> '';
 ```
-
-![Agent 2 Screenshot](./assets/agent2-flink.png)
 
 
 In a new cell, check the output of `streaming_competitor_prices`
@@ -160,17 +156,15 @@ WHERE scp.order_price > CAST(scp.extracted_price AS DECIMAL(10,2))
   AND CAST(scp.extracted_price AS DECIMAL(10,2)) > 0;
 ```
 
-![Agent 3 Screenshot](./assets/agent3-flink.png)
-
 With Agent 3 running, our real-time price matching pipeline is complete—orders stream in, competitor prices are fetched and analyzed, and customers are instantly notified when they get the best deal.  
 
-Checkout your email for price matched orders
+Check out your email for price matched orders
 
 ![Price matched emails](./assets/email.png)
 
 ## Conclusion
 
-By chaining these agents together, we’ve built a realtime datapipeline that reacts to market changes in seconds, ensures pricing competitiveness, and delivers immediate value to customers—right in their inbox.
+By chaining these agents together, we've built a real-time data pipeline that reacts to market changes in seconds, ensures pricing competitiveness, and delivers immediate value to customers—right in their inbox.
 
 ## Topics
 
