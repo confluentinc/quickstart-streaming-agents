@@ -232,7 +232,7 @@ terraform apply --auto-approve
 </details>
 
 
-## Set up Flink MCP connection and models
+## Set up Flink MCP connection
 
 The Terraform script has already created a Flink connection to your chosen LLM model (AWS or Azure).
 
@@ -268,31 +268,6 @@ To enable **Flink tool calling**, you also need to create a Flink connection to 
      --api-key api_key \
      --environment env-xxxxx \
      --sse-endpoint https://mcp.zapier.com/api/mcp/s/<<long-API-key>>/sse
-   ```
-
-Once complete, Flink will be connected to both the LLM model and the MCP server.
-
-3. Open a [Flink SQL Workspace in Confluent Cloud](https://confluent.cloud/workspaces/) and enter the `CREATE MODEL` commands found directly below the Flink connection command in `mcp_commands.txt`. They should look like this:
-
-   ```sql
-   CREATE MODEL `zapier_mcp_model`
-   INPUT (prompt STRING)
-   OUTPUT (response STRING)
-   WITH (
-     'provider' = 'azureopenai',
-     'task' = 'text_generation',
-     'azureopenai.connection' = 'streaming-agents-azure-openai-connection',
-     'mcp.connection' = 'zapier-mcp-connection'
-   );
-   
-   CREATE MODEL `llm_textgen_model`
-   INPUT (prompt STRING)
-   OUTPUT (response STRING)
-   WITH(
-     'provider' = 'azureopenai',
-     'task' = 'text_generation',
-     'azureopenai.connection' = 'streaming-agents-azure-openai-connection'
-   );
    ```
 
 ## 📊 Data Generation
