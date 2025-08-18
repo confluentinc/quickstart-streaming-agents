@@ -18,6 +18,10 @@ terraform {
 # Azure Provider Configuration
 provider "azurerm" {
   features {}
+}
+
+provider "azurerm" {
+  features {}
   alias = "main"
 }
 
