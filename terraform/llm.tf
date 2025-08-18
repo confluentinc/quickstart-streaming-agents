@@ -3,10 +3,7 @@
 # Users just need to use the Bedrock API with their AWS credentials
 # Model: us.anthropic.claude-3-7-sonnet-20250219-v1:0 (Sonnet 3.7)
 
-# Determine model prefix based on region
-locals {
-  model_prefix = length(regexall("^us-", var.cloud_region)) > 0 ? "us" : (length(regexall("^eu-", var.cloud_region)) > 0 ? "eu" : "apac")
-}
+# Model prefix is defined in confluent.tf locals block
 
 # AWS IAM User for Bedrock access
 resource "aws_iam_user" "bedrock_user" {
