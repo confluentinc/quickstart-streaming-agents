@@ -109,6 +109,7 @@ WITH (
   'task' = 'text_generation',
   'bedrock.connection' = '${confluent_flink_connection.bedrock_connection.display_name}',
   'mcp.connection' = 'zapier-mcp-connection'
+  'BEDROCK.params.max_tokens' = '512'
 );
 
 # Agent 2: Flink SQL CREATE LLM-Only MODEL Command
