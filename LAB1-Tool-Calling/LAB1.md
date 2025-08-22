@@ -2,7 +2,7 @@
 
 In this lab, we'll use Confluent Cloud's Apache Flink tool calling feature to look up products in real-time orders. The LLM, through tool calling, uses a Zapier MCP server to retrieve competitor prices, and if a competitor offers a better price, the agent automatically applies a price match.
 
-![Architecture Diagram](./assets/arch.png)
+![Architecture Diagram](../assets/arch.png)
 
 ### Connecting to Flink
 
@@ -12,13 +12,13 @@ In [Flink UI](https://confluent.cloud/go/flink), choose the Environment.
 
 You will see a compute pool created for you. Click on **Open SQL Workspace**
 
-![Flink UI](./assets/flinkworkspace.png)
+![Flink UI](../assets/lab1/flinkworkspace.png)
 
 ### Agent 1: URL Scraping Agent
 
 First, we need to enrich incoming Orders with product names, then search for and scrape these products from competitors’ websites. We’ll achieve this using Flink’s Tool Calling feature, which will enable Flink to invoke the Zapier MCP server we previously created.
 
-![Agent 1: Price matching agent](./assets/agent1-diagram.png)
+![Agent 1: Price matching agent](../assets/lab1/agent1-diagram.png)
 
 In the Flink workspace, register the model and bind the tool to it in the Confluent catalog:
 
@@ -69,7 +69,7 @@ This agent uses the `product_name` as an input to URL scraping tool. The output 
 
 Agent 2 will take `recent_orders_scraped` topic as an input and extract the competitor price from the `page_content` field.
 
-![Agent 2: Price extractor agent](./assets/agent2-diagram.png)
+![Agent 2: Price extractor agent](../assets/lab1/agent2-diagram.png)
 
 In Flink workspace, register the model for Agent 2 in Confluent catalog:
 
@@ -119,7 +119,7 @@ In a new cell, check the output of `streaming_competitor_prices`
 SELECT * FROM streaming_competitor_prices;
 ```
 
-![Agent 2 Output Screenshot](./assets/agent2-flinkoutput.png)
+![Agent 2 Output Screenshot](../assets/lab1/agent2-flinkoutput.png)
 
 Notice the new field `extracted_price`. This will be used by the next Agent.
 
@@ -129,7 +129,7 @@ Notice the new field `extracted_price`. This will be used by the next Agent.
 In this step, we’ll notify the customer when a price match has been applied.  
 We’ll again use Confluent Cloud’s tool-calling feature — this time connecting to the Zapier MCP server to trigger an email or message to the customer.
 
-![Agent 3: Price Match Notification Agent](./assets/agent3-diagram.png)
+![Agent 3: Price Match Notification Agent](../assets/lab1/agent3-diagram.png)
 
 We don’t need to register a new model here. Instead, we’ll reuse the one from Agent 1, since both agents use the same Zapier MCP server and share the same tools.  For this agent, the tool is `gmail_send_email`.
 
@@ -160,7 +160,7 @@ With Agent 3 running, our real-time price matching pipeline is complete—orders
 
 Check out your email for price matched orders
 
-![Price matched emails](./assets/email.png)
+![Price matched emails](../assets/lab1/email.png)
 
 ## Conclusion
 

@@ -1,0 +1,56 @@
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# IDE
+.idea/
+.vscode/
+.cursor/
+*.cursor-*
+*.swp
+*.swo
+
+# Claude Code
+.claude/
+CLAUDE.md
+claude-*
+
+# Terraform
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+.terraform/
+.terraform.lock.hcl
+*.tfvars
+*.tfvars.json
+terraform.tfvars.backup
+terraform/providers-aws.tf
+terraform/providers-azure.tf
+
+# Environment files (may contain secrets)
+.env
+.env.*
+*.env
+
+# Python (if scripts are added)
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# Backup files
+*.bak
+*.backup
