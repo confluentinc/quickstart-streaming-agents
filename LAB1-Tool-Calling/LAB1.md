@@ -136,24 +136,59 @@ We don’t need to register a new model here. Instead, we’ll reuse the one fro
 Start Agent 3 by running:
 
 ```sql
--- Create and send email notifications for price matches
+-- Create and send professional email notifications for price matches
 CREATE TABLE price_match_email_results AS
 SELECT 
     scp.order_id,
     scp.customer_email,
     scp.product_name,
     scp.order_price,
-    CAST(scp.extracted_price AS DECIMAL(10,2)) as competitor_price,
+    scp.competitor_price,
     AI_TOOL_INVOKE('zapier_mcp_model', 
-                   CONCAT('Use the gmail_send_email tool to send an email. Instructions: send yourself an email to your own email address, subject "Price match alert: Order #', scp.order_id, '", body "Original sale price: $', CAST(scp.order_price AS STRING), '. Price matched price: $', scp.extracted_price, '. Customer email address on file: ', scp.customer_email, '. Simulated customer notification: We have processed a price match refund for your ', scp.product_name, ' purchase."'), 
+                   CONCAT('Use the gmail_send_email tool to send an email. ',
+                          'Instructions: send yourself an email to your own email address, ',
+                          'subject "✅ Great News! Price Match Applied - Order #', scp.order_id, '", ',
+                          'body "Subject: Your Price Match Has Been Applied - Order #', scp.order_id, '
+
+Dear Valued Customer,
+
+We have great news! We found a better price for your recent purchase and have automatically applied a price match.
+
+📦 ORDER DETAILS:
+   • Order Number: #', scp.order_id, '
+   • Product: ', scp.product_name, '
+   • Customer: ', scp.customer_email, '
+
+💰 PRICE MATCH DETAILS:
+   • Original Price: $', CAST(scp.order_price AS STRING), '
+   • Competitor Price Found: $', CAST(scp.competitor_price AS STRING), '
+   • Your Savings: $', CAST((scp.order_price - scp.competitor_price) AS STRING), '
+
+✅ ACTION TAKEN:
+We have processed a price match refund of $', CAST((scp.order_price - scp.competitor_price) AS STRING), ' back to your original payment method. You should see this credit within 3-5 business days.
+
+🛒 WHY WE DO THIS:
+We are committed to offering you the best prices. Our automated price matching system continuously monitors competitor prices to ensure you always get the best deal.
+
+Thank you for choosing River Retail. We appreciate your business!
+
+Best regards,
+River Retail Customer Success Team
+📧 support@riverretail.com | 📞 1-800-RIVER-HELP
+
+---
+This is an automated message from our price matching system."'), 
                    MAP[], 
                    MAP['gmail_send_email', 'Create and send a new email message'],
-                   MAP['debug', 'true']) as email_response 
-FROM streaming_competitor_prices scp
-WHERE scp.order_price > CAST(scp.extracted_price AS DECIMAL(10,2))
-  AND scp.extracted_price IS NOT NULL
-  AND scp.extracted_price <> ''
-  AND CAST(scp.extracted_price AS DECIMAL(10,2)) > 0;
+                   MAP['debug', 'true', 'on_error', 'continue']) as email_response 
+FROM (
+    SELECT *,
+           TRY_CAST(extracted_price AS DECIMAL(10,2)) as competitor_price
+    FROM streaming_competitor_prices
+) scp
+WHERE scp.competitor_price IS NOT NULL
+  AND scp.competitor_price > 0
+  AND scp.order_price > scp.competitor_price;
 ```
 
 With Agent 3 running, our real-time price matching pipeline is complete—orders stream in, competitor prices are fetched and analyzed, and customers are instantly notified when they get the best deal.  
