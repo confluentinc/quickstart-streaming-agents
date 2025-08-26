@@ -35,6 +35,12 @@ terraform/providers-azure.tf
 .env.*
 *.env
 
+# Terraform credential backups and sensitive files
+terraform/terraform.tfvars.reset-backup
+terraform/terraform.tfvars.backup
+**/terraform.tfvars.reset-backup
+**/terraform.tfvars.backup
+
 # Python (if scripts are added)
 __pycache__/
 *.py[cod]
