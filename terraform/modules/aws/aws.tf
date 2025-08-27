@@ -108,6 +108,7 @@ WITH (
   'provider' = 'bedrock',
   'task' = 'text_generation',
   'bedrock.connection' = '${confluent_flink_connection.bedrock_connection.display_name}',
+  'bedrock.params.max_tokens' = '20000',
   'mcp.connection' = 'zapier-mcp-connection'
 );
 
@@ -119,7 +120,8 @@ OUTPUT (response STRING)
 WITH(
   'provider' = 'bedrock',
   'task' = 'text_generation',
-  'bedrock.connection' = '${confluent_flink_connection.bedrock_connection.display_name}'
+  'bedrock.connection' = '${confluent_flink_connection.bedrock_connection.display_name}',
+  'bedrock.params.max_tokens' = '20000'
 );
 
   EOT

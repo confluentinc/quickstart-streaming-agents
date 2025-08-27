@@ -44,43 +44,23 @@ class SetupState(Enum):
     COMPLETED = "completed"
 
 class SetupLogger:
-    """Custom logger for setup operations."""
+    """Custom logger for setup operations - logging disabled."""
     
-    def __init__(self, log_file: str = "setup.log", verbose: bool = False):
-        self.log_file = log_file
+    def __init__(self, log_file: str = None, verbose: bool = False):
         self.verbose = verbose
-        
-        # Get a logger instance
-        self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(logging.INFO)
-        
-        # Clear any existing handlers
-        self.logger.handlers.clear()
-        
-        # Setup file logging
-        file_handler = logging.FileHandler(log_file)
-        file_handler.setLevel(logging.INFO)
-        file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
-        self.logger.addHandler(file_handler)
-        
-        # Setup console logging based on verbose flag
-        if verbose:
-            console_handler = logging.StreamHandler()
-            console_handler.setLevel(logging.INFO)
-            console_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
-            self.logger.addHandler(console_handler)
+        # Logging is disabled - all methods are no-ops
     
     def info(self, message: str):
-        self.logger.info(message)
+        # No-op - logging disabled
+        pass
     
     def error(self, message: str, exc_info=False):
-        if exc_info:
-            self.logger.error(message, exc_info=exc_info)
-        else:
-            self.logger.error(message)
+        # No-op - logging disabled
+        pass
     
     def warning(self, message: str):
-        self.logger.warning(message)
+        # No-op - logging disabled
+        pass
 
 class SetupUI:
     """User interface handler with rich formatting when available."""
@@ -346,7 +326,7 @@ class ConfigurationManager:
             'ZAPIER_SSE_ENDPOINT': ['https://mcp.zapier.com/api/mcp/s/<<long-API-key>>/sse', 
                                    'https://mcp.zapier.com/api/mcp/s/test-api-key/sse',
                                    'https://mcp.zapier.com/api/mcp/s/test-key/sse'],
-            'prefix': ['your-prefix', 'ai', 'streaming-agents'],  # Include default as placeholder
+            'prefix': ['your-prefix'],  # Remove valid prefixes from placeholder list
             'cloud_provider': ['azure'],  # Include default as placeholder until confirmed
             'cloud_region': ['eastus']   # Include default as placeholder until confirmed
         }
