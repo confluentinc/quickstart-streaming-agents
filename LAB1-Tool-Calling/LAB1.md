@@ -52,7 +52,9 @@ SELECT
     o.price as order_price,
     (AI_TOOL_INVOKE(
         'zapier_mcp_model', 
-        CONCAT('Use the webhooks_by_zapier_get tool to extract page contents. Instructions: Extract the page contents from the following URL: https://www.walmart.com/search?q="', 
+        CONCAT('Use the webhooks_by_zapier_get tool to extract page contents. ',
+               'Instructions: Extract the page contents from the following URL: ',
+               'https://www.walmart.com/search?q="', 
                p.product_name, '"'),
         MAP[],
         MAP['webhooks_by_zapier_get', 'Fire off a single GET request with optional querystrings.'],
@@ -103,8 +105,9 @@ FROM recent_orders_scraped ros
 CROSS JOIN LATERAL TABLE(
     AI_COMPLETE('llm_textgen_model', 
         CONCAT('Analyze this search results page for the following product name: "', ros.product_name, 
-               '", and extract the price of the product that most closely matches the product name. Return only the price in format: XX.XX. For example, return only: 29.95. Page content: ', 
-               ros.page_content)
+               '", and extract the price of the product that most closely matches the product name. ',
+               'Return only the price in format: XX.XX. For example, return only: 29.95. ',
+               'Page content: ', ros.page_content)
     )
 ) AS llm
 WHERE ros.page_content IS NOT NULL 
@@ -165,7 +168,8 @@ We have great news! We found a better price for your recent purchase and have au
    • Your Savings: $', CAST((scp.order_price - scp.competitor_price) AS STRING), '
 
 ✅ ACTION TAKEN:
-We have processed a price match refund of $', CAST((scp.order_price - scp.competitor_price) AS STRING), ' back to your original payment method. You should see this credit within 3-5 business days.
+We have processed a price match refund of $', CAST((scp.order_price - scp.competitor_price) AS STRING), 
+' back to your original payment method. You should see this credit within 3-5 business days.
 
 🛒 WHY WE DO THIS:
 We are committed to offering you the best prices. Our automated price matching system continuously monitors competitor prices to ensure you always get the best deal.

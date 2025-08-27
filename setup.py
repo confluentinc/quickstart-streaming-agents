@@ -326,7 +326,7 @@ class ConfigurationManager:
             'ZAPIER_SSE_ENDPOINT': ['https://mcp.zapier.com/api/mcp/s/<<long-API-key>>/sse', 
                                    'https://mcp.zapier.com/api/mcp/s/test-api-key/sse',
                                    'https://mcp.zapier.com/api/mcp/s/test-key/sse'],
-            'prefix': ['your-prefix'],  # Remove valid prefixes from placeholder list
+            'prefix': ['your-prefix'],
             'cloud_provider': ['azure'],  # Include default as placeholder until confirmed
             'cloud_region': ['eastus']   # Include default as placeholder until confirmed
         }
@@ -575,14 +575,8 @@ class ConfigurationManager:
                 config[key] = existing_config.get(key, default_value)
             return config
         
-        # Prefix
-        default_prefix = existing_config.get('prefix', 'streaming-agents')
-        while True:
-            prefix = self.ui.prompt("Project prefix (alphanumeric, no spaces)", default_prefix)
-            if re.match(r'^[a-zA-Z0-9\-_]+$', prefix):
-                config['prefix'] = prefix
-                break
-            self.ui.print_error("Prefix must be alphanumeric characters, dashes, or underscores only")
+        # Prefix (using default without prompting)
+        config['prefix'] = 'streaming-agents'
         
         # Cloud provider
         default_provider = existing_config.get('cloud_provider', 'azure').lower()
@@ -1481,11 +1475,8 @@ class StreamingAgentsSetup:
     def prompt_for_field(self, field: str, config: Dict[str, str]) -> str:
         """Prompt for a specific configuration field."""
         if field == 'prefix':
-            while True:
-                value = self.ui.prompt("Project prefix (alphanumeric, no spaces)", "streaming-agents")
-                if re.match(r'^[a-zA-Z0-9\-_]+$', value):
-                    return value
-                self.ui.print_error("Prefix must be alphanumeric characters, dashes, or underscores only")
+            # Use default prefix without prompting
+            return "streaming-agents"
         
         elif field == 'cloud_provider':
             while True:

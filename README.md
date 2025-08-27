@@ -293,7 +293,7 @@ curl -O https://raw.githubusercontent.com/ShadowTraffic/shadowtraffic-examples/m
 
 Run ShadowTraffic to generate data:
 ```bash
-./run.sh
+chmod +x run.sh && ./run.sh
 ```
 
 </details>
