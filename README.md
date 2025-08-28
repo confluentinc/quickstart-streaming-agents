@@ -134,6 +134,20 @@ cd quickstart-streaming-agents/terraform
 
 ### 2. Configure Your Credentials
 
+#### Option A (Mac only): `setup.py`helper  script
+
+At this point you can run the `setup.py` helper script or you can continue with the manual setup instructions below. Please note that the script has only been tested on Mac.
+
+To run the script you will need to be logged into Confluent CLI, and the AWS or Azure CLI tool. The `setup.py` helper script automatically generates new Confluent Cloud API keys with the proper `Organization Admin` role, activates the proper cloud environment, and deploys Terraform. You will still need to provide a `ZAPIER_SSE_ENDPOINT` for the script to use by [following these instructions](#setting-up-your-zapier-remote-mcp-server).
+
+```sh
+python setup.py
+```
+
+Or, you can continue with the manual setup instructions below.
+
+#### Option B (Mac/Windows): Manual setup
+
 Open the `terraform.tfvars` file:
 
 macOS:
