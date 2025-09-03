@@ -326,9 +326,7 @@ class ConfigurationManager:
             'ZAPIER_SSE_ENDPOINT': ['https://mcp.zapier.com/api/mcp/s/<<long-API-key>>/sse', 
                                    'https://mcp.zapier.com/api/mcp/s/test-api-key/sse',
                                    'https://mcp.zapier.com/api/mcp/s/test-key/sse'],
-            'prefix': ['your-prefix'],
-            'cloud_provider': ['azure'],  # Include default as placeholder until confirmed
-            'cloud_region': ['eastus']   # Include default as placeholder until confirmed
+            'prefix': ['your-prefix']
         }
         
         if key in placeholders:
@@ -345,9 +343,8 @@ class ConfigurationManager:
         try:
             with open(self.config_file, 'r') as f:
                 config = json.load(f)
-                # If no confirmed values have been saved, it's still first run
-                # Check for at least basic config like prefix and cloud_provider
-                return len(config) == 0 or not config.get('prefix') or not config.get('cloud_provider')
+                # Check if configuration was completed at least once
+                return not config.get('_config_completed', False)
         except:
             return True
     
