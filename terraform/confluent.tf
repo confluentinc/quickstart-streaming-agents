@@ -128,7 +128,7 @@ locals {
 
 
 resource "confluent_environment" "staging" {
-  display_name = "${var.prefix}-RIVERRETAIL-${random_id.resource_suffix.hex}"
+  display_name = "${var.prefix}-env-${random_id.resource_suffix.hex}"
 
   stream_governance {
     package = "ADVANCED"
@@ -152,7 +152,7 @@ data "confluent_schema_registry_cluster" "sr-cluster" {
 # Update the config to use a cloud provider and region of your choice.
 # https://registry.terraform.io/providers/confluentinc/confluent/latest/docs/resources/confluent_kafka_cluster
 resource "confluent_kafka_cluster" "standard" {
-  display_name = "${var.prefix}-RIVERBANK-CLUSTER-${random_id.resource_suffix.hex}"
+  display_name = "${var.prefix}-cluster-${random_id.resource_suffix.hex}"
   availability = "SINGLE_ZONE"
   cloud        = local.cloud_provider
   region       = local.confluent_region
