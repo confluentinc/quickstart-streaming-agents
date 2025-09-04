@@ -13,3 +13,5 @@ confluent_cloud_api_secret = "your-confluent-api-secret"
 
 # Required: Zapier MCP SSE Endpoint required for tool calling. Get from Zapier UI and should look like this
 ZAPIER_SSE_ENDPOINT="https://mcp.zapier.com/api/mcp/s/<<long-API-key>>/sse"
+
+OPENAI_API_KEY="your-openai-api-key"
