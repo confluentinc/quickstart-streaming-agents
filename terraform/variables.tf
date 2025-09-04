@@ -40,3 +40,8 @@ variable "ZAPIER_SSE_ENDPOINT"{
     description = "Zapier SSE Endpoint from Zapier UI"
     type        = string
 }
+
+variable "OPENAI_API_KEY"{
+    description = "OpenAI API key for LLMs"
+    type        = string
+}

@@ -249,6 +249,53 @@ terraform apply --auto-approve
 
 </details>
 
+<details>
+<summary>Deploying on AWS with OpenAI (no Bedrock)</summary>
+
+1. Ensure `terraform.tfvars` includes your OpenAI API key and AWS settings:
+
+   macOS:
+
+   ```bash
+   open -a TextEdit terraform.tfvars
+   ```
+
+   Windows:
+
+   ```bash
+   notepad terraform.tfvars
+   ```
+
+   Add or verify the following values (example):
+
+   ```hcl
+   cloud_provider = "AWS"
+   cloud_region   = "us-east-2"    # choose an AWS region
+   OPENAI_API_KEY = "<your-openai-api-key>"
+   ```
+
+2. Enable the `providers-aws_openai.tf` file
+
+   macOS:
+
+   ```bash
+   mv providers-aws_openai.tf.disabled providers-aws_openai.tf
+   ```
+
+   Windows:
+
+   ```bash
+   rename providers-aws_openai.tf.disabled providers-aws_openai.tf
+   ```
+
+3. Initialize and apply the Terraform configuration
+
+   ```bash
+   terraform init
+   terraform apply --auto-approve
+   ```
+
+</details>
 
 ## Set up Flink MCP connection
 
