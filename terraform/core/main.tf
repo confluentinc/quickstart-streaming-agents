@@ -1,11 +1,7 @@
-# Random ID for unique resource names (used for both AWS and Azure)
 resource "random_id" "resource_suffix" {
   byte_length = 4
-} 
+}
 
-# ------------------------------------------------------
-# REGION MAPPING
-# ------------------------------------------------------
 locals {
   region_mapping = {
     # AWS Regions
@@ -21,7 +17,7 @@ locals {
     "ap-northeast-1" = "ap-northeast-1"
     "sa-east-1"      = "sa-east-1"
 
-    # Azure Regions: User-friendly to programmatic names (based on Microsoft list) :contentReference[oaicite:1]{index=1}
+    # Azure Regions
     "East US"             = "eastus"
     "East US 2"           = "eastus2"
     "Central US"          = "centralus"
@@ -34,24 +30,24 @@ locals {
     "Canada Central"      = "canadacentral"
     "Canada East"         = "canadaeast"
     "Brazil South"        = "brazilsouth"
-    "Brazil Southeast"    = "brazilsoutheast"    
+    "Brazil Southeast"    = "brazilsoutheast"
     "North Europe"        = "northeurope"
     "West Europe"         = "westeurope"
     "France Central"      = "francecentral"
     "France South"        = "francesouth"
     "Germany West Central"= "germanywestcentral"
-    "Germany North"       = "germanynorth"       
+    "Germany North"       = "germanynorth"
     "Sweden Central"      = "swedencentral"
     "UK South"            = "uksouth"
     "UK West"             = "ukwest"
     "Norway East"         = "norwayeast"
-    "Norway West"         = "norwaywest"          
+    "Norway West"         = "norwaywest"
     "Switzerland North"   = "switzerlandnorth"
     "Switzerland West"    = "switzerlandwest"
     "UAE North"           = "uaenorth"
-    "UAE Central"         = "uaecentral"         
+    "UAE Central"         = "uaecentral"
     "South Africa North"  = "southafricanorth"
-    "South Africa West"   = "southafricawest"    
+    "South Africa West"   = "southafricawest"
     "East Asia"           = "eastasia"
     "Southeast Asia"      = "southeastasia"
     "Japan East"          = "japaneast"
@@ -65,67 +61,12 @@ locals {
     "Australia Southeast" = "australiasoutheast"
     "Australia Central"   = "australiacentral"
     "Australia Central 2" = "australiacentral2"
-    "Chile Central"       = "chilecentral"       
-
-    # Backward-compatible: programmatic names directly
-    "eastus"            = "eastus"
-    "eastus2"           = "eastus2"
-    "centralus"         = "centralus"
-    "northcentralus"    = "northcentralus"
-    "southcentralus"    = "southcentralus"
-    "westus"            = "westus"
-    "westus2"           = "westus2"
-    "westus3"           = "westus3"
-    "westcentralus"     = "westcentralus"
-    "canadacentral"     = "canadacentral"
-    "canadaeast"        = "canadaeast"
-    "brazilsouth"       = "brazilsouth"
-    "brazilsoutheast"   = "brazilsoutheast"
-    "northeurope"       = "northeurope"
-    "westeurope"        = "westeurope"
-    "francecentral"     = "francecentral"
-    "francesouth"       = "francesouth"
-    "germanywestcentral"= "germanywestcentral"
-    "germanynorth"      = "germanynorth"
-    "swedencentral"     = "swedencentral"
-    "uksouth"           = "uksouth"
-    "ukwest"            = "ukwest"
-    "norwayeast"        = "norwayeast"
-    "norwaywest"        = "norwaywest"
-    "switzerlandnorth"  = "switzerlandnorth"
-    "switzerlandwest"   = "switzerlandwest"
-    "uaenorth"          = "uaenorth"
-    "uaecentral"        = "uaecentral"
-    "southafricanorth"  = "southafricanorth"
-    "southafricawest"   = "southafricawest"
-    "eastasia"          = "eastasia"
-    "southeastasia"     = "southeastasia"
-    "japaneast"         = "japaneast"
-    "japanwest"         = "japanwest"
-    "koreacentral"      = "koreacentral"
-    "koreasouth"        = "koreasouth"
-    "centralindia"      = "centralindia"
-    "southindia"        = "southindia"
-    "westindia"         = "westindia"
-    "australiaeast"     = "australiaeast"
-    "australiasoutheast"= "australiasoutheast"
-    "australiacentral"  = "australiacentral"
-    "australiacentral2" = "australiacentral2"
-    "chilecentral"      = "chilecentral"
+    "Chile Central"       = "chilecentral"
   }
 
   confluent_region = lookup(local.region_mapping, var.cloud_region, var.cloud_region)
-  
-  # Determine model prefix based on region for AWS Bedrock
-  model_prefix = length(regexall("^us-", var.cloud_region)) > 0 ? "us" : (length(regexall("^eu-", var.cloud_region)) > 0 ? "eu" : "apac")
+  cloud_provider = upper(var.cloud_provider)
 }
-
-
-
-# ------------------------------------------------------
-# ENVIRONMENT
-# ------------------------------------------------------
-
 
 resource "confluent_environment" "staging" {
   display_name = "${var.prefix}-env-${random_id.resource_suffix.hex}"
@@ -134,10 +75,6 @@ resource "confluent_environment" "staging" {
     package = "ADVANCED"
   }
 }
-
-# ------------------------------------------------------
-# KAFKA Cluster
-# ------------------------------------------------------
 
 data "confluent_schema_registry_cluster" "sr-cluster" {
   environment {
@@ -149,8 +86,6 @@ data "confluent_schema_registry_cluster" "sr-cluster" {
   ]
 }
 
-# Update the config to use a cloud provider and region of your choice.
-# https://registry.terraform.io/providers/confluentinc/confluent/latest/docs/resources/confluent_kafka_cluster
 resource "confluent_kafka_cluster" "standard" {
   display_name = "${var.prefix}-cluster-${random_id.resource_suffix.hex}"
   availability = "SINGLE_ZONE"
@@ -162,10 +97,6 @@ resource "confluent_kafka_cluster" "standard" {
   }
 }
 
-# ------------------------------------------------------
-# SERVICE ACCOUNTS
-# ------------------------------------------------------
-
 resource "confluent_service_account" "app-manager" {
   display_name = "${var.prefix}-app-manager-${random_id.resource_suffix.hex}"
   description  = "Service account to manage 'inventory' Kafka cluster"
@@ -174,13 +105,8 @@ resource "confluent_service_account" "app-manager" {
 resource "confluent_role_binding" "app-manager-kafka-cluster-admin" {
   principal   = "User:${confluent_service_account.app-manager.id}"
   role_name   = "EnvironmentAdmin"
-  crn_pattern = confluent_environment.staging.resource_name  
+  crn_pattern = confluent_environment.staging.resource_name
 }
-
-
-# ------------------------------------------------------
-# Flink Compute Pool
-# ------------------------------------------------------
 
 resource "confluent_flink_compute_pool" "flinkpool-main" {
   display_name     = "${var.prefix}_standard_compute_pool_${random_id.resource_suffix.hex}"
@@ -191,10 +117,6 @@ resource "confluent_flink_compute_pool" "flinkpool-main" {
     id = confluent_environment.staging.id
   }
 }
-
-# ------------------------------------------------------
-# API Keys
-# ------------------------------------------------------
 
 resource "confluent_api_key" "app-manager-kafka-api-key" {
   display_name = "app-manager-kafka-api-key"
@@ -219,7 +141,6 @@ resource "confluent_api_key" "app-manager-kafka-api-key" {
     confluent_role_binding.app-manager-kafka-cluster-admin
   ]
 }
-
 
 resource "confluent_api_key" "app-manager-schema-registry-api-key" {
   display_name = "env-manager-schema-registry-api-key"
@@ -249,10 +170,6 @@ data "confluent_flink_region" "demo_flink_region" {
   region  = local.confluent_region
 }
 
-
-
-# Flink management API Keys
-
 resource "confluent_api_key" "app-manager-flink-api-key" {
   display_name = "env-manager-flink-api-key"
   description  = "Flink API Key that is owned by 'env-manager' service account"
@@ -273,20 +190,7 @@ resource "confluent_api_key" "app-manager-flink-api-key" {
   }
 }
 
-
-# ------------------------------------------------------
-# Flink Connection
-# ------------------------------------------------------
-
-# Data sources for Flink connection
 data "confluent_organization" "main" {}
-
-# ------------------------------------------------------
-# ACLS
-# ------------------------------------------------------
-
-
-
 
 resource "confluent_kafka_acl" "app-manager-read-on-topic" {
   kafka_cluster {
@@ -323,7 +227,6 @@ resource "confluent_kafka_acl" "app-manager-describe-on-cluster" {
     secret = confluent_api_key.app-manager-kafka-api-key.secret
   }
 }
-
 
 resource "confluent_kafka_acl" "app-manager-write-on-topic" {
   kafka_cluster {
@@ -378,6 +281,3 @@ resource "confluent_kafka_acl" "app-manager-read-on-group" {
     secret = confluent_api_key.app-manager-kafka-api-key.secret
   }
 }
-
-
-
