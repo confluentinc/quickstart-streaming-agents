@@ -74,6 +74,10 @@ resource "confluent_environment" "staging" {
   stream_governance {
     package = "ADVANCED"
   }
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 data "confluent_schema_registry_cluster" "sr-cluster" {
@@ -95,11 +99,19 @@ resource "confluent_kafka_cluster" "standard" {
   environment {
     id = confluent_environment.staging.id
   }
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "confluent_service_account" "app-manager" {
   display_name = "${var.prefix}-app-manager-${random_id.resource_suffix.hex}"
   description  = "Service account to manage 'inventory' Kafka cluster"
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "confluent_role_binding" "app-manager-kafka-cluster-admin" {
@@ -115,6 +127,10 @@ resource "confluent_flink_compute_pool" "flinkpool-main" {
   max_cfu          = 20
   environment {
     id = confluent_environment.staging.id
+  }
+
+  lifecycle {
+    prevent_destroy = true
   }
 }
 
@@ -280,4 +296,187 @@ resource "confluent_kafka_acl" "app-manager-read-on-group" {
     key    = confluent_api_key.app-manager-kafka-api-key.id
     secret = confluent_api_key.app-manager-kafka-api-key.secret
   }
+}
+
+# ------------------------------------------------------
+# LLM INFRASTRUCTURE - SHARED ACROSS ALL LABS
+# ------------------------------------------------------
+
+# AWS AI Services Module (conditional based on cloud provider)
+module "aws_ai_services" {
+  source = "../modules/aws-ai"
+  count  = lower(var.cloud_provider) == "aws" ? 1 : 0
+
+  prefix                         = var.prefix
+  cloud_region                  = var.cloud_region
+  random_id                     = random_id.resource_suffix.hex
+  model_prefix                  = "core"
+  confluent_organization_id     = data.confluent_organization.main.id
+  confluent_environment_id      = confluent_environment.staging.id
+  confluent_compute_pool_id     = confluent_flink_compute_pool.flinkpool-main.id
+  confluent_service_account_id  = confluent_service_account.app-manager.id
+  confluent_flink_rest_endpoint = data.confluent_flink_region.demo_flink_region.rest_endpoint
+  confluent_flink_api_key_id    = confluent_api_key.app-manager-flink-api-key.id
+  confluent_flink_api_key_secret = confluent_api_key.app-manager-flink-api-key.secret
+}
+
+# Azure AI Services Module (conditional based on cloud provider)
+module "azure_ai_services" {
+  source = "../modules/azure-ai"
+  count  = lower(var.cloud_provider) == "azure" ? 1 : 0
+
+  prefix                         = var.prefix
+  cloud_region                  = var.cloud_region
+  random_id                     = random_id.resource_suffix.hex
+  confluent_organization_id     = data.confluent_organization.main.id
+  confluent_environment_id      = confluent_environment.staging.id
+  confluent_compute_pool_id     = confluent_flink_compute_pool.flinkpool-main.id
+  confluent_service_account_id  = confluent_service_account.app-manager.id
+  confluent_flink_rest_endpoint = data.confluent_flink_region.demo_flink_region.rest_endpoint
+  confluent_flink_api_key_id    = confluent_api_key.app-manager-flink-api-key.id
+  confluent_flink_api_key_secret = confluent_api_key.app-manager-flink-api-key.secret
+}
+
+# Core LLM Model - Text Generation (AWS)
+resource "confluent_flink_statement" "llm_textgen_model_aws" {
+  count = lower(var.cloud_provider) == "aws" ? 1 : 0
+
+  organization {
+    id = data.confluent_organization.main.id
+  }
+  environment {
+    id = confluent_environment.staging.id
+  }
+  compute_pool {
+    id = confluent_flink_compute_pool.flinkpool-main.id
+  }
+  principal {
+    id = confluent_service_account.app-manager.id
+  }
+  rest_endpoint = data.confluent_flink_region.demo_flink_region.rest_endpoint
+  credentials {
+    key    = confluent_api_key.app-manager-flink-api-key.id
+    secret = confluent_api_key.app-manager-flink-api-key.secret
+  }
+
+  statement = "CREATE MODEL `${confluent_environment.staging.display_name}`.`${confluent_kafka_cluster.standard.display_name}`.`llm_textgen_model` INPUT (prompt STRING) OUTPUT (response STRING) WITH ( 'provider' = 'bedrock', 'task' = 'text_generation', 'bedrock.connection' = 'llm-textgen-connection', 'bedrock.model_version' = '2024-02-29', 'bedrock.params.max_tokens' = '4096' );"
+
+  properties = {
+    "sql.current-catalog"  = confluent_environment.staging.display_name
+    "sql.current-database" = "default"
+  }
+
+  lifecycle {
+    prevent_destroy = true
+  }
+
+  depends_on = [module.aws_ai_services]
+}
+
+# Core LLM Model - Text Generation (Azure)
+resource "confluent_flink_statement" "llm_textgen_model_azure" {
+  count = lower(var.cloud_provider) == "azure" ? 1 : 0
+
+  organization {
+    id = data.confluent_organization.main.id
+  }
+  environment {
+    id = confluent_environment.staging.id
+  }
+  compute_pool {
+    id = confluent_flink_compute_pool.flinkpool-main.id
+  }
+  principal {
+    id = confluent_service_account.app-manager.id
+  }
+  rest_endpoint = data.confluent_flink_region.demo_flink_region.rest_endpoint
+  credentials {
+    key    = confluent_api_key.app-manager-flink-api-key.id
+    secret = confluent_api_key.app-manager-flink-api-key.secret
+  }
+
+  statement = "CREATE MODEL `${confluent_environment.staging.display_name}`.`${confluent_kafka_cluster.standard.display_name}`.`llm_textgen_model` INPUT (prompt STRING) OUTPUT (response STRING) WITH( 'provider' = 'azureopenai', 'task' = 'text_generation', 'azureopenai.connection' = 'llm-textgen-connection', 'azureopenai.model_version' = '2024-08-06' );"
+
+  properties = {
+    "sql.current-catalog"  = confluent_environment.staging.display_name
+    "sql.current-database" = "default"
+  }
+
+  lifecycle {
+    prevent_destroy = true
+  }
+
+  depends_on = [module.azure_ai_services]
+}
+
+# Core LLM Model - Embedding (AWS)
+resource "confluent_flink_statement" "llm_embedding_model_aws" {
+  count = lower(var.cloud_provider) == "aws" ? 1 : 0
+
+  organization {
+    id = data.confluent_organization.main.id
+  }
+  environment {
+    id = confluent_environment.staging.id
+  }
+  compute_pool {
+    id = confluent_flink_compute_pool.flinkpool-main.id
+  }
+  principal {
+    id = confluent_service_account.app-manager.id
+  }
+  rest_endpoint = data.confluent_flink_region.demo_flink_region.rest_endpoint
+  credentials {
+    key    = confluent_api_key.app-manager-flink-api-key.id
+    secret = confluent_api_key.app-manager-flink-api-key.secret
+  }
+
+  statement = "CREATE MODEL `${confluent_environment.staging.display_name}`.`${confluent_kafka_cluster.standard.display_name}`.`llm_embedding_model` INPUT (text STRING) OUTPUT (embedding ARRAY<FLOAT>) WITH ( 'provider' = 'bedrock', 'task' = 'embedding', 'bedrock.connection' = 'llm-embedding-connection' );"
+
+  properties = {
+    "sql.current-catalog"  = confluent_environment.staging.display_name
+    "sql.current-database" = "default"
+  }
+
+  lifecycle {
+    prevent_destroy = true
+  }
+
+  depends_on = [module.aws_ai_services]
+}
+
+# Core LLM Model - Embedding (Azure)
+resource "confluent_flink_statement" "llm_embedding_model_azure" {
+  count = lower(var.cloud_provider) == "azure" ? 1 : 0
+
+  organization {
+    id = data.confluent_organization.main.id
+  }
+  environment {
+    id = confluent_environment.staging.id
+  }
+  compute_pool {
+    id = confluent_flink_compute_pool.flinkpool-main.id
+  }
+  principal {
+    id = confluent_service_account.app-manager.id
+  }
+  rest_endpoint = data.confluent_flink_region.demo_flink_region.rest_endpoint
+  credentials {
+    key    = confluent_api_key.app-manager-flink-api-key.id
+    secret = confluent_api_key.app-manager-flink-api-key.secret
+  }
+
+  statement = "CREATE MODEL `${confluent_environment.staging.display_name}`.`${confluent_kafka_cluster.standard.display_name}`.`llm_embedding_model` INPUT (text STRING) OUTPUT (embedding ARRAY<FLOAT>) WITH( 'provider' = 'azureopenai', 'task' = 'embedding', 'azureopenai.connection' = 'llm-embedding-connection' );"
+
+  properties = {
+    "sql.current-catalog"  = confluent_environment.staging.display_name
+    "sql.current-database" = "default"
+  }
+
+  # lifecycle {
+  #   prevent_destroy = true
+  # }
+
+  depends_on = [module.azure_ai_services]
 }

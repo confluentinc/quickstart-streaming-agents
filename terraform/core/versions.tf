@@ -3,6 +3,7 @@ terraform {
   required_providers {
     confluent = {
       source = "confluentinc/confluent"
+      version = "~> 2.38"
     }
     random = {
       source  = "hashicorp/random"
@@ -10,11 +11,11 @@ terraform {
     }
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 5.0"
+      version = "~> 6.12"
     }
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 3.0"
+      version = "~> 4.44"
     }
   }
 }
@@ -28,12 +29,16 @@ provider "confluent" {
 # Random Provider Configuration
 provider "random" {}
 
-# AWS Provider Configuration
+# AWS Provider Configuration (conditional)
 provider "aws" {
-  region = var.cloud_region
+  region = lower(var.cloud_provider) == "aws" ? var.cloud_region : "us-east-1"
+  skip_region_validation = lower(var.cloud_provider) != "aws"
+  skip_credentials_validation = lower(var.cloud_provider) != "aws"
+  skip_requesting_account_id = lower(var.cloud_provider) != "aws"
 }
 
-# Azure Provider Configuration
+# Azure Provider Configuration (conditional)
 provider "azurerm" {
   features {}
+  subscription_id = lower(var.cloud_provider) == "azure" ? var.azure_subscription_id : null
 }

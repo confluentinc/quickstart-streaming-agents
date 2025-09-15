@@ -48,13 +48,43 @@ resource "confluent_flink_connection" "bedrock_connection" {
     secret = var.confluent_flink_api_key_secret
   }
 
-  display_name = "${var.prefix}-bedrock-connection"
+  display_name = "llm-textgen-connection"
   type         = "BEDROCK"
   endpoint     = "https://bedrock-runtime.${var.cloud_region}.amazonaws.com/model/${var.model_prefix}.anthropic.claude-3-7-sonnet-20250219-v1:0/invoke"
   aws_access_key = aws_iam_access_key.bedrock_user_key.id
   aws_secret_key = aws_iam_access_key.bedrock_user_key.secret
 
   lifecycle {
-    prevent_destroy = false
+    prevent_destroy = true
+  }
+}
+
+resource "confluent_flink_connection" "bedrock_embedding_connection" {
+  organization {
+    id = var.confluent_organization_id
+  }
+  environment {
+    id = var.confluent_environment_id
+  }
+  compute_pool {
+    id = var.confluent_compute_pool_id
+  }
+  principal {
+    id = var.confluent_service_account_id
+  }
+  rest_endpoint = var.confluent_flink_rest_endpoint
+  credentials {
+    key    = var.confluent_flink_api_key_id
+    secret = var.confluent_flink_api_key_secret
+  }
+
+  display_name = "llm-embedding-connection"
+  type         = "BEDROCK"
+  endpoint     = "https://bedrock-runtime.${var.cloud_region}.amazonaws.com/model/amazon.titan-embed-text-v1/invoke"
+  aws_access_key = aws_iam_access_key.bedrock_user_key.id
+  aws_secret_key = aws_iam_access_key.bedrock_user_key.secret
+
+  lifecycle {
+    prevent_destroy = true
   }
 }

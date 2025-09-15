@@ -6,15 +6,19 @@ output "confluent_kafka_cluster_id" {
   value = confluent_kafka_cluster.standard.id
 }
 
-output "confluent_kafka_bootstrap_endpoint" {
+output "confluent_kafka_cluster_bootstrap_endpoint" {
   value = confluent_kafka_cluster.standard.bootstrap_endpoint
+}
+
+output "confluent_kafka_cluster_rest_endpoint" {
+  value = confluent_kafka_cluster.standard.rest_endpoint
 }
 
 output "confluent_schema_registry_id" {
   value = data.confluent_schema_registry_cluster.sr-cluster.id
 }
 
-output "confluent_schema_registry_endpoint" {
+output "confluent_schema_registry_rest_endpoint" {
   value = data.confluent_schema_registry_cluster.sr-cluster.rest_endpoint
 }
 
@@ -54,4 +58,36 @@ output "app_manager_flink_api_key" {
 output "app_manager_flink_api_secret" {
   value = confluent_api_key.app-manager-flink-api-key.secret
   sensitive = true
+}
+
+output "confluent_organization_id" {
+  value = data.confluent_organization.main.id
+}
+
+output "confluent_flink_rest_endpoint" {
+  value = data.confluent_flink_region.demo_flink_region.rest_endpoint
+}
+
+output "confluent_cloud_api_key" {
+  value = var.confluent_cloud_api_key
+  sensitive = true
+}
+
+output "confluent_cloud_api_secret" {
+  value = var.confluent_cloud_api_secret
+  sensitive = true
+}
+
+output "azure_subscription_id" {
+  value = var.azure_subscription_id
+}
+
+output "llm_connection_name" {
+  value = lower(var.cloud_provider) == "aws" ? module.aws_ai_services[0].flink_connection_name : module.azure_ai_services[0].flink_connection_name
+  description = "The name of the LLM connection (llm-textgen-connection)"
+}
+
+output "llm_embedding_connection_name" {
+  value = lower(var.cloud_provider) == "aws" ? module.aws_ai_services[0].flink_embedding_connection_name : module.azure_ai_services[0].flink_embedding_connection_name
+  description = "The name of the LLM embedding connection (llm-embedding-connection)"
 }

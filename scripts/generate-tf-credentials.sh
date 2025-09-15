@@ -3,9 +3,10 @@
 set -e
 
 # This script creates a dedicated service account and an API key for Terraform,
-# and automatically writes them to a terraform.tfvars file for the first lab.
+# and automatically writes them to the core terraform.tfvars file and a markdown reference file.
 
-TFVARS_FILE="terraform/labs/lab1-streaming-agents/terraform.tfvars"
+TFVARS_FILE="terraform/core/terraform.tfvars"
+CREDENTIALS_MD_FILE="confluent_api_keys.md"
 
 # 1. Check for or create a Service Account
 echo "Checking for service account 'TerraformAdminSA'..."
@@ -45,13 +46,52 @@ if [ ${#API_KEY} -lt 16 ] || [ ${#API_SECRET} -lt 16 ]; then
     exit 1
 fi
 
-# 4. Write the credentials to the terraform.tfvars file
-echo "Writing credentials to $TFVARS_FILE..."
+# 4. Update the credentials in the terraform.tfvars file
+echo "Updating credentials in $TFVARS_FILE..."
 
-cat > "$TFVARS_FILE" << EOL
-confluent_cloud_api_key    = "$API_KEY"
-confluent_cloud_api_secret = "$API_SECRET"
+if [ ! -f "$TFVARS_FILE" ]; then
+    echo "Error: $TFVARS_FILE not found. Please ensure the terraform configuration exists."
+    exit 1
+fi
+
+# Create a backup
+cp "$TFVARS_FILE" "$TFVARS_FILE.backup"
+
+# Update the API key and secret in the existing file
+sed -i.tmp "s/^confluent_cloud_api_key[[:space:]]*=.*$/confluent_cloud_api_key = \"$API_KEY\"/" "$TFVARS_FILE"
+sed -i.tmp "s/^confluent_cloud_api_secret[[:space:]]*=.*$/confluent_cloud_api_secret = \"$API_SECRET\"/" "$TFVARS_FILE"
+
+# Remove the temporary file created by sed
+rm -f "$TFVARS_FILE.tmp"
+
+echo "✅ Updated existing terraform.tfvars with new API credentials"
+
+# 5. Write the credentials to the markdown file for reference
+echo "Writing credentials to $CREDENTIALS_MD_FILE..."
+
+cat > "$CREDENTIALS_MD_FILE" << EOL
+# Confluent Cloud API Keys
+
+## Service Account Information
+- **Service Account ID**: $SERVICE_ACCOUNT_ID
+- **Service Account Name**: TerraformAdminSA
+- **Role**: OrganizationAdmin
+
+## API Credentials
+- **API Key**: $API_KEY
+- **API Secret**: $API_SECRET
+
+## Usage
+These credentials have been automatically written to:
+- \`$TFVARS_FILE\` (for Terraform automation)
+- \`$CREDENTIALS_MD_FILE\` (for reference)
+
+> **Security Note**: Keep these credentials secure. The API Secret provides full access to your Confluent Cloud organization.
+
+Generated on: $(date)
 EOL
 
-echo "✅ Success! Credentials have been written to $TFVARS_FILE"
+echo "✅ Success! Credentials have been written to:"
+echo "  - $TFVARS_FILE (for Terraform)"
+echo "  - $CREDENTIALS_MD_FILE (for reference)"
 echo "You are now ready to run Terraform."
