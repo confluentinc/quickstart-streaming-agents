@@ -163,12 +163,12 @@ We have great news! We found a better price for your recent purchase and have au
    • Product: ', scp.product_name, '
 
 💰 PRICE MATCH DETAILS:
-   • Original Price: $', order_price, '
-   • Competitor Price Found: $', competitor_price, '
-   • Your Savings: $', savings, '
+   • Original Price: $', CAST(CAST(scp.order_price AS DECIMAL(10, 2)) AS STRING), '
+   • Competitor Price Found: $', CAST(CAST(scp.competitor_price AS DECIMAL(10, 2)) AS STRING), '
+   • Your Savings: $', CAST(CAST((scp.order_price - scp.competitor_price) AS DECIMAL(10, 2)) AS STRING), '
 
 ✅ ACTION TAKEN:
-We have processed a price match refund of $', savings, 
+We have processed a price match refund of $', CAST(CAST((scp.order_price - scp.competitor_price) AS DECIMAL(10, 2)) AS STRING), 
 ' back to your original payment method. You should see this credit within 3-5 business days.
 
 🛒 WHY WE DO THIS:
