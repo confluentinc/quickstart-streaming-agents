@@ -1,0 +1,56 @@
+---
+source_url: https://docs.confluent.io/cloud/current/flink/reference/statements/reset.html
+title: SQL RESET Statement in Confluent Cloud for Apache Flink
+hierarchy: ['reference', 'statements', 'reset.html']
+scraped_date: 2025-09-05T13:48:59.795849
+---
+
+# RESET Statement in Confluent Cloud for Apache Flink¶
+
+Confluent Cloud for Apache Flink® enables resetting Flink SQL shell properties to default values.
+
+## Syntax¶
+
+    RESET 'key';
+
+## Description¶
+
+Reset the Flink SQL shell configuration to the default settings.
+
+If no key is specified, all properties are set to their default values.
+
+To assign a session property, use the [SET Statement in Confluent Cloud for Apache Flink](set.html#flink-sql-set-statement).
+
+## Example¶
+
+The following examples show how to run a `RESET` statement in the Flink SQL shell.
+
+    RESET 'table.local-time-zone';
+
+Your output should resemble:
+
+    configuration key "table.local-time-zone" has been reset successfully.
+    +------------------------+---------------------+
+    |          Key           |        Value        |
+    +------------------------+---------------------+
+    | client.service-account | <unset> (default)   |
+    | sql.local-time-zone    | GMT+02:00 (default) |
+    +------------------------+---------------------+
+
+    RESET;
+
+    configuration has been reset successfully.
+    +------------------------+---------------------+
+    |          Key           |        Value        |
+    +------------------------+---------------------+
+    | client.service-account | <unset> (default)   |
+    | sql.local-time-zone    | GMT+02:00 (default) |
+    +------------------------+---------------------+
+
+## Related content¶
+
+  * [SET Statement in Confluent Cloud for Apache Flink](set.html#flink-sql-set-statement)
+
+Note
+
+This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

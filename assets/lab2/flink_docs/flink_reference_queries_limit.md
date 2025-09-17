@@ -1,0 +1,63 @@
+---
+source_url: https://docs.confluent.io/cloud/current/flink/reference/queries/limit.html
+title: SQL LIMIT clause in Confluent Cloud for Apache Flink
+hierarchy: ['reference', 'queries', 'limit.html']
+scraped_date: 2025-09-05T13:50:01.957418
+---
+
+# LIMIT Clause in Confluent Cloud for Apache Flink¶
+
+Confluent Cloud for Apache Flink® enables constraining the number of rows returned by a SELECT statement.
+
+## Description¶
+
+The `LIMIT` clause constrains the number of rows returned by a `SELECT` statement.
+
+Usually, this clause is used in conjunction with ORDER BY to ensure that the results are deterministic.
+
+## Example¶
+
+In the Flink SQL shell or in a Cloud Console workspace, run the following commands to see an example of the LIMIT clause. The following example selects the first 3 rows from a web page clicks table.
+
+  1. Create a table for web page click events.
+         
+         -- Create a table for web page click events.
+         CREATE TABLE clicks (
+           ip_address VARCHAR,
+           url VARCHAR,
+           click_ts_raw BIGINT
+         );
+
+  2. Populate the table with mock clickstream data.
+         
+         -- Populate the table with mock clickstream data.
+         INSERT INTO clicks
+         VALUES( '10.0.0.1',  'https://acme.com/index.html',     1692812175),
+               ( '10.0.0.12', 'https://apache.org/index.html',   1692826575),
+               ( '10.0.0.13', 'https://confluent.io/index.html', 1692826575),
+               ( '10.0.0.1',  'https://acme.com/index.html',     1692812175),
+               ( '10.0.0.12', 'https://apache.org/index.html',   1692819375),
+               ( '10.0.0.13', 'https://confluent.io/index.html', 1692826575);
+
+Press ENTER to return to the SQL shell. Because INSERT INTO VALUES is a point-in-time statement, it exits after it completes inserting records.
+
+  3. View the rows in the `clicks` table and limit the result to 3 rows.
+         
+         SELECT * FROM clicks LIMIT 3;
+
+Your output should resemble:
+         
+         ip_address url                             click_ts_raw
+         10.0.0.1   https://acme.com/index.html     1692812175
+         10.0.0.12  https://apache.org/index.html   1692826575
+         10.0.0.13  https://confluent.io/index.html 1692826575
+
+## Related content¶
+
+  * [Flink SQL Queries](overview.html#flink-sql-queries)
+  * [Flink SQL Functions](../functions/overview.html#flink-sql-functions-overview)
+  * [Statements](../statements/overview.html#flink-sql-statements-overview)
+
+Note
+
+This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

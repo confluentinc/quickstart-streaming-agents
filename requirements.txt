@@ -1,0 +1,9 @@
+# Python dependencies for quickstart-streaming-agents project
+
+# Kafka and Avro support for Flink docs publisher
+confluent-kafka[avro]==2.3.0
+
+# YAML parsing for document frontmatter
+PyYAML==6.0.1
+
+# Add other project dependencies here as needed

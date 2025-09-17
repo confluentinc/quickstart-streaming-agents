@@ -91,3 +91,13 @@ output "llm_embedding_connection_name" {
   value = lower(var.cloud_provider) == "aws" ? module.aws_ai_services[0].flink_embedding_connection_name : module.azure_ai_services[0].flink_embedding_connection_name
   description = "The name of the LLM embedding connection (llm-embedding-connection)"
 }
+
+output "confluent_environment_display_name" {
+  value = confluent_environment.staging.display_name
+  description = "The display name of the Confluent environment"
+}
+
+output "confluent_kafka_cluster_display_name" {
+  value = confluent_kafka_cluster.standard.display_name
+  description = "The display name of the Confluent Kafka cluster"
+}

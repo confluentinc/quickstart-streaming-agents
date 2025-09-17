@@ -1,0 +1,353 @@
+---
+source_url: https://docs.confluent.io/cloud/current/flink/reference/keywords.html
+title: Flink SQL Keywords in Confluent Cloud for Apache Flink
+hierarchy: ['reference', 'keywords.html']
+scraped_date: 2025-09-05T13:47:11.160167
+---
+
+# Flink SQL Reserved Keywords in Confluent Cloud for Apache Flink¶
+
+Keywords are words that have significance in Confluent Cloud for Apache Flink®. Some keywords, like AND, CHAR, and SELECT are _reserved_ and require special treatment for use as identifiers like table names, column names, and the names of built-in functions.
+
+You can use reserved words as identifiers if you quote them with backtick characters. If you want to use one of the reserved words as a field name, enclose it with backticks, for example:
+
+    `DATABASES`
+    `RAW`
+
+You can use _nonreserved_ keywords as identifiers without enclosing them with backticks.
+
+In the following tables, reserved keywords are shown in **bold**.
+
+Some string combinations are reserved as keywords for future use.
+
+## Index¶
+
+A | B | C | D | E  
+---|---|---|---|---  
+F | G | H | I | J  
+K | L | M | N | O  
+P | Q | R | S | T  
+U | V | W | X | Y  
+Z |  |  |  |   
+  
+## A¶
+
+A | **ABS** | ABSENT | ABSOLUTE | ACTION  
+---|---|---|---|---  
+ADA | ADD | ADMIN | AFTER | **ALL**  
+**ALLOCATE** | **ALLOW** | **ALTER** | ALWAYS | **AND**  
+**ANALYZE** | **ANY** | APPLY | **ARE** | **ARRAY**  
+ARRAY_AGG | ARRAY_CONCAT_AGG | **ARRAY_MAX_CARDINALITY** | **AS** | ASC  
+**ASENSITIVE** | ASSERTION | ASSIGNMENT | **ASYMMETRIC** | **AT**  
+**ATOMIC** | ATTRIBUTE | ATTRIBUTES | **AUTHORIZATION** | **AVG**  
+  
+## B¶
+
+BEFORE | **BEGIN** | **BEGIN_FRAME** | **BEGIN_PARTITION** | BERNOULLI  
+---|---|---|---|---  
+**BETWEEN** | **BIGINT** | **BINARY** | **BIT** | **BLOB**  
+**BOOLEAN** | **BOTH** | BREADTH | **BUCKETS** | **BY**  
+**BYTES** |  |  |  |   
+  
+## C¶
+
+C | **CALL** | **CALLED**  
+---|---|---  
+**CARDINALITY** | CASCADE | **CASCADED**  
+**CASE** | **CAST** | CATALOG  
+CATALOG_NAME | **CATALOGS** | **CEIL**  
+**CEILING** | CENTURY | CHAIN  
+**CHANGELOG_MODE** | **CHAR** | **CHARACTER**  
+CHARACTERISTICS | CHARACTERS | **CHARACTER_LENGTH**  
+CHARACTER_SET_CATALOG | CHARACTER_SET_NAME | CHARACTER_SET_SCHEMA  
+**CHAR_LENGTH** | **CHECK** | CLASS_ORIGIN  
+**CLASSIFIER** | **CLOB** | **CLOSE**  
+**COALESCE** | COBOL | **COLLATE**  
+COLLATION | COLLATION_CATALOG | COLLATION_NAME  
+COLLATION_SCHEMA | **COLLECT** | **COLUMN**  
+**COLUMNS** | COLUMN_NAME | COMMAND_FUNCTION  
+COMMAND_FUNCTION_CODE | **COMMENT** | **COMMIT**  
+COMMITTED | **COMPACT** | **COMPILE**  
+**COMPUTE** | **CONDITION** | CONDITION_NUMBER  
+CONDITIONAL | **CONNECT** | CONNECTION  
+CONNECTION_NAME | **CONSTRAINT** | CONSTRAINTS  
+CONSTRAINT_CATALOG | CONSTRAINT_NAME | CONSTRAINT_SCHEMA  
+CONSTRUCTOR | **CONTAINS** | CONTAINS_SUBSTR  
+CONTINUE | **CONTINUOUS** | **CONVERT**  
+**CORR** | **CORRESPONDING** | **COUNT**  
+**COVAR_POP** | **COVAR_SAMP** | **CREATE**  
+**CROSS** | **CUBE** | **CUME_DIST**  
+**CURRENT** | **CURRENT_CATALOG** | **CURRENT_DATE**  
+**CURRENT_DEFAULT_TRANSFORM_GROUP** | **CURRENT_PATH** | **CURRENT_ROLE**  
+**CURRENT_ROW** | **CURRENT_SCHEMA** | **CURRENT_TIME**  
+**CURRENT_TIMESTAMP** | **CURRENT_TRANSFORM_GROUP_FOR_TYPE** | **CURRENT_USER**  
+**CURSOR** | CURSOR_NAME | **CYCLE**  
+  
+## D¶
+
+DATA | DATABASE | **DATABASES** | **DATE**  
+---|---|---|---  
+DATE_DIFF | DATE_TRUNC | **DATETIME** | DATETIME_DIFF  
+DATETIME_INTERVAL_CODE | DATETIME_INTERVAL_PRECISION | **DAY** | DAYOFWEEK  
+DAYS | DAYOFYEAR | DATETIME_TRUNC | **DEALLOCATE**  
+**DEC** | DECADE | **DECIMAL** | **DECLARE**  
+**DEFAULT** | DEFAULTS | DEFERRABLE | DEFERRED  
+**DEFINE** | DEFINED | DEFINER | DEGREE  
+**DELETE** | **DENSE_RANK** | DEPTH | **DEREF**  
+DERIVED | DESC | **DESCRIBE** | DESCRIPTION  
+DESCRIPTOR | **DETERMINISTIC** | DIAGNOSTICS | **DISALLOW**  
+**DISCONNECT** | DISPATCH | **DISTINCT** | **DISTRIBUTED**  
+**DISTRIBUTION** | DOMAIN | DOT | **DOUBLE**  
+DOW | DOY | **DRAIN** | **DROP**  
+**DYNAMIC** | DYNAMIC_FUNCTION | DYNAMIC_FUNCTION_CODE |    
+
+## E¶
+
+**EACH** | **ELEMENT** | **ELSE** | **EMPTY** | ENCODING  
+---|---|---|---|---  
+**END** | **END-EXEC** | **END_FRAME** | **END_PARTITION** | **ENFORCED**  
+EPOCH | **EQUALS** | ERROR | **ESCAPE** | **ESTIMATED_COST**  
+**EVERY** | **EXCEPT** | EXCEPTION | EXCLUDE | EXCLUDING  
+**EXEC** | **EXECUTE** | **EXISTS** | **EXP** | **EXPLAIN**  
+**EXTEND** | **EXTENDED** | **EXTERNAL** | **EXTRACT** |   
+  
+## F¶
+
+**FALSE** | **FETCH** | **FILTER** | FINAL | FIRST  
+---|---|---|---|---  
+**FIRST_VALUE** | **FLOAT** | **FLOOR** | FOLLOWING | **FOR**  
+**FOREIGN** | FORMAT | FORTRAN | FOUND | FRAC_SECOND  
+**FRAME_ROW** | **FREE** | **FRESHNESS** | **FRIDAY** | **FROM**  
+**FULL** | **FUNCTION** | **FUNCTIONS** | **FUSION** |   
+  
+## G¶
+
+G | GENERAL | GENERATED | GEOMETRY | **GET**  
+---|---|---|---|---  
+**GLOBAL** | GO | GOTO | **GRANT** | GRANTED  
+**GROUP** | **GROUPING** | **GROUPS** | GROUP_CONCAT |   
+  
+## H¶
+
+**HAVING** | **HASH** | HIERARCHY | **HOLD** | HOP  
+---|---|---|---|---  
+**HOUR** | HOURS |  |  |   
+  
+## I¶
+
+**IDENTITY** | **IF** | IGNORE | IMMEDIATE | IMMEDIATELY  
+---|---|---|---|---  
+IMPLEMENTATION | ILIKE | **IMPORT** | **IN** | INCLUDE  
+INCLUDING | INCREMENT | **INDICATOR** | **INITIAL** | INITIALLY  
+**INNER** | **INOUT** | INPUT | **INSENSITIVE** | **INSERT**  
+INSTANCE | INSTANTIABLE | **INT** | **INTEGER** | **INTERSECT**  
+**INTERSECTION** | **INTERVAL** | **INTO** | INVOKER | **IS**  
+ISODOW | ISOLATION | ISOYEAR |  |   
+  
+## J¶
+
+**JAR** | **JARS** | JAVA | **JOB**  
+---|---|---|---  
+**JOBS** | **JOIN** | JSON | **JSON_ARRAY**  
+**JSON_ARRAYAGG** | **JSON_EXECUTION_PLAN** | **JSON_EXISTS** | **JSON_OBJECT**  
+**JSON_OBJECTAGG** | **JSON_QUERY** | **JSON_SCOPE** | **JSON_VALUE**  
+  
+## K¶
+
+K | KEY | KEY_MEMBER | KEY_TYPE  
+---|---|---|---  
+  
+## L¶
+
+LABEL | **LAG** | **LANGUAGE** | **LARGE** | LAST  
+---|---|---|---|---  
+**LAST_VALUE** | **LATERAL** | **LEAD** | **LEADING** | **LEFT**  
+LENGTH | LEVEL | LIBRARY | **LIKE** | **LIKE_REGEX**  
+**LIMIT** | **LN** | **LOAD** | **LOCAL** | **LOCALTIME**  
+**LOCALTIMESTAMP** | LOCATOR | **LOWER** |  |   
+  
+## M¶
+
+M | MAP | **MATCH** | MATCHED | **MATCHES**  
+---|---|---|---|---  
+**MATCH_NUMBER** | **MATCH_RECOGNIZE** | **MATERIALIZED** | **MAX** | MAXVALUE  
+**MEASURES** | **MEMBER** | **MERGE** | MESSAGE_LENGTH | MESSAGE_OCTET_LENGTH  
+MESSAGE_TEXT | **METADATA** | **METHOD** | MICROSECOND | MILLENNIUM  
+MILLISECOND | **MIN** | **MINUS** | **MINUTE** | MINUTES  
+MINUTE | MINVALUE | ML_PREDICT | **MOD** | **MODEL**  
+**MODELS** | **MODIFIES** | **MODIFY** | **MODULE** | **MODULES**  
+**MONDAY** | **MONTH** | MONTHS | MORE | **MULTISET**  
+MUMPS |  |  |  |   
+  
+## N¶
+
+NAME | NAMES | NANOSECOND | **NATIONAL** | **NATURAL** | **NCHAR**  
+---|---|---|---|---|---  
+**NCLOB** | NESTING | **NEW** | **NEXT** | **NO** | **NONE**  
+**NORMALIZE** | NORMALIZED | **NOT** | **NTH_VALUE** | **NTILE** | **NULL**  
+NULLABLE | **NULLIF** | NULLS | NUMBER | **NUMERIC** |   
+  
+## O¶
+
+OBJECT | **OCCURRENCES_REGEX** | OCTETS | **OCTET_LENGTH** | **OF**  
+---|---|---|---|---  
+**OFFSET** | **OLD** | **OMIT** | **ON** | **ONE**  
+**ONLY** | **OPEN** | OPTION | OPTIONS | **OR**  
+**ORDER** | ORDERING | **ORDINAL** | ORDINALITY | OTHERS  
+**OUT** | **OUTER** | OUTPUT | **OVER** | **OVERLAPS**  
+**OVERLAY** | OVERRIDING | **OVERWRITE** | **OVERWRITING** |   
+  
+## P¶
+
+PAD | **PARAMETER** | PARAMETER_MODE  
+---|---|---  
+PARAMETER_NAME | PARAMETER_ORDINAL_POSITION | PARAMETER_SPECIFIC_CATALOG  
+PARAMETER_SPECIFIC_NAME | PARAMETER_SPECIFIC_SCHEMA | PARTIAL  
+**PARTITION** | **PARTITIONED** | **PARTITIONS**  
+PASCAL | PASSING | PASSTHROUGH  
+PAST | PATH | **PATTERN**  
+**PER** | **PERCENT** | **PERCENTILE_CONT**  
+**PERCENTILE_DISC** | **PERCENT_RANK** | **PERIOD**  
+**PERMUTE** | PIVOT | PLACING  
+PLAN | **PLAN_ADVICE** | PLI  
+**PORTION** | **POSITION** | **POSITION_REGEX**  
+**POWER** | **PRECEDES** | PRECEDING  
+**PRECISION** | **PREPARE** | PRESERVE  
+**PREV** | **PRIMARY** | PRIOR  
+PRIVILEGES | **PROCEDURE** | **PROCEDURES**  
+PUBLIC | **PYTHON** |   
+  
+## Q¶
+
+**QUALIFY** | QUARTER | QUARTERS  
+---|---|---  
+  
+## R¶
+
+**RANGE** | **RANK** | **RAW** | READ  
+---|---|---|---  
+**READS** | **REAL** | **RECURSIVE** | **REF**  
+**REFERENCES** | **REFERENCING** | **REFRESH_MODE** | **REGR_AVGX**  
+**REGR_AVGY** | **REGR_COUNT** | **REGR_INTERCEPT** | **REGR_R2**  
+**REGR_SLOPE** | **REGR_SXX** | **REGR_SXY** | **REGR_SYY**  
+RELATIVE | **RELEASE** | **REMOVE** | **RENAME**  
+REPEATABLE | REPLACE | **RESET** | RESPECT  
+RESTART | RESTRICT | **RESULT** | **RETURN**  
+RETURNED_CARDINALITY | RETURNED_LENGTH | RETURNED_OCTET_LENGTH | RETURNED_SQLSTATE  
+RETURNING | **RETURNS** | **REVOKE** | **RIGHT**  
+RLIKE | ROLE | **ROLLBACK** | **ROLLUP**  
+ROUTINE | ROUTINE_CATALOG | ROUTINE_NAME |   
+ROUTINE_SCHEMA | **ROW** | **ROWS** | ROW_COUNT  
+**ROW_NUMBER** | **RUNNING** |  |   
+  
+## S¶
+
+**SAFE_CAST** | **SAFE_OFFSET** | **SAFE_ORDINAL**  
+---|---|---  
+**SATURDAY** | **SAVEPOINT** | **SCALA**  
+SCALAR | SCALE | SCHEMA  
+SCHEMA_NAME | **SCOPE** | SCOPE_CATALOGS  
+SCOPE_NAME | SCOPE_SCHEMA | **SCROLL**  
+**SEARCH** | **SECOND** | SECONDS  
+SECTION | SECURITY | **SEEK**  
+**SELECT** | SELF | **SENSITIVE**  
+SEPARATOR | SEQUENCE | SERIALIZABLE  
+SERVER | SERVER_NAME | SESSION  
+**SESSION_USER** | **SET** | SETS  
+**SHOW** | **SIMILAR** | SIMPLE  
+SIZE | **SKIP** | **SMALLINT**  
+**SOME** | SOURCE | SPACE  
+**SPECIFIC** | **SPECIFICTYPE** | SPECIFIC_NAME  
+**SQL** | **SQLEXCEPTION** | **SQLSTATE**  
+**SQLWARNING** | SQL_BIGINT | SQL_BINARY  
+SQL_BIT | SQL_BLOB | SQL_BOOLEAN  
+SQL_CHAR | SQL_CLOB | SQL_DATE  
+SQL_DECIMAL | SQL_DOUBLE | SQL_FLOAT  
+SQL_INTEGER | SQL_INTERVAL_DAY | SQL_INTERVAL_DAY_TO_HOUR  
+SQL_INTERVAL_DAY_TO_MINUTE | SQL_INTERVAL_DAY_TO_SECOND | SQL_INTERVAL_HOUR  
+SQL_INTERVAL_HOUR_TO_MINUTE | SQL_INTERVAL_HOUR_TO_SECOND | SQL_INTERVAL_MINUTE  
+SQL_INTERVAL_MINUTE_TO_SECOND | SQL_INTERVAL_MONTH | SQL_INTERVAL_SECOND  
+SQL_INTERVAL_YEAR | SQL_INTERVAL_YEAR_TO_MONTH | SQL_LONGVARBINARY  
+SQL_LONGVARCHAR | SQL_LONGVARNCHAR | SQL_NCHAR  
+SQL_NCLOB | SQL_NUMERIC | SQL_NVARCHAR  
+SQL_REAL | SQL_SMALLINT | SQL_TIME  
+SQL_TIMESTAMP | SQL_TINYINT | SQL_TSI_DAY  
+SQL_TSI_FRAC_SECOND | SQL_TSI_HOUR | SQL_TSI_MICROSECOND  
+SQL_TSI_MINUTE | SQL_TSI_MONTH | SQL_TSI_QUARTER  
+SQL_TSI_SECOND | SQL_TSI_WEEK | SQL_TSI_YEAR  
+SQL_VARBINARY | SQL_VARCHAR | **SQRT**  
+**START** | STATE | STATEMENT  
+**STATIC** | **STATISTICS** | **STDDEV_POP**  
+**STDDEV_SAMP** | **STOP** | **STREAM**  
+**STRING** | STRING_AGG | STRUCTURE  
+STYLE | SUBCLASS_ORIGIN | **SUBMULTISET**  
+**SUBSET** | SUBSTITUTE | **SUBSTRING**  
+**SUBSTRING_REGEX** | **SUCCEEDS** | **SUM**  
+**SUNDAY** | **SUSPEND** | **SYMMETRIC**  
+**SYSTEM** | **SYSTEM_TIME** | **SYSTEM_USER**  
+  
+## T¶
+
+**TABLE** | **TABLES** | **TABLESAMPLE** | TABLE_NAME  
+---|---|---|---  
+TEMPORARY | **THEN** | **THURSDAY** | TIES  
+**TIME** | **TIMESTAMP** | TIMESTAMP_DIFF | **TIMESTAMP_LTZ**  
+TIMESTAMP_TRUNC | TIMESTAMPADD | TIMESTAMPDIFF | **TIMEZONE_HOUR**  
+**TIMEZONE_MINUTE** | TIME_DIFF | TIME_TRUNC | **TINYINT**  
+**TO** | TOP_LEVEL_COUNT | **TRAILING** | TRANSACTION  
+TRANSACTIONS_ACTIVE | TRANSACTIONS_COMMITTED | TRANSACTIONS_ROLLED_BACK | TRANSFORM  
+TRANSFORMS | **TRANSLATE** | **TRANSLATE_REGEX** | **TRANSLATION**  
+**TREAT** | **TRIGGER** | TRIGGER_CATALOG | TRIGGER_NAME  
+TRIGGER_SCHEMA | **TRIM** | **TRIM_ARRAY** | **TRUE**  
+**TRUNCATE** | **TRY_CAST** | **TUESDAY** | TUMBLE  
+TYPE |  |  |   
+  
+## U¶
+
+**UESCAPE** | UNBOUNDED | UNCOMMITTED | UNCONDITIONAL  
+---|---|---|---  
+UNDER | **UNION** | **UNIQUE** | **UNKNOWN**  
+**UNLOAD** | UNNAMED | **UNNEST** | UNPIVOT  
+**UPDATE** | **UPPER** | **UPSERT** | USAGE  
+**USE** | **USER** | USER_DEFINED_TYPE_CATALOG | USER_DEFINED_TYPE_CODE  
+USER_DEFINED_TYPE_NAME | USER_DEFINED_TYPE_SCHEMA | **USING** | UTF16  
+UTF32 | UTF8 |  |   
+  
+## V¶
+
+**VALUE** | **VALUES** | **VALUE_OF** | **VARBINARY** | **VARCHAR**  
+---|---|---|---|---  
+**VARYING** | **VAR_POP** | **VAR_SAMP** | VERSION | **VERSIONING**  
+VIEW | **VIEWS** | **VIRTUAL** |  |   
+  
+## W¶
+
+**WATERMARK** | **WATERMARKS** | **WEDNESDAY** | WEEK | WEEKS  
+---|---|---|---|---  
+**WHEN** | **WHENEVER** | **WHERE** | **WIDTH_BUCKET** | **WINDOW**  
+**WITH** | **WITHIN** | **WITHOUT** | WORK | WRAPPER  
+WRITE |  |  |  |   
+  
+## X¶
+
+XML  
+---  
+  
+## Y¶
+
+**YEAR** | YEARS  
+---|---  
+  
+## Z¶
+
+ZONE  
+---  
+  
+## Related content¶
+
+  * [DDL Statements](../concepts/statements.html#flink-sql-statements)
+  * [Flink SQL Queries](queries/overview.html#flink-sql-queries)
+
+Note
+
+This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).
