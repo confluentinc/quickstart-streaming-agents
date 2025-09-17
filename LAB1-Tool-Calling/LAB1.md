@@ -161,7 +161,6 @@ We have great news! We found a better price for your recent purchase and have au
 📦 ORDER DETAILS:
    • Order Number: #', scp.order_id, '
    • Product: ', scp.product_name, '
-   • Customer: ', scp.customer_email, '
 
 💰 PRICE MATCH DETAILS:
    • Original Price: $', order_price, '
