@@ -141,12 +141,13 @@ Start Agent 3 by running:
 ```sql
 -- Create and send professional email notifications for price matches
 CREATE TABLE price_match_email_results AS
-SELECT 
+SELECT
     scp.order_id,
     scp.customer_email,
     scp.product_name,
-    scp.order_price,
-    scp.competitor_price,
+    CAST(CAST(scp.order_price AS DECIMAL(10, 2)) AS STRING) as order_price,
+    CAST(CAST(scp.competitor_price AS DECIMAL(10, 2)) AS STRING) as competitor_price,
+    CAST(CAST((scp.order_price - scp.competitor_price) AS DECIMAL(10, 2)) AS STRING) as savings,
     AI_TOOL_INVOKE('zapier_mcp_model', 
                    CONCAT('Use the gmail_send_email tool to send an email. ',
                           'Instructions: send yourself an email to your own email address, ',
@@ -163,12 +164,12 @@ We have great news! We found a better price for your recent purchase and have au
    • Customer: ', scp.customer_email, '
 
 💰 PRICE MATCH DETAILS:
-   • Original Price: $', CAST(scp.order_price AS STRING), '
-   • Competitor Price Found: $', CAST(scp.competitor_price AS STRING), '
-   • Your Savings: $', CAST((scp.order_price - scp.competitor_price) AS STRING), '
+   • Original Price: $', order_price, '
+   • Competitor Price Found: $', competitor_price, '
+   • Your Savings: $', savings, '
 
 ✅ ACTION TAKEN:
-We have processed a price match refund of $', CAST((scp.order_price - scp.competitor_price) AS STRING), 
+We have processed a price match refund of $', savings, 
 ' back to your original payment method. You should see this credit within 3-5 business days.
 
 🛒 WHY WE DO THIS:
