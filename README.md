@@ -187,7 +187,7 @@ Fill out the values for `prefix`, `cloud_provider`, `cloud_region`, `confluent_c
 To enable **Claude 3.7 Sonnet** in your AWS account via Amazon Bedrock:
 
 1. Open the [Amazon Bedrock Console](https://console.aws.amazon.com/bedrock/home?/overview), make sure you are in the same region.
-2. In the left sidebar, under **Bedrock configuration**, click **Model access**.
+2. In the left sidebar, under **Configure and learn**, click **Model access**.
 3. Locate **Claude 3.7 Sonnet** in the list of available models.
 4. Click **Available to request**, then select **Request model access**.
 5. In the request wizard, click **Next** and follow the prompts to complete the request.
