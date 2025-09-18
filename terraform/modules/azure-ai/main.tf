@@ -69,9 +69,9 @@ resource "confluent_flink_connection" "azure_connection" {
   endpoint     = "${azurerm_cognitive_account.openai_account.endpoint}openai/deployments/${azurerm_cognitive_deployment.openai_deployment.name}/chat/completions?api-version=2025-01-01-preview"
   api_key      = azurerm_cognitive_account.openai_account.primary_access_key
 
-  lifecycle {
-    prevent_destroy = true
-  }
+  # lifecycle {
+  #   prevent_destroy = true
+  # }
 }
 
 resource "confluent_flink_connection" "azure_embedding_connection" {
@@ -98,7 +98,7 @@ resource "confluent_flink_connection" "azure_embedding_connection" {
   endpoint     = "${azurerm_cognitive_account.openai_account.endpoint}openai/deployments/${azurerm_cognitive_deployment.embedding_deployment.name}/embeddings?api-version=2023-05-15"
   api_key      = azurerm_cognitive_account.openai_account.primary_access_key
 
-  lifecycle {
-    prevent_destroy = true
-  }
+  # lifecycle {
+  #   prevent_destroy = true
+  # }
 }

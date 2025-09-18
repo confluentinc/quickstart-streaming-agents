@@ -41,8 +41,9 @@ terraform/terraform.tfvars.backup
 **/terraform.tfvars.reset-backup
 **/terraform.tfvars.backup
 
-# Confluent Cloud API keys markdown file (contains sensitive credentials)
+# Files with sensitive credentials
 confluent_api_keys.md
+mongodb_commands.txt
 
 # Python (if scripts are added)
 __pycache__/

@@ -11,6 +11,12 @@ resource "random_id" "lab_suffix" {
   byte_length = 4
 }
 
+# Local values for extracting components from MongoDB connection string
+locals {
+  # Extract hostname from mongodb+srv://hostname
+  mongodb_host = split("//", var.MONGODB_CONNECTION_STRING)[1]
+}
+
 # ------------------------------------------------------
 # AZURE-SPECIFIC RESOURCES FOR LAB2-VECTOR-SEARCH
 # ------------------------------------------------------
@@ -40,7 +46,7 @@ resource "confluent_flink_statement" "documents_table" {
     secret = data.terraform_remote_state.core.outputs.app_manager_flink_api_secret
   }
 
-  statement = "CREATE TABLE `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.documents ( document_id STRING, document_text STRING, PRIMARY KEY (document_id) NOT ENFORCED ) WITH ( 'changelog.mode' = 'upsert' );"
+  statement = "CREATE TABLE `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.documents ( document_id STRING, document_text STRING );"
 
   properties = {
     "sql.current-catalog"  = data.terraform_remote_state.core.outputs.confluent_environment_display_name
@@ -158,6 +164,45 @@ resource "confluent_flink_statement" "queries_embed_table" {
   depends_on = [confluent_flink_statement.queries_table]
 }
 
+# MongoDB Sink Connector for streaming documents_embed to MongoDB
+resource "confluent_connector" "mongodb_sink" {
+  environment {
+    id = data.terraform_remote_state.core.outputs.confluent_environment_id
+  }
+
+  kafka_cluster {
+    id = data.terraform_remote_state.core.outputs.confluent_kafka_cluster_id
+  }
+
+  config_sensitive = {
+    "connection.password" = var.mongodb_password
+    "kafka.api.key"       = data.terraform_remote_state.core.outputs.app_manager_kafka_api_key
+    "kafka.api.secret"    = data.terraform_remote_state.core.outputs.app_manager_kafka_api_secret
+  }
+
+  config_nonsensitive = {
+    "connector.class"                          = "MongoDbAtlasSink"
+    "name"                                    = "mongodb-sink"
+    "topics"                                  = "documents_embed"
+    "input.data.format"                       = "AVRO"
+    "connection.host"                         = local.mongodb_host
+    "connection.user"                         = var.mongodb_username
+    "database"                               = var.MONGODB_DATABASE
+    "collection"                             = var.MONGODB_COLLECTION
+    "tasks.max"                              = "1"
+    "value.converter.schemas.enable"          = "false"
+    "value.converter.decimal.format"          = "BASE64"
+    "max.num.retries"                        = "3"
+    "retries.defer.timeout"                  = "5000"
+    "delete.on.null.values"                  = "false"
+    "max.batch.size"                         = "0"
+  }
+
+  depends_on = [
+    confluent_flink_statement.documents_embed_table
+  ]
+}
+
 # Generate MongoDB setup commands file with CLI instructions
 resource "local_file" "mongodb_commands" {
   filename = "${path.module}/mongodb_commands.txt"
@@ -175,13 +220,13 @@ resource "local_file" "mongodb_commands" {
 
 # Step 1: Create MongoDB Connection (CLI only - not supported by Terraform provider)
 confluent flink connection create mongodb-connection \
-  --cloud AZURE \
-  --region ${var.cloud_region} \
-  --type mongodb \
-  --endpoint ${var.MONGODB_CONNECTION_STRING} \
-  --username mongodb_username \
-  --password mongodb_password \
-  --environment ${data.terraform_remote_state.core.outputs.confluent_environment_id}
+  --cloud "AZURE" \
+  --region "${var.cloud_region}" \
+  --type "mongodb" \
+  --endpoint "${var.MONGODB_CONNECTION_STRING}" \
+  --username "${var.mongodb_username}" \
+  --password "${var.mongodb_password}" \
+  --environment "${data.terraform_remote_state.core.outputs.confluent_environment_id}"
 
 # Step 2: Populate Embedding Tables (run these in Confluent Cloud SQL workspace)
 
@@ -218,7 +263,7 @@ LATERAL TABLE(ML_PREDICT('llm_embedding_model', query));
 
 # Step 3: Create MongoDB Vector Store and Search Tables (run these in Confluent Cloud SQL workspace)
 
-# Create documents_vectordb table (MongoDB vector store)
+# Create documents_vectordb table (MongoDB vector store external table)
 CREATE TABLE `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.documents_vectordb (
   document_id STRING,
   chunk STRING,
@@ -230,7 +275,7 @@ CREATE TABLE `${data.terraform_remote_state.core.outputs.confluent_environment_d
   'mongodb.collection' = '${var.MONGODB_COLLECTION}',
   'mongodb.index' = '${var.MONGODB_INDEX_NAME}',
   'mongodb.embedding_column' = 'embedding',
-  'mongodb.numCandidates' = '150'
+  'mongodb.numCandidates' = '500'
 );
 
 # Create search_results table (vector search results)

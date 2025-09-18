@@ -42,3 +42,26 @@ output "mongodb_commands_file" {
   value = local_file.mongodb_commands.filename
   description = "Path to MongoDB setup commands file"
 }
+
+# MongoDB connector outputs
+output "mongodb_sink_connector_id" {
+  description = "MongoDB Sink Connector ID"
+  value       = confluent_connector.mongodb_sink.id
+}
+
+output "mongodb_sink_connector_status" {
+  description = "MongoDB Sink Connector Status"
+  value       = confluent_connector.mongodb_sink.status
+}
+
+output "mongodb_connection_details" {
+  description = "MongoDB connection configuration details"
+  value = {
+    database    = var.MONGODB_DATABASE
+    collection  = var.MONGODB_COLLECTION
+    index_name  = var.MONGODB_INDEX_NAME
+    host        = local.mongodb_host
+    username    = var.mongodb_username
+  }
+  sensitive = true
+}

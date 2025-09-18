@@ -3,65 +3,27 @@ resource "random_id" "resource_suffix" {
 }
 
 locals {
+  # Only include regions that support MongoDB Atlas M0 free tier
   region_mapping = {
-    # AWS Regions
+    # AWS Regions - MongoDB M0 Free Tier Supported
     "us-east-1"      = "us-east-1"
-    "us-east-2"      = "us-east-2"
-    "us-west-1"      = "us-west-1"
     "us-west-2"      = "us-west-2"
-    "eu-west-1"      = "eu-west-1"
-    "eu-west-2"      = "eu-west-2"
-    "eu-central-1"   = "eu-central-1"
+    "sa-east-1"      = "sa-east-1"
     "ap-southeast-1" = "ap-southeast-1"
     "ap-southeast-2" = "ap-southeast-2"
+    "ap-south-1"     = "ap-south-1"
+    "ap-east-1"      = "ap-east-1"
     "ap-northeast-1" = "ap-northeast-1"
-    "sa-east-1"      = "sa-east-1"
+    "ap-northeast-2" = "ap-northeast-2"
 
-    # Azure Regions
-    "East US"             = "eastus"
-    "East US 2"           = "eastus2"
-    "Central US"          = "centralus"
-    "North Central US"    = "northcentralus"
-    "South Central US"    = "southcentralus"
-    "West US"             = "westus"
-    "West US 2"           = "westus2"
-    "West US 3"           = "westus3"
-    "West Central US"     = "westcentralus"
-    "Canada Central"      = "canadacentral"
-    "Canada East"         = "canadaeast"
-    "Brazil South"        = "brazilsouth"
-    "Brazil Southeast"    = "brazilsoutheast"
-    "North Europe"        = "northeurope"
-    "West Europe"         = "westeurope"
-    "France Central"      = "francecentral"
-    "France South"        = "francesouth"
-    "Germany West Central"= "germanywestcentral"
-    "Germany North"       = "germanynorth"
-    "Sweden Central"      = "swedencentral"
-    "UK South"            = "uksouth"
-    "UK West"             = "ukwest"
-    "Norway East"         = "norwayeast"
-    "Norway West"         = "norwaywest"
-    "Switzerland North"   = "switzerlandnorth"
-    "Switzerland West"    = "switzerlandwest"
-    "UAE North"           = "uaenorth"
-    "UAE Central"         = "uaecentral"
-    "South Africa North"  = "southafricanorth"
-    "South Africa West"   = "southafricawest"
-    "East Asia"           = "eastasia"
-    "Southeast Asia"      = "southeastasia"
-    "Japan East"          = "japaneast"
-    "Japan West"          = "japanwest"
-    "Korea Central"       = "koreacentral"
-    "Korea South"         = "koreasouth"
-    "Central India"       = "centralindia"
-    "South India"         = "southindia"
-    "West India"          = "westindia"
-    "Australia East"      = "australiaeast"
-    "Australia Southeast" = "australiasoutheast"
-    "Australia Central"   = "australiacentral"
-    "Australia Central 2" = "australiacentral2"
-    "Chile Central"       = "chilecentral"
+    # Azure Regions - MongoDB M0 Free Tier Supported
+    "eastus2"        = "eastus2"
+    "westus"         = "westus"
+    "canadacentral"  = "canadacentral"
+    "northeurope"    = "northeurope"
+    "westeurope"     = "westeurope"
+    "eastasia"       = "eastasia"
+    "centralindia"   = "centralindia"
   }
 
   confluent_region = lookup(local.region_mapping, var.cloud_region, var.cloud_region)
@@ -75,9 +37,9 @@ resource "confluent_environment" "staging" {
     package = "ADVANCED"
   }
 
-  lifecycle {
-    prevent_destroy = true
-  }
+  # lifecycle {
+  #   prevent_destroy = true
+  # }
 }
 
 data "confluent_schema_registry_cluster" "sr-cluster" {
@@ -100,18 +62,18 @@ resource "confluent_kafka_cluster" "standard" {
     id = confluent_environment.staging.id
   }
 
-  lifecycle {
-    prevent_destroy = true
-  }
+  # lifecycle {
+  #   prevent_destroy = true
+  # }
 }
 
 resource "confluent_service_account" "app-manager" {
   display_name = "${var.prefix}-app-manager-${random_id.resource_suffix.hex}"
   description  = "Service account to manage 'inventory' Kafka cluster"
 
-  lifecycle {
-    prevent_destroy = true
-  }
+  # lifecycle {
+  #   prevent_destroy = true
+  # }
 }
 
 resource "confluent_role_binding" "app-manager-kafka-cluster-admin" {
@@ -129,9 +91,9 @@ resource "confluent_flink_compute_pool" "flinkpool-main" {
     id = confluent_environment.staging.id
   }
 
-  lifecycle {
-    prevent_destroy = true
-  }
+  # lifecycle {
+  #   prevent_destroy = true
+  # }
 }
 
 resource "confluent_api_key" "app-manager-kafka-api-key" {
@@ -366,9 +328,9 @@ resource "confluent_flink_statement" "llm_textgen_model_aws" {
     "sql.current-database" = "default"
   }
 
-  lifecycle {
-    prevent_destroy = true
-  }
+  # lifecycle {
+  #   prevent_destroy = true
+  # }
 
   depends_on = [module.aws_ai_services]
 }
@@ -402,9 +364,9 @@ resource "confluent_flink_statement" "llm_textgen_model_azure" {
     "sql.current-database" = "default"
   }
 
-  lifecycle {
-    prevent_destroy = true
-  }
+  # lifecycle {
+  #   prevent_destroy = true
+  # }
 
   depends_on = [module.azure_ai_services]
 }
@@ -438,9 +400,9 @@ resource "confluent_flink_statement" "llm_embedding_model_aws" {
     "sql.current-database" = "default"
   }
 
-  lifecycle {
-    prevent_destroy = true
-  }
+  # lifecycle {
+  #   prevent_destroy = true
+  # }
 
   depends_on = [module.aws_ai_services]
 }
