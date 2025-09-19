@@ -15,7 +15,3 @@ See the following topics for more information:
   * [Configure Logging](logging.html#cmf-logging)
   * [Configure Metrics Reporting](metrics.html#cmf-metrics)
 
-## Related content¶
-
-  * [Deploy and Manage Confluent Manager for Apache Flink Applications](../applications/overview.html#cmf-applications)
-  * [Deploy and Manage Statements in Confluent Manager for Apache Flink](../sql-statements/overview.html#flink-sql-statements)

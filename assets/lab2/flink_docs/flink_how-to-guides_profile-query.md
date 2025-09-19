@@ -108,12 +108,3 @@ Key operators in the current temporal join query include:
 
   8. In the graph, click on other operator nodes to see metrics about their performance.
 
-## Related content¶
-
-  * [Flink SQL Query Profiler](../operate-and-deploy/query-profiler.html#flink-sql-query-profiler)
-  * [EXPLAIN Statement](../reference/statements/explain.html#flink-sql-explain)
-  * [Flink SQL Statements](../concepts/statements.html#flink-sql-statements)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

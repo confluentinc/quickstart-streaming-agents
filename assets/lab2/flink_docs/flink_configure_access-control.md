@@ -228,9 +228,3 @@ This permission also allows the on call team to create new environments. If you 
         --role SystemAdmin \
         --cmf CMF-id
 
-## Related content¶
-
-  * [Use Role-Based Access Control (RBAC) for Authorization in Confluent Platform](../../security/authorization/rbac/overview.html#rbac-overview)
-  * [Use Predefined RBAC Roles in Confluent Platform](../../security/authorization/rbac/rbac-predefined-roles.html#rbac-predefined-roles)
-  * [Authentication for CMF](../installation/authentication.html#cmf-authenticate)
-  * [Authorization for CMF](../installation/authorization.html#cmf-authorize)

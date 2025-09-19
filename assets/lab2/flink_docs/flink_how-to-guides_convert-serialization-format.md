@@ -254,11 +254,3 @@ Your INSERT INTO statement is converting records in the Avro format to the JSON 
   3. In the **Actions** column, click **…** and select **Delete statement**.
   4. In the **Confirm statement deletion** dialog, copy and paste the statement name and click **Confirm**.
 
-## Related content¶
-
-  * [Data Type Mappings](../reference/serialization.html#flink-sql-serialization)
-  * [WITH options](../reference/statements/create-table.html#flink-sql-with-options)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

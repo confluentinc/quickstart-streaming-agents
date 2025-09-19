@@ -88,10 +88,3 @@ Your output should resemble:
          | cluster_0             |
          +-----------------------+
 
-## Related content¶
-
-  * [USE CATALOG](use-catalog.html#flink-sql-use-catalog-statement)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

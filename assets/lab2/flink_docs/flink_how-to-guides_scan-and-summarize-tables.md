@@ -117,14 +117,3 @@ Click **x** in the filters to clear them.
 
 If your data contains a datetime column then each numerical column, along with distribution, will have the option to show the average value over time. If the data is filtered then the unfiltered average value is also shown for context. You can hover over the chart for exact values.
 
-## Related content¶
-
-  * [View Time Series Data](view-time-series-data.html#flink-sql-view-time-series)
-  * [Aggregate a Stream in a Tumbling Window](aggregate-tumbling-window.html#flink-sql-aggregate-tumbling-window)
-  * [Compare Current and Previous Values in a Data Stream](compare-current-and-previous-values.html#flink-sql-compare-current-and-previous-values)
-  * [Convert the Serialization Format of a Topic](convert-serialization-format.html#flink-sql-convert-format)
-  * Flink action: [Mask Fields in a Table](mask-fields.html#flink-sql-mask-fields-action)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

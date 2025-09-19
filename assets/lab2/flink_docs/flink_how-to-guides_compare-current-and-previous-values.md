@@ -69,13 +69,3 @@ Your output should resemble:
 
   2. Note that there are some `NULL` values for `previous_order_id` and `previous_order_price`. For these customers, the current order is the first order they have made, so there is no historical previous order data to return.
 
-## Related content¶
-
-  * [Aggregate a Stream in a Tumbling Window](aggregate-tumbling-window.html#flink-sql-aggregate-tumbling-window)
-  * [Aggregate Functions](../reference/functions/aggregate-functions.html#flink-sql-aggregate-functions)
-  * [Time Attributes](../concepts/timely-stream-processing.html#flink-sql-time-attributes)
-  * [DDL Statements](../concepts/statements.html#flink-sql-statements)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

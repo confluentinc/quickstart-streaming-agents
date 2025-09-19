@@ -158,15 +158,3 @@ The INSERT INTO statement that was created by the Mask Fields action runs contin
   3. In the **Actions** column, click **…** and select **Delete statement**.
   4. In the **Confirm statement deletion** dialog, copy and paste the statement name and click **Confirm**.
 
-## Related content¶
-
-  * Flink action: [Deduplicate Rows in a Table](deduplicate-rows.html#flink-sql-deduplicate-topic-action)
-  * Flink action: [Transform a Topic](transform-topic.html#flink-sql-transform-topic-action)
-  * Flink action: [Create an Embedding](../../ai/embeddings/embedding-action.html#flink-sql-embedding-action)
-  * [Aggregate a Stream in a Tumbling Window](aggregate-tumbling-window.html#flink-sql-aggregate-tumbling-window)
-  * [Compare Current and Previous Values in a Data Stream](compare-current-and-previous-values.html#flink-sql-compare-current-and-previous-values)
-  * [Convert the Serialization Format of a Topic](convert-serialization-format.html#flink-sql-convert-format)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

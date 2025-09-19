@@ -29,8 +29,3 @@ Apache Flink® version | Confluent Platform versions | Java versions | Kubernete
 1.19 | 7.7.x - 7.9.x | 11, 17 | 1.26+ | 4.12 and 4.14+  
 1.18 | 7.7.x - 7.9.x | 11, 17 | 1.26+ | 4.12 and 4.14+  
   
-## Related content¶
-
-  * [Get Started with Applications in Confluent Manager for Apache Flink](../get-started/get-started-application.html#cpf-get-started)
-  * [Supported Versions and Interoperability for Confluent Platform](../../installation/versions-interoperability.html#interoperability-versions)
-  * [Confluent Platform for Apache Flink Features and Support](../jobs/applications/supported-features.html#cpflink-vs-oss)

@@ -120,18 +120,3 @@ Flink implements many techniques from the Dataflow Model. The following articles
   * Blog post: [Streaming 101 by Tyler Akidau](https://www.oreilly.com/ideas/the-world-beyond-batch-streaming-101)
   * [Dataflow Model](https://research.google.com/pubs/archive/43864.pdf)
 
-## Related content¶
-
-  * [Autopilot](autopilot.html#flink-sql-autopilot)
-  * [Comparison with Apache Flink](comparison-with-apache-flink.html#flink-comparison-with-open-source)
-  * [Compute Pools](compute-pools.html#flink-sql-compute-pools)
-  * [Dynamic Tables](dynamic-tables.html#flink-sql-dynamic-tables)
-  * [Statements](statements.html#flink-sql-statements)
-  * [Time and Watermarks](timely-stream-processing.html#flink-sql-timely-stream-processing)
-  * [Time attributes](timely-stream-processing.html#flink-sql-time-attributes)
-  * [Joins in Continuous Queries](../reference/queries/joins.html#flink-sql-joins)
-  * [Determinism in Continuous Queries](determinism.html#flink-sql-determinism)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

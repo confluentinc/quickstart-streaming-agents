@@ -75,10 +75,3 @@ Retracting stream | Update stream | +I, +U, -U, -D (contains +I and can contain 
   * Both retract and upsert streams can have -D / deletes and +U / upserts (upsert afters).
   * Only retract streams can have -U.
 
-## Related content¶
-
-  * [Flink SQL Queries](../reference/queries/overview.html#flink-sql-queries)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

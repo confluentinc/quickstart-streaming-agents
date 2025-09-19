@@ -23,13 +23,3 @@ Dropping a connection deletes the corresponding credentials stored in the `Secre
 
     DROP CONNECTION `azure-openai-connection`;
 
-## Related content¶
-
-  * [ALTER CONNECTION](alter-connection.html#flink-sql-alter-connection)
-  * [CREATE CONNECTION](create-connection.html#flink-sql-create-connection)
-  * [DESCRIBE CONNECTION](describe.html#flink-sql-describe)
-  * [SHOW CONNECTIONS](show.html#flink-sql-show-connections)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

@@ -76,6 +76,3 @@ The following configuration file shows how to provision Confluent Manager for Ap
              confluent.metadata.oauthbearer.login.client.id: <client-id-for-cmf>
              confluent.metadata.oauthbearer.login.client.secret: <client-secret-for-cmf>
 
-## Related content¶
-
-  * [How to Secure a Flink Job with Confluent Manager for Apache Flink](../jobs/configure/security.html#cpf-security)

@@ -727,11 +727,3 @@ For an example AWS Bedrock model named “bedrock_embed”, the following statem
       'TASK' = 'text_generation'
     );
 
-## Related content¶
-
-  * [DESCRIBE](describe.html#flink-sql-describe)
-  * [USE CATALOG](use-catalog.html#flink-sql-use-catalog-statement)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

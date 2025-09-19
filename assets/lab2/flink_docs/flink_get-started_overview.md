@@ -27,16 +27,3 @@ Also, you can access Flink by using the [REST API](../operate-and-deploy/flink-r
 
 If you get stuck, have a question, or want to provide feedback or feature requests, don’t hesitate to reach out. Check out [Get Help with Confluent Cloud for Apache Flink](../get-help.html#ccloud-flink-help) for our support channels.
 
-## Next steps¶
-
-  * [Flink SQL Quick Start with Confluent Cloud Console](quick-start-cloud-console.html#flink-sql-quick-start-cloud-console)
-  * [Flink SQL Shell Quick Start](quick-start-shell.html#flink-sql-quick-start-shell)
-
-## Related content¶
-
-  * [Stream Processing Concepts](../concepts/overview.html#flink-sql-stream-processing-concepts)
-  * [Flink SQL Queries](../reference/queries/overview.html#flink-sql-queries)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

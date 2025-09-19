@@ -107,12 +107,3 @@ Confluent Cloud for Apache Flink does not support the following statements and f
 
 Confluent Cloud for Apache Flink has limited support for ALTER TABLE compared with Apache Flink. In Confluent Cloud for Apache Flink, you can use ALTER TABLE only to change the watermark strategy, add a metadata column, or change a parameter value.
 
-## Related content¶
-
-  * [Flink SQL Autopilot](autopilot.html#flink-sql-autopilot)
-  * [Compute Pools](compute-pools.html#flink-sql-compute-pools)
-  * [DDL Statements in Confluent Cloud for Apache Flink](../reference/statements/overview.html#flink-sql-statements-overview)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

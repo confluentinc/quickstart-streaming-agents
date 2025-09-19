@@ -167,6 +167,3 @@ For example:
 
     confluent flink application create --environment <env-name> <appliction-definition>
 
-## Related content¶
-
-  * [Flink Jobs for Confluent Manager for Apache Flink](../overview.html#af-jobs-cmf)

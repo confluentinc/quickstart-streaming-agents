@@ -177,10 +177,3 @@ This means that in the update-by-row mode, all the update messages received by t
 
 Exceptions caused by cleaning internal state data based on TTL are discussed separately as a runtime fault-tolerant handling strategy. For more information, see [FLINK-24666](https://issues.apache.org/jira/browse/FLINK-24666).
 
-## Related content¶
-
-  * [Flink SQL Queries](../reference/queries/overview.html#flink-sql-queries)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

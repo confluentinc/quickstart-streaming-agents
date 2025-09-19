@@ -727,12 +727,3 @@ When possible, this format serializes data in the protocol’s mixed json+binary
 
 The output format defaults to TF-SERVING.
 
-## Related content¶
-
-  * [ALTER MODEL](alter-model.html#flink-sql-alter-model)
-  * [DROP MODEL](drop-model.html#flink-sql-drop-model)
-  * [Run an AI Model](../../../ai/ai-model-inference.html#flink-sql-ai-model)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

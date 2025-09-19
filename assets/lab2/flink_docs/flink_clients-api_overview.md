@@ -13,7 +13,3 @@ You have several options to interact with your Apache Flink® jobs deployed with
   * [Use CLI calls](cli.html#cmf-flink-cli).
   * Manage with [Confluent for Kubernetes](flink-cfk.html#cmf-cfk).
 
-## Related content¶
-
-  * [Get Started](../get-started/get-started-application.html#cpf-get-started)
-  * [Get Help](../get-help.html#cpf-get-help)

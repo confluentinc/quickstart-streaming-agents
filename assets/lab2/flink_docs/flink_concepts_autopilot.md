@@ -45,12 +45,3 @@ Messages Behind is increasing Scaling status = “Pending Scale Up” | Autopilo
 Messages Behind is increasing Scaling status = “Fine” | There is likely a problem. Reach out to Confluent Support. For more information, see [Get Help with Confluent Cloud for Apache Flink](../get-help.html#ccloud-flink-help).  
 Messages Behind is not increasing Compute Pool is Exhausted | The statement resources can keep up with throughput but Autopilot needs to assign more resources to improve performance capacity. You can either add more resources by increasing the CFU limit on the compute pool or stop some running statements to free up existing resources.  
   
-## Related content¶
-
-  * [Compute Pools](compute-pools.html#flink-sql-compute-pools)
-  * [DDL Statements](statements.html#flink-sql-statements)
-  * [Determinism in Continuous Queries](determinism.html#flink-sql-determinism)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

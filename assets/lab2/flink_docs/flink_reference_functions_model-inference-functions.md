@@ -545,13 +545,3 @@ For more examples, see [Vector Search with Confluent Cloud for Apache Flink](../
   * [String Functions](string-functions.html#flink-sql-string-functions)
   * [Table API Functions](table-api-functions.html#flink-table-api-functions)
 
-## Related content¶
-
-  * [Build AI with Flink SQL](../../../ai/overview.html#ai-overview)
-  * [CREATE MODEL](../statements/create-model.html#flink-sql-create-model)
-  * [Flink SQL Queries](../queries/overview.html#flink-sql-queries)
-  * [ML Preprocessing Functions](ml-preprocessing-functions.html#flink-sql-ml-preprocessing-functions)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

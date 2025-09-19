@@ -196,12 +196,3 @@ USE
   * [USE CATALOG Statement in Confluent Cloud for Apache Flink](../reference/statements/use-catalog.html#flink-sql-use-catalog-statement)
   * [USE <database_name> Statement in Confluent Cloud for Apache Flink](../reference/statements/use-database.html#flink-sql-use-database-statement)
 
-## Related content¶
-
-  * [Flink SQL Queries](../reference/queries/overview.html#flink-sql-queries)
-  * [Stream Processing Concepts](overview.html#flink-sql-stream-processing-concepts)
-  * [Built-in Functions](../reference/functions/overview.html#flink-sql-functions-overview)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

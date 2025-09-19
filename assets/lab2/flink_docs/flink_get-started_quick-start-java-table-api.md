@@ -336,18 +336,3 @@ Your output should resemble:
          Greeting: Hello Alice
          Greeting: Hello Peter
 
-## Next steps¶
-
-  * [Python Table API Quick Start](quick-start-python-table-api.html#flink-python-table-api-quick-start)
-  * [How-to Guides for Confluent Cloud for Apache Flink](../how-to-guides/overview.html#flink-sql-how-to-guides)
-
-## Related content¶
-
-  * Course: [Apache Flink® Table API: Processing Data Streams in Java](https://developer.confluent.io/courses/flink-table-api-java/exercise-connecting-to-confluent-cloud/)
-  * GitHub repo: [Java Examples for Table API on Confluent Cloud](https://github.com/confluentinc/flink-table-api-java-examples)
-  * GitHub repo: [Python Examples for Table API on Confluent Cloud](https://github.com/confluentinc/flink-table-api-python-examples)
-  * [Built-in Functions](../reference/functions/overview.html#flink-sql-functions-overview)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

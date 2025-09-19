@@ -149,7 +149,3 @@ The following example shows how you can use the Confluent CLI to delete a statem
 
 The deletion of a statement deletes all Kubernetes resources.
 
-## Related content¶
-
-  * [Create Statements with Confluent Manager for Apache Flink](create-statements.html#flink-sql-statements-create)
-  * [Deploy and Manage Statements in Confluent Manager for Apache Flink](overview.html#flink-sql-overview)

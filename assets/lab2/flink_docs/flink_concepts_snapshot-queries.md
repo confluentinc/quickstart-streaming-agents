@@ -102,12 +102,3 @@ This behavior contrasts with streaming queries which:
 
 Snapshot queries are billed in CFUs, in the same way that streaming queries are. For more information, see [Flink Billing](../../billing/overview.html#flink-billing).
 
-## Related content¶
-
-  * [Run a Snapshot Query](../how-to-guides/run-snapshot-query.html#flink-sql-run-snapshot-query)
-  * [Query Tableflow Tables with Flink](../../topics/tableflow/how-to-guides/query-engines/query-with-flink.html#cloud-tableflow-query-with-flink)
-  * [Statements](statements.html#flink-sql-statements)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

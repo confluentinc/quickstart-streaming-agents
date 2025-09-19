@@ -47,10 +47,3 @@ Your output should resemble:
     | sql.local-time-zone    | GMT+02:00 (default) |
     +------------------------+---------------------+
 
-## Related content¶
-
-  * [SET Statement in Confluent Cloud for Apache Flink](set.html#flink-sql-set-statement)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

@@ -89,7 +89,3 @@ Example pricing calculation
 
 **Note:** The charge appears on the invoice as “5.15 CFU-hours x $0.21/CFU-hour”.
 
-## Related content¶
-
-  * [Compute Pools](compute-pools.html#flink-sql-compute-pools)
-  * [Confluent Cloud Pricing](https://www.confluent.io/confluent-cloud/pricing/)

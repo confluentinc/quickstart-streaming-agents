@@ -378,12 +378,3 @@ Your output should resemble:
     EXPR$0
     ✓
 
-## Related content¶
-
-  * [DDL Statements](../../concepts/statements.html#flink-sql-statements)
-  * [Stream Processing Concepts](../../concepts/overview.html#flink-sql-stream-processing-concepts)
-  * [Built-in Functions](../functions/overview.html#flink-sql-functions-overview)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

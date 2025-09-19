@@ -130,12 +130,3 @@ Your output should resemble:
 
 Send a GET request to the Flink REST API [Regions endpoint](/cloud/current/api.html#tag/Regions-\(fcpmv2\)/operation/listFcpmV2Regions) to list the available regions. For more information, see [List Flink Regions](../operate-and-deploy/flink-rest-api.html#flink-rest-api-list-regions).
 
-## Related content¶
-
-  * [Compute Pools](../concepts/compute-pools.html#flink-sql-compute-pools)
-  * [Create a Compute Pool](../operate-and-deploy/create-compute-pool.html#flink-sql-manage-compute-pool)
-  * [Statements](../concepts/statements.html#flink-sql-statements)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

@@ -50,9 +50,3 @@ Note
 
 You are billed based on the compute pool CFU metrics, not on the summed total of individual statement CFU metrics.
 
-## Related content¶
-
-  * [Billing](flink-billing.html#flink-sql-billing)
-  * [Compute Pools](compute-pools.html#flink-sql-compute-pools)
-  * [Flink SQL Statements](statements.html#flink-sql-statements)
-  * [Confluent Cloud Pricing](https://www.confluent.io/confluent-cloud/pricing/)

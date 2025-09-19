@@ -23,12 +23,3 @@ Note
 
 Confluent is actively working on reducing the latency under exactly-once semantics. If your use case requires a lower latency, reach out to Support or your account manager.
 
-## Related content¶
-
-  * [Statements](statements.html#flink-sql-statements)
-  * [Determinism](determinism.html#flink-sql-determinism)
-  * [Flink SQL Queries](../reference/queries/overview.html#flink-sql-queries)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

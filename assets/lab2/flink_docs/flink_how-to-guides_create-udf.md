@@ -604,14 +604,3 @@ Your output should resemble:
 
   3. When you’re done with the example UDTF, drop the function and delete the JAR artifact as you did in Step 6: Delete the UDF.
 
-## Related content¶
-
-  * [Enable UDF Logging](enable-udf-logging.html#flink-sql-enable-udf-logging)
-  * [confluent flink artifact create](https://docs.confluent.io/confluent-cli/current/command-reference/flink/artifact/confluent_flink_artifact_create.html)
-  * [CREATE FUNCTION Statement](../reference/statements/create-function.html#flink-sql-create-function)
-  * [Artifacts endpoints](/cloud/current/api.html#tag/Flink-Artifacts-\(artifactv1\))
-  * [Flink UDF Java Examples](https://github.com/confluentinc/flink-udf-java-examples)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

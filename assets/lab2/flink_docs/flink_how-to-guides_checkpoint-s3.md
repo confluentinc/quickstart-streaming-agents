@@ -56,6 +56,3 @@ Implementing the previous steps should result in a `FlinkApplication` specificat
         state: running
         parallelism: 1
 
-## Related content¶
-
-  * [Flink Jobs for Confluent Manager for Apache Flink](../jobs/overview.html#af-jobs-cmf)

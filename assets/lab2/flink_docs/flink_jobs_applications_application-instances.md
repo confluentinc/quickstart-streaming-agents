@@ -146,8 +146,3 @@ A response might look like the following:
         # Exposed to track final status of (batch) jobs
         state: FINISHED
 
-## Related content¶
-
-  * [Deploy and Manage Confluent Manager for Apache Flink Applications](overview.html#cmf-applications)
-  * [Configure Environments in Confluent Manager for Apache Flink](../../configure/environments.html#cmf-environments)
-  * [Events in Confluent Manager for Apache Flink](events.html#cmf-events)

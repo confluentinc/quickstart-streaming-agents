@@ -52,12 +52,3 @@ Your output should resemble:
          10.0.0.12  https://apache.org/index.html   1692826575
          10.0.0.13  https://confluent.io/index.html 1692826575
 
-## Related content¶
-
-  * [Flink SQL Queries](overview.html#flink-sql-queries)
-  * [Flink SQL Functions](../functions/overview.html#flink-sql-functions-overview)
-  * [Statements](../statements/overview.html#flink-sql-statements-overview)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

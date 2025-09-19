@@ -363,12 +363,3 @@ Replace `avro-registry` with `json-registry` or `proto-registry` based on your s
   2. If schema references aren’t suitable, use union types for a simpler schema management approach.
   3. Configure alternative subject name strategies only when working with existing systems that require them.
 
-## Related Content¶
-
-  * [Schema References](../../sr/fundamentals/serdes-develop/index.html#referenced-schemas)
-  * [Flink SQL Data Type Mappings](../reference/serialization.html#flink-sql-serialization)
-  * [Subject Name Strategy](../../sr/fundamentals/serdes-develop/index.html#sr-schemas-subject-name-strategy)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

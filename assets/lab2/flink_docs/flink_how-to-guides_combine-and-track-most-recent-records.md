@@ -199,12 +199,3 @@ Each event produces a new output record with the complete latest state for that 
 
 In contrast, a join produces a changelog output where existing records may be updated, requiring downstream systems to handle inserts, updates, and deletions.
 
-## Related content¶
-
-  * [Compare Current and Previous Values in a Data Stream](compare-current-and-previous-values.html#flink-sql-compare-current-and-previous-values)
-  * [Window Aggregation Queries](../reference/queries/window-aggregation.html#flink-sql-window-aggregation)
-  * [Handle Multiple Event Types](multiple-event-types.html#flink-sql-multiple-event-types)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

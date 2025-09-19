@@ -70,13 +70,3 @@ USE
   * [USE CATALOG](use-catalog.html#flink-sql-use-catalog-statement): Set the current catalog.
   * [USE [database_name]](use-database.html#flink-sql-use-database-statement): Set the current database.
 
-## Related content¶
-
-  * [Flink SQL Syntax](../sql-syntax.html#flink-sql-syntax)
-  * [Flink SQL Queries](../queries/overview.html#flink-sql-queries)
-  * [Stream Processing Concepts](../../concepts/overview.html#flink-sql-stream-processing-concepts)
-  * [Built-in Functions](../functions/overview.html#flink-sql-functions-overview)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

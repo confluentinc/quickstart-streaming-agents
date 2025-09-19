@@ -268,14 +268,3 @@ Your output should resemble:
     | azure-openai-connection | AZUREOPENAI | https://<your-project>.openai.azure.com/openai/deployments/matrix-... |         |
     +-------------------------+-------------+-----------------------------------------------------------------------+---------+
 
-## Related content¶
-
-  * [CREATE TABLE](create-table.html#flink-sql-create-table)
-  * [CREATE MODEL](create-model.html#flink-sql-create-model)
-  * [CREATE FUNCTION](create-function.html#flink-sql-create-function)
-  * [CREATE CONNECTION](create-connection.html#flink-sql-create-connection)
-  * [USE CATALOG](use-catalog.html#flink-sql-use-catalog-statement)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

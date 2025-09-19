@@ -1653,13 +1653,3 @@ Properties
     "d", "day", "h", "hour", "m", "min", "minute", "ms", "milli", "millisecond",
     "µs", "micro", "microsecond", "ns", "nano", "nanosecond"
 
-## Related content¶
-
-  * Video: [How to Set Idle Timeouts](https://www.youtube.com/watch?v=YSIhM5-Sykw)
-  * [ALTER TABLE statement](alter-table.html#flink-sql-alter-table)
-  * [INSERT INTO FROM SELECT Statement](../queries/insert-into-from-select.html#flink-sql-insert-into-from-select-statement)
-  * [Join Queries](../queries/joins.html#flink-sql-joins)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

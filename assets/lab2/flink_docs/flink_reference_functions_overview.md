@@ -22,9 +22,3 @@ Confluent Cloud for Apache Flink® enables you to do data transformations and ot
   * [String Functions](string-functions.html#flink-sql-string-functions)
   * [Table API Functions](table-api-functions.html#flink-table-api-functions)
 
-## Related content¶
-
-  * [User-defined Functions](../../concepts/user-defined-functions.html#flink-sql-udfs)
-  * [Create a User Defined Function](../../how-to-guides/create-udf.html#flink-sql-create-udf)
-  * [Flink SQL Queries](../queries/overview.html#flink-sql-queries)
-  * [DDL Statements](../../concepts/statements.html#flink-sql-statements)

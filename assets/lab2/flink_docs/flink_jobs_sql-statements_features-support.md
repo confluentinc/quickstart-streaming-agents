@@ -41,10 +41,3 @@ The following limitations exist in the current version:
   * Custom Catalogs: Custom catalogs are not supported.
   * Deployment modes: Only application-deployment mode is supported. Each statement runs on a dedicated Flink cluster with dedicated JobManager and TaskManager pods. Session-cluster deployment mode is not supported.
 
-## Related content¶
-
-  * [Deploy and Manage Statements in Confluent Manager for Apache Flink](overview.html#flink-sql-overview)
-  * [Manage Flink SQL Catalogs for Confluent Manager for Apache Flink](../../configure/catalog.html#flink-sql-catalog)
-  * [Manage Compute Pools in Confluent Manager for Apache Flink](../../configure/compute-pools.html#cmf-compute-pools)
-  * [Configure Access Control for Confluent Manager for Apache Flink](../../configure/access-control.html#cmf-access-control)
-  * [Configure Environments in Confluent Manager for Apache Flink](../../configure/environments.html#cmf-environments)

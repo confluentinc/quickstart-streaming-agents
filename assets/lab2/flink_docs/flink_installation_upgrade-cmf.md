@@ -39,7 +39,3 @@ Important
 
 If the CMF database is file system based, using `helm uninstall cmf` will lead to the loss of the database because the Persistent Volume Claim (PVC) is managed by CMF.
 
-## Related content¶
-
-  * [Install Confluent Manager for Apache Flink with Helm](helm.html#install-cmf-helm)
-  * [Versions and Interoperability for Confluent Manager for Apache Flink](versions-interoperability.html#cmf-interop)

@@ -71,12 +71,3 @@ You can use GitHub Actions and Terraform to deploy your Flink SQL statements to 
 
 If you have questions or need support, you can use the in-product help in the Confluent Cloud Console, visit the [Flink documentation](overview.html#ccloud-flink), or reach out through the [established channels](get-help.html#ccloud-flink-help). You can also ask questions in the Confluent Community forums or contact Confluent Support if you have a support plan.
 
-## Related content¶
-
-  * [Flink SQL Quick Start with Confluent Cloud Console](get-started/quick-start-cloud-console.html#flink-sql-quick-start-cloud-console)
-  * [Flink SQL Shell Quick Start](get-started/quick-start-shell.html#flink-sql-quick-start-shell)
-  * [Stream Processing Concepts](concepts/overview.html#flink-sql-stream-processing-concepts)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

@@ -43,7 +43,3 @@ Note
 
 A statement is submitted by terminating it with a semicolon and hitting Enter.
 
-## Related content¶
-
-  * [Create Statements with Confluent Manager for Apache Flink](create-statements.html#flink-sql-statements-create)
-  * [Manage Statements in Confluent Manager for Apache Flink](manage-statements.html#flink-sql-statements-manage)

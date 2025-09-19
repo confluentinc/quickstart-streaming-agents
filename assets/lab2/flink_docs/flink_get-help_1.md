@@ -17,6 +17,3 @@ There is a dedicated **#flink** channel in the Confluent Community Slack. Join w
 
 If issues occur while running Flink with Confluent Platform, consider generating a diagnostics bundle and uploading it to the Support Portal. For more information, see [Generate Diagnostics with the Diagnostics Bundle Tool for Confluent Platform](../tools/diagnostics-tool.html#diagnostics-cp).
 
-## Related content¶
-
-  * [Confluent Platform for Apache Flink Features and Support](jobs/applications/supported-features.html#cpflink-vs-oss)

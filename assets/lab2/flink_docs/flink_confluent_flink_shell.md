@@ -31,6 +31,3 @@ Start Flink interactive SQL client.
 
 For a Quick Start with examples in context, see <https://docs.confluent.io/cloud/current/flink/get-started/quick-start-shell.html>.
 
-## See Also¶
-
-  * [confluent flink](index.html#confluent-flink) \- Manage Apache Flink.

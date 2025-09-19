@@ -166,13 +166,3 @@ In an expression, when two operators have the same precedence level, they’re e
 
 You can enclose an expression in parentheses to force precedence or clarify precedence, for example, `(5 + 2) * 3`.
 
-## Related content¶
-
-  * [Flink SQL Reserved Keywords](keywords.html#flink-sql-keywords)
-  * [Data Types](datatypes.html#flink-sql-datatypes)
-  * [Flink SQL Queries](queries/overview.html#flink-sql-queries)
-  * [DDL Statements in Confluent Cloud for Apache Flink](statements/overview.html#flink-sql-statements-overview)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

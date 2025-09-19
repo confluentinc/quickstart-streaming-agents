@@ -35,13 +35,3 @@ In addition, if syntax in the CREATE CONNECTION statement is incorrect, Confluen
       'password' = '<new-password>'
     );
 
-## Related content¶
-
-  * [CREATE CONNECTION](create-connection.html#flink-sql-create-connection)
-  * [DESCRIBE CONNECTION](describe.html#flink-sql-describe)
-  * [DROP CONNECTION](drop-connection.html#flink-sql-drop-connection)
-  * [SHOW CONNECTIONS](show.html#flink-sql-show-connections)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

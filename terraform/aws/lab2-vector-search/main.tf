@@ -113,7 +113,7 @@ resource "confluent_flink_statement" "queries_table" {
     secret = data.terraform_remote_state.core.outputs.app_manager_flink_api_secret
   }
 
-  statement = "CREATE TABLE `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.queries ( query STRING NOT NULL ) WITH ( 'kafka.consumer.isolation-level' = 'read-uncommitted' );"
+  statement = "CREATE TABLE `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.queries ( query STRING NOT NULL );"
 
   properties = {
     "sql.current-catalog"  = data.terraform_remote_state.core.outputs.confluent_environment_display_name
@@ -146,7 +146,7 @@ resource "confluent_flink_statement" "queries_embed_table" {
     secret = data.terraform_remote_state.core.outputs.app_manager_flink_api_secret
   }
 
-  statement = "CREATE TABLE `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.queries_embed ( query STRING, embedding ARRAY<FLOAT> ) WITH ( 'kafka.consumer.isolation-level' = 'read-uncommitted' );"
+  statement = "CREATE TABLE `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.queries_embed ( query STRING, embedding ARRAY<FLOAT> );"
 
   properties = {
     "sql.current-catalog"  = data.terraform_remote_state.core.outputs.confluent_environment_display_name

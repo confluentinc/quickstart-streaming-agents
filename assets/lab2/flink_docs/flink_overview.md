@@ -178,30 +178,3 @@ Comments, questions, and suggestions related to the Table API are encouraged and
 
 Install [Confluent for VS Code](../client-apps/vs-code-extension.html#cc-vscode-extension) to access Smart Project Templates that accelerate project setup by providing ready-to-use templates tailored for common development patterns. These templates enable you to launch new projects quickly with minimal configuration, significantly reducing setup time.
 
-## Next steps¶
-
-  * [Get Started](get-started/overview.html#flink-sql-get-started)
-  * [Quick Start with Cloud Console](get-started/quick-start-cloud-console.html#flink-sql-quick-start-cloud-console)
-  * [Quick Start with Flink SQL Shell](get-started/quick-start-shell.html#flink-sql-quick-start-shell)
-  * [Java Table API Quick Start](get-started/quick-start-java-table-api.html#flink-java-table-api-quick-start)
-  * [Python Table API Quick Start](get-started/quick-start-python-table-api.html#flink-python-table-api-quick-start)
-
-## Related content¶
-
-  * [Stream Processing Concepts](concepts/overview.html#flink-sql-stream-processing-concepts)
-  * [How-to Guides](how-to-guides/overview.html#flink-sql-how-to-guides)
-  * [Operate and Deploy](operate-and-deploy/overview.html#flink-sql-operate-and-deploy)
-  * [Flink SQL Reference](reference/overview.html#flink-sql-reference)
-  * Blog post: [Introducing Confluent Cloud for Apache Flink](https://www.confluent.io/blog/introducing-flink-on-confluent-cloud/)
-  * Blog post: [Your Guide to Flink SQL: An In-Depth Exploration](https://www.confluent.io/blog/getting-started-with-apache-flink-sql/)
-  * Blog post: [How to Use Flink SQL, Streamlit, and Kafka: Part 1](https://www.confluent.io/blog/how-to-use-flinksql-streamlit-kafka-part-1/)
-  * Blog post: [How to Use Flink SQL, Streamlit, and Kafka: Part 2](https://www.confluent.io/blog/how-use-flinksql-streamlit-kafka-part-2/)
-  * Blog post: [Data Products, Data Contracts, and Change Data Capture](https://www.confluent.io/blog/implementing-streaming-data-products/)
-  * Course: [Apache Flink SQL](https://developer.confluent.io/courses/flink-sql/overview/)
-  * Course: [Apache Flink 101](https://developer.confluent.io/courses/apache-flink/intro/)
-  * Course: [Building Flink Applications in Java](https://developer.confluent.io/courses/flink-java/overview/)
-  * Course: [Apache Flink® Table API: Processing Data Streams in Java](https://developer.confluent.io/courses/flink-table-api-java/exercise-connecting-to-confluent-cloud/)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

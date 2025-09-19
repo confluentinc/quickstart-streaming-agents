@@ -71,12 +71,3 @@ To execute DROP TABLE, you need an [RBAC role](../../../security/access-control/
     -- Drop an external table.
     DROP TABLE `<external-table-name>`;
 
-## Related Content¶
-
-  * [ALTER TABLE](alter-table.html#flink-sql-alter-table)
-  * [CREATE TABLE](create-table.html#flink-sql-create-table)
-  * [Search External Tables](../../../ai/external-tables/overview.html#ai-external-tables-overview)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

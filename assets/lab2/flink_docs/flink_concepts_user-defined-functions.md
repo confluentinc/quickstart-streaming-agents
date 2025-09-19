@@ -513,13 +513,3 @@ Libraries that use Java Native Interface (JNI) or require native binaries are no
   * **Log4j logging only:** External UDF loggers can be composed only with the Apache Log4j logging framework.
   * **Burst rate to 1000/s** : UDF logging supports up to 1000 log events per second for each UDF during a short burst of high activity. This helps to optimize performance and to reduce noise in logs. Events that exceed the maximum rate are dropped.
 
-## Related content¶
-
-  * [CREATE FUNCTION](../reference/statements/create-function.html#flink-sql-create-function)
-  * [Create a User-defined Function](../how-to-guides/create-udf.html#flink-sql-create-udf).
-  * [Flink SQL Queries](../reference/queries/overview.html#flink-sql-queries)
-  * [Flink UDF Java Examples](https://github.com/confluentinc/flink-udf-java-examples)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

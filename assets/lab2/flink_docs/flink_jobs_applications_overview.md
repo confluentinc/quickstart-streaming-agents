@@ -108,7 +108,3 @@ The [REST APIs](../../clients-api/rest.html#af-rest-api) to manage Flink applica
   * [Confluent CLI reference](/confluent-cli/current/command-reference/flink/index.html)
   * [Confluent for Kubernetes](../../clients-api/flink-cfk.html#cmf-cfk)
 
-## Related content¶
-
-  * [Configure Environments in Confluent Manager for Apache Flink](../../configure/environments.html#cmf-environments)
-  * [Confluent Manager for Apache Flink](../../concepts/cmf.html#cmf)

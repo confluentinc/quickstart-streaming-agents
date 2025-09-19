@@ -75,13 +75,3 @@ Your output should resemble:
          Niobe              1677260921   female Region_3
          Zee                1677260922   female Region_5
 
-## Related content¶
-
-  * [INSERT INTO FROM SELECT](insert-into-from-select.html#flink-sql-insert-into-from-select-statement)
-  * [Flink SQL Queries](overview.html#flink-sql-queries)
-  * [Flink SQL Functions](../functions/overview.html#flink-sql-functions-overview)
-  * [Statements](../statements/overview.html#flink-sql-statements-overview)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

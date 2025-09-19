@@ -238,7 +238,3 @@ Note the following about CMF default values:
 
 For cleanup instructions, see the [cleanup section in the quickstart guide](../get-started/get-started-application.html#cpf-get-started-cleanup).
 
-## Related content¶
-
-  * [Get Started with Applications in Confluent Manager for Apache Flink](../get-started/get-started-application.html#cpf-get-started)
-  * [Versions and Interoperability for Confluent Manager for Apache Flink](versions-interoperability.html#cmf-interop)

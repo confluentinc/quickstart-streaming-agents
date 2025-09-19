@@ -63,13 +63,3 @@ Your output should resemble:
          4028       https://www.acme.com/product/jtahp   2024-04-16 08:04:47.367
          4549       https://www.acme.com/product/ixsir   2024-04-16 08:04:47.367
 
-## Related content¶
-
-  * Flink action: [Deduplicate Rows in a Table](../../how-to-guides/deduplicate-rows.html#flink-sql-deduplicate-topic-action)
-  * [Flink SQL Queries](overview.html#flink-sql-queries)
-  * [Flink SQL Functions](../functions/overview.html#flink-sql-functions-overview)
-  * [Statements](../statements/overview.html#flink-sql-statements-overview)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

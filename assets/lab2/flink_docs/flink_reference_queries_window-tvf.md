@@ -458,13 +458,3 @@ The output resembles:
     2023-11-02 19:29:00 2023-11-02 19:39:00 7401.58
     2023-11-02 19:30:00 2023-11-02 19:40:00 7156.43
 
-## Related content¶
-
-  * Course: [Window Aggregations](https://developer.confluent.io/courses/flink-sql/window-aggregations/)
-  * Confluent Developer: [How to create cumulating windows](https://developer.confluent.io/tutorials/create-cumulating-windows/flinksql.html)
-  * [Top-N Queries](topn.html#flink-sql-top-n)
-  * [Window Top-N Queries](window-topn.html#flink-sql-window-top-n)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

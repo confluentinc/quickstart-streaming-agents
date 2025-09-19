@@ -32,8 +32,3 @@ Use the following topics to learn more about securing Confluent Manager for Apac
   * [Configure Authorization for Confluent Manager for Apache Flink](authorization.html#cmf-authorize)
   * [Data Encryption in Confluent Manager for Apache Flink](encryption.html#data-encryption-cmf)
 
-## Related content¶
-
-  * [Get Started with Applications in Confluent Manager for Apache Flink](../get-started/get-started-application.html#cpf-get-started)
-  * [Install Confluent Manager for Apache Flink with Helm](helm.html#install-cmf-helm)
-  * [Get Help with Confluent Platform for Apache Flink](../get-help.html#cpf-get-help)

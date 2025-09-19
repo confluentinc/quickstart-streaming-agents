@@ -124,7 +124,7 @@ def run_publisher(credentials: dict):
         'SCHEMA_REGISTRY_URL': credentials['schema_registry_url'],
         'SCHEMA_REGISTRY_API_KEY': credentials['schema_registry_api_key'],
         'SCHEMA_REGISTRY_API_SECRET': credentials['schema_registry_api_secret'],
-        'KAFKA_TOPIC': f"{credentials['environment_name']}.{credentials['cluster_name']}.documents"  # Full topic name
+        'KAFKA_TOPIC': 'documents'  # Use simple topic name as it exists
     })
 
     logger.info(f"Running main publisher script: {main_script}")

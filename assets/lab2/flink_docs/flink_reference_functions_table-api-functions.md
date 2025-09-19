@@ -129,12 +129,3 @@ Confluent adds the following classes for more convenience:
   * ConfluentTools.*
   * ConfluentTableDescriptor.*
 
-## Related content¶
-
-  * Course: [Apache Flink® Table API: Processing Data Streams in Java](https://developer.confluent.io/courses/flink-table-api-java/exercise-connecting-to-confluent-cloud/)
-  * [Table API Overview](../table-api.html#flink-table-api)
-  * [Java Table API Quick Start](../../get-started/quick-start-java-table-api.html#flink-java-table-api-quick-start)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

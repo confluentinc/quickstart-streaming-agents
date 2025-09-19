@@ -117,15 +117,3 @@ Use [uv](https://docs.astral.sh/uv/) to create a virtual environment that contai
          
          uv run hello_table_api.py
 
-## Related content¶
-
-  * [Filter Kafka messages in Python using Flink’s Table API](https://developer.confluent.io/confluent-tutorials/filtering/flink_table_api_python/)
-  * GitHub repo: [Java Examples for Table API on Confluent Cloud](https://github.com/confluentinc/flink-table-api-java-examples)
-  * GitHub repo: [Python Examples for Table API on Confluent Cloud](https://github.com/confluentinc/flink-table-api-python-examples)
-  * [Java Table API Quick Start](quick-start-java-table-api.html#flink-java-table-api-quick-start)
-  * [How-to Guides for Confluent Cloud for Apache Flink](../how-to-guides/overview.html#flink-sql-how-to-guides)
-  * [Built-in Functions](../reference/functions/overview.html#flink-sql-functions-overview)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

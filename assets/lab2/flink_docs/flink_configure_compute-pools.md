@@ -95,6 +95,3 @@ The following curl command deletes a Compute Pool in the `env-1` environment usi
     curl -v -H "Content-Type: application/json" \
      -X DELETE http://cmf:8080/cmf/api/v1/environments/env-1/compute-pools/pool
 
-## Related content¶
-
-  * [Submit Flink SQL Statement with Confluent Manager for Apache Flink](../get-started/get-started-statement.html#get-started-flinksql)

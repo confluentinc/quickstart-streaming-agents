@@ -27,11 +27,3 @@ Some string combinations are reserved as keywords for future use.
 
   * [Flink SQL Reserved Keywords](keywords.html#flink-sql-keywords)
 
-## Related content¶
-
-  * [Stream Processing Concepts](../concepts/overview.html#flink-sql-stream-processing-concepts)
-  * [Time and Watermarks](../concepts/timely-stream-processing.html#flink-sql-timely-stream-processing)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

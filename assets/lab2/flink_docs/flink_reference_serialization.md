@@ -1332,13 +1332,3 @@ In a Protobuf 3 schema, if you want a field to be nullable in Flink, you must ex
       repeated optional string nullable_array_field = 4;  // NOT NULL array with nullable elements
     }
 
-## Related content¶
-
-  * [Data Types](datatypes.html#flink-sql-datatypes)
-  * [Apache Avro Specification](https://avro.apache.org/docs/1.11.1/specification/)
-  * [JSON Schema Specification](https://json-schema.org/specification.html)
-  * [Protocol Buffers Version 3 Language Specification](https://protobuf.dev/reference/protobuf/proto3-spec/)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

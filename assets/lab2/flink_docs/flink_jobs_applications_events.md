@@ -124,8 +124,3 @@ An example response might look like the following:
       ]
     }
 
-## Related content¶
-
-  * [Application Instances in Confluent Manager for Apache Flink](application-instances.html#cmf-application-instances)
-  * [Deploy and Manage Confluent Manager for Apache Flink Applications](overview.html#cmf-applications)
-  * [Configure Environments in Confluent Manager for Apache Flink](../../configure/environments.html#cmf-environments)

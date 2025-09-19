@@ -30,14 +30,3 @@ Confluent Cloud for Apache Flink provides Flink Actions that enable you to perfo
   * [Mask Fields in a Table](mask-fields.html#flink-sql-mask-fields-action): Mask sensitive data in specified fields of a topic by replacing the original data with a static value.
   * [Transform a Topic](transform-topic.html#flink-sql-transform-topic-action): Change a topic’s properties by applying custom Flink SQL transformations.
 
-## Related content¶
-
-  * Video: [How to Set Idle Timeouts](https://www.youtube.com/watch?v=YSIhM5-Sykw)
-  * Video: [How to Analyze Data from a REST API with Flink SQL](https://www.youtube.com/watch?v=HB_TbqCKny4)
-  * Video: [How To Use Streaming Joins with Apache Flink](https://www.youtube.com/watch?v=ChiAXgTuzaA)
-  * Video: [How to Visualize Real-Time Data from Apache Kafka using Apache Flink SQL and Streamlit](https://www.youtube.com/watch?v=dRkyf1eyYvQ)
-  * [Use Flink SQL with Kafka, Streamlit, and the Alpaca API](https://github.com/confluentinc/demo-scene/tree/master/flink-streamlit)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

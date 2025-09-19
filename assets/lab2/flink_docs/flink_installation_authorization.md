@@ -91,6 +91,3 @@ When you make the `helm install` call, use the `-f` flag to pass the YAML file w
       -f mtls-values.yaml \
       -f authorization-values.yaml
 
-## Related content¶
-
-  * [How to Secure a Flink Job with Confluent Manager for Apache Flink](../jobs/configure/security.html#cpf-security)

@@ -103,12 +103,3 @@ The following example shows how to calculate Top 3 customers which have the high
     2023-11-05 19:41:53 97.30 1428       3256        2023-11-05 19:40    2023-11-05 19:50    2
     2023-11-05 19:43:17 96.80 1173       3092        2023-11-05 19:40    2023-11-05 19:50    3
 
-## Related content¶
-
-  * [Top-N Queries](topn.html#flink-sql-top-n)
-  * [Windowing Table-Valued Functions (Windowing TVFs)](window-tvf.html#flink-sql-window-tvfs)
-  * [Window Aggregation Queries](window-aggregation.html#flink-sql-window-aggregation)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

@@ -608,6 +608,3 @@ The following code example shows how to log errors to the specified Dead Letter 
       'error-handling.log.target' = 'my_error_table'
     );
 
-## Related content¶
-
-  * Video: [How to Set Idle Timeouts](https://www.youtube.com/watch?v=YSIhM5-Sykw)

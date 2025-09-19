@@ -43,12 +43,3 @@ When the IF EXISTS clause is provided and the model or version doesn’t exist, 
     -- Delete all versions and the model.
     DROP MODEL `<model-name>$all`;
 
-## Related content¶
-
-  * [CREATE MODEL](create-model.html#flink-sql-create-model)
-  * [ALTER MODEL](alter-model.html#flink-sql-alter-model)
-  * [Run an AI Model](../../../ai/ai-model-inference.html#flink-sql-ai-model)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

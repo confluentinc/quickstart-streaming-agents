@@ -6160,8 +6160,3 @@ You will receive the error:
 
 This occurs because you are requesting an empty resource.
 
-## Related content¶
-
-  * [CLI Operations for Confluent Manager for Apache Flink](cli.html#cmf-flink-cli)
-  * [Confluent CLI](/confluent-cli/current/command-reference/flink/index.html)
-  * [Confluent for Kubernetes](https://docs.confluent.io/docs-operator/current/co-manage-flink.html)

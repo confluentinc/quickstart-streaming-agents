@@ -157,10 +157,3 @@ To deploy Flink jobs, you should open port forwarding to CMF, and create an envi
          helm uninstall cp-flink-kubernetes-operator
          helm uninstall cmf
 
-## Related content¶
-
-  * [Confluent Platform for Apache Flink Features and Support](../jobs/applications/supported-features.html#cpflink-vs-oss)
-  * [Get Help with Confluent Platform for Apache Flink](../get-help.html#cpf-get-help)
-  * [Manage Flink With Confluent for Kubernetes](../clients-api/flink-cfk.html#cmf-cfk)
-  * [How to Secure a Flink Job with Confluent Manager for Apache Flink](../jobs/configure/security.html#cpf-security)
-  * [Release Notes for Confluent Platform 8.0](../../release-notes/index.html#release-notes)

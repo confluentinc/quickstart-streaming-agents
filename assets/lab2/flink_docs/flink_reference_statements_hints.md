@@ -115,12 +115,3 @@ When using State TTL hints, keep the following in mind:
   * If a hint key is duplicated, the last occurrence takes precedence.
   * When multiple STATE_TTL hints are used with the same hint key, the first occurrence is applied.
 
-## Related content¶
-
-  * [CREATE TABLE](create-table.html#flink-sql-create-table)
-  * [ALTER TABLE](alter-table.html#flink-sql-alter-table)
-  * [Table Options](create-table.html#flink-sql-with-options)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

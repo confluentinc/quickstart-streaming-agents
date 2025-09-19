@@ -424,13 +424,3 @@ For `CLOUD_PROVIDER=aws` and `CLOUD_REGION=us-east-2`, your output should resemb
 
     Using Flink region "Ohio (us-east-2)".
 
-## Related content¶
-
-  * [Flink SQL Shell Quick Start](../get-started/quick-start-shell.html#flink-sql-quick-start-shell)
-  * [Monitor Flink SQL Statements](../operate-and-deploy/monitor-statements.html#flink-sql-monitor-statements-with-cloud-console)
-  * [Flink SQL REST API](../operate-and-deploy/flink-rest-api.html#flink-rest-api)
-  * [Confluent Terraform Provider](https://registry.terraform.io/providers/confluentinc/confluent/latest/docs)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

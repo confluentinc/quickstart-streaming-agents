@@ -65,3 +65,39 @@ output "mongodb_connection_details" {
   }
   sensitive = true
 }
+
+# RAG Pipeline Statement Outputs
+output "documents_insert_sample_id" {
+  description = "Flink statement ID for sample documents insertion"
+  value       = confluent_flink_statement.documents_insert_sample.id
+}
+
+output "queries_insert_sample_id" {
+  description = "Flink statement ID for sample queries insertion"
+  value       = confluent_flink_statement.queries_insert_sample.id
+}
+
+output "documents_vectordb_table_id" {
+  description = "Flink statement ID for documents_vectordb external table"
+  value       = confluent_flink_statement.documents_vectordb_create_table.id
+}
+
+output "documents_embed_insert_id" {
+  description = "Flink statement ID for documents_embed insertion"
+  value       = confluent_flink_statement.documents_embed_insert_into.id
+}
+
+output "queries_embed_insert_id" {
+  description = "Flink statement ID for queries_embed insertion"
+  value       = confluent_flink_statement.queries_embed_insert_into.id
+}
+
+output "search_results_table_id" {
+  description = "Flink statement ID for search_results table"
+  value       = confluent_flink_statement.search_results_create_table.id
+}
+
+output "search_results_response_table_id" {
+  description = "Flink statement ID for search_results_response table"
+  value       = confluent_flink_statement.search_results_response_create_table.id
+}

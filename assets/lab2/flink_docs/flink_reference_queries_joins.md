@@ -143,13 +143,3 @@ Returns a new row for each element in the given array. Unnesting `WITH ORDINALIT
     SELECT order_id, tag
     FROM orders CROSS JOIN UNNEST(tags) AS t (tag)
 
-## Related content¶
-
-  * Confluent Developer: [Temporal Joins Explained](https://developer.confluent.io/courses/flink-sql/streaming-joins/)
-  * [Flink SQL Queries](overview.html#flink-sql-queries)
-  * [Flink SQL Functions](../functions/overview.html#flink-sql-functions-overview)
-  * [Statements](../statements/overview.html#flink-sql-statements-overview)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

@@ -206,18 +206,3 @@ Your output should resemble:
 
 Congratulations, you have run your first Flink SQL statements on Confluent Cloud using the SQL Shell.
 
-## Next steps¶
-
-  * [How-to Guides for Confluent Cloud for Apache Flink](../how-to-guides/overview.html#flink-sql-how-to-guides)
-
-## Related content¶
-
-  * [Course: Apache Flink 101](https://developer.confluent.io/courses/apache-flink/intro/)
-  * [Course: Building Flink Applications in Java](https://developer.confluent.io/courses/flink-java/overview/)
-  * [DDL Statements](../concepts/statements.html#flink-sql-statements)
-  * [Stream Processing Concepts](../concepts/overview.html#flink-sql-stream-processing-concepts)
-  * [Built-in Functions](../reference/functions/overview.html#flink-sql-functions-overview)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

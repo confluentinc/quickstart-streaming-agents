@@ -399,17 +399,3 @@ The following features are not supported.
   * Selecting `.rowtime` in windows causes errors.
   * Using `.limit()` can cause errors.
 
-## Next steps¶
-
-  * [Java Table API Quick Start on Confluent Cloud for Apache Flink](../get-started/quick-start-java-table-api.html#flink-java-table-api-quick-start)
-  * [Python Table API Quick Start on Confluent Cloud for Apache Flink](../get-started/quick-start-python-table-api.html#flink-python-table-api-quick-start)
-
-## Related content¶
-
-  * Course: [Apache Flink® Table API: Processing Data Streams in Java](https://developer.confluent.io/courses/flink-table-api-java/exercise-connecting-to-confluent-cloud/)
-  * [Table API functions](functions/table-api-functions.html#flink-table-api-functions)
-  * [Built-in Functions](functions/overview.html#flink-sql-functions-overview)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

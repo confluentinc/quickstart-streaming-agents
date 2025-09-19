@@ -63,12 +63,3 @@ As data continues to stream, the window in the lower pane moves to the left, whi
 
   7. Click the time-series toggle ([](../../_images/flink-workspace-time-series-toggle.png)) to close the visualizer.
 
-## Related content¶
-
-  * [Scan and Summarize Tables](scan-and-summarize-tables.html#flink-sql-scan-and-summarize)
-  * [Compare Current and Previous Values in a Data Stream](compare-current-and-previous-values.html#flink-sql-compare-current-and-previous-values)
-  * [Convert the Serialization Format of a Topic](convert-serialization-format.html#flink-sql-convert-format)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

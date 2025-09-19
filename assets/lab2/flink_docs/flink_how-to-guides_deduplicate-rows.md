@@ -151,15 +151,3 @@ Your output should resemble:
         Niobe              1677260921   female Region_3
         Zee                1677260922   female Region_5
 
-## Related content¶
-
-  * Flink action: [Mask Fields in a Table](mask-fields.html#flink-sql-mask-fields-action)
-  * Flink action: [Transform a Topic](transform-topic.html#flink-sql-transform-topic-action)
-  * Flink action: [Create an Embedding](../../ai/embeddings/embedding-action.html#flink-sql-embedding-action)
-  * [Aggregate a Stream in a Tumbling Window](aggregate-tumbling-window.html#flink-sql-aggregate-tumbling-window)
-  * [Compare Current and Previous Values in a Data Stream](compare-current-and-previous-values.html#flink-sql-compare-current-and-previous-values)
-  * [Convert the Serialization Format of a Topic](convert-serialization-format.html#flink-sql-convert-format)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

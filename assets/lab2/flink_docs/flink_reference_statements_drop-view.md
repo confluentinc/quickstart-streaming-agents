@@ -49,11 +49,3 @@ To avoid the error when dropping a view that may not exist, use the `IF EXISTS` 
 
 This statement will not throw an error if the `vip_customers` view does not exist.
 
-## Related content¶
-
-  * [CREATE VIEW](create-view.html#flink-sql-create-view)
-  * [ALTER VIEW](alter-view.html#flink-sql-alter-view)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

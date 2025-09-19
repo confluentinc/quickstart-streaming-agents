@@ -73,6 +73,3 @@ The following image shows an example of viewing metrics in the Flink WebUI.
 
 [](../../../_images/cmf-metrics.png)
 
-## Related content¶
-
-  * [Get Help with Confluent Platform for Apache Flink](../../get-help.html#cpf-get-help)

@@ -23,10 +23,3 @@ Important
 
 **Do not manually modify FlinkDeployment resources** : CMF manages FlinkDeployment resources internally and you should not modify them manually. Manual modifications to FlinkDeployment resources can cause conflicts and unexpected behavior.
 
-## Related content¶
-
-  * [REST APIs for Confluent Manager for Apache Flink](../clients-api/rest.html#af-rest-api)
-  * [Configure Authentication for Confluent Manager for Apache Flink](../installation/authentication.html#cmf-authenticate)
-  * [Configure Authorization for Confluent Manager for Apache Flink](../installation/authorization.html#cmf-authorize)
-  * [Confluent CLI Flink Operations](/confluent-cli/current/command-reference/flink/index.html)
-  * [Manage Flink Applications Using Confluent for Kubernetes](https://docs.confluent.io/operator/current/co-manage-flink.html).

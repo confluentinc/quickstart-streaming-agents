@@ -61,7 +61,3 @@ The following code shows an example of configuring logging at the Environment le
         rootLogger.level = DEBUG
         rootLogger.appenderRef.file.ref = LogFile
 
-## Related content¶
-
-  * [Get Help with Confluent Platform for Apache Flink](../../get-help.html#cpf-get-help)
-  * [Collect Metrics for Confluent Manager for Apache Flink](metrics.html#cmf-metrics)

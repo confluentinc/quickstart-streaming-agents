@@ -172,15 +172,3 @@ Your output should resemble:
            'value.format' = 'json-registry'
          )
 
-## Related content¶
-
-  * Flink action: [Deduplicate Rows in a Table](deduplicate-rows.html#flink-sql-deduplicate-topic-action)
-  * Flink action: [Mask Fields in a Table](mask-fields.html#flink-sql-mask-fields-action)
-  * Flink action: [Create an Embedding](../../ai/embeddings/embedding-action.html#flink-sql-embedding-action)
-  * [Aggregate a Stream in a Tumbling Window](aggregate-tumbling-window.html#flink-sql-aggregate-tumbling-window)
-  * [Compare Current and Previous Values in a Data Stream](compare-current-and-previous-values.html#flink-sql-compare-current-and-previous-values)
-  * [Convert the Serialization Format of a Topic](convert-serialization-format.html#flink-sql-convert-format)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

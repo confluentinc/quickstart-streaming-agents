@@ -129,16 +129,3 @@ The following code example shows a streaming query.
       TUMBLE(TABLE orders, DESCRIPTOR(order_time), INTERVAL '1' MINUTE))
     GROUP BY window_start, window_end;
 
-## Related content¶
-
-  * [Deduplication](../reference/queries/deduplication.html#flink-sql-deduplication)
-  * [Determinism in Continuous Queries](determinism.html#flink-sql-determinism)
-  * [ORDER BY Clause](../reference/queries/orderby.html#flink-sql-order-by)
-  * [Snapshot Queries](snapshot-queries.html#flink-sql-snapshot-queries)
-  * [Time and Watermarks](timely-stream-processing.html#flink-sql-timely-stream-processing)
-  * [Window Aggregation](../reference/queries/window-aggregation.html#flink-sql-window-aggregation)
-  * [Window Deduplication](../reference/queries/window-deduplication.html#flink-sql-window-deduplication)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

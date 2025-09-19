@@ -50,10 +50,3 @@ The catalog parameter is unquoted, for example, `USE CATALOG catalog1;`.
 
 Any USE statements within an editor cell take precedence over the settings in the workspace’s global **catalog** and **database** dropdown controls.
 
-## Related content¶
-
-  * [USE database](use-database.html#flink-sql-use-database-statement)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

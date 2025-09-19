@@ -66,13 +66,3 @@ Your output should resemble:
 
 The Flink statement created with this query identifies the minimum and maximum order value in each 10-second window.
 
-## Related content¶
-
-  * [Compare Current and Previous Values in a Data Stream](compare-current-and-previous-values.html#flink-sql-compare-current-and-previous-values)
-  * [Windowing Table-Valued Functions](../reference/queries/window-tvf.html#flink-sql-window-tvfs)
-  * [Window Aggregation Queries](../reference/queries/window-aggregation.html#flink-sql-window-aggregation)
-  * [Window Deduplication Queries](../reference/queries/window-deduplication.html#flink-sql-window-deduplication)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

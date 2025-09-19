@@ -41,7 +41,3 @@ You must be authorized to create, update, delete (`FlinkAdmin`) or use (`FlinkDe
 
 You can move a statement from one compute pool to another. This can be useful if you’re close to maxing out the resources in one pool. To move a running statement, you must stop the statement, change its compute pool, then restart the statement.
 
-## Related content¶
-
-  * [Billing on Confluent Cloud for Apache Flink](flink-billing.html#flink-sql-billing)
-  * [DDL Statements](statements.html#flink-sql-statements)

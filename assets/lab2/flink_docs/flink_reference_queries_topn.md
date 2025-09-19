@@ -92,12 +92,3 @@ Note
 
 In Streaming Mode, to output the above query to an external storage and have a correct result, the external storage must have the same unique key with the Top-N query. In the above example query, if the `product_id` is the unique key of the query, then the external table should also has `product_id` as the unique key.
 
-## Related content¶
-
-  * [Window Aggregation Queries](window-aggregation.html#flink-sql-window-aggregation)
-  * [Windowing Table-Valued Functions (Windowing TVFs)](window-tvf.html#flink-sql-window-tvfs)
-  * Top-N Queries
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

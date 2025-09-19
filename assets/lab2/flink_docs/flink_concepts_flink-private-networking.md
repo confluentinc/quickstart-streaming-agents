@@ -154,12 +154,3 @@ You can set defaults for each cloud region in an environment. For this, use the 
   * When a default is set, it is used for all pages that access Flink, for example, the statement list, workspace list, and workspaces.
   * If no default is set, the public endpoint is used.
 
-## Related content¶
-
-  * Video: [Flink Queries on Dedicated PrivateLink Kafka Clusters in Confluent Cloud](https://www.youtube.com/watch?v=IX6dcgDnVtk)
-  * [Use Confluent Cloud with Private Networking](../../networking/ccloud-console-access.html#ccloud-console-access-networking)
-  * [Flink Compute Pools](compute-pools.html#flink-sql-compute-pools)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

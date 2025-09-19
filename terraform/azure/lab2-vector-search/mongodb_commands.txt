@@ -5,30 +5,21 @@
 # ✅ LLM embedding model: llm_embedding_model (available in core)
 # ✅ LLM text generation model: llm_textgen_model (available in core)
 # ✅ Basic Flink tables: documents, documents_embed, queries, queries_embed
+# ✅ MongoDB Flink connection: mongodb-connection (automated via Terraform)
 #
 # 📋 MANUAL STEPS REQUIRED:
 # Run these commands after terraform apply completes
 
-# Step 1: Create MongoDB Connection (CLI only - not supported by Terraform provider)
-confluent flink connection create mongodb-connection \
-  --cloud AZURE \
-  --region East US \
-  --type mongodb \
-  --endpoint mongodb+srv://username:password@cluster.mongodb.net/?retryWrites=true&w=majority \
-  --username mongodb_username \
-  --password mongodb_password \
-  --environment env-33zzz0
-
-# Step 2: Populate Embedding Tables (run these in Confluent Cloud SQL workspace)
+# Step 1: Populate Embedding Tables (run these in Confluent Cloud SQL workspace)
 
 # Populate documents_embed table with chunked and embedded documents
-INSERT INTO `streaming-agents-env-ddfb5901`.`streaming-agents-cluster-ddfb5901`.documents_embed
+INSERT INTO `streaming-agents-env-1fda8714`.`streaming-agents-cluster-1fda8714`.documents_embed
 WITH chunked_texts AS (
   SELECT
     document_id,
     document_text,
     chunk
-  FROM `streaming-agents-env-ddfb5901`.`streaming-agents-cluster-ddfb5901`.documents
+  FROM `streaming-agents-env-1fda8714`.`streaming-agents-cluster-1fda8714`.documents
   CROSS JOIN UNNEST(
     ML_CHARACTER_TEXT_SPLITTER(
       document_text, 200, 20, '###', false, false, true, 'START'
@@ -45,17 +36,17 @@ LATERAL TABLE(
 );
 
 # Populate queries_embed table with embedded queries
-INSERT INTO `streaming-agents-env-ddfb5901`.`streaming-agents-cluster-ddfb5901`.queries_embed
+INSERT INTO `streaming-agents-env-1fda8714`.`streaming-agents-cluster-1fda8714`.queries_embed
 SELECT
   query,
   embedding
-FROM `streaming-agents-env-ddfb5901`.`streaming-agents-cluster-ddfb5901`.queries,
+FROM `streaming-agents-env-1fda8714`.`streaming-agents-cluster-1fda8714`.queries,
 LATERAL TABLE(ML_PREDICT('llm_embedding_model', query));
 
-# Step 3: Create MongoDB Vector Store and Search Tables (run these in Confluent Cloud SQL workspace)
+# Step 2: Create MongoDB Vector Store and Search Tables (run these in Confluent Cloud SQL workspace)
 
-# Create documents_vectordb table (MongoDB vector store)
-CREATE TABLE `streaming-agents-env-ddfb5901`.`streaming-agents-cluster-ddfb5901`.documents_vectordb (
+# Create documents_vectordb table (MongoDB vector store external table)
+CREATE TABLE `streaming-agents-env-1fda8714`.`streaming-agents-cluster-1fda8714`.documents_vectordb (
   document_id STRING,
   chunk STRING,
   embedding ARRAY<FLOAT>
@@ -66,11 +57,11 @@ CREATE TABLE `streaming-agents-env-ddfb5901`.`streaming-agents-cluster-ddfb5901`
   'mongodb.collection' = 'documents',
   'mongodb.index' = 'vector_index',
   'mongodb.embedding_column' = 'embedding',
-  'mongodb.numCandidates' = '150'
+  'mongodb.numCandidates' = '500'
 );
 
 # Create search_results table (vector search results)
-CREATE TABLE `streaming-agents-env-ddfb5901`.`streaming-agents-cluster-ddfb5901`.search_results AS
+CREATE TABLE `streaming-agents-env-1fda8714`.`streaming-agents-cluster-1fda8714`.search_results AS
 SELECT
 qe.query,
 -- Transform the array with named fields to exclude embeddings
@@ -80,21 +71,21 @@ ARRAY[
     CAST(ROW(vs.search_results[3].document_id, vs.search_results[3].chunk) AS ROW<document_id STRING, chunk STRING>)
 ] AS results
 FROM
-`streaming-agents-env-ddfb5901`.`streaming-agents-cluster-ddfb5901`.queries_embed AS qe,
+`streaming-agents-env-1fda8714`.`streaming-agents-cluster-1fda8714`.queries_embed AS qe,
 LATERAL TABLE(VECTOR_SEARCH(
-    `streaming-agents-env-ddfb5901`.`streaming-agents-cluster-ddfb5901`.documents_vectordb,
+    `streaming-agents-env-1fda8714`.`streaming-agents-cluster-1fda8714`.documents_vectordb,
     3,
     DESCRIPTOR(embedding),
     qe.embedding
 )) AS vs;
 
 # Create search_results_response table (RAG responses)
-CREATE TABLE `streaming-agents-env-ddfb5901`.`streaming-agents-cluster-ddfb5901`.search_results_response AS
+CREATE TABLE `streaming-agents-env-1fda8714`.`streaming-agents-cluster-1fda8714`.search_results_response AS
 SELECT
     qr.query,
     CAST(qr.results AS STRING) AS results_text,
     pred.response
-FROM `streaming-agents-env-ddfb5901`.`streaming-agents-cluster-ddfb5901`.search_results qr,
+FROM `streaming-agents-env-1fda8714`.`streaming-agents-cluster-1fda8714`.search_results qr,
 LATERAL TABLE(
     ml_predict(
         'llm_textgen_model',

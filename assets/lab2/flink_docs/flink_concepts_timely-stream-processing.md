@@ -272,18 +272,3 @@ Processing time enables a table program to produce results based on the time of 
 
 Processing time is not supported in Confluent Cloud for Apache Flink.
 
-## Related content¶
-
-Flink implements many techniques from the Dataflow Model. For a good introduction to event time and watermarks, have a look at these articles.
-
-  * Course: [Watermarks Demystified](https://developer.confluent.io/courses/flink-sql/watermarks/)
-  * Video: [Watermark Alignment Explained in 2 Minutes](https://www.youtube.com/watch?v=HxVcs9SNZEg)
-  * Blog post: [Introducing Stream Windows in Apache Flink](https://flink.apache.org/news/2015/12/04/Introducing-windows.html)
-  * [Streaming 101 (O’Reilly online learning)](https://www.oreilly.com/ideas/the-world-beyond-batch-streaming-101) by Tyler Akidau
-  * [Dataflow Model](https://research.google.com/pubs/archive/43864.pdf)
-  * [CREATE TABLE Statement in Confluent Cloud for Apache Flink](../reference/statements/create-table.html#flink-sql-create-table)
-  * [Flink SQL Queries](../reference/queries/overview.html#flink-sql-queries)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

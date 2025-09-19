@@ -175,7 +175,3 @@ Once you are done, you should stop the `INSERT INTO` statement and tear down the
 
     confluent --environment test flink statement delete <stmt-name>
 
-## Related content¶
-
-  * [REST APIs for Confluent Manager for Apache Flink](../clients-api/rest.html#af-rest-api)
-  * [Manage Compute Pools in Confluent Manager for Apache Flink](../configure/compute-pools.html#cmf-compute-pools)

@@ -80,12 +80,3 @@ You can set the snapshot mode in SQL by using the [SET](../reference/statements/
 
 The query runs and returns all of the messages that have been produced to the topic at the current point in time.
 
-## Related content¶
-
-  * [Snapshot Queries](../concepts/snapshot-queries.html#flink-sql-snapshot-queries)
-  * [Query Tableflow Tables with Flink](../../topics/tableflow/how-to-guides/query-engines/query-with-flink.html#cloud-tableflow-query-with-flink)
-  * [Statements](../concepts/statements.html#flink-sql-statements)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

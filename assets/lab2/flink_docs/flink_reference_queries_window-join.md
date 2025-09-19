@@ -174,12 +174,3 @@ Currently, the window join requires that the join-on condition contains window-s
 
 Currently, the windowing TVFs must be the same for left and right inputs. This could be extended in the future, for example, tumbling windows join sliding windows with the same window size.
 
-## Related content¶
-
-  * [Top-N Queries](topn.html#flink-sql-top-n)
-  * [Window Top-N Queries](window-topn.html#flink-sql-window-top-n)
-  * [Windowing Table-Valued Functions (Windowing TVFs)](window-tvf.html#flink-sql-window-tvfs)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

@@ -442,7 +442,3 @@ If you experience issues with the Confluent CLI, you can use the `flag --unsafe-
 
 If you get a `not found` error response, and you are sure that the specified resource exists, verify that the CMF server is up and running and you have connectivity to the server.
 
-## Related content¶
-
-  * [Confluent CLI Flink Reference](/confluent-cli/current/command-reference/flink/index.html)
-  * [REST API](rest.html#af-rest-api)

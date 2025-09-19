@@ -313,13 +313,3 @@ To change the logging level for an active UDF log, run the following commands.
            }
          }'
 
-## Related content¶
-
-  * [User-defined Functions](../concepts/user-defined-functions.html#flink-sql-udfs)
-  * [Create a User-defined Function](create-udf.html#flink-sql-create-udf)
-  * [confluent flink artifact create](https://docs.confluent.io/confluent-cli/current/command-reference/flink/artifact/confluent_flink_artifact_create.html)
-  * [CREATE FUNCTION Statement](../reference/statements/create-function.html#flink-sql-create-function)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

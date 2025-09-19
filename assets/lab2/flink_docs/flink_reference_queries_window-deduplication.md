@@ -86,12 +86,3 @@ The mock data is produced by the [Datagen Source Connector](../../../connectors/
     2023-11-03 20:29:59.992 311    1000         1049      2023-11-03 20:20 2023-11-03 20:30 1
     2023-11-03 20:39:59.569 429    1217         1062      2023-11-03 20:30 2023-11-03 20:40 1
 
-## Related content¶
-
-  * [Top-N Queries](topn.html#flink-sql-top-n)
-  * [Window Top-N Queries](window-topn.html#flink-sql-window-top-n)
-  * [Windowing Table-Valued Functions (Windowing TVFs)](window-tvf.html#flink-sql-window-tvfs)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

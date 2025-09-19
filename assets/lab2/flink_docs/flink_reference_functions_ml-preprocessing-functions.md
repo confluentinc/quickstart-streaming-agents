@@ -413,12 +413,3 @@ Example
   * [String Functions](string-functions.html#flink-sql-string-functions)
   * [Table API Functions](table-api-functions.html#flink-table-api-functions)
 
-## Related content¶
-
-  * [AI Model Inference Functions](model-inference-functions.html#flink-sql-model-inference-functions)
-  * [Build AI with Flink SQL](../../../ai/overview.html#ai-overview)
-  * [Flink SQL Queries](../queries/overview.html#flink-sql-queries)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

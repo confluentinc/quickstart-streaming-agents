@@ -35,9 +35,3 @@ The standalone Kubernetes deployment mode is recommended when running untrusted 
 
 When you install CMF, you create the roles to create and manage FlinkDeployment resources on Kubernetes.
 
-## Related content¶
-
-  * [Get Help with Confluent Platform for Apache Flink](../../get-help.html#cpf-get-help)
-  * [Get Started with Applications in Confluent Manager for Apache Flink](../../get-started/get-started-application.html#cpf-get-started)
-  * [Kubernetes best practices](https://kubernetes.io/docs/concepts/security/rbac-good-practices/)
-  * [Flink RBAC documentation](https://nightlies.apache.org/flink/flink-kubernetes-operator-docs-release-1.10/docs/operations/rbac/)

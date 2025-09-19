@@ -129,17 +129,3 @@ If you’ve created the workspace in a region where you already have Kafka clust
          
          SELECT * FROM <table_name>;
 
-## Next steps¶
-
-  * [How-to Guides for Confluent Cloud for Apache Flink](../how-to-guides/overview.html#flink-sql-how-to-guides)
-  * [Flink SQL Shell Quick Start](quick-start-shell.html#flink-sql-quick-start-shell)
-
-## Related content¶
-
-  * [DDL Statements](../concepts/statements.html#flink-sql-statements)
-  * [Stream Processing Concepts](../concepts/overview.html#flink-sql-stream-processing-concepts)
-  * [Built-in Functions](../reference/functions/overview.html#flink-sql-functions-overview)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

@@ -111,14 +111,3 @@ Properties
   * Columns `c1`, `c2`, are `c4` are filled with NULLs.
   * If one of the columns is declared NOT NULL, an error occurs.
 
-## Related content¶
-
-  * [Convert the Serialization Format of a Topic](../../how-to-guides/convert-serialization-format.html#flink-sql-convert-format)
-  * [INSERT VALUES](insert-values.html#flink-sql-insert-values-statement)
-  * [Flink SQL Queries](overview.html#flink-sql-queries)
-  * [Flink SQL Functions](../functions/overview.html#flink-sql-functions-overview)
-  * [Statements](../statements/overview.html#flink-sql-statements-overview)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

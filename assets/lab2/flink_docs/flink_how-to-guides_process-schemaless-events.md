@@ -142,10 +142,3 @@ You can submit a partial schema only for JSON. Flink will process the defined fi
 
 With this approach, automatic schema evolution within the stream is not supported. If you want to evolve the schema, you must manually evolve the it and consider the impact as described in [Schema Evolution and Compatibility for Schema Registry on Confluent Cloud](../../sr/fundamentals/schema-evolution.html#schema-evolution-and-compatibility).
 
-## Related content¶
-
-  * [Handle Multiple Event Types](multiple-event-types.html#flink-sql-multiple-event-types)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

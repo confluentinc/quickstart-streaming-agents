@@ -122,13 +122,3 @@ Flink implements many techniques from the Dataflow Model. For a good introductio
   * Blog post: [Streaming 101 by Tyler Akidau](https://www.oreilly.com/ideas/the-world-beyond-batch-streaming-101)
   * [Dataflow Model](https://research.google.com/pubs/archive/43864.pdf)
 
-## Related content¶
-
-  * [Get Started with Applications in Confluent Manager for Apache Flink](../get-started/get-started-application.html#cpf-get-started)
-  * [Confluent Platform for Apache Flink Features and Support](../jobs/applications/supported-features.html#cpflink-vs-oss)
-  * [Apache Flink 101](https://developer.confluent.io/courses/apache-flink/intro/)
-  * [Apache Flink Documentation](https://nightlies.apache.org/flink/flink-docs-master/)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

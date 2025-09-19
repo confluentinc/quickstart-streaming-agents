@@ -174,14 +174,3 @@ The maximum secret length is 4000 bytes, which is checked after the string is co
         'confluent-jdbc.table-name' = 'netflix_shows'
     );
 
-## Related content¶
-
-  * [ALTER CONNECTION](alter-connection.html#flink-sql-alter-connection)
-  * [DESCRIBE CONNECTION](describe.html#flink-sql-describe)
-  * [DROP CONNECTION](drop-connection.html#flink-sql-drop-connection)
-  * [SHOW CONNECTIONS](show.html#flink-sql-show-connections)
-  * [Reuse Confluent Cloud Connections With External Services](../../../integrations/connections/overview.html#connections-overview)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

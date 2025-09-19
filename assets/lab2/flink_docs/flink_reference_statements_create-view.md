@@ -57,11 +57,3 @@ You can then use this view in queries as if it were a table:
 
 This statement retrieves all customers with a total order value greater than 1000, leveraging the aggregation already computed in the `orders_by_customer` view.
 
-## Related content¶
-
-  * [CREATE TABLE statement](create-table.html#flink-sql-create-table)
-  * [SELECT statement](../queries/select.html#flink-sql-select)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

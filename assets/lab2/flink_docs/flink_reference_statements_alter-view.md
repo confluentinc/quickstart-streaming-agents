@@ -97,11 +97,3 @@ Your output should resemble:
 
 The view now includes an additional `order_count` column representing the number of orders per customer, and filters for only those customers who have spent more than 1000.
 
-## Related content¶
-
-  * [CREATE VIEW statement](create-view.html#flink-sql-create-view)
-  * [SELECT statement](../queries/select.html#flink-sql-select)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

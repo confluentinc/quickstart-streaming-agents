@@ -343,11 +343,3 @@ XML
 ZONE  
 ---  
   
-## Related content¶
-
-  * [DDL Statements](../concepts/statements.html#flink-sql-statements)
-  * [Flink SQL Queries](queries/overview.html#flink-sql-queries)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

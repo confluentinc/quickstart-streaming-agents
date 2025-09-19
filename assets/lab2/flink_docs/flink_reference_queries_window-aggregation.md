@@ -213,13 +213,3 @@ The following code shows a cascading window aggregation in which the first windo
           TUMBLE(TABLE fiveminutewindow, DESCRIPTOR($rowtime), INTERVAL '10' MINUTES))
       GROUP BY window_start, window_end;
 
-## Related content¶
-
-  * Course: [Window Aggregations](https://developer.confluent.io/courses/flink-sql/window-aggregations/)
-  * [Top-N Queries](topn.html#flink-sql-top-n)
-  * [Window Top-N Queries](window-topn.html#flink-sql-window-top-n)
-  * [Windowing Table-Valued Functions (Windowing TVFs)](window-tvf.html#flink-sql-window-tvfs)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

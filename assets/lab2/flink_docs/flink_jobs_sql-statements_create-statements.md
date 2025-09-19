@@ -127,7 +127,3 @@ CMF’s execution method varies by statement type: some statements are executed 
       }
     }
 
-## Related content¶
-
-  * [Manage Statements](manage-statements.html#flink-sql-statements-manage)
-  * [Use the Interactive CLI SQL Shell](use-interactive-shell.html#flink-sql-statements-interactive-cli)

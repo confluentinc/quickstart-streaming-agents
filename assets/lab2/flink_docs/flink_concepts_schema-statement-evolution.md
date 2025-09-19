@@ -253,16 +253,3 @@ Instead of creating a new results table, you can also replace the original `CREA
 
 This strategy can and often will be combined with limited reprocessing to a partial history. Specifically, in the case of an exactly-once upgrade of a stateless statement, it makes sense to continue publishing messages to the same topic, provided this was a compatible change.
 
-## Related content¶
-
-Flink implements many techniques from the Dataflow Model. For a good introduction to event time and watermarks, have a look at these articles.
-
-  * [Data Contracts](../../sr/fundamentals/data-contracts.html#sr-data-contracts)
-  * [Stream Lineage](../../stream-governance/stream-lineage.html#cloud-stream-lineage)
-  * [HINTS](../reference/statements/hints.html#flink-sql-hints)
-  * [CREATE TABLE](../reference/statements/create-table.html#flink-sql-create-table)
-  * [SET](../reference/statements/set.html#flink-sql-set-statement)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

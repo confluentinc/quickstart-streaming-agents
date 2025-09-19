@@ -36,8 +36,3 @@ For physical isolation, the Environment specifies the target Kubernetes namespac
 
 For role-based access control (RBAC), the Flink environment is used as the scope to [control access](../../security/authorization/acls/overview.html#acls-authorization). You can grant individual users access to specific Environments to read/manage Flink applications.
 
-## Related content¶
-
-  * [Deploy and Manage Confluent Manager for Apache Flink Applications](../jobs/applications/overview.html#cmf-applications)
-  * [Application Instances in Confluent Manager for Apache Flink](../jobs/applications/application-instances.html#cmf-application-instances)
-  * [Confluent Manager for Apache Flink](../concepts/cmf.html#cmf)

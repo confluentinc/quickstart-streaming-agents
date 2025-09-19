@@ -40,15 +40,19 @@ class FlinkDocsPublisher:
         self.kafka_config = kafka_config
         self.schema_registry_config = schema_registry_config
 
-        # Define Avro schema for documents
+        # Define Avro schema for documents (compatible with existing schema)
         self.value_schema = avro.loads(json.dumps({
             "type": "record",
-            "name": "Document",
+            "name": "documents_value",
+            "namespace": "org.apache.flink.avro.generated.record",
             "fields": [
-                {"name": "document_id", "type": "string"},
-                {"name": "document_text", "type": "string"}
+                {"name": "document_id", "type": ["null", "string"], "default": None},
+                {"name": "document_text", "type": ["null", "string"], "default": None}
             ]
         }))
+
+        # Define Avro schema for keys (simple string)
+        self.key_schema = avro.loads('"string"')
 
         # Initialize producer
         self.producer = None
@@ -58,6 +62,7 @@ class FlinkDocsPublisher:
         try:
             self.producer = AvroProducer(
                 self.kafka_config,
+                default_key_schema=self.key_schema,
                 default_value_schema=self.value_schema,
                 schema_registry=avro.CachedSchemaRegistryClient(self.schema_registry_config)
             )
@@ -93,8 +98,8 @@ class FlinkDocsPublisher:
                 frontmatter = {}
                 markdown_content = content
 
-            # Generate document_id from filename (include .md extension)
-            document_id = file_path.name
+            # Use source_url from frontmatter as document_id, fallback to filename
+            document_id = frontmatter.get('source_url', file_path.name)
 
             # Combine title and content for document_text
             title = frontmatter.get('title', '')
@@ -216,6 +221,7 @@ def create_schema_registry_config(schema_registry_url: str, api_key: str, api_se
     """Create Schema Registry client configuration."""
     return {
         'url': schema_registry_url,
+        'basic.auth.credentials.source': 'USER_INFO',
         'basic.auth.user.info': f'{api_key}:{api_secret}'
     }
 

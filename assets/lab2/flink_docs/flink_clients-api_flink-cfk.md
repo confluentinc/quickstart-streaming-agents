@@ -11,8 +11,3 @@ Users can declaratively create and manage Flink Environments and Flink Applicati
 
 For more information on how to manage Flink on-premises with CFK, see [Manage Flink Applications Using Confluent for Kubernetes](https://docs.confluent.io/operator/current/co-manage-flink.html).
 
-## Related content¶
-
-  * [Install CMF](../installation/helm.html#install-cmf-helm)
-  * [CLI Operations](cli.html#cmf-flink-cli)
-  * [REST APIs](rest.html#af-rest-api)

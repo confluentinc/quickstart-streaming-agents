@@ -145,13 +145,3 @@ The following example shows the revised query that resolves the warning:
            INTERVAL '5' MINUTES
        );
 
-## Related content¶
-
-  * [SET](../reference/statements/set.html#flink-sql-set-statement)
-  * [HINTS](../reference/statements/hints.html#flink-sql-hints)
-  * [Window Aggregation](../reference/queries/window-aggregation.html#flink-sql-window-aggregation)
-  * [Window TopN](../reference/queries/window-topn.html#flink-sql-window-top-n)
-  * [Window Join](../reference/queries/window-join.html#flink-sql-window-join)
-  * [Window Deduplication](../reference/queries/window-deduplication.html#flink-sql-window-deduplication)
-  * [Interval join](../reference/queries/joins.html#flink-sql-interval-joins)
-  * [Temporal join](../reference/queries/joins.html#flink-sql-temporal-joins)

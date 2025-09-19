@@ -54,12 +54,3 @@ For RESET, the specified model option keys are reset to the default value.
     -- Reset the tag option.
     ALTER MODEL `my_model` RESET (tag)
 
-## Related content¶
-
-  * [CREATE MODEL](create-model.html#flink-sql-create-model)
-  * [DROP MODEL](drop-model.html#flink-sql-drop-model)
-  * [Run an AI Model](../../../ai/ai-model-inference.html#flink-sql-ai-model)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

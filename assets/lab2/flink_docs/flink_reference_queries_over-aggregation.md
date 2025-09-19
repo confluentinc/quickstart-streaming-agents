@@ -76,14 +76,3 @@ The following query computes for every order the sum of amounts of all orders fo
       ) AS one_hour_prod_amount_sum
     FROM orders
 
-## Related content¶
-
-  * Confluent Developer: [OVER aggregations](https://developer.confluent.io/courses/flink-sql/over-windows/)
-  * [Time Attributes](../../concepts/timely-stream-processing.html#flink-sql-time-attributes)
-  * [Flink SQL Queries](overview.html#flink-sql-queries)
-  * [Flink SQL Functions](../functions/overview.html#flink-sql-functions-overview)
-  * [Statements](../statements/overview.html#flink-sql-statements-overview)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).

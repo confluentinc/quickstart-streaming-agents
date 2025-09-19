@@ -641,15 +641,3 @@ When working with sinks in upsert mode, it’s crucial to align your primary and
   * Having different primary and upsert keys in upsert mode can lead to significant performance degradation.
   * If you must use different keys, carefully evaluate the performance impact and consider restructuring your query to align these keys.
 
-## Related content¶
-
-  * [Flink SQL Query Profiler](../../operate-and-deploy/query-profiler.html#flink-sql-query-profiler)
-  * [Profile a Query](../../how-to-guides/profile-query.html#flink-sql-profile-query)
-  * [SELECT](../queries/select.html#flink-sql-select)
-  * [INSERT VALUES](../queries/insert-values.html#flink-sql-insert-values-statement)
-  * [INSERT INTO FROM SELECT](../queries/insert-into-from-select.html#flink-sql-insert-into-from-select-statement)
-  * [CREATE TABLE AS](create-table.html#flink-sql-ctas)
-
-Note
-
-This website includes content developed at the [Apache Software Foundation](https://www.apache.org/) under the terms of the [Apache License v2](https://www.apache.org/licenses/LICENSE-2.0.html).
