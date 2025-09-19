@@ -64,3 +64,14 @@ logs/
 # Backup files
 *.bak
 *.backup
+
+# Processing artifacts
+processed_files.json
+chunks.json
+*_test.py
+*_batch.py
+
+# Virtual environments
+.venv/
+venv/
+env/
