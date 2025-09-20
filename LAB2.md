@@ -17,7 +17,7 @@ This lab implements a complete RAG pipeline with the following components:
 ## Prerequisites
 
 - Core Terraform infrastructure deployed (from `/terraform/core/`)
-- MongoDB Atlas cluster (Free Tier supported) with vector search enabled
+- MongoDB Atlas cluster (M0 - Free Tier) with vector search enabled
 - Either AWS or Azure cloud provider configured
 
 ## MongoDB Atlas Setup

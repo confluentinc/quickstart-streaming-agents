@@ -1,8 +1,7 @@
-# LAB2 Vector Search Configuration - Azure
+# LAB2 Vector Search Configuration - AWS
 
 # Basic Configuration
 prefix = "streaming-agents"
-cloud_region = ""
 
 # MongoDB Configuration for Vector Search
 # REQUIRED: Replace with your MongoDB Atlas connection string for vector database

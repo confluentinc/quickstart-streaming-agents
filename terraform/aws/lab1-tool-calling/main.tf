@@ -6,6 +6,11 @@ data "terraform_remote_state" "core" {
   }
 }
 
+# Use cloud_region from core infrastructure
+locals {
+  cloud_region = data.terraform_remote_state.core.outputs.cloud_region
+}
+
 # Random ID for unique resource names for this lab
 resource "random_id" "lab_suffix" {
   byte_length = 4
@@ -35,7 +40,7 @@ resource "local_file" "mcp_commands" {
 # Step 1: Create Zapier MCP Connection (CLI only - not supported by Terraform provider)
 confluent flink connection create zapier-mcp-connection \
   --cloud AWS \
-  --region ${var.cloud_region} \
+  --region ${local.cloud_region} \
   --type mcp_server \
   --endpoint ${replace(var.ZAPIER_SSE_ENDPOINT, "/sse", "")} \
   --api-key api_key \

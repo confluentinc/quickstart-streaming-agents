@@ -4,12 +4,6 @@ variable "prefix" {
   default     = "streaming-agents"
 }
 
-variable "cloud_region" {
-  description = "AWS region"
-  type        = string
-  default     = "us-east-1"
-}
-
 variable "MONGODB_CONNECTION_STRING" {
   description = "MongoDB connection string for vector database"
   type        = string

@@ -258,19 +258,16 @@ class PrerequisiteManager:
 class ConfigurationManager:
     """Manages configuration file creation and validation."""
     
+    # Only regions that support MongoDB Atlas M0 free tier
     CLOUD_REGIONS = {
         'aws': [
-            'us-east-1', 'us-east-2', 'us-west-2',
-            'eu-west-1', 'eu-west-2', 'eu-central-1',
-            'ap-southeast-1', 'ap-southeast-2', 'ap-northeast-1'
+            'us-east-1', 'us-west-2', 'sa-east-1',
+            'ap-southeast-1', 'ap-southeast-2', 'ap-south-1',
+            'ap-east-1', 'ap-northeast-1', 'ap-northeast-2'
         ],
         'azure': [
-            'eastus', 'eastus2', 'centralus', 'northcentralus', 
-            'southcentralus', 'westus', 'westus2', 'westus3',
-            'northeurope', 'westeurope', 'uksouth', 'ukwest',
-            'francecentral', 'germanywestcentral', 'eastasia',
-            'southeastasia', 'japaneast', 'japanwest',
-            'koreacentral', 'koreasouth'
+            'eastus2', 'westus', 'canadacentral',
+            'northeurope', 'westeurope', 'eastasia', 'centralindia'
         ]
     }
     
@@ -280,6 +277,29 @@ class ConfigurationManager:
         self.terraform_dir = terraform_dir
         self.tfvars_file = terraform_dir / "terraform.tfvars"
         self.config_file = Path(".setup_config.json")
+
+    def prompt_for_lab_selection(self) -> str:
+        """Prompt user to select which lab(s) to deploy."""
+        self.ui.print_header("Lab Selection", "Choose which lab(s) to deploy")
+
+        lab_options = {
+            '1': ('lab1', 'Lab1 - Tool Calling'),
+            '2': ('lab2', 'Lab2 - Vector Search/RAG'),
+            '3': ('all', 'All Labs')
+        }
+
+        self.ui.print_info("Available labs:")
+        for key, (_, description) in lab_options.items():
+            print(f"  {key}. {description}")
+
+        while True:
+            choice = self.ui.prompt("Select lab (1-3)", "3").strip()
+            if choice in lab_options:
+                selection = lab_options[choice][0]
+                description = lab_options[choice][1]
+                self.ui.print_success(f"Selected: {description}")
+                return selection
+            self.ui.print_error("Please select 1, 2, or 3")
     
     def load_existing_config(self) -> Dict[str, str]:
         """Load existing configuration from tfvars and config files."""
@@ -406,10 +426,10 @@ class ConfigurationManager:
         
         valid_config = {}
         invalid_config = {}
-        
-        required_fields = ['prefix', 'cloud_provider', 'cloud_region', 
-                          'confluent_cloud_api_key', 'confluent_cloud_api_secret', 
-                          'ZAPIER_SSE_ENDPOINT']
+
+        # Core required fields - always needed
+        required_fields = ['prefix', 'cloud_provider', 'cloud_region',
+                          'confluent_cloud_api_key', 'confluent_cloud_api_secret']
         
         # If this is first run, treat defaults as invalid (need confirmation)
         first_run = self.is_first_run()
@@ -832,42 +852,6 @@ class ConfigurationManager:
         
         return None, None
     
-    def write_terraform_tfvars(self, config: Dict[str, str]):
-        """Write configuration to terraform.tfvars file."""
-        # Backup existing file
-        if self.tfvars_file.exists():
-            backup_path = self.tfvars_file.with_suffix('.tfvars.backup')
-            shutil.copy2(self.tfvars_file, backup_path)
-            self.ui.print_info(f"Backed up existing terraform.tfvars to {backup_path.name}")
-        
-        # Write new configuration
-        tfvars_content = f'''# Required: Your project name (used for resource naming)
-prefix = "{config['prefix']}"
-
-# Required: Choose your cloud provider
-cloud_provider = "{config['cloud_provider']}"  # or "AWS"
-
-# Required: Choose your region (see supported regions below)
-cloud_region = "{config['cloud_region']}"
-
-# Required: Confluent Cloud credentials (or use environment variables)
-confluent_cloud_api_key = "{config['confluent_cloud_api_key']}"
-confluent_cloud_api_secret = "{config['confluent_cloud_api_secret']}"
-
-# Required: Zapier MCP SSE Endpoint required for tool calling. Get from Zapier UI and should look like this
-ZAPIER_SSE_ENDPOINT = "{config['ZAPIER_SSE_ENDPOINT']}"
-'''
-        
-        try:
-            with open(self.tfvars_file, 'w') as f:
-                f.write(tfvars_content)
-            
-            self.ui.print_success(f"Configuration written to {self.tfvars_file}")
-            self.save_config(config)
-            self.logger.info("terraform.tfvars written successfully")
-        except Exception as e:
-            self.ui.print_error(f"Failed to write terraform.tfvars: {e}")
-            raise
 
 class TerraformManager:
     """Manages Terraform operations."""
@@ -1005,20 +989,194 @@ class StreamingAgentsSetup:
         self.args = args
         self.ui = SetupUI()
         self.logger = SetupLogger(verbose=args.verbose)
-        
+
         # Setup paths
         self.root_dir = Path(__file__).parent
         self.terraform_dir = self.root_dir / "terraform"
-        
+        self.core_terraform_dir = self.terraform_dir / "core"
+
         # Initialize managers
         self.prerequisites = PrerequisiteManager(self.ui, self.logger)
         self.config_manager = ConfigurationManager(self.ui, self.logger, self.terraform_dir)
         self.terraform = TerraformManager(self.ui, self.logger, self.terraform_dir)
-        
+
         self.logger.info(f"Setup started with args: {vars(args)}")
-        
+
         # Check Confluent login status at startup
         self.confluent_logged_in = self._check_confluent_login_status()
+
+    def check_core_deployment(self) -> bool:
+        """Check if Core Terraform infrastructure is deployed."""
+        terraform_state = self.core_terraform_dir / 'terraform.tfstate'
+
+        if not terraform_state.exists():
+            return False
+
+        try:
+            with open(terraform_state, 'r') as f:
+                state_data = json.load(f)
+                # Check if state has resources (indicating successful deployment)
+                resources = state_data.get('resources', [])
+                return len(resources) > 0
+        except Exception as e:
+            self.logger.warning(f"Could not parse core terraform state: {e}")
+            return False
+
+    def deploy_core_if_needed(self, config: Dict[str, str]) -> bool:
+        """Deploy Core infrastructure if not already deployed."""
+        if self.check_core_deployment():
+            self.ui.print_success("Core infrastructure is already deployed")
+            return True
+
+        self.ui.print_info("Core infrastructure not found - deploying Core first...")
+
+        # Write core terraform.tfvars
+        core_tfvars_file = self.core_terraform_dir / "terraform.tfvars"
+        core_config = {
+            'prefix': config['prefix'],
+            'cloud_provider': config['cloud_provider'],
+            'cloud_region': config['cloud_region'],
+            'confluent_cloud_api_key': config['confluent_cloud_api_key'],
+            'confluent_cloud_api_secret': config['confluent_cloud_api_secret']
+        }
+
+        # Add Azure subscription ID if Azure
+        if config['cloud_provider'].lower() == 'azure':
+            # Use environment variable or prompt
+            azure_sub_id = os.getenv('ARM_SUBSCRIPTION_ID')
+            if not azure_sub_id:
+                azure_sub_id = self.ui.prompt("Azure Subscription ID")
+            core_config['azure_subscription_id'] = azure_sub_id
+
+        self.write_terraform_tfvars(core_tfvars_file, core_config, "Core")
+
+        # Deploy core
+        core_terraform = TerraformManager(self.ui, self.logger, self.core_terraform_dir)
+
+        if not core_terraform.initialize():
+            return False
+
+        if not core_terraform.plan():
+            return False
+
+        return core_terraform.apply()
+
+    def write_terraform_tfvars(self, tfvars_file: Path, config: Dict[str, str], module_name: str):
+        """Write configuration to a terraform.tfvars file."""
+        # Backup existing file
+        if tfvars_file.exists():
+            backup_path = tfvars_file.with_suffix('.tfvars.backup')
+            shutil.copy2(tfvars_file, backup_path)
+            self.ui.print_info(f"Backed up existing {module_name} terraform.tfvars to {backup_path.name}")
+
+        # Create directory if needed
+        tfvars_file.parent.mkdir(parents=True, exist_ok=True)
+
+        # Generate tfvars content based on module type
+        if module_name == "Core":
+            tfvars_content = self.generate_core_tfvars_content(config)
+        else:
+            tfvars_content = self.generate_lab_tfvars_content(config, module_name)
+
+        try:
+            with open(tfvars_file, 'w') as f:
+                f.write(tfvars_content)
+
+            self.ui.print_success(f"{module_name} configuration written to {tfvars_file}")
+            self.logger.info(f"{module_name} terraform.tfvars written successfully")
+        except Exception as e:
+            self.ui.print_error(f"Failed to write {module_name} terraform.tfvars: {e}")
+            raise
+
+    def generate_core_tfvars_content(self, config: Dict[str, str]) -> str:
+        """Generate terraform.tfvars content for Core module."""
+        content = f'''# Core Infrastructure Configuration
+prefix = "{config['prefix']}"
+cloud_provider = "{config['cloud_provider']}"
+cloud_region = "{config['cloud_region']}"
+confluent_cloud_api_key = "{config['confluent_cloud_api_key']}"
+confluent_cloud_api_secret = "{config['confluent_cloud_api_secret']}"
+'''
+        if 'azure_subscription_id' in config:
+            content += f'azure_subscription_id = "{config["azure_subscription_id"]}"\n'
+
+        return content
+
+    def generate_lab_tfvars_content(self, config: Dict[str, str], lab_type: str) -> str:
+        """Generate terraform.tfvars content for lab modules."""
+        base_content = f'''# {lab_type} Configuration
+prefix = "{config['prefix']}"
+cloud_region = "{config['cloud_region']}"
+'''
+
+        if lab_type == "Lab1":
+            base_content += f'ZAPIER_SSE_ENDPOINT = "{config["ZAPIER_SSE_ENDPOINT"]}"\n'
+        elif lab_type == "Lab2":
+            base_content += f'''MONGODB_CONNECTION_STRING = "{config["MONGODB_CONNECTION_STRING"]}"
+mongodb_username = "{config["mongodb_username"]}"
+mongodb_password = "{config["mongodb_password"]}"
+
+# Default MongoDB settings (using defaults, not prompted)
+MONGODB_DATABASE = "vector_search"
+MONGODB_COLLECTION = "documents"
+MONGODB_INDEX_NAME = "vector_index"
+'''
+
+        return base_content
+
+    def deploy_labs(self, lab_selection: str, config: Dict[str, str]) -> bool:
+        """Deploy selected lab(s) after Core is deployed."""
+        cloud_provider = config['cloud_provider'].lower()
+
+        labs_to_deploy = []
+        if lab_selection == 'lab1':
+            labs_to_deploy = ['lab1-tool-calling']
+        elif lab_selection == 'lab2':
+            labs_to_deploy = ['lab2-vector-search']
+        elif lab_selection == 'all':
+            labs_to_deploy = ['lab1-tool-calling', 'lab2-vector-search']
+
+        for lab_name in labs_to_deploy:
+            lab_dir = self.terraform_dir / cloud_provider / lab_name
+            if not lab_dir.exists():
+                self.ui.print_error(f"Lab directory not found: {lab_dir}")
+                return False
+
+            self.ui.print_info(f"Deploying {lab_name}...")
+
+            # Write lab-specific terraform.tfvars
+            lab_tfvars_file = lab_dir / "terraform.tfvars"
+            lab_config = {
+                'prefix': config['prefix'],
+                'cloud_region': config['cloud_region']
+            }
+
+            # Add lab-specific credentials
+            if 'lab1' in lab_name and 'ZAPIER_SSE_ENDPOINT' in config:
+                lab_config['ZAPIER_SSE_ENDPOINT'] = config['ZAPIER_SSE_ENDPOINT']
+            elif 'lab2' in lab_name:
+                for key in ['MONGODB_CONNECTION_STRING', 'mongodb_username', 'mongodb_password']:
+                    if key in config:
+                        lab_config[key] = config[key]
+
+            lab_type = "Lab1" if 'lab1' in lab_name else "Lab2"
+            self.write_terraform_tfvars(lab_tfvars_file, lab_config, lab_type)
+
+            # Deploy lab
+            lab_terraform = TerraformManager(self.ui, self.logger, lab_dir)
+
+            if not lab_terraform.initialize():
+                return False
+
+            if not lab_terraform.plan():
+                return False
+
+            if not lab_terraform.apply():
+                return False
+
+            self.ui.print_success(f"{lab_name} deployed successfully!")
+
+        return True
     
     def detect_setup_state(self) -> SetupState:
         """Intelligently detect the current setup state."""
@@ -1216,16 +1374,27 @@ class StreamingAgentsSetup:
     def handle_incomplete_config(self) -> bool:
         """Handle incomplete configuration."""
         self.ui.print_info("🔧 Configuration setup needed")
-        config = self.smart_configuration_prompt()
-        
+
+        # Get lab selection first
+        lab_selection = self.config_manager.prompt_for_lab_selection()
+
+        # Get configuration based on lab selection
+        config = self.smart_configuration_prompt(lab_selection=lab_selection)
+
         if not config:
             return False
-        
-        self.config_manager.write_terraform_tfvars(config)
-        self.ui.print_success("Configuration saved!")
-        
-        # Continue to next phase
-        return self.run()
+
+        # Deploy Core first
+        if not self.deploy_core_if_needed(config):
+            return False
+
+        # Deploy selected labs
+        if not self.deploy_labs(lab_selection, config):
+            return False
+
+        self.ui.print_success("🎉 All deployments completed successfully!")
+        self.show_next_steps()
+        return True
     
     def handle_invalid_config(self) -> bool:
         """Handle invalid configuration."""
@@ -1296,18 +1465,42 @@ class StreamingAgentsSetup:
     def handle_fresh_start(self) -> bool:
         """Handle completely fresh setup."""
         self.ui.print_info("🌟 Starting fresh setup...")
-        
+
         if not self.prerequisites.check_and_install_prerequisites():
             return False
-        
-        # Continue with configuration
-        return self.run()
+
+        # Get lab selection
+        lab_selection = self.config_manager.prompt_for_lab_selection()
+
+        # Get configuration based on lab selection
+        config = self.smart_configuration_prompt(lab_selection=lab_selection)
+
+        if not config:
+            return False
+
+        # Deploy Core first
+        if not self.deploy_core_if_needed(config):
+            return False
+
+        # Deploy selected labs
+        if not self.deploy_labs(lab_selection, config):
+            return False
+
+        self.ui.print_success("🎉 All deployments completed successfully!")
+        self.show_next_steps()
+        return True
     
     def show_configuration_status(self, valid_config: Dict[str, str], invalid_config: Dict[str, str]):
         """Show current configuration status."""
-        config_fields = ['prefix', 'cloud_provider', 'cloud_region', 
-                        'confluent_cloud_api_key', 'confluent_cloud_api_secret', 
-                        'ZAPIER_SSE_ENDPOINT']
+        # Show core fields plus any lab-specific fields found
+        config_fields = ['prefix', 'cloud_provider', 'cloud_region',
+                        'confluent_cloud_api_key', 'confluent_cloud_api_secret']
+
+        # Add lab fields if present
+        lab_fields = ['ZAPIER_SSE_ENDPOINT', 'MONGODB_CONNECTION_STRING', 'mongodb_username', 'mongodb_password']
+        for field in lab_fields:
+            if field in valid_config or field in invalid_config:
+                config_fields.append(field)
         
         print("Current configuration status:")
         for i, field in enumerate(config_fields, 1):
@@ -1361,7 +1554,7 @@ class StreamingAgentsSetup:
                 valid_str = ', '.join(valid_choices).upper()
                 self.ui.print_error(f"Invalid option. Please choose {valid_str}.")
     
-    def smart_configuration_prompt(self, existing_valid: Dict[str, str] = None, fix_invalid: Dict[str, str] = None) -> Optional[Dict[str, str]]:
+    def smart_configuration_prompt(self, lab_selection: str = None, existing_valid: Dict[str, str] = None, fix_invalid: Dict[str, str] = None) -> Optional[Dict[str, str]]:
         """Smart configuration prompting with enhanced menu options."""
         existing_valid = existing_valid or {}
         fix_invalid = fix_invalid or {}
@@ -1373,10 +1566,17 @@ class StreamingAgentsSetup:
         env_creds = self.config_manager.detect_environment_credentials()
         config.update(env_creds)
         
-        # Check if we need to show editing menu or just proceed with configuration
-        all_fields = ['prefix', 'cloud_provider', 'cloud_region', 
-                     'confluent_cloud_api_key', 'confluent_cloud_api_secret', 
-                     'ZAPIER_SSE_ENDPOINT']
+        # Determine required fields based on lab selection
+        core_fields = ['prefix', 'cloud_provider', 'cloud_region',
+                      'confluent_cloud_api_key', 'confluent_cloud_api_secret']
+
+        lab_fields = []
+        if lab_selection in ['lab1', 'all']:
+            lab_fields.append('ZAPIER_SSE_ENDPOINT')
+        if lab_selection in ['lab2', 'all']:
+            lab_fields.extend(['MONGODB_CONNECTION_STRING', 'mongodb_username', 'mongodb_password'])
+
+        all_fields = core_fields + lab_fields
         
         missing_fields = [f for f in all_fields if f not in existing_valid and f not in config]
         invalid_fields = list(fix_invalid.keys()) if fix_invalid else []
@@ -1563,12 +1763,12 @@ class StreamingAgentsSetup:
             self.ui.print_info("📋 You need a real Zapier SSE endpoint URL from your Zapier MCP server setup.")
             self.ui.print_info("   It should look like: https://mcp.zapier.com/api/mcp/s/<YOUR-LONG-API-KEY>/sse")
             self.ui.print_warning("   Note: Sample URLs with 'test-key' will be rejected")
-            
+
             while True:
                 value = self.ui.prompt("Zapier SSE Endpoint URL")
                 if self.config_manager.validate_zapier_url(value):
                     return value
-                
+
                 # Provide specific error messages
                 if not value:
                     self.ui.print_error("❌ URL cannot be empty")
@@ -1580,6 +1780,38 @@ class StreamingAgentsSetup:
                     self.ui.print_error("❌ URL must end with: /sse")
                 else:
                     self.ui.print_error("❌ Invalid Zapier SSE endpoint format. API key portion seems too short.")
+
+        # MongoDB credentials with detailed context
+        elif field == 'MONGODB_CONNECTION_STRING':
+            self.ui.print_header("MongoDB Connection String", "Atlas cluster connection details")
+            self.ui.print_info("📍 Location: MongoDB Atlas UI → Your Cluster → Connect → Connect your application")
+            self.ui.print_info("📋 Format: mongodb+srv://cluster0.abc123.mongodb.net/?retryWrites=true&w=majority")
+            self.ui.print_warning("⚠️  Do NOT include username/password in connection string - provide those separately")
+
+            while True:
+                value = self.ui.prompt("MongoDB Connection String")
+                if value and value.startswith('mongodb+srv://') and 'mongodb.net' in value:
+                    return value
+                self.ui.print_error("❌ Invalid MongoDB connection string format")
+
+        elif field == 'mongodb_username':
+            self.ui.print_header("MongoDB Database User", "Project-specific database access credentials")
+            self.ui.print_info("📍 Location: MongoDB Atlas UI → Database Access → Database Users")
+            self.ui.print_info("📋 This is the database username you created for your project (e.g., 'confluent-user')")
+            self.ui.print_warning("⚠️  NOT your Atlas account username - this is project-specific")
+            self.ui.print_info("💡 To create: Click 'Add New Database User' → Set privileges to 'Read and write to any database'")
+
+            value = self.ui.prompt("MongoDB Database Username")
+            return value if value else ""
+
+        elif field == 'mongodb_password':
+            self.ui.print_header("MongoDB Database Password", "Password for the database user above")
+            self.ui.print_info("📍 This is the password for the database user you just entered")
+            self.ui.print_info("📋 You set this when creating the database user in Atlas")
+            self.ui.print_warning("⚠️  NOT your Atlas account password - this is for the database user")
+
+            value = self.ui.prompt("MongoDB Database User Password")
+            return value if value else ""
         
         return ""
     

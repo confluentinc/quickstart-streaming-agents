@@ -13,6 +13,8 @@ resource "random_id" "lab_suffix" {
 
 # Local values for extracting components from MongoDB connection string
 locals {
+  # Use cloud_region from core infrastructure
+  cloud_region = data.terraform_remote_state.core.outputs.cloud_region
   # Extract hostname from mongodb+srv://hostname
   mongodb_host = split("//", var.MONGODB_CONNECTION_STRING)[1]
 }

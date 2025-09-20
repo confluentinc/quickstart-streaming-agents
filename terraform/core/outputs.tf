@@ -101,3 +101,8 @@ output "confluent_kafka_cluster_display_name" {
   value = confluent_kafka_cluster.standard.display_name
   description = "The display name of the Confluent Kafka cluster"
 }
+
+output "cloud_region" {
+  value = var.cloud_region
+  description = "The cloud region used for deployment"
+}
