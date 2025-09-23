@@ -38,14 +38,14 @@ A table can be bounded by committed offsets in Kafka brokers of a specific consu
 
 The following table compares the characteristics of bounded and unbounded tables.
 
-Aspect | Bounded Mode (Batch) | Unbounded Mode (Streaming)  
----|---|---  
-Data Size | Finite (static) | Infinite (dynamic, continuous)  
-Processing Style | Batch processing | Real-time/continuous processing  
-Query Semantics | All data available at once | Data arrives over time  
-State Management | Minimal, can drop state when done | Must retain state for late/out-of-order data  
-Use Cases | ETL, reporting, historical analytics | Real-time analytics, monitoring, alerting  
-  
+Aspect | Bounded Mode (Batch) | Unbounded Mode (Streaming)
+---|---|---
+Data Size | Finite (static) | Infinite (dynamic, continuous)
+Processing Style | Batch processing | Real-time/continuous processing
+Query Semantics | All data available at once | Data arrives over time
+State Management | Minimal, can drop state when done | Must retain state for late/out-of-order data
+Use Cases | ETL, reporting, historical analytics | Real-time analytics, monitoring, alerting
+
 ### Parallel dataflows¶
 
 Programs in Flink are inherently parallel and distributed. During execution, a stream has one or more **stream partitions** , and each operator has one or more **operator subtasks**. The operator subtasks are independent of one another, and execute in different threads and possibly on different machines or containers.

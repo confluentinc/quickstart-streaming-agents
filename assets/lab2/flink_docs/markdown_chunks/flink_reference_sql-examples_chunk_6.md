@@ -23,7 +23,7 @@ NULL,
 For the following value schema in Schema Registry:
 
     syntax = "proto3";
-    
+
     message Purchase {
        string item = 1;
        double amount = 2;
@@ -139,9 +139,9 @@ Properties
   * The default `changelog.mode` is `retract`, which properly handles all CDC operations, including inserts, updates, and deletes.
 
   * You can manually override the changelog mode if necessary:
-        
+
         -- Change to upsert mode for primary key-based operations
         ALTER TABLE customer_changes SET ('changelog.mode' = 'upsert');
-        
+
         -- Change to append mode (processes only inserts and updates)
         ALTER TABLE customer_changes SET ('changelog.mode' = 'append');

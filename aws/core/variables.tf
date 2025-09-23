@@ -26,7 +26,7 @@ variable "cloud_region" {
       "ap-east-1",
       "ap-northeast-1",
       "ap-northeast-2"
-    ], var.cloud_region) : contains([
+      ], var.cloud_region) : contains([
       "eastus2",
       "westus",
       "canadacentral",
@@ -50,4 +50,3 @@ variable "confluent_cloud_api_secret" {
   type        = string
   sensitive   = true
 }
-

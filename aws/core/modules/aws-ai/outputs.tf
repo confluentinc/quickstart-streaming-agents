@@ -11,6 +11,6 @@ output "aws_access_key_id" {
 }
 
 output "aws_secret_access_key" {
-  value = aws_iam_access_key.bedrock_user_key.secret
+  value     = aws_iam_access_key.bedrock_user_key.secret
   sensitive = true
 }

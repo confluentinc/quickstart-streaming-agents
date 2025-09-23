@@ -145,4 +145,3 @@ A response might look like the following:
         jobId: 8efa07007f025a3b9e937ff6e6ec317e
         # Exposed to track final status of (batch) jobs
         state: FINISHED
-

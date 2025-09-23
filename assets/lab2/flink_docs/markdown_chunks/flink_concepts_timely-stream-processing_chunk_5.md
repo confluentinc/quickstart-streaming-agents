@@ -48,7 +48,7 @@ Flink SQL supports defining an event-time attribute on TIMESTAMP and TIMESTAMP_L
     ) WITH (
       ...
     );
-    
+
     SELECT TUMBLE_START(user_action_time, INTERVAL '10' MINUTE), COUNT(DISTINCT user_name)
     FROM user_actions
     GROUP BY TUMBLE(user_action_time, INTERVAL '10' MINUTE);
@@ -66,7 +66,7 @@ If the timestamp data in the source is represented as epoch time, which is usual
     ) WITH (
       ...
     );
-    
+
     SELECT TUMBLE_START(time_ltz, INTERVAL '10' MINUTE), COUNT(DISTINCT user_name)
     FROM user_actions
     GROUP BY TUMBLE(time_ltz, INTERVAL '10' MINUTE);

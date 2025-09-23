@@ -206,10 +206,10 @@ The following SELECT statements return the values indicated in the comment lines
 
     -- returns +10 00:00:00.004
     SELECT INTERVAL '10 00:00:00.004' DAY TO SECOND;
-    
+
     -- returns +10 00:00:00.000
     SELECT INTERVAL '10' DAY;
-    
+
     -- returns +2-10
     SELECT INTERVAL '2-10' YEAR TO MONTH;
 

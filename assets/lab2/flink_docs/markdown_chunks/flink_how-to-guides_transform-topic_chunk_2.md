@@ -39,7 +39,7 @@ By default, the name of the transformed topic is `users_transform`, and you can 
      * (Optional) Select **Show SQL** to view the Flink statement that does the transformation work.
 
 Your Flink SQL should resemble:
-           
+
            CREATE TABLE `your-env`.`your-cluster`.`users_transform`
            DISTRIBUTED BY HASH (
                `user_id`
@@ -62,17 +62,17 @@ A **Summary** page displays the result of the job submission, showing the statem
   1. In the **Summary** page, click the **Output topic** link for the **users_transform** topic, and in the topic’s details pane, click **Query** to open a Flink workspace.
 
   2. Run the following statement to view the rows in the **users_transform** table. Note the renamed **registration_time** column.
-         
+
          SELECT * FROM `users_transform`;
 
 Click **Stop** to end the statement.
 
   3. Run the following command to confirm that the `user_id` field in the transformed table is a key field.
-         
+
          DESCRIBE `users_source_transform`;
 
 Your output should resemble:
-         
+
          +-------------------+-----------+----------+------------+
          |    Column Name    | Data Type | Nullable |   Extras   |
          +-------------------+-----------+----------+------------+
@@ -83,11 +83,11 @@ Your output should resemble:
          +-------------------+-----------+----------+------------+
 
   4. Run the following command to confirm the serialization format and partition count on the transformed topic.
-         
+
          SHOW CREATE TABLE `users_source_transform`;
 
 Your output should resemble:
-         
+
          CREATE TABLE `your-env`.`your-cluster`.`users_transform` (
            `user_id` VARCHAR(2147483647),
            `registration_time` BIGINT,

@@ -84,7 +84,7 @@ For streaming queries, the required state for computing the query result might g
 In the Flink SQL shell or in a Cloud Console workspace, run the following commands to see examples of the SELECT statement.
 
   1. Create a table for web page click events.
-         
+
          -- Create a table for web page click events.
          CREATE TABLE clicks (
            ip_address VARCHAR,
@@ -93,7 +93,7 @@ In the Flink SQL shell or in a Cloud Console workspace, run the following comman
          );
 
   2. Populate the table with mock clickstream data.
-         
+
          -- Populate the table with mock clickstream data.
          INSERT INTO clicks
          VALUES( '10.0.0.1',  'https://acme.com/index.html',     1692812175),
@@ -106,11 +106,11 @@ In the Flink SQL shell or in a Cloud Console workspace, run the following comman
 Press ENTER to return to the SQL shell. Because INSERT INTO VALUES is a point-in-time statement, it exits after it completes inserting records.
 
   3. View all rows in the `clicks` table by using a SELECT statement.
-         
+
          SELECT * FROM clicks;
 
 Your output should resemble:
-         
+
          ip_address url                             click_ts_raw
          10.0.0.1   https://acme.com/index.html     1692812175
          10.0.0.12  https://apache.org/index.html   1692826575
@@ -120,11 +120,11 @@ Your output should resemble:
          10.0.0.13  https://confluent.io/index.html 1692826575
 
   4. View only unique rows in the `clicks` table by using a SELECT DISTINCT statement.
-         
+
          SELECT DISTINCT * FROM clicks;
 
 Your output should resemble:
-         
+
          ip_address url                             click_ts_raw
          10.0.0.1   https://acme.com/index.html     1692812175
          10.0.0.12  https://apache.org/index.html   1692826575
@@ -132,11 +132,11 @@ Your output should resemble:
          10.0.0.12  https://apache.org/index.html   1692819375
 
   5. View only records that have the ip_address of `10.0.0.1` by using a SELECT WHERE statement.
-         
+
          SELECT * FROM clicks WHERE ip_address='10.0.0.1';
 
 Your output should resemble:
-         
+
          ip_address url                         click_ts_raw
          10.0.0.1   https://acme.com/index.html 1692812175
          10.0.0.1   https://acme.com/index.html 1692812175
@@ -173,7 +173,7 @@ Syntax
     CREATE TABLE t_union_1 (i INT);
     CREATE TABLE t_union_2 (i INT);
     TABLE t_union_1 UNION ALL TABLE t_union_2;
-    
+
     -- alternate syntax
     SELECT * FROM t_union_1
     UNION ALL
@@ -184,9 +184,9 @@ Syntax
 Syntax
 
     CREATE TABLE t_watermarked_insight (s STRING) DISTRIBUTED INTO 1 BUCKETS;
-    
+
     INSERT INTO t_watermarked_insight VALUES ('Bob'), ('Alice'), ('Charly');
-    
+
     SELECT $rowtime, CURRENT_WATERMARK($rowtime) FROM t_watermarked_insight;
 
 The output resembles:
@@ -216,9 +216,8 @@ Sources emit watermarks every 200 ms, but within the first 200 ms they emit per 
 Syntax
 
     CREATE TABLE t_flattening (i INT, r1 ROW<i INT, s STRING>, r2 ROW<other INT>);
-    
+
     SELECT r1.*, r2.* FROM t_flattening;
 
 Properties
     You can apply the `*` operator on nested data, which enables flattening fields into columns of the table.
-

@@ -13,10 +13,10 @@ Examples
 
     --  returns FALSE
     SELECT 1 IS NOT DISTINCT FROM 2;
-    
+
     --  returns FALSE
     SELECT 1 IS NOT DISTINCT FROM NULL;
-    
+
     --  returns TRUE
     SELECT NULL IS NOT DISTINCT FROM NULL;
 
@@ -34,7 +34,7 @@ Examples
 
     --  returns FALSE
     SELECT 1 IS NULL;
-    
+
     --  returns TRUE
     SELECT NULL IS NULL;
 
@@ -52,7 +52,7 @@ Examples
 
     --  returns TRUE
     SELECT 1 IS NOT NULL;
-    
+
     --  returns FALSE
     SELECT NULL IS NOT NULL;
 
@@ -79,10 +79,10 @@ Examples
 
     -- returns TRUE
     SELECT 'book-23' LIKE 'book-%';
-    
+
     -- returns FALSE
     SELECT 'book23' LIKE 'book_';
-    
+
     -- returns TRUE
     SELECT 'book2' LIKE 'book_';
 
@@ -109,10 +109,10 @@ Examples
 
     -- returns FALSE
     SELECT 'book-23' NOT LIKE 'book-%';
-    
+
     -- returns TRUE
     SELECT 'book23' NOT LIKE 'book_';
-    
+
     -- returns FALSE
     SELECT 'book2' NOT LIKE 'book_';
 
@@ -136,7 +136,7 @@ Examples
 
     -- returns TRUE
     SELECT 'book-523' SIMILAR TO 'book-[0-9]+';
-    
+
     -- returns TRUE
     SELECT 'bob.dobbs@example.com' SIMILAR TO '%@example.com';
 
@@ -158,6 +158,6 @@ Examples
 
     -- returns TRUE
     SELECT 'book-nan' NOT SIMILAR TO 'book-[0-9]+';
-    
+
     -- returns TRUE
     SELECT 'bob.dobbs@company.com' NOT SIMILAR TO '%@example.com';

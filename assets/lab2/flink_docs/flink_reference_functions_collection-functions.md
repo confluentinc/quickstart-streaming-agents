@@ -9,18 +9,18 @@ scraped_date: 2025-09-05T13:50:21.279836
 
 Confluent Cloud for Apache Flink® provides these built-in collection functions to use in Flink SQL queries:
 
-ARRAY | ARRAY_AGG | ARRAY_APPEND  
----|---|---  
-ARRAY_CONCAT | ARRAY_CONTAINS | ARRAY_DISTINCT  
-ARRAY_EXCEPT | ARRAY_INTERSECT | ARRAY_JOIN  
-ARRAY_MAX | ARRAY_MIN | ARRAY_POSITION  
-ARRAY_PREPEND | ARRAY_REMOVE | ARRAY_REVERSE  
-ARRAY_SLICE | ARRAY_SORT | ARRAY_UNION  
-CARDINALITY(array) | CARDINALITY(map) | ELEMENT  
-GROUP_ID | GROUPING | Implicit row constructor  
-MAP | MAP_ENTRIES | MAP_FROM_ARRAYS  
-MAP_KEYS | MAP_UNION | MAP_VALUES  
-  
+ARRAY | ARRAY_AGG | ARRAY_APPEND
+---|---|---
+ARRAY_CONCAT | ARRAY_CONTAINS | ARRAY_DISTINCT
+ARRAY_EXCEPT | ARRAY_INTERSECT | ARRAY_JOIN
+ARRAY_MAX | ARRAY_MIN | ARRAY_POSITION
+ARRAY_PREPEND | ARRAY_REMOVE | ARRAY_REVERSE
+ARRAY_SLICE | ARRAY_SORT | ARRAY_UNION
+CARDINALITY(array) | CARDINALITY(map) | ELEMENT
+GROUP_ID | GROUPING | Implicit row constructor
+MAP | MAP_ENTRIES | MAP_FROM_ARRAYS
+MAP_KEYS | MAP_UNION | MAP_VALUES
+
 ## ARRAY¶
 
 Syntax
@@ -363,7 +363,7 @@ Example
 
     -- returns [1,2,3,4,5]
     SELECT ARRAY_SORT(ARRAY[5,4,3,2,1]);
-    
+
     -- returns [NULL,SQL,Python,Java,Go,C#]
     SELECT ARRAY_SORT(ARRAY['Java', 'SQL', 'Python', NULL, 'Go', 'C#'], FALSE, TRUE);
 
@@ -569,4 +569,3 @@ Example
   * [Numeric Functions](numeric-functions.html#flink-sql-numeric-functions)
   * [String Functions](string-functions.html#flink-sql-string-functions)
   * [Table API Functions](table-api-functions.html#flink-table-api-functions)
-

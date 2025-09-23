@@ -9,20 +9,20 @@ total_chunks: 10
 
 The following table shows examples of the TIMESTAMP_LTZ type in different formats.
 
-JSON for data type | 
+JSON for data type |
 
     {"type":"TIMESTAMP_WITH_LOCAL_TIME_ZONE","nullable":true,"precision":3}
 
----|---  
-CLI/UI format | 
+---|---
+CLI/UI format |
 
     TIMESTAMP(3) WITH LOCAL TIME ZONE
 
-JSON for payload | 
+JSON for payload |
 
     "2023-04-06 11:06:47.224"
 
-CLI/UI format for payload | 
+CLI/UI format for payload |
 
     2023-04-06 11:06:47.224
 
@@ -70,9 +70,9 @@ Represents a timestamp with time zone consisting of `year-month-day hour:minute:
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-java.time.OffsetDateTime | ✓ | ✓ | Default  
-java.time.ZonedDateTime | ✓ |  | Ignores the zone ID  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+java.time.OffsetDateTime | ✓ | ✓ | Default
+java.time.ZonedDateTime | ✓ |  | Ignores the zone ID
+
 Compared to TIMESTAMP_LTZ, the time zone offset information is stored physically in every datum. It is used individually for every computation, visualization, or communication to external systems.

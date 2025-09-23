@@ -4,13 +4,13 @@ resource "azurerm_resource_group" "openai_rg" {
 }
 
 resource "azurerm_cognitive_account" "openai_account" {
-  name                = "openai-${var.random_id}"
-  location            = azurerm_resource_group.openai_rg.location
-  resource_group_name = azurerm_resource_group.openai_rg.name
-  kind                = "OpenAI"
-  sku_name            = "S0"
-  public_network_access_enabled = true 
-  custom_subdomain_name = "openai-${var.random_id}"
+  name                          = "openai-${var.random_id}"
+  location                      = azurerm_resource_group.openai_rg.location
+  resource_group_name           = azurerm_resource_group.openai_rg.name
+  kind                          = "OpenAI"
+  sku_name                      = "S0"
+  public_network_access_enabled = true
+  custom_subdomain_name         = "openai-${var.random_id}"
 }
 
 resource "azurerm_cognitive_deployment" "openai_deployment" {

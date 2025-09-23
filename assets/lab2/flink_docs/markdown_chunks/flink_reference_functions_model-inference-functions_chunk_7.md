@@ -26,8 +26,8 @@ The TEXT_SEARCH_AGG function uses a combination of serialized table properties a
 
 The output of TEXT_SEARCH_AGG is an array with all rows in the external table that have matching text in the search column.
 
-<input_column> | Search result  
----|---  
+<input_column> | Search result
+---|---
 <input_column_text> | array[row1<column1, column2…>, row2<column1, column2…>, …]
 
 ## VECTOR_SEARCH_AGG¶
@@ -52,9 +52,9 @@ The VECTOR_SEARCH_AGG function uses a combination of serialized table properties
 
 The output of VECTOR_SEARCH_AGG is an array with all rows in the external table that have a matching vector in the search column.
 
-<input_column> | Search result  
----|---  
-<input_column_vector> | array[row1<column1, column2…>, row2<column1, column2…>, …]  
+<input_column> | Search result
+---|---
+<input_column_vector> | array[row1<column1, column2…>, row2<column1, column2…>, …]
 Example
 
 After you have registered the AI inference model by using the [CREATE MODEL](../statements/create-model.html#flink-sql-create-model) statement, you can start running vector searches. The following example assumes a vector search endpoint as shown in [Elasticsearch Quick Start Guide](https://www.elastic.co/guide/en/elasticsearch/reference/current/getting-started.html) and an API key as shown in [Kibana API Keys](https://www.elastic.co/guide/en/kibana/current/api-keys.html).
@@ -67,7 +67,7 @@ Once your vector search is created, the following example shows these steps:
   4. Run the vector search.
 
   1. Run the following statement to create a connection resource named _elastic-connection_ that uses your AWS credentials.
-         
+
          CREATE CONNECTION elastic-connection
            WITH (
              'type' = 'elastic',
@@ -76,7 +76,7 @@ Once your vector search is created, the following example shows these steps:
            );
 
   2. Run the following statements to creates the tables and run the vector search.
-         
+
          -- Create the external table.
          CREATE TABLE elastic (
            vector array<FLOAT>,
@@ -86,13 +86,13 @@ Once your vector search is created, the following example shows these steps:
            'elastic.connection' = 'elastic-connection',
            'elastic.index' = 'vector-search-index'
          );
-         
+
          -- Create the embedding output table.
          CREATE TABLE embedding_output (text string, embedding array<float>);
-         
+
          -- Insert mock data.
          INSERT INTO embedding_output values ('hello world', ARRAY[1, 5, -20]);
-         
+
          -- Run the vector search.
          SELECT * FROM embedding_output, LATERAL TABLE(VECTOR_SEARCH_AGG('elastic', DESCRIPTOR(embedding), embedding, 3));
 

@@ -13,12 +13,12 @@ Confluent Cloud for Apache Flink® enables listing catalogs, which map to Conflu
 
 Confluent Cloud for Apache Flink supports these SHOW statements.
 
-SHOW CATALOGS | SHOW CONNECTIONS  
----|---  
-SHOW CREATE MODEL | SHOW CURRENT CATALOG  
-SHOW CREATE TABLE | SHOW CURRENT DATABASE  
-SHOW DATABASES | SHOW JOBS  
-SHOW FUNCTIONS | SHOW MODELS  
+SHOW CATALOGS | SHOW CONNECTIONS
+---|---
+SHOW CREATE MODEL | SHOW CURRENT CATALOG
+SHOW CREATE TABLE | SHOW CURRENT DATABASE
+SHOW DATABASES | SHOW JOBS
+SHOW FUNCTIONS | SHOW MODELS
 SHOW TABLES |
 
 ## SHOW CATALOGS¶
@@ -67,7 +67,7 @@ Description
 Example
 
     SHOW CONNECTIONS;
-    
+
     -- with name filter
     SHOW CONNECTIONS LIKE 'sql%';
 

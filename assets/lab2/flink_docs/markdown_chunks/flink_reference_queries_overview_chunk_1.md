@@ -15,11 +15,11 @@ Unlike Data Definition Language (DDL) statements, DML statements modify only dat
 
 These are the available DML statements in Confluent Cloud for Flink SQL.
 
-[Deduplication Queries in Confluent Cloud for Apache Flink](deduplication.html#flink-sql-deduplication) | [Group Aggregation Queries in Confluent Cloud for Apache Flink](group-aggregation.html#flink-sql-group-aggregation) | [INSERT INTO FROM SELECT Statement in Confluent Cloud for Apache Flink](insert-into-from-select.html#flink-sql-insert-into-from-select-statement) | [INSERT VALUES Statement in Confluent Cloud for Apache Flink](insert-values.html#flink-sql-insert-values-statement)  
----|---|---|---  
-[Interval joins](joins.html#flink-sql-interval-joins) | [LIMIT Clause in Confluent Cloud for Apache Flink](limit.html#flink-sql-limit) | [EXECUTE STATEMENT SET in Confluent Cloud for Apache Flink](statement-set.html#flink-sql-statement-set) | [ORDER BY Clause in Confluent Cloud for Apache Flink](orderby.html#flink-sql-order-by)  
-[Pattern Recognition Queries in Confluent Cloud for Apache Flink](match_recognize.html#flink-sql-pattern-recognition) | [Regular joins](joins.html#flink-sql-regular-joins) | [SELECT Statement in Confluent Cloud for Apache Flink](select.html#flink-sql-select) | [Set Logic in Confluent Cloud for Apache Flink](set-logic.html#flink-sql-set-logic)  
-[Temporal joins](joins.html#flink-sql-temporal-joins) | [Top-N Queries in Confluent Cloud for Apache Flink](topn.html#flink-sql-top-n) | [Window Aggregation Queries in Confluent Cloud for Apache Flink](window-aggregation.html#flink-sql-window-aggregation) | [Window Deduplication Queries in Confluent Cloud for Apache Flink](window-deduplication.html#flink-sql-window-deduplication)  
+[Deduplication Queries in Confluent Cloud for Apache Flink](deduplication.html#flink-sql-deduplication) | [Group Aggregation Queries in Confluent Cloud for Apache Flink](group-aggregation.html#flink-sql-group-aggregation) | [INSERT INTO FROM SELECT Statement in Confluent Cloud for Apache Flink](insert-into-from-select.html#flink-sql-insert-into-from-select-statement) | [INSERT VALUES Statement in Confluent Cloud for Apache Flink](insert-values.html#flink-sql-insert-values-statement)
+---|---|---|---
+[Interval joins](joins.html#flink-sql-interval-joins) | [LIMIT Clause in Confluent Cloud for Apache Flink](limit.html#flink-sql-limit) | [EXECUTE STATEMENT SET in Confluent Cloud for Apache Flink](statement-set.html#flink-sql-statement-set) | [ORDER BY Clause in Confluent Cloud for Apache Flink](orderby.html#flink-sql-order-by)
+[Pattern Recognition Queries in Confluent Cloud for Apache Flink](match_recognize.html#flink-sql-pattern-recognition) | [Regular joins](joins.html#flink-sql-regular-joins) | [SELECT Statement in Confluent Cloud for Apache Flink](select.html#flink-sql-select) | [Set Logic in Confluent Cloud for Apache Flink](set-logic.html#flink-sql-set-logic)
+[Temporal joins](joins.html#flink-sql-temporal-joins) | [Top-N Queries in Confluent Cloud for Apache Flink](topn.html#flink-sql-top-n) | [Window Aggregation Queries in Confluent Cloud for Apache Flink](window-aggregation.html#flink-sql-window-aggregation) | [Window Deduplication Queries in Confluent Cloud for Apache Flink](window-deduplication.html#flink-sql-window-deduplication)
 [Window Join Queries in Confluent Cloud for Apache Flink](window-join.html#flink-sql-window-join) | [Window Top-N Queries in Confluent Cloud for Apache Flink](window-topn.html#flink-sql-window-top-n) | [Windowing Table-Valued Functions (Windowing TVFs) in Confluent Cloud for Apache Flink](window-tvf.html#flink-sql-window-tvfs) | [WITH Clause in Confluent Cloud for Apache Flink](with.html#flink-sql-with)
 
 ## Prerequisites¶
@@ -33,7 +33,7 @@ You need the following prerequisites to use Confluent Cloud for Apache Flink.
   * The OrganizationAdmin, EnvironmentAdmin, or FlinkAdmin role for creating compute pools, or the FlinkDeveloper role if you already have a compute pool. If you don’t have the appropriate role, reach out to your OrganizationAdmin or EnvironmentAdmin.
 
   * The Confluent CLI. To use the Flink SQL shell, update to the latest version of the Confluent CLI by running the following command:
-        
+
         confluent update --yes
 
 If you used homebrew to install the Confluent CLI, update the CLI by using the `brew upgrade` command, instead of `confluent update`.
@@ -59,7 +59,7 @@ You can run queries and statements either in a Confluent Cloud Console workspace
 The workspace opens with a cell for editing SQL statements.
 
   * To run queries in the Flink SQL shell, run the following command:
-        
+
         confluent flink shell --compute-pool <compute-pool-id> --environment <env-id>
 
 You’re ready to run your first Flink SQL query.

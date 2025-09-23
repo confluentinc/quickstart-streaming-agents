@@ -21,7 +21,7 @@ Confluent Cloud for Apache Flink® provides an Examples catalog that has mock da
 You can publish any of the example streams to a Kafka topic by creating a Flink table and populating it with the [INSERT INTO FROM SELECT](queries/insert-into-from-select.html#flink-sql-insert-into-from-select-statement) statement. Confluent Cloud for Apache Flink creates a Kafka topic automatically for the table.
 
   1. Run the following statements to create and populate a `customers_source` table with the `examples.marketplace.customers` stream.
-         
+
          CREATE TABLE customers_source (
            customer_id INT,
            name STRING,
@@ -31,7 +31,7 @@ You can publish any of the example streams to a Kafka topic by creating a Flink 
            email STRING,
            PRIMARY KEY (customer_id) NOT ENFORCED
          );
-         
+
          INSERT INTO customers_source(
            customer_id,
            name,
@@ -43,11 +43,11 @@ You can publish any of the example streams to a Kafka topic by creating a Flink 
          SELECT * FROM examples.marketplace.customers;
 
   2. Run the following statement to inspect the `customers_source` table:
-         
+
          SELECT * FROM customers_source;
 
 Your output should resemble:
-         
+
          customer_id name                  address                postcode city               email
          3172        Roseanna Bode         6744 Kacy Bypass       22635    Margarettborough   rico.zboncak@yahoo.com
          3055        Josiah Morissette PhD 61799 Friesen Islands  14194    North Abbybury     thomas.dach@gmail.com
@@ -206,4 +206,3 @@ Your output should resemble:
     1404       Practical Plastic Computer  Adidas  Target         Outdoors
     1132       Gorgeous Paper Watch        Samsung Amazon         Home, Kids & Movies
     ...
-

@@ -26,11 +26,11 @@ Confluent Cloud for Apache Flink integrates with [Notifications for Confluent Cl
 Use the [Metrics API](../../monitoring/metrics-api.html#metrics-api) and [Notifications for Confluent Cloud](../../monitoring/configure-notifications.html#ccloud-notifications) to monitor your compute pools and statements over time. You should monitor and configure alerts for the following conditions:
 
   * Per compute pool
-    
+
     * Alert on exhausted compute pools by comparing the current CFUs (`io.confluent.flink/compute_pool_utilization/current_cfus`) to the maximum CFUs of the pool (`io.confluent.flink/compute_pool_utilization/cfu_limit`).
     * **Flink statement stuck in pending** notifications also indicate compute-pool exhaustion.
   * Per statement
-    
+
     * Alert on statement failures (see Notifications)
     * Alert on Statement degradation (see Notifications)
     * Alert on a increase of “Messages Behind”/”Consumer Lag” (metric name: `io.confluent.flink/pending_records`) over an extended period of time, for example > 10 minutes; your mileage may vary. Note that Confluent Cloud for Apache Flink does not appear as a consumer in the regular consumer lag monitoring feature in Confluent Cloud, because it uses the `assign()` method.

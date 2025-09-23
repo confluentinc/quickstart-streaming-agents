@@ -49,24 +49,24 @@ Apache Flink supports various optimization configuration options on different le
 
 Some of these options have different names in Confluent Cloud for Apache Flink, as shown in the following table.
 
-Confluent Cloud for Apache Flink | Apache Flink  
----|---  
-client.results-timeout | table.exec.async-lookup.timeout  
-client.statement-name | –  
-sql.current-catalog | table.builtin-catalog-name  
-sql.current-database | table.builtin-database-name  
-sql.dry-run | –  
-sql.inline-result | –  
-sql.local-time-zone | table.local-time-zone  
-sql.state-ttl | table.exec.state.ttl  
-sql.tables.scan.bounded.timestamp-millis | scan.bounded.timestamp-millis  
-sql.tables.scan.bounded.mode | scan.bounded.mode  
-sql.tables.scan.idle-timeout | table.exec.source.idle-timeout  
-sql.tables.scan.startup.timestamp-millis | scan.startup.timestamp-millis  
-sql.tables.scan.startup.mode | scan.startup.mode  
-sql.tables.scan.watermark-alignment.max-allowed-drift | scan.watermark.alignment.max-drift  
-sql.tables.scan.source-operator-parallelism | –  
-  
+Confluent Cloud for Apache Flink | Apache Flink
+---|---
+client.results-timeout | table.exec.async-lookup.timeout
+client.statement-name | –
+sql.current-catalog | table.builtin-catalog-name
+sql.current-database | table.builtin-database-name
+sql.dry-run | –
+sql.inline-result | –
+sql.local-time-zone | table.local-time-zone
+sql.state-ttl | table.exec.state.ttl
+sql.tables.scan.bounded.timestamp-millis | scan.bounded.timestamp-millis
+sql.tables.scan.bounded.mode | scan.bounded.mode
+sql.tables.scan.idle-timeout | table.exec.source.idle-timeout
+sql.tables.scan.startup.timestamp-millis | scan.startup.timestamp-millis
+sql.tables.scan.startup.mode | scan.startup.mode
+sql.tables.scan.watermark-alignment.max-allowed-drift | scan.watermark.alignment.max-drift
+sql.tables.scan.source-operator-parallelism | –
+
 ### CREATE statements provision underlying resources¶
 
 When you run a CREATE TABLE statement in Confluent Cloud for Apache Flink, it creates the underlying Kafka topic and a Schema Registry schema in Confluent Cloud. In Apache Flink, a CREATE TABLE statement only registers the object in the Apache Flink catalog and doesn’t create an underlying resource.
@@ -106,4 +106,3 @@ Confluent Cloud for Apache Flink does not support the following statements and f
 ### Limited support for ALTER¶
 
 Confluent Cloud for Apache Flink has limited support for ALTER TABLE compared with Apache Flink. In Confluent Cloud for Apache Flink, you can use ALTER TABLE only to change the watermark strategy, add a metadata column, or change a parameter value.
-

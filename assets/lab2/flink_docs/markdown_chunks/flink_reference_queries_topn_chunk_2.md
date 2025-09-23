@@ -23,7 +23,7 @@ The following example shows how to get “the top five products per category tha
       product_name STRING,
       sales        BIGINT
     ) WITH (...);
-    
+
     SELECT *
     FROM (
       SELECT *,
@@ -47,7 +47,7 @@ The following example shows how to optimize the previous Top-N example by :
       product_name STRING,
       sales        BIGINT
     ) WITH (...);
-    
+
     -- omit row_num field from the output
     SELECT product_id, category, product_name, sales
     FROM (

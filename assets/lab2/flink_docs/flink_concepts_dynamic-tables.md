@@ -52,26 +52,25 @@ Dynamic tables are a logical concept. The only state that is actually materializ
 
 Flink provides four different types of changelog entries:
 
-Short name | Long name | Semantics  
----|---|---  
-+I | Insertion | Records only the insertions that occur.  
--U | Update Before | Retracts a previously emitted result. Update Before is an update operation with the previous content of the updated row. This kind occurs together with Update After (+U) for modeling an update that must retract the previous row first. It is useful in cases of a non-idempotent update, which is an update of a row that is not uniquely identifiable by a key.  
-+U | Update After | Updates a previously emitted result. Update After is an update operation with new content for the updated row. This kind _can_ occur together with Update Before (-U) for modeling an update that must retract the previous row first, or it can describe an idempotent update, which is an update of a row that is uniquely identifiable by a key.  
--D | Delete | Deletes the last result.  
-  
+Short name | Long name | Semantics
+---|---|---
++I | Insertion | Records only the insertions that occur.
+-U | Update Before | Retracts a previously emitted result. Update Before is an update operation with the previous content of the updated row. This kind occurs together with Update After (+U) for modeling an update that must retract the previous row first. It is useful in cases of a non-idempotent update, which is an update of a row that is not uniquely identifiable by a key.
++U | Update After | Updates a previously emitted result. Update After is an update operation with new content for the updated row. This kind _can_ occur together with Update Before (-U) for modeling an update that must retract the previous row first, or it can describe an idempotent update, which is an update of a row that is uniquely identifiable by a key.
+-D | Delete | Deletes the last result.
+
 The `-` character always means that a row is being removed.
 
 If the downstream system supports upserting, you should use a primary key in Confluent Cloud for Apache Flink to avoid the need to use Update Before.
 
 Depending on the combination of source, sink, and business logic applied, you can end up with the following types of changelog streams.
 
-Changelog stream types | Stream category | Changelog entry types  
----|---|---  
-Appending stream | Append stream | Contains only +I  
-Upserting streams | Update stream | +I, +U, -D (never contains -U but can contain +U and/or -D)  
-Retracting stream | Update stream | +I, +U, -U, -D (contains +I and can contain -U and/or -D)  
-  
+Changelog stream types | Stream category | Changelog entry types
+---|---|---
+Appending stream | Append stream | Contains only +I
+Upserting streams | Update stream | +I, +U, -D (never contains -U but can contain +U and/or -D)
+Retracting stream | Update stream | +I, +U, -U, -D (contains +I and can contain -U and/or -D)
+
   * All streams can have +I / inserts.
   * Both retract and upsert streams can have -D / deletes and +U / upserts (upsert afters).
   * Only retract streams can have -U.
-

@@ -12,7 +12,7 @@ total_chunks: 3
 The ENV_REGION_ID variable is a concatenation of your environment ID and the cloud provider region of your Kafka cluster, separated by a `.` character. To see the available regions, run the `confluent flink region list` command.
 
   3. Run the following command to send a POST request to the `api-keys` endpoint. The REST API uses basic authentication, which means that you provide a base64-encoded string made from your Cloud API key and secret in the request header.
-         
+
          curl --request POST \
            --url 'https://api.confluent.cloud/iam/v2/api-keys' \
            --header "Authorization: Basic $(echo -n "${CLOUD_API_KEY}:${CLOUD_API_SECRET}" | base64 -w 0)" \
@@ -20,7 +20,7 @@ The ENV_REGION_ID variable is a concatenation of your environment ID and the clo
            --data "{"spec":{"display_name":"flinkapikey","owner":{"id":"${PRINCIPAL_ID}"},"resource":{"api_version":"fcpm/v2","id":"${ENV_REGION_ID}"}}}"
 
 Your output should resemble:
-         
+
          {
            "api_version": "iam/v2",
            "id": "KJDYFDMBOBDNQEIU",

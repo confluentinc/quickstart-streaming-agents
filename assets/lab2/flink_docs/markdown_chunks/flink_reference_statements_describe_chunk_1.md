@@ -15,13 +15,13 @@ Confluent Cloud for Apache Flink® enables viewing the schema of an Apache Kafka
 
     -- View table details.
     { DESCRIBE | DESC } [EXTENDED] [catalog_name.][db_name.]table_name
-    
+
     -- View model details.
     { DESCRIBE | DESC } MODEL [[catalogname].[database_name]].model_name
-    
+
     -- View function details.
     { DESCRIBE | DESC } FUNCTION [EXTENDED] [catalog_name.][db_name.]function_name
-    
+
     -- View connection details.
     { DESCRIBE | DESC } CONNECTION [catalog_name.][db_name.]connection_name
 

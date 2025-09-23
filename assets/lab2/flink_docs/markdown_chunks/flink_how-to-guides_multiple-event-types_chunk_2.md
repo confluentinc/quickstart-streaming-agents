@@ -18,7 +18,7 @@ For example, consider a topic that combines purchase and pageview events.
   1. Schema for **purchase** events.
 
 AvroJSON SchemaProtobuf
-         
+
          {
             "type":"record",
             "namespace": "io.confluent.developer.avro",
@@ -49,9 +49,9 @@ AvroJSON SchemaProtobuf
          }
 
          syntax = "proto3";
-         
+
          package io.confluent.developer.proto;
-         
+
          message Purchase {
             string item = 1;
             double amount = 2;
@@ -61,7 +61,7 @@ AvroJSON SchemaProtobuf
   2. Schema for **pageview** events.
 
 AvroJSON SchemaProtobuf
-         
+
          {
             "type":"record",
             "namespace": "io.confluent.developer.avro",
@@ -92,9 +92,9 @@ AvroJSON SchemaProtobuf
          }
 
          syntax = "proto3";
-         
+
          package io.confluent.developer.proto;
-         
+
          message Pageview {
             string url = 1;
             bool is_special = 2;
@@ -104,7 +104,7 @@ AvroJSON SchemaProtobuf
   3. Combined schema that references both event types:
 
 AvroJSON SchemaProtobuf
-         
+
          [
             "io.confluent.developer.avro.Purchase",
             "io.confluent.developer.avro.Pageview"
@@ -121,12 +121,12 @@ AvroJSON SchemaProtobuf
          }
 
          syntax = "proto3";
-         
+
          package io.confluent.developer.proto;
-         
+
          import "purchase.proto";
          import "pageview.proto";
-         
+
          message CustomerEvent {
             oneof action {
                Purchase purchase = 1;
@@ -168,18 +168,18 @@ AvroJSON SchemaProtobuf
 
     -- Query purchase events
     SELECT Purchase.* FROM `customer-events` WHERE Purchase IS NOT NULL;
-    
+
     -- Query pageview events
     SELECT Pageview.* FROM `customer-events` WHERE Pageview IS NOT NULL;
 
     -- Query purchase events
     SELECT connect_union_field_0.* FROM `customer-events` WHERE connect_union_field_0 IS NOT NULL;
-    
+
     -- Query pageview events
     SELECT connect_union_field_1.* FROM `customer-events` WHERE connect_union_field_1 IS NOT NULL;
 
     -- Query purchase events
     SELECT action.purchase.* FROM `customer-events` WHERE action.purchase IS NOT NULL;
-    
+
     -- Query pageview events
     SELECT action.pageview.* FROM `customer-events` WHERE action.pageview IS NOT NULL;

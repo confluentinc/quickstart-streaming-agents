@@ -65,7 +65,7 @@ Example
 
     -- returns ['ab', 'cd', 'de', 'pwe']
     SELECT ML_NGRAMS(ARRAY['ab', 'cd', 'de', 'pwe'], 1, '#');
-    
+
     -- returns ['ab#cd', 'cd#de']
     SELECT ML_NGRAMS(ARRAY['ab','cd','de', NULL], 2, '#');
 
@@ -120,6 +120,6 @@ Example
 
     -- returns [1, 0, 0, 0]
     SELECT ML_ONE_HOT_ENCODER('abc', ARRAY['abc', 'def', 'efg', 'hikj']);
-    
+
     -- returns [0, 0, 0, 0, 1]
     SELECT ML_ONE_HOT_ENCODER('abcd', ARRAY['abc', 'def', 'efg', 'hik'], TRUE, 'KEEP' );

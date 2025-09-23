@@ -27,7 +27,7 @@ You need the following prerequisites to use Confluent Cloud for Apache Flink.
   * The OrganizationAdmin, EnvironmentAdmin, or FlinkAdmin role for creating compute pools, or the FlinkDeveloper role if you already have a compute pool. If you don’t have the appropriate role, reach out to your OrganizationAdmin or EnvironmentAdmin.
 
   * The Confluent CLI. To use the Flink SQL shell, update to the latest version of the Confluent CLI by running the following command:
-        
+
         confluent update --yes
 
 If you used homebrew to install the Confluent CLI, update the CLI by using the `brew upgrade` command, instead of `confluent update`.
@@ -106,16 +106,16 @@ The status of your new connector reads **Provisioning** , which lasts for a few 
 If you use the workspace in Cloud Console, set the **Use catalog** and **Use database** controls to your environment and Kafka cluster.
 
 If you use the Flink SQL shell, run the following statements to set the current environment and Kafka cluster.
-         
+
          USE CATALOG <your-environment-name>;
          USE DATABASE <your-cluster-name>;
 
   2. Run the following statement to see the data flowing into the `gaming_player_activity_source` table.
-         
+
          SELECT * FROM gaming_player_activity_source;
 
 Your output should resemble:
-         
+
          key         player_id game_room_id points coordinates
          x'31303833' 1083      4634         85     [30,39]
          x'31303731' 1071      3406         432    [91,61]
@@ -125,11 +125,11 @@ Your output should resemble:
          ...
 
   3. If you add `$rowtime` to the `SELECT` statement, you can see the Kafka timestamp for each record.
-         
+
          SELECT $rowtime, * FROM gaming_player_activity_source;
 
 Your output should resemble:
-         
+
          $rowtime                key         player_id game_room_id points coordinates
          2023-11-08 14:27:27.647 x'31303838' 1088      4198         22     [02,86]
          2023-11-08 14:27:27.695 x'31303638' 1068      1446         132    [80,86]
@@ -141,11 +141,11 @@ Your output should resemble:
 ## Step 3: Convert the serialization format to JSON¶
 
   1. Run the following statement to confirm that the current format of this table is Avro Schema Registry.
-         
+
          SHOW CREATE TABLE gaming_player_activity_source;
 
 Your output should resemble:
-         
+
          +-------------------------------------------------------------+
          |                      SHOW CREATE TABLE                      |
          +-------------------------------------------------------------+
@@ -173,7 +173,7 @@ Your output should resemble:
          +-------------------------------------------------------------+
 
   2. Run the following statement to create a second table that has the same schema but is configured with the value format set to JSON with Schema Registry. The key format is unchanged.
-         
+
          CREATE TABLE gaming_player_activity_source_json (
            `key` VARBINARY(2147483647),
            `player_id` INT NOT NULL,
@@ -189,18 +189,18 @@ Your output should resemble:
 This statement creates a corresponding Kafka topic and Schema Registry subject named `gaming_player_activity_source_json-value` for the value.
 
   3. Run the following SQL to create a long-running statement that continuously transforms `gaming_player_activity_source` records into `gaming_player_activity_source_json` records.
-         
+
          INSERT INTO gaming_player_activity_source_json
          SELECT
            *
          FROM gaming_player_activity_source;
 
   4. Run the following statement to confirm that records are continuously appended to the target table:
-         
+
          SELECT * FROM gaming_player_activity_source_json;
 
 Your output should resemble:
-         
+
          key         player_id game_room_id points coordinates
          x'31303834' 1084      3583         211    [51,93]
          x'31303037' 1007      2268         55     [98,72]
@@ -214,11 +214,11 @@ Tip
 Run the `SHOW JOBS;` statement to see the phase of statements that you’ve started in your workspace or Flink SQL shell.
 
   5. Run the following statement to confirm that the format of the `gaming_player_activity_source_json` table is JSON.
-         
+
          SHOW CREATE TABLE gaming_player_activity_source_json;
 
 Your output should resemble:
-         
+
          +--------------------------------------------------------------------------------------+
          |                                  SHOW CREATE TABLE                                   |
          +--------------------------------------------------------------------------------------+
@@ -253,4 +253,3 @@ Your INSERT INTO statement is converting records in the Avro format to the JSON 
   2. In the statements list, find the statement that has a status of **Running**.
   3. In the **Actions** column, click **…** and select **Delete statement**.
   4. In the **Confirm statement deletion** dialog, copy and paste the statement name and click **Confirm**.
-

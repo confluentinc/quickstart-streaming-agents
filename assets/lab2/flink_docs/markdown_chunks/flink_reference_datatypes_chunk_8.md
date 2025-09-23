@@ -59,29 +59,29 @@ Represents a boolean with a (possibly) three-valued logic of `TRUE`, `FALSE`, an
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-java.lang.Boolean | ✓ | ✓ | Default  
-boolean | ✓ | (✓) | Output only if type is not nullable.  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+java.lang.Boolean | ✓ | ✓ | Default
+boolean | ✓ | (✓) | Output only if type is not nullable.
+
 **Formats**
 
 The following table shows examples of the BOOLEAN type in different formats.
 
-JSON for data type | 
+JSON for data type |
 
     {"type":"BOOLEAN","nullable":true}
 
----|---  
-CLI/UI format | 
+---|---
+CLI/UI format |
 
     NULL
 
-JSON for payload | 
+JSON for payload |
 
     null
 
-CLI/UI format for payload | 
+CLI/UI format for payload |
 
     NULL
 
@@ -95,29 +95,29 @@ Data type for representing untyped `NULL` values.
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-java.lang.Object | ✓ | ✓ | Default  
-any class |  | (✓) | Any non-primitive type.  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+java.lang.Object | ✓ | ✓ | Default
+any class |  | (✓) | Any non-primitive type.
+
 **Formats**
 
 The following table shows examples of the NULL type in different formats.
 
-JSON for data type | 
+JSON for data type |
 
     {"type":"NULL"}
 
----|---  
-CLI/UI format | 
+---|---
+CLI/UI format |
 
     NULL
 
-JSON for payload | 
+JSON for payload |
 
     null
 
-CLI/UI format for payload | 
+CLI/UI format for payload |
 
     NULL
 

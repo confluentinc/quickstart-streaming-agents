@@ -9,18 +9,18 @@ scraped_date: 2025-09-05T13:50:32.168345
 
 Confluent Cloud for Apache Flink® provides these built-in string functions to use in SQL queries:
 
-ASCII | BTRIM | string1 || string2 | CHARACTER_LENGTH  
----|---|---|---  
-CHR | CONCAT | CONCAT_WS | DECODE  
-ELT | ENCODE | FROM_BASE64 | INITCAP  
-INSTR | LEFT | LOCATE | LOWER  
-LPAD | LTRIM | OVERLAY | PARSE_URL  
-POSITION | REGEXP | REGEXP_EXTRACT | REGEXP_REPLACE  
-REPEAT | REPLACE | REVERSE | RIGHT  
-RPAD | RTRIM | SPLIT_INDEX | STR_TO_MAP  
-SUBSTRING | TO_BASE64 | TRANSLATE | TRIM  
-UPPER | URL_DECODE | URL_ENCODE |   
-  
+ASCII | BTRIM | string1 || string2 | CHARACTER_LENGTH
+---|---|---|---
+CHR | CONCAT | CONCAT_WS | DECODE
+ELT | ENCODE | FROM_BASE64 | INITCAP
+INSTR | LEFT | LOCATE | LOWER
+LPAD | LTRIM | OVERLAY | PARSE_URL
+POSITION | REGEXP | REGEXP_EXTRACT | REGEXP_REPLACE
+REPEAT | REPLACE | REVERSE | RIGHT
+RPAD | RTRIM | SPLIT_INDEX | STR_TO_MAP
+SUBSTRING | TO_BASE64 | TRANSLATE | TRIM
+UPPER | URL_DECODE | URL_ENCODE |
+
 ## ASCII¶
 
 Gets the ASCII value of the first character of a string.
@@ -35,7 +35,7 @@ Examples
 
     -- returns 97
     SELECT ASCII('abc');
-    
+
     -- returns NULL
     SELECT ASCII(CAST(NULL AS VARCHAR));
 
@@ -80,10 +80,10 @@ Examples
 
     -- returns 'www.apache.org'
     SELECT BTRIM("  www.apache.org  ");
-    
+
     -- returns 'www.apache.org'
     SELECT BTRIM('/www.apache.org/', '/');
-    
+
     -- returns 'www.apache.org'
     SELECT BTRIM('/*www.apache.org*/', '/*');
 
@@ -130,7 +130,7 @@ Examples
 
     -- returns 'a'
     SELECT CHR(97);
-    
+
     -- returns 'a'
     SELECT CHR(353);
 
@@ -400,7 +400,7 @@ Examples
 
     -- returns "??hi"
     SELECT LPAD('hi', 4, '??');
-    
+
     -- returns "h"
     SELECT LPAD('hi', 1, '??');
 
@@ -449,7 +449,7 @@ Examples
 
     -- returns "xxxxxxxxx"
     SELECT OVERLAY('xxxxxtest' PLACING 'xxxx' FROM 6);
-    
+
     -- returns "xxxxxxxxxst"
     SELECT OVERLAY('xxxxxtest' PLACING 'xxxx' FROM 6 FOR 2);
 
@@ -490,7 +490,7 @@ Example
 
     -- returns 'confluent.io'
     SELECT PARSE_URL('http://confluent.io/path1/p.php?k1=v1&k2=v2#Ref1', 'HOST');
-    
+
     -- returns 'v1'
     SELECT PARSE_URL('http://confluent.io/path1/p.php?k1=v1&k2=v2#Ref1', 'QUERY', 'k1');
 
@@ -512,7 +512,7 @@ Examples
 
     -- returns 1
     SELECT POSITION('the' IN 'the quick brown fox');
-    
+
     -- returns 17
     SELECT POSITION('fox' IN 'the quick brown fox');
 
@@ -530,7 +530,7 @@ Examples
 
     -- returns TRUE
     SELECT REGEXP('800 439 3207', '.?(\d{3}).*(\d{3}).*(\d{4})');
-    
+
     -- returns TRUE
     SELECT REGEXP('2023-05-04', '((\d{4}.\d{2}).(\d{2}))');
 
@@ -605,7 +605,7 @@ Examples
 
     -- returns "hello flink"
     SELECT REPLACE('hello world', 'world', 'flink');
-    
+
     -- returns "zab"
     SELECT REPLACE('ababab', 'abab', 'z');
 
@@ -669,7 +669,7 @@ Examples
 
     -- returns "hi??"
     SELECT RPAD('hi', 4, '??');
-    
+
     -- returns "h"
     SELECT RPAD('hi', 1, '??');
 
@@ -735,7 +735,7 @@ Example
 
     -- returns {a=1, b=2, c=3}
     SELECT STR_TO_MAP('a=1,b=2,c=3');
-    
+
     -- returns {a=1, b=2, c=3}
     SELECT STR_TO_MAP('a:1;b:2;c:3', ';', ':');
 
@@ -759,7 +759,7 @@ Examples
 
     -- returns "fox"
     SELECT SUBSTR('The quick brown fox', 17);
-    
+
     -- returns "The"
     SELECT SUBSTR('The quick brown fox', 1, 3);
 
@@ -808,13 +808,13 @@ Examples:
 
     -- returns A1B2C3
     SELECT TRANSLATE('AaBbCc', 'abc', '123');
-    
+
     -- returns A1BC
     SELECT TRANSLATE('AaBbCc', 'abc', '1');
-    
+
     -- returns ABC
     SELECT TRANSLATE('AaBbCc', 'abc', '');
-    
+
     -- returns    .APACHE.com
     SELECT TRANSLATE('www.apache.org', 'wapcheorg', ' APCHEcom');
 
@@ -839,10 +839,10 @@ Examples
 
     -- returns "The quick brown "
     SELECT TRIM(TRAILING 'fox' FROM 'The quick brown fox');
-    
+
     -- returns " quick brown fox"
     SELECT TRIM(LEADING 'The' FROM 'The quick brown fox');
-    
+
     -- returns " The quick brown fox "
     SELECT TRIM(BOTH 'yyy' FROM 'yyy The quick brown fox yyy');
 
@@ -923,4 +923,3 @@ Example
   * [Numeric Functions](numeric-functions.html#flink-sql-numeric-functions)
   * String Functions
   * [Table API Functions](table-api-functions.html#flink-table-api-functions)
-

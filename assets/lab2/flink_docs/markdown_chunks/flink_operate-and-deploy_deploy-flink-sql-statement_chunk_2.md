@@ -28,12 +28,12 @@ This YAML file defines a workflow that runs when changes are pushed to the main 
      * Log in to Terraform Cloud using the API token stored in the Action Secret
      * Initialize Terraform
      * Apply the Terraform configuration to deploy changes to your Confluent Cloud account
-    
+
     on:
      push:
         branches:
         - main
-    
+
     jobs:
      terraform_flink_ccloud_tutorial:
         name: "terraform_flink_ccloud_tutorial"
@@ -41,27 +41,27 @@ This YAML file defines a workflow that runs when changes are pushed to the main 
         steps:
           - name: Checkout
             uses: actions/checkout@v4
-    
+
           - name: Setup Terraform
             uses: hashicorp/setup-terraform@v3
             with:
              cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
-    
+
           - name: Terraform Init
             id: init
             run: terraform init
-    
+
           - name: Terraform Validate
             id: validate
             run: terraform validate -no-color
-    
+
           - name: Terraform Plan
             id: plan
             run: terraform plan
             env:
               TF_VAR_confluent_cloud_api_key: ${{ secrets.CONFLUENT_CLOUD_API_KEY }}
               TF_VAR_confluent_cloud_api_secret: ${{ secrets.CONFLUENT_CLOUD_API_SECRET }}
-    
+
           - name: Terraform Apply
             id: apply
             run: terraform apply -auto-approve

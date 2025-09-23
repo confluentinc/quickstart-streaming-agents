@@ -108,7 +108,7 @@ View the entire YAML specification file
       - url: http://localhost:8080
     paths:
       ## ---------------------------- Environments API ---------------------------- ##
-    
+
       /cmf/api/v1/environments:
         post:
           operationId: createOrUpdateEnvironment
@@ -255,7 +255,7 @@ View the entire YAML specification file
                 application/yaml:
                   schema:
                     $ref: '#/components/schemas/RestError'
-    
+
       ## ---------------------------- Applications API ---------------------------- ##
       /cmf/api/v1/environments/{envName}/applications:
         post:
@@ -670,9 +670,9 @@ View the entire YAML specification file
                 application/yaml:
                   schema:
                     $ref: '#/components/schemas/RestError'
-    
+
       ## ---------------------------- Environment Secret Mapping API ---------------------------- ##
-    
+
       /cmf/api/v1/environments/{envName}/secret-mappings/{name}:
         delete:
           operationId: deleteEnvironmentSecretMapping
@@ -926,9 +926,9 @@ View the entire YAML specification file
                 application/yaml:
                   schema:
                     $ref: '#/components/schemas/RestError'
-    
+
       ## ---------------------------- Statement API ---------------------------- ##
-    
+
       /cmf/api/v1/environments/{envName}/statements:
         post:
           operationId: createStatement
@@ -1305,7 +1305,7 @@ View the entire YAML specification file
                 application/yaml:
                   schema:
                     $ref: '#/components/schemas/RestError'
-    
+
       ## ---------------------------- Compute Pool API ---------------------------- ##
       /cmf/api/v1/environments/{envName}/compute-pools:
         post:
@@ -1506,9 +1506,9 @@ View the entire YAML specification file
                 application/yaml:
                   schema:
                     $ref: '#/components/schemas/RestError'
-    
+
       ## ---------------------------- Secrets API ---------------------------- ##
-    
+
       /cmf/api/v1/secrets:
         post:
           operationId: createSecret
@@ -1729,9 +1729,9 @@ View the entire YAML specification file
                 application/yaml:
                   schema:
                     $ref: '#/components/schemas/RestError'
-    
+
       ## ---------------------------- Catalog API ---------------------------- ##
-    
+
       /cmf/api/v1/catalogs/kafka:
         post:
           operationId: createKafkaCatalog
@@ -1888,7 +1888,7 @@ View the entire YAML specification file
                 application/yaml:
                   schema:
                     $ref: '#/components/schemas/RestError'
-    
+
     components:
       # https://github.com/daniel-shuy/swaggerhub-spring-pagination / Copyright (c) 2023 Daniel Shuy
       parameters:
@@ -1984,7 +1984,7 @@ View the entire YAML specification file
               minimum: 1
             sort:
               $ref: '#/components/schemas/Sort'
-    
+
         ## ---------------------------- Shared Bases ---------------------------- ##
         ResourceBaseV2:
           type: object
@@ -1998,7 +1998,7 @@ View the entire YAML specification file
           required:
             - apiVersion
             - kind
-    
+
         PostResourceBase:
           type: object
           properties:
@@ -2072,7 +2072,7 @@ View the entire YAML specification file
                 interactive:
                   description: defaults for interactive statements
                   $ref: '#/components/schemas/StatementDefaults'
-    
+
         ## ---------------------------- Request Schemas ---------------------------- ##
         PostEnvironment:
           title: Environment
@@ -2086,7 +2086,7 @@ View the entire YAML specification file
             - $ref: '#/components/schemas/KubernetesNamespace'
             - $ref: '#/components/schemas/ComputePoolDefaults'
             - $ref: '#/components/schemas/AllStatementDefaults'
-    
+
         ## ---------------------------- Response Schemas ---------------------------- ##
         Environment:
           title: Environment
@@ -2110,7 +2110,7 @@ View the entire YAML specification file
           required:
             - name
             - kubernetesNamespace
-    
+
         EnvironmentSecretMapping:
           title: EnvironmentSecretMapping
           description: The secrets mapping for the environment. The name shows the name of the Connection Secret ID to be mapped.
@@ -2163,7 +2163,7 @@ View the entire YAML specification file
           required:
             - apiVersion
             - kind
-    
+
         EnvironmentSecretMappingsPage:
           type: object
           allOf:
@@ -2183,7 +2183,7 @@ View the entire YAML specification file
                   items:
                     $ref: '#/components/schemas/EnvironmentSecretMapping'
                   default: [ ]
-    
+
         Secret:
           title: Secret
           description: Represents a Secret that can be used to specify sensitive information in the Flink SQL statements.
@@ -2254,7 +2254,7 @@ View the entire YAML specification file
               required:
                 - metadata
                 - spec
-    
+
         SecretsPage:
           type: object
           allOf:
@@ -2274,7 +2274,7 @@ View the entire YAML specification file
                   items:
                     $ref: '#/components/schemas/Secret'
                   default: [ ]
-    
+
         EnvironmentsPage:
           type: object
           allOf:
@@ -2295,7 +2295,7 @@ View the entire YAML specification file
                   items:
                     $ref: '#/components/schemas/Environment'
                   default: [ ]
-    
+
         FlinkApplication:
           title: FlinkApplication
           description: Represents a Flink Application submitted by the user
@@ -2319,7 +2319,7 @@ View the entire YAML specification file
               required: # status is optional for application spec
                 - metadata
                 - spec
-    
+
         ApplicationsPage:
           type: object
           allOf:
@@ -2339,7 +2339,7 @@ View the entire YAML specification file
                   items:
                     $ref: '#/components/schemas/FlinkApplication'
                   default: [ ]
-    
+
         FlinkApplicationEvent:
           title: FlinkApplicationEvent
           description: Events from the deployment of Flink clusters
@@ -2397,14 +2397,14 @@ View the entire YAML specification file
             - apiVersion
             - metadata
             - status
-    
+
         EventDataNewStatus:
           type: object
           properties:
             newStatus:
               description: "The new status"
               type: string
-    
+
         EventDataJobException:
           type: object
           properties:
@@ -2415,7 +2415,7 @@ View the entire YAML specification file
           oneOf:
             - $ref: '#/components/schemas/EventDataNewStatus'
             - $ref: '#/components/schemas/EventDataJobException'
-    
+
         EventsPage:
           type: object
           allOf:
@@ -2435,7 +2435,7 @@ View the entire YAML specification file
                   items:
                     $ref: '#/components/schemas/FlinkApplicationEvent'
                   default: [ ]
-    
+
         FlinkApplicationInstance:
           title: ApplicationInstance
           description: An instance of a Flink Application
@@ -2507,7 +2507,7 @@ View the entire YAML specification file
                   items:
                     $ref: '#/components/schemas/FlinkApplicationInstance'
                   default: [ ]
-    
+
         Statement:
           title: Statement
           description: Represents a SQL Statement submitted by the user
@@ -2621,7 +2621,7 @@ View the entire YAML specification file
               required: # status and result are optional for Statement spec
                 - metadata
                 - spec
-    
+
         StatementsPage:
           type: object
           allOf:
@@ -2641,7 +2641,7 @@ View the entire YAML specification file
                   items:
                     $ref: '#/components/schemas/Statement'
                   default: [ ]
-    
+
         StatementResult:
           title: StatementResult
           description: Represents the result of a SQL Statement
@@ -2677,7 +2677,7 @@ View the entire YAML specification file
               required:
                 - metadata
                 - results
-    
+
         StatementException:
           title: StatementException
           description: Represents an exception that occurred while executing a SQL Statement
@@ -2699,7 +2699,7 @@ View the entire YAML specification file
                 - name
                 - message
                 - timestamp
-    
+
         StatementExceptionList:
           title: StatementExceptionList
           description: Represents a list of exceptions that occurred while executing a SQL Statement
@@ -2718,7 +2718,7 @@ View the entire YAML specification file
                     default: [ ]
               required:
                 - data
-    
+
         DataType:
           title: DataType
           description: Represents a SQL data type
@@ -2785,7 +2785,7 @@ View the entire YAML specification file
           required:
             - type
             - nullable
-    
+
         ResultSchema:
           title: ResultSchema
           description: Represents the schema of the result of a SQL Statement
@@ -2809,7 +2809,7 @@ View the entire YAML specification file
                   - type
           required:
             - columns
-    
+
         ComputePool:
           title: ComputePool
           description: Represents the configuration of a Flink cluster
@@ -2872,7 +2872,7 @@ View the entire YAML specification file
               required: # status is optional for ComputePool spec
                 - metadata
                 - spec
-    
+
         ComputePoolsPage:
           type: object
           allOf:
@@ -2892,7 +2892,7 @@ View the entire YAML specification file
                   items:
                     $ref: '#/components/schemas/ComputePool'
                   default: [ ]
-    
+
         CatalogMetadata:
           title: CatalogMetadata
           description: Metadata about the Catalog
@@ -2919,7 +2919,7 @@ View the entire YAML specification file
                 type: string
           required:
             - name
-    
+
         KafkaCatalog:
           title: KafkaCatalog
           description: Represents a the configuration of a Kafka Catalog
@@ -2974,7 +2974,7 @@ View the entire YAML specification file
               required:
                 - metadata
                 - spec
-    
+
         KafkaCatalogsPage:
           type: object
           allOf:
@@ -3006,7 +3006,7 @@ View the entire YAML specification file
     POST /cmf/api/v1/environments HTTP/1.1
     Host: example.com
     Content-Type: application/json
-    
+
     {
         "name": "string",
         "flinkApplicationDefaults": {},
@@ -3022,13 +3022,13 @@ View the entire YAML specification file
         }
     }
 
-Status Codes:| 
+Status Codes:|
 
   * [201 Created](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.2) – The Environment was successfully created or updated. **Example response:**
-        
+
         HTTP/1.1 201 Created
         Content-Type: application/json
-        
+
         {
             "name": "string",
             "created_time": "2025-09-05T18:51:30.429387",
@@ -3047,10 +3047,10 @@ Status Codes:|
         }
 
   * [400 Bad Request](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1) – Bad request. **Example response:**
-        
+
         HTTP/1.1 400 Bad Request
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -3060,10 +3060,10 @@ Status Codes:|
         }
 
   * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
-        
+
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -3072,15 +3072,15 @@ Status Codes:|
             ]
         }
 
----|---  
-  
+---|---
+
 `GET ``/cmf/api/v1/environments`¶
 
 **Retrieve a paginated list of all environments.**
 
-Query Parameters:  
----  
-| 
+Query Parameters:
+---
+|
 
   * **page** (_integer_) – Zero-based page index (0..N)
   * **size** (_integer_) – The size of the page to be returned
@@ -3091,13 +3091,13 @@ Query Parameters:
     GET /cmf/api/v1/environments HTTP/1.1
     Host: example.com
 
-Status Codes:| 
+Status Codes:|
 
   * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – List of environments found. If no environments are found, an empty list is returned. Note the information about secret is not included in the list call yet. In order to get the information about secret, make a getSecret call. **Example response:**
-        
+
         HTTP/1.1 200 OK
         Content-Type: application/json
-        
+
         {
             "pageable": {
                 "page": 1,
@@ -3133,10 +3133,10 @@ Status Codes:|
 
   * [304 Not Modified](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.5) – Not modified.
   * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
-        
+
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -3145,9 +3145,9 @@ Status Codes:|
             ]
         }
 
----|---  
-Response Headers:  
-| 
+---|---
+Response Headers:
+|
 
   * **ETag** – An ID for this version of the response.
 
@@ -3155,24 +3155,24 @@ Response Headers:
 
 **Get/Describe an environment with the given name.**
 
-Parameters:| 
+Parameters:|
 
   * **envName** (_string_) – Name of the Environment to be retrieved.
 
----|---  
-  
+---|---
+
 **Example request:**
 
     GET /cmf/api/v1/environments/{envName} HTTP/1.1
     Host: example.com
 
-Status Codes:| 
+Status Codes:|
 
   * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Environment found and returned. **Example response:**
-        
+
         HTTP/1.1 200 OK
         Content-Type: application/json
-        
+
         {
             "name": "string",
             "created_time": "2025-09-05T18:51:30.429387",
@@ -3191,10 +3191,10 @@ Status Codes:|
         }
 
   * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Environment not found. **Example response:**
-        
+
         HTTP/1.1 404 Not Found
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -3204,10 +3204,10 @@ Status Codes:|
         }
 
   * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
-        
+
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -3216,23 +3216,23 @@ Status Codes:|
             ]
         }
 
----|---  
-  
+---|---
+
 `DELETE ``/cmf/api/v1/environments/{envName}`¶
-     Parameters:| 
+     Parameters:|
 
   * **envName** (_string_) – Name of the Environment to be deleted.
 
----|---  
-Status Codes:| 
+---|---
+Status Codes:|
 
   * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Environment found and deleted.
   * [304 Not Modified](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.5) – Not modified.
   * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
-        
+
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -3242,10 +3242,10 @@ Status Codes:|
         }
 
   * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Environment not found. **Example response:**
-        
+
         HTTP/1.1 404 Not Found
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -3258,18 +3258,18 @@ Status Codes:|
 
 **Creates a new Flink Application or updates an existing one in the given Environment.**
 
-Parameters:| 
+Parameters:|
 
   * **envName** (_string_) – Name of the Environment
 
----|---  
-  
+---|---
+
 **Example request:**
 
     POST /cmf/api/v1/environments/{envName}/applications HTTP/1.1
     Host: example.com
     Content-Type: application/json
-    
+
     {
         "apiVersion": "string",
         "kind": "string",
@@ -3278,13 +3278,13 @@ Parameters:|
         "status": {}
     }
 
-Status Codes:| 
+Status Codes:|
 
   * [201 Created](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.2) – The Application was successfully created or updated. **Example response:**
-        
+
         HTTP/1.1 201 Created
         Content-Type: application/json
-        
+
         {
             "apiVersion": "string",
             "kind": "string",
@@ -3294,10 +3294,10 @@ Status Codes:|
         }
 
   * [400 Bad Request](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1) – Bad request. **Example response:**
-        
+
         HTTP/1.1 400 Bad Request
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -3307,10 +3307,10 @@ Status Codes:|
         }
 
   * [422 Unprocessable Entity](https://www.rfc-editor.org/rfc/rfc4918#section-11.2) – Request valid but invalid content. **Example response:**
-        
+
         HTTP/1.1 422 Unprocessable Entity
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -3320,10 +3320,10 @@ Status Codes:|
         }
 
   * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
-        
+
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -3332,19 +3332,19 @@ Status Codes:|
             ]
         }
 
----|---  
-  
+---|---
+
 `GET ``/cmf/api/v1/environments/{envName}/applications`¶
 
 **Retrieve a paginated list of all applications in the given Environment.**
 
-Parameters:| 
+Parameters:|
 
   * **envName** (_string_) – Name of the Environment
 
----|---  
-Query Parameters:  
-| 
+---|---
+Query Parameters:
+|
 
   * **page** (_integer_) – Zero-based page index (0..N)
   * **size** (_integer_) – The size of the page to be returned
@@ -3355,13 +3355,13 @@ Query Parameters:
     GET /cmf/api/v1/environments/{envName}/applications HTTP/1.1
     Host: example.com
 
-Status Codes:| 
+Status Codes:|
 
   * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Application found and returned. **Example response:**
-        
+
         HTTP/1.1 200 OK
         Content-Type: application/json
-        
+
         {
             "pageable": {
                 "page": 1,
@@ -3388,10 +3388,10 @@ Status Codes:|
 
   * [304 Not Modified](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.5) – Not modified.
   * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Environment not found. **Example response:**
-        
+
         HTTP/1.1 404 Not Found
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -3401,10 +3401,10 @@ Status Codes:|
         }
 
   * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
-        
+
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -3413,9 +3413,9 @@ Status Codes:|
             ]
         }
 
----|---  
-Response Headers:  
-| 
+---|---
+Response Headers:
+|
 
   * **ETag** – An ID for this version of the response.
 
@@ -3423,25 +3423,25 @@ Response Headers:
 
 **Retrieve an Application of the given name in the given Environment.**
 
-Parameters:| 
+Parameters:|
 
   * **envName** (_string_) – Name of the Environment
   * **appName** (_string_) – Name of the Application
 
----|---  
-  
+---|---
+
 **Example request:**
 
     GET /cmf/api/v1/environments/{envName}/applications/{appName} HTTP/1.1
     Host: example.com
 
-Status Codes:| 
+Status Codes:|
 
   * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Application found and returned. **Example response:**
-        
+
         HTTP/1.1 200 OK
         Content-Type: application/json
-        
+
         {
             "apiVersion": "string",
             "kind": "string",
@@ -3452,10 +3452,10 @@ Status Codes:|
 
   * [304 Not Modified](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.5) – Not modified.
   * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
-        
+
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -3465,10 +3465,10 @@ Status Codes:|
         }
 
   * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Application not found. **Example response:**
-        
+
         HTTP/1.1 404 Not Found
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -3477,9 +3477,9 @@ Status Codes:|
             ]
         }
 
----|---  
-Response Headers:  
-| 
+---|---
+Response Headers:
+|
 
   * **ETag** – An ID for this version of the response.
 
@@ -3487,21 +3487,21 @@ Response Headers:
 
 **Deletes an Application of the given name in the given Environment.**
 
-Parameters:| 
+Parameters:|
 
   * **envName** (_string_) – Name of the Environment
   * **appName** (_string_) – Name of the Application
 
----|---  
-Status Codes:| 
+---|---
+Status Codes:|
 
   * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Application found and deleted.
   * [304 Not Modified](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.5) – Not modified.
   * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
-        
+
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -3514,14 +3514,14 @@ Status Codes:|
 
 **Get a paginated list of events of the given Application**
 
-Parameters:| 
+Parameters:|
 
   * **envName** (_string_) – Name of the Environment
   * **appName** (_string_) – Name of the Application
 
----|---  
-Query Parameters:  
-| 
+---|---
+Query Parameters:
+|
 
   * **page** (_integer_) – Zero-based page index (0..N)
   * **size** (_integer_) – The size of the page to be returned
@@ -3532,13 +3532,13 @@ Query Parameters:
     GET /cmf/api/v1alpha1/environments/{envName}/applications/{appName}/events HTTP/1.1
     Host: example.com
 
-Status Codes:| 
+Status Codes:|
 
   * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Events found and returned. **Example response:**
-        
+
         HTTP/1.1 200 OK
         Content-Type: application/json
-        
+
         {
             "pageable": {
                 "page": 1,
@@ -3576,10 +3576,10 @@ Status Codes:|
         }
 
   * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Environment or Application not found. **Example response:**
-        
+
         HTTP/1.1 404 Not Found
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -3589,10 +3589,10 @@ Status Codes:|
         }
 
   * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
-        
+
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -3601,25 +3601,25 @@ Status Codes:|
             ]
         }
 
----|---  
-  
+---|---
+
 `POST ``/cmf/api/v1/environments/{envName}/applications/{appName}/start`¶
 
 **Starts an earlier submitted Flink Application**
 
-Parameters:| 
+Parameters:|
 
   * **envName** (_string_) – Name of the Environment
   * **appName** (_string_) – Name of the Application
 
----|---  
-Status Codes:| 
+---|---
+Status Codes:|
 
   * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Application started **Example response:**
-        
+
         HTTP/1.1 200 OK
         Content-Type: application/json
-        
+
         {
             "apiVersion": "string",
             "kind": "string",
@@ -3630,10 +3630,10 @@ Status Codes:|
 
   * [304 Not Modified](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.5) – Not modified.
   * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
-        
+
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -3646,19 +3646,19 @@ Status Codes:|
 
 **Suspends an earlier started Flink Application**
 
-Parameters:| 
+Parameters:|
 
   * **envName** (_string_) – Name of the Environment
   * **appName** (_string_) – Name of the Application
 
----|---  
-Status Codes:| 
+---|---
+Status Codes:|
 
   * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Application suspended **Example response:**
-        
+
         HTTP/1.1 200 OK
         Content-Type: application/json
-        
+
         {
             "apiVersion": "string",
             "kind": "string",
@@ -3669,10 +3669,10 @@ Status Codes:|
 
   * [304 Not Modified](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.5) – Not modified.
   * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
-        
+
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -3685,14 +3685,14 @@ Status Codes:|
 
 **Get a paginated list of instances of the given Application**
 
-Parameters:| 
+Parameters:|
 
   * **envName** (_string_) – Name of the Environment
   * **appName** (_string_) – Name of the Application
 
----|---  
-Query Parameters:  
-| 
+---|---
+Query Parameters:
+|
 
   * **page** (_integer_) – Zero-based page index (0..N)
   * **size** (_integer_) – The size of the page to be returned
@@ -3703,13 +3703,13 @@ Query Parameters:
     GET /cmf/api/v1/environments/{envName}/applications/{appName}/instances HTTP/1.1
     Host: example.com
 
-Status Codes:| 
+Status Codes:|
 
   * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Instances found and returned. **Example response:**
-        
+
         HTTP/1.1 200 OK
         Content-Type: application/json
-        
+
         {
             "pageable": {
                 "page": 1,
@@ -3747,10 +3747,10 @@ Status Codes:|
         }
 
   * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Environment or Application not found. **Example response:**
-        
+
         HTTP/1.1 404 Not Found
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -3760,10 +3760,10 @@ Status Codes:|
         }
 
   * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
-        
+
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -3772,32 +3772,32 @@ Status Codes:|
             ]
         }
 
----|---  
-  
+---|---
+
 `GET ``/cmf/api/v1/environments/{envName}/applications/{appName}/instances/{instName}`¶
 
 **Retrieve an Instance of an Application**
 
-Parameters:| 
+Parameters:|
 
   * **envName** (_string_) – Name of the Environment
   * **appName** (_string_) – Name of the Application
   * **instName** (_string_) – Name of the ApplicationInstance
 
----|---  
-  
+---|---
+
 **Example request:**
 
     GET /cmf/api/v1/environments/{envName}/applications/{appName}/instances/{instName} HTTP/1.1
     Host: example.com
 
-Status Codes:| 
+Status Codes:|
 
   * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – ApplicationInstance found and returned. **Example response:**
-        
+
         HTTP/1.1 200 OK
         Content-Type: application/json
-        
+
         {
             "apiVersion": "string",
             "kind": "string",
@@ -3819,10 +3819,10 @@ Status Codes:|
         }
 
   * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – FlinkApplicationInstance or environment or application not found. **Example response:**
-        
+
         HTTP/1.1 404 Not Found
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -3832,10 +3832,10 @@ Status Codes:|
         }
 
   * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
-        
+
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -3844,26 +3844,26 @@ Status Codes:|
             ]
         }
 
----|---  
-  
+---|---
+
 `DELETE ``/cmf/api/v1/environments/{envName}/secret-mappings/{name}`¶
 
 **Deletes the Environment Secret Mapping for the given Environment and Secret.**
 
-Parameters:| 
+Parameters:|
 
   * **envName** (_string_) – Name of the Environment in which the mapping has to be deleted.
   * **name** (_string_) – Name of the environment secret mapping to be deleted in the given environment.
 
----|---  
-Status Codes:| 
+---|---
+Status Codes:|
 
   * [204 No Content](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.5) – The Environment Secret Mapping was successfully deleted.
   * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Environment or Secret not found. **Example response:**
-        
+
         HTTP/1.1 404 Not Found
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -3873,10 +3873,10 @@ Status Codes:|
         }
 
   * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
-        
+
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -3889,25 +3889,25 @@ Status Codes:|
 
 **Retrieve the Environment Secret Mapping for the given name in the given environment.**
 
-Parameters:| 
+Parameters:|
 
   * **envName** (_string_) – Name of the Environment
   * **name** (_string_) – Name of the environment secret mapping to be retrieved.
 
----|---  
-  
+---|---
+
 **Example request:**
 
     GET /cmf/api/v1/environments/{envName}/secret-mappings/{name} HTTP/1.1
     Host: example.com
 
-Status Codes:| 
+Status Codes:|
 
   * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Environment Secret Mapping found and returned. **Example response:**
-        
+
         HTTP/1.1 200 OK
         Content-Type: application/json
-        
+
         {
             "apiVersion": "string",
             "kind": "string",
@@ -3925,10 +3925,10 @@ Status Codes:|
         }
 
   * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Environment or Secret not found. **Example response:**
-        
+
         HTTP/1.1 404 Not Found
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -3938,10 +3938,10 @@ Status Codes:|
         }
 
   * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
-        
+
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -3950,25 +3950,25 @@ Status Codes:|
             ]
         }
 
----|---  
-  
+---|---
+
 `PUT ``/cmf/api/v1/environments/{envName}/secret-mappings/{name}`¶
 
 **Updates the Environment Secret Mapping for the given Environment.**
 
-Parameters:| 
+Parameters:|
 
   * **envName** (_string_) – Name of the Environment
   * **name** (_string_) – Name of the environment secret mapping to be updated
 
----|---  
-  
+---|---
+
 **Example request:**
 
     PUT /cmf/api/v1/environments/{envName}/secret-mappings/{name} HTTP/1.1
     Host: example.com
     Content-Type: application/json
-    
+
     {
         "apiVersion": "string",
         "kind": "string",
@@ -3985,13 +3985,13 @@ Parameters:|
         }
     }
 
-Status Codes:| 
+Status Codes:|
 
   * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – The Environment Secret Mapping was successfully updated. **Example response:**
-        
+
         HTTP/1.1 200 OK
         Content-Type: application/json
-        
+
         {
             "apiVersion": "string",
             "kind": "string",
@@ -4009,10 +4009,10 @@ Status Codes:|
         }
 
   * [400 Bad Request](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1) – Bad request. **Example response:**
-        
+
         HTTP/1.1 400 Bad Request
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -4022,10 +4022,10 @@ Status Codes:|
         }
 
   * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Environment or Secret not found. **Example response:**
-        
+
         HTTP/1.1 404 Not Found
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -4035,10 +4035,10 @@ Status Codes:|
         }
 
   * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
-        
+
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -4047,24 +4047,24 @@ Status Codes:|
             ]
         }
 
----|---  
-  
+---|---
+
 `POST ``/cmf/api/v1/environments/{envName}/secret-mappings`¶
 
 **Creates the Environment Secret Mapping for the given Environment.**
 
-Parameters:| 
+Parameters:|
 
   * **envName** (_string_) – Name of the Environment
 
----|---  
-  
+---|---
+
 **Example request:**
 
     POST /cmf/api/v1/environments/{envName}/secret-mappings HTTP/1.1
     Host: example.com
     Content-Type: application/json
-    
+
     {
         "apiVersion": "string",
         "kind": "string",
@@ -4081,13 +4081,13 @@ Parameters:|
         }
     }
 
-Status Codes:| 
+Status Codes:|
 
   * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – The Environment Secret Mapping was successfully created. **Example response:**
-        
+
         HTTP/1.1 200 OK
         Content-Type: application/json
-        
+
         {
             "apiVersion": "string",
             "kind": "string",
@@ -4105,10 +4105,10 @@ Status Codes:|
         }
 
   * [400 Bad Request](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1) – Bad request. **Example response:**
-        
+
         HTTP/1.1 400 Bad Request
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -4118,10 +4118,10 @@ Status Codes:|
         }
 
   * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Environment not found. **Example response:**
-        
+
         HTTP/1.1 404 Not Found
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -4131,10 +4131,10 @@ Status Codes:|
         }
 
   * [409 Conflict](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.10) – Environment Secret Mapping already exists. **Example response:**
-        
+
         HTTP/1.1 409 Conflict
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -4144,10 +4144,10 @@ Status Codes:|
         }
 
   * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
-        
+
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -4156,19 +4156,19 @@ Status Codes:|
             ]
         }
 
----|---  
-  
+---|---
+
 `GET ``/cmf/api/v1/environments/{envName}/secret-mappings`¶
 
 **Retrieve a paginated list of all Environment Secret Mappings.**
 
-Parameters:| 
+Parameters:|
 
   * **envName** (_string_) – Name of the Environment
 
----|---  
-Query Parameters:  
-| 
+---|---
+Query Parameters:
+|
 
   * **page** (_integer_) – Zero-based page index (0..N)
   * **size** (_integer_) – The size of the page to be returned
@@ -4179,13 +4179,13 @@ Query Parameters:
     GET /cmf/api/v1/environments/{envName}/secret-mappings HTTP/1.1
     Host: example.com
 
-Status Codes:| 
+Status Codes:|
 
   * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Environment Secret Mappings found and returned. **Example response:**
-        
+
         HTTP/1.1 200 OK
         Content-Type: application/json
-        
+
         {
             "pageable": {
                 "page": 1,
@@ -4219,10 +4219,10 @@ Status Codes:|
         }
 
   * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Environment not found. **Example response:**
-        
+
         HTTP/1.1 404 Not Found
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -4232,10 +4232,10 @@ Status Codes:|
         }
 
   * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
-        
+
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -4244,24 +4244,24 @@ Status Codes:|
             ]
         }
 
----|---  
-  
+---|---
+
 `POST ``/cmf/api/v1/environments/{envName}/statements`¶
 
 **Creates a new Flink SQL Statement in the given Environment.**
 
-Parameters:| 
+Parameters:|
 
   * **envName** (_string_) – Name of the Environment
 
----|---  
-  
+---|---
+
 **Example request:**
 
     POST /cmf/api/v1/environments/{envName}/statements HTTP/1.1
     Host: example.com
     Content-Type: application/json
-    
+
     {
         "apiVersion": "string",
         "kind": "string",
@@ -4334,13 +4334,13 @@ Parameters:|
         }
     }
 
-Status Codes:| 
+Status Codes:|
 
   * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – The Statement was successfully created. **Example response:**
-        
+
         HTTP/1.1 200 OK
         Content-Type: application/json
-        
+
         {
             "apiVersion": "string",
             "kind": "string",
@@ -4414,10 +4414,10 @@ Status Codes:|
         }
 
   * [400 Bad Request](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1) – Bad request. **Example response:**
-        
+
         HTTP/1.1 400 Bad Request
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -4427,10 +4427,10 @@ Status Codes:|
         }
 
   * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Environment not found. **Example response:**
-        
+
         HTTP/1.1 404 Not Found
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -4440,10 +4440,10 @@ Status Codes:|
         }
 
   * [409 Conflict](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.10) – Statement already exists. **Example response:**
-        
+
         HTTP/1.1 409 Conflict
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -4453,10 +4453,10 @@ Status Codes:|
         }
 
   * [422 Unprocessable Entity](https://www.rfc-editor.org/rfc/rfc4918#section-11.2) – Request valid but invalid content. **Example response:**
-        
+
         HTTP/1.1 422 Unprocessable Entity
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -4466,10 +4466,10 @@ Status Codes:|
         }
 
   * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
-        
+
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -4478,19 +4478,19 @@ Status Codes:|
             ]
         }
 
----|---  
-  
+---|---
+
 `GET ``/cmf/api/v1/environments/{envName}/statements`¶
 
 **Retrieve a paginated list of Statements in the given Environment.**
 
-Parameters:| 
+Parameters:|
 
   * **envName** (_string_) – Name of the Environment
 
----|---  
-Query Parameters:  
-| 
+---|---
+Query Parameters:
+|
 
   * **page** (_integer_) – Zero-based page index (0..N)
   * **size** (_integer_) – The size of the page to be returned
@@ -4503,13 +4503,13 @@ Query Parameters:
     GET /cmf/api/v1/environments/{envName}/statements HTTP/1.1
     Host: example.com
 
-Status Codes:| 
+Status Codes:|
 
   * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Statements found and returned. **Example response:**
-        
+
         HTTP/1.1 200 OK
         Content-Type: application/json
-        
+
         {
             "pageable": {
                 "page": 1,
@@ -4599,10 +4599,10 @@ Status Codes:|
         }
 
   * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Environment not found. **Example response:**
-        
+
         HTTP/1.1 404 Not Found
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -4612,10 +4612,10 @@ Status Codes:|
         }
 
   * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
-        
+
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -4624,31 +4624,31 @@ Status Codes:|
             ]
         }
 
----|---  
-  
+---|---
+
 `GET ``/cmf/api/v1/environments/{envName}/statements/{stmtName}`¶
 
 **Retrieve the Statement of the given name in the given Environment.**
 
-Parameters:| 
+Parameters:|
 
   * **envName** (_string_) – Name of the Environment
   * **stmtName** (_string_) – Name of the Statement
 
----|---  
-  
+---|---
+
 **Example request:**
 
     GET /cmf/api/v1/environments/{envName}/statements/{stmtName} HTTP/1.1
     Host: example.com
 
-Status Codes:| 
+Status Codes:|
 
   * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Statement found and returned. **Example response:**
-        
+
         HTTP/1.1 200 OK
         Content-Type: application/json
-        
+
         {
             "apiVersion": "string",
             "kind": "string",
@@ -4722,10 +4722,10 @@ Status Codes:|
         }
 
   * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Statement not found. **Example response:**
-        
+
         HTTP/1.1 404 Not Found
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -4735,10 +4735,10 @@ Status Codes:|
         }
 
   * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
-        
+
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -4747,27 +4747,27 @@ Status Codes:|
             ]
         }
 
----|---  
-  
+---|---
+
 `DELETE ``/cmf/api/v1/environments/{envName}/statements/{stmtName}`¶
 
 **Deletes the Statement of the given name in the given Environment.**
 
-Parameters:| 
+Parameters:|
 
   * **envName** (_string_) – Name of the Environment
   * **stmtName** (_string_) – Name of the Statement
 
----|---  
-Status Codes:| 
+---|---
+Status Codes:|
 
   * [204 No Content](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.5) – Statement was found and deleted.
   * [202 Accepted](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.3) – Statement was found and deletion request received.
   * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Statement not found. **Example response:**
-        
+
         HTTP/1.1 404 Not Found
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -4777,10 +4777,10 @@ Status Codes:|
         }
 
   * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
-        
+
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -4793,19 +4793,19 @@ Status Codes:|
 
 **Updates a Statement of the given name in the given Environment.**
 
-Parameters:| 
+Parameters:|
 
   * **envName** (_string_) – Name of the Environment
   * **stmtName** (_string_) – Name of the Statement
 
----|---  
-  
+---|---
+
 **Example request:**
 
     PUT /cmf/api/v1/environments/{envName}/statements/{stmtName} HTTP/1.1
     Host: example.com
     Content-Type: application/json
-    
+
     {
         "apiVersion": "string",
         "kind": "string",
@@ -4878,14 +4878,14 @@ Parameters:|
         }
     }
 
-Status Codes:| 
+Status Codes:|
 
   * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Statement was found and updated.
   * [400 Bad Request](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1) – Bad request. **Example response:**
-        
+
         HTTP/1.1 400 Bad Request
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -4895,10 +4895,10 @@ Status Codes:|
         }
 
   * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Statement not found. **Example response:**
-        
+
         HTTP/1.1 404 Not Found
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -4908,10 +4908,10 @@ Status Codes:|
         }
 
   * [422 Unprocessable Entity](https://www.rfc-editor.org/rfc/rfc4918#section-11.2) – Request valid but invalid content. **Example response:**
-        
+
         HTTP/1.1 422 Unprocessable Entity
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -4921,10 +4921,10 @@ Status Codes:|
         }
 
   * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
-        
+
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -4933,20 +4933,20 @@ Status Codes:|
             ]
         }
 
----|---  
-  
+---|---
+
 `GET ``/cmf/api/v1/environments/{envName}/statements/{stmtName}/results`¶
 
 **Retrieve the result of the interactive Statement with the given name in the given Environment.**
 
-Parameters:| 
+Parameters:|
 
   * **envName** (_string_) – Name of the Environment
   * **stmtName** (_string_) – Name of the Statement
 
----|---  
-Query Parameters:  
-| 
+---|---
+Query Parameters:
+|
 
   * **page-token** (_string_) – Token for the next page of results
 
@@ -4955,13 +4955,13 @@ Query Parameters:
     GET /cmf/api/v1/environments/{envName}/statements/{stmtName}/results HTTP/1.1
     Host: example.com
 
-Status Codes:| 
+Status Codes:|
 
   * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – StatementResults found and returned. **Example response:**
-        
+
         HTTP/1.1 200 OK
         Content-Type: application/json
-        
+
         {
             "apiVersion": "string",
             "kind": "string",
@@ -4977,10 +4977,10 @@ Status Codes:|
         }
 
   * [400 Bad Request](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1) – Statement does not return results. **Example response:**
-        
+
         HTTP/1.1 400 Bad Request
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -4990,10 +4990,10 @@ Status Codes:|
         }
 
   * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Statement not found. **Example response:**
-        
+
         HTTP/1.1 404 Not Found
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -5003,10 +5003,10 @@ Status Codes:|
         }
 
   * [410 Gone](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.11) – Results are gone. **Example response:**
-        
+
         HTTP/1.1 410 Gone
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -5016,10 +5016,10 @@ Status Codes:|
         }
 
   * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
-        
+
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -5028,31 +5028,31 @@ Status Codes:|
             ]
         }
 
----|---  
-  
+---|---
+
 `GET ``/cmf/api/v1/environments/{envName}/statements/{stmtName}/exceptions`¶
 
 **Retrieves the last 10 exceptions of the Statement with the given name in the given Environment.**
 
-Parameters:| 
+Parameters:|
 
   * **envName** (_string_) – Name of the Environment
   * **stmtName** (_string_) – Name of the Statement
 
----|---  
-  
+---|---
+
 **Example request:**
 
     GET /cmf/api/v1/environments/{envName}/statements/{stmtName}/exceptions HTTP/1.1
     Host: example.com
 
-Status Codes:| 
+Status Codes:|
 
   * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – StatementExceptions found and returned. **Example response:**
-        
+
         HTTP/1.1 200 OK
         Content-Type: application/json
-        
+
         {
             "apiVersion": "string",
             "kind": "string",
@@ -5068,10 +5068,10 @@ Status Codes:|
         }
 
   * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Statement not found. **Example response:**
-        
+
         HTTP/1.1 404 Not Found
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -5081,10 +5081,10 @@ Status Codes:|
         }
 
   * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
-        
+
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -5093,24 +5093,24 @@ Status Codes:|
             ]
         }
 
----|---  
-  
+---|---
+
 `POST ``/cmf/api/v1/environments/{envName}/compute-pools`¶
 
 **Creates a new Flink Compute Pool in the given Environment.**
 
-Parameters:| 
+Parameters:|
 
   * **envName** (_string_) – Name of the Environment
 
----|---  
-  
+---|---
+
 **Example request:**
 
     POST /cmf/api/v1/environments/{envName}/compute-pools HTTP/1.1
     Host: example.com
     Content-Type: application/json
-    
+
     {
         "apiVersion": "string",
         "kind": "string",
@@ -5130,13 +5130,13 @@ Parameters:|
         }
     }
 
-Status Codes:| 
+Status Codes:|
 
   * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – The Compute Pool was successfully created. **Example response:**
-        
+
         HTTP/1.1 200 OK
         Content-Type: application/json
-        
+
         {
             "apiVersion": "string",
             "kind": "string",
@@ -5157,10 +5157,10 @@ Status Codes:|
         }
 
   * [400 Bad Request](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1) – Bad request. **Example response:**
-        
+
         HTTP/1.1 400 Bad Request
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -5170,10 +5170,10 @@ Status Codes:|
         }
 
   * [409 Conflict](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.10) – Compute Pool already exists. **Example response:**
-        
+
         HTTP/1.1 409 Conflict
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -5183,10 +5183,10 @@ Status Codes:|
         }
 
   * [422 Unprocessable Entity](https://www.rfc-editor.org/rfc/rfc4918#section-11.2) – Request valid but invalid content. **Example response:**
-        
+
         HTTP/1.1 422 Unprocessable Entity
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -5196,10 +5196,10 @@ Status Codes:|
         }
 
   * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
-        
+
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -5208,19 +5208,19 @@ Status Codes:|
             ]
         }
 
----|---  
-  
+---|---
+
 `GET ``/cmf/api/v1/environments/{envName}/compute-pools`¶
 
 **Retrieve a paginated list of Compute Pools in the given Environment.**
 
-Parameters:| 
+Parameters:|
 
   * **envName** (_string_) – Name of the Environment
 
----|---  
-Query Parameters:  
-| 
+---|---
+Query Parameters:
+|
 
   * **page** (_integer_) – Zero-based page index (0..N)
   * **size** (_integer_) – The size of the page to be returned
@@ -5231,13 +5231,13 @@ Query Parameters:
     GET /cmf/api/v1/environments/{envName}/compute-pools HTTP/1.1
     Host: example.com
 
-Status Codes:| 
+Status Codes:|
 
   * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Compute Pools found and returned. **Example response:**
-        
+
         HTTP/1.1 200 OK
         Content-Type: application/json
-        
+
         {
             "pageable": {
                 "page": 1,
@@ -5274,10 +5274,10 @@ Status Codes:|
         }
 
   * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Environment not found. **Example response:**
-        
+
         HTTP/1.1 404 Not Found
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -5287,10 +5287,10 @@ Status Codes:|
         }
 
   * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
-        
+
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -5299,31 +5299,31 @@ Status Codes:|
             ]
         }
 
----|---  
-  
+---|---
+
 `GET ``/cmf/api/v1/environments/{envName}/compute-pools/{computePoolName}`¶
 
 **Retrieve the Compute Pool of the given name in the given Environment.**
 
-Parameters:| 
+Parameters:|
 
   * **envName** (_string_) – Name of the Environment
   * **computePoolName** (_string_) – Name of the Compute Pool
 
----|---  
-  
+---|---
+
 **Example request:**
 
     GET /cmf/api/v1/environments/{envName}/compute-pools/{computePoolName} HTTP/1.1
     Host: example.com
 
-Status Codes:| 
+Status Codes:|
 
   * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Compute Pool found and returned. **Example response:**
-        
+
         HTTP/1.1 200 OK
         Content-Type: application/json
-        
+
         {
             "apiVersion": "string",
             "kind": "string",
@@ -5344,10 +5344,10 @@ Status Codes:|
         }
 
   * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Compute Pool not found. **Example response:**
-        
+
         HTTP/1.1 404 Not Found
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -5357,10 +5357,10 @@ Status Codes:|
         }
 
   * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
-        
+
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -5369,26 +5369,26 @@ Status Codes:|
             ]
         }
 
----|---  
-  
+---|---
+
 `DELETE ``/cmf/api/v1/environments/{envName}/compute-pools/{computePoolName}`¶
 
 **Deletes the ComputePool of the given name in the given Environment.**
 
-Parameters:| 
+Parameters:|
 
   * **envName** (_string_) – Name of the Environment
   * **computePoolName** (_string_) – Name of the ComputePool
 
----|---  
-Status Codes:| 
+---|---
+Status Codes:|
 
   * [204 No Content](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.5) – Compute Pool was found and deleted.
   * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Compute Pool not found. **Example response:**
-        
+
         HTTP/1.1 404 Not Found
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -5398,10 +5398,10 @@ Status Codes:|
         }
 
   * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
-        
+
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -5411,10 +5411,10 @@ Status Codes:|
         }
 
   * [409 Conflict](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.10) – Compute Pool is in use and cannot be deleted. **Example response:**
-        
+
         HTTP/1.1 409 Conflict
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -5434,7 +5434,7 @@ Create a Secret. This secrets can be then used to specify sensitive information 
     POST /cmf/api/v1/secrets HTTP/1.1
     Host: example.com
     Content-Type: application/json
-    
+
     {
         "apiVersion": "string",
         "kind": "string",
@@ -5448,13 +5448,13 @@ Create a Secret. This secrets can be then used to specify sensitive information 
         }
     }
 
-Status Codes:| 
+Status Codes:|
 
   * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – The Secret was successfully created. Note that for security reasons, you can never view the contents of the secret itself once created. **Example response:**
-        
+
         HTTP/1.1 200 OK
         Content-Type: application/json
-        
+
         {
             "apiVersion": "string",
             "kind": "string",
@@ -5478,10 +5478,10 @@ Status Codes:|
         }
 
   * [400 Bad Request](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1) – Bad request. **Example response:**
-        
+
         HTTP/1.1 400 Bad Request
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -5491,10 +5491,10 @@ Status Codes:|
         }
 
   * [409 Conflict](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.10) – The Secret already exists. **Example response:**
-        
+
         HTTP/1.1 409 Conflict
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -5504,10 +5504,10 @@ Status Codes:|
         }
 
   * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
-        
+
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -5516,15 +5516,15 @@ Status Codes:|
             ]
         }
 
----|---  
-  
+---|---
+
 `GET ``/cmf/api/v1/secrets`¶
 
 **Retrieve a paginated list of all secrets. Note that the actual secret data is masked for security reasons.**
 
-Query Parameters:  
----  
-| 
+Query Parameters:
+---
+|
 
   * **page** (_integer_) – Zero-based page index (0..N)
   * **size** (_integer_) – The size of the page to be returned
@@ -5535,13 +5535,13 @@ Query Parameters:
     GET /cmf/api/v1/secrets HTTP/1.1
     Host: example.com
 
-Status Codes:| 
+Status Codes:|
 
   * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – List of secrets found. If no secrets are found, an empty list is returned. **Example response:**
-        
+
         HTTP/1.1 200 OK
         Content-Type: application/json
-        
+
         {
             "pageable": {
                 "page": 1,
@@ -5582,10 +5582,10 @@ Status Codes:|
 
   * [304 Not Modified](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.5) – The list of secrets has not changed.
   * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
-        
+
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -5594,9 +5594,9 @@ Status Codes:|
             ]
         }
 
----|---  
-Response Headers:  
-| 
+---|---
+Response Headers:
+|
 
   * **ETag** – An ID for this version of the response.
 
@@ -5604,24 +5604,24 @@ Response Headers:
 
 **Retrieve the Secret of the given name. Note that the secret data is not returned for security reasons.**
 
-Parameters:| 
+Parameters:|
 
   * **secretName** (_string_) – Name of the Secret
 
----|---  
-  
+---|---
+
 **Example request:**
 
     GET /cmf/api/v1/secrets/{secretName} HTTP/1.1
     Host: example.com
 
-Status Codes:| 
+Status Codes:|
 
   * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Secret found and returned, with security data masked. **Example response:**
-        
+
         HTTP/1.1 200 OK
         Content-Type: application/json
-        
+
         {
             "apiVersion": "string",
             "kind": "string",
@@ -5645,10 +5645,10 @@ Status Codes:|
         }
 
   * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Secret not found. **Example response:**
-        
+
         HTTP/1.1 404 Not Found
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -5658,10 +5658,10 @@ Status Codes:|
         }
 
   * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
-        
+
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -5670,24 +5670,24 @@ Status Codes:|
             ]
         }
 
----|---  
-  
+---|---
+
 `PUT ``/cmf/api/v1/secrets/{secretName}`¶
 
 **Update the secret.**
 
-Parameters:| 
+Parameters:|
 
   * **secretName** (_string_) – Name of the Secret
 
----|---  
-  
+---|---
+
 **Example request:**
 
     PUT /cmf/api/v1/secrets/{secretName} HTTP/1.1
     Host: example.com
     Content-Type: application/json
-    
+
     {
         "apiVersion": "string",
         "kind": "string",
@@ -5701,13 +5701,13 @@ Parameters:|
         }
     }
 
-Status Codes:| 
+Status Codes:|
 
   * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Returns the updated Secret **Example response:**
-        
+
         HTTP/1.1 200 OK
         Content-Type: application/json
-        
+
         {
             "apiVersion": "string",
             "kind": "string",
@@ -5731,10 +5731,10 @@ Status Codes:|
         }
 
   * [400 Bad Request](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1) – Bad request. **Example response:**
-        
+
         HTTP/1.1 400 Bad Request
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -5744,10 +5744,10 @@ Status Codes:|
         }
 
   * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Secret with the given name not found. **Example response:**
-        
+
         HTTP/1.1 404 Not Found
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -5757,10 +5757,10 @@ Status Codes:|
         }
 
   * [422 Unprocessable Entity](https://www.rfc-editor.org/rfc/rfc4918#section-11.2) – Request valid but invalid content. **Example response:**
-        
+
         HTTP/1.1 422 Unprocessable Entity
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -5770,10 +5770,10 @@ Status Codes:|
         }
 
   * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
-        
+
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -5782,25 +5782,25 @@ Status Codes:|
             ]
         }
 
----|---  
-  
+---|---
+
 `DELETE ``/cmf/api/v1/secrets/{secretName}`¶
 
 **Delete the secret with the given name.**
 
-Parameters:| 
+Parameters:|
 
   * **secretName** (_string_) – Name of the Secret
 
----|---  
-Status Codes:| 
+---|---
+Status Codes:|
 
   * [204 No Content](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.5) – Secret was successfully deleted.
   * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Secret not found. **Example response:**
-        
+
         HTTP/1.1 404 Not Found
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -5810,10 +5810,10 @@ Status Codes:|
         }
 
   * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
-        
+
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -5831,7 +5831,7 @@ Status Codes:|
     POST /cmf/api/v1/catalogs/kafka HTTP/1.1
     Host: example.com
     Content-Type: application/json
-    
+
     {
         "apiVersion": "string",
         "kind": "string",
@@ -5857,13 +5857,13 @@ Status Codes:|
         }
     }
 
-Status Codes:| 
+Status Codes:|
 
   * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – The Kafka Catalog was successfully created. **Example response:**
-        
+
         HTTP/1.1 200 OK
         Content-Type: application/json
-        
+
         {
             "apiVersion": "string",
             "kind": "string",
@@ -5890,10 +5890,10 @@ Status Codes:|
         }
 
   * [400 Bad Request](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1) – Bad request. **Example response:**
-        
+
         HTTP/1.1 400 Bad Request
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -5903,10 +5903,10 @@ Status Codes:|
         }
 
   * [409 Conflict](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.10) – Kafka Catalog already exists. **Example response:**
-        
+
         HTTP/1.1 409 Conflict
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -5916,10 +5916,10 @@ Status Codes:|
         }
 
   * [422 Unprocessable Entity](https://www.rfc-editor.org/rfc/rfc4918#section-11.2) – Request valid but invalid content. **Example response:**
-        
+
         HTTP/1.1 422 Unprocessable Entity
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -5929,10 +5929,10 @@ Status Codes:|
         }
 
   * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
-        
+
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -5941,15 +5941,15 @@ Status Codes:|
             ]
         }
 
----|---  
-  
+---|---
+
 `GET ``/cmf/api/v1/catalogs/kafka`¶
 
 **Retrieve a paginated list of Kafka Catalogs**
 
-Query Parameters:  
----  
-| 
+Query Parameters:
+---
+|
 
   * **page** (_integer_) – Zero-based page index (0..N)
   * **size** (_integer_) – The size of the page to be returned
@@ -5960,13 +5960,13 @@ Query Parameters:
     GET /cmf/api/v1/catalogs/kafka HTTP/1.1
     Host: example.com
 
-Status Codes:| 
+Status Codes:|
 
   * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Kafka Catalogs found and returned. **Example response:**
-        
+
         HTTP/1.1 200 OK
         Content-Type: application/json
-        
+
         {
             "pageable": {
                 "page": 1,
@@ -6009,10 +6009,10 @@ Status Codes:|
         }
 
   * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
-        
+
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -6021,30 +6021,30 @@ Status Codes:|
             ]
         }
 
----|---  
-  
+---|---
+
 `GET ``/cmf/api/v1/catalogs/kafka/{catName}`¶
 
 **Retrieve the Kafka Catalog of the given name.**
 
-Parameters:| 
+Parameters:|
 
   * **catName** (_string_) – Name of the Kafka Catalog
 
----|---  
-  
+---|---
+
 **Example request:**
 
     GET /cmf/api/v1/catalogs/kafka/{catName} HTTP/1.1
     Host: example.com
 
-Status Codes:| 
+Status Codes:|
 
   * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Kafka Catalog found and returned. **Example response:**
-        
+
         HTTP/1.1 200 OK
         Content-Type: application/json
-        
+
         {
             "apiVersion": "string",
             "kind": "string",
@@ -6071,10 +6071,10 @@ Status Codes:|
         }
 
   * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Kafka Catalog not found. **Example response:**
-        
+
         HTTP/1.1 404 Not Found
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -6084,10 +6084,10 @@ Status Codes:|
         }
 
   * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
-        
+
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -6096,25 +6096,25 @@ Status Codes:|
             ]
         }
 
----|---  
-  
+---|---
+
 `DELETE ``/cmf/api/v1/catalogs/kafka/{catName}`¶
 
 **Deletes the Kafka Catalog of the given name.**
 
-Parameters:| 
+Parameters:|
 
   * **catName** (_string_) – Name of the Kafka Catalog
 
----|---  
-Status Codes:| 
+---|---
+Status Codes:|
 
   * [204 No Content](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.5) – Kafka Catalog was found and deleted.
   * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Kafka Catalog not found. **Example response:**
-        
+
         HTTP/1.1 404 Not Found
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -6124,10 +6124,10 @@ Status Codes:|
         }
 
   * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
-        
+
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
-        
+
         {
             "errors": [
                 {
@@ -6143,20 +6143,19 @@ Status Codes:|
 For example:
 
     * When making the GET call:
-          
+
           GET http://localhost:8080/hello
 
 You will receive the error:
-          
+
           Resource not found: [hello]
 
     * Similarly, if you make the GET call:
-          
+
           GET http://localhost:8080/ or GET http://localhost:8080
 
 You will receive the error:
-          
+
           Resource not found: []
 
 This occurs because you are requesting an empty resource.
-

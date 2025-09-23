@@ -90,4 +90,3 @@ When you make the `helm install` call, use the `-f` flag to pass the YAML file w
     helm upgrade --install cmf confluent/confluent-manager-for-apache-flink \
       -f mtls-values.yaml \
       -f authorization-values.yaml
-

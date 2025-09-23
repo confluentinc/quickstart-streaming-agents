@@ -94,4 +94,3 @@ The following curl command deletes a Compute Pool in the `env-1` environment usi
 
     curl -v -H "Content-Type: application/json" \
      -X DELETE http://cmf:8080/cmf/api/v1/environments/env-1/compute-pools/pool
-

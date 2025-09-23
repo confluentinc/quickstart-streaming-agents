@@ -50,17 +50,17 @@ Properties
   * In this case, metadata columns and computed columns have precedence, and Confluent Cloud for Apache Flink removes the physical column from the schema.
 
   * Because Confluent Cloud for Apache Flink advertises [FULL_TRANSITIVE mode](../../sr/fundamentals/schema-evolution.html#sr-compatibility-types), queries still work, and the physical column is set to NULL in the payload:
-        
+
         INSERT INTO t_metadata_overlap
           SELECT CAST(NULL AS BYTES), 42, TO_TIMESTAMP_LTZ(0, 3);
 
 Evolve the table by renaming metadata:
 
     ALTER TABLE t_metadata_overlap DROP `timestamp`;
-    
+
     ALTER TABLE t_metadata_overlap
       ADD message_timestamp TIMESTAMP_LTZ(3) METADATA FROM 'timestamp';
-    
+
     SELECT * FROM t_metadata_overlap;
 
 SHOW CREATE TABLE returns the following output:

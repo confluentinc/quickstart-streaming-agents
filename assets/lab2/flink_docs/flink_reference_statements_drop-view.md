@@ -48,4 +48,3 @@ To avoid the error when dropping a view that may not exist, use the `IF EXISTS` 
     DROP VIEW IF EXISTS vip_customers;
 
 This statement will not throw an error if the `vip_customers` view does not exist.
-

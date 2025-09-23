@@ -57,13 +57,13 @@ Important
 
 Confluent offers support only for the APIs, libraries and components of Flink listed on this page. Code implemented by the customer (“customer code”) and code embedded into Flink is not supported. This also includes other open-source code parts of open-source Apache Flink or other open-source projects. For example, using an open-source Flink connector is not supported by Confluent and is considered customer code.
 
-Flink Component | Supported by Confluent | Notes  
----|---|---  
-Flink SQL | Yes, but supported only as part of a packaged JAR application based on the `TableEnvironment` interface. | SQL Shell and SQL gateway are not currently supported.  
-Table API - Java | Yes | Python for this API not currently supported.  
-DataStream API - Java | Yes | Python for this API not currently supported.  
-DataSet API | No | Deprecated in Apache Flink and not supported in Confluent Platform for Apache Flink.  
-  
+Flink Component | Supported by Confluent | Notes
+---|---|---
+Flink SQL | Yes, but supported only as part of a packaged JAR application based on the `TableEnvironment` interface. | SQL Shell and SQL gateway are not currently supported.
+Table API - Java | Yes | Python for this API not currently supported.
+DataStream API - Java | Yes | Python for this API not currently supported.
+DataSet API | No | Deprecated in Apache Flink and not supported in Confluent Platform for Apache Flink.
+
 In addition:
 
   * Libraries: Complex Event Processing (CEP) is the only library supported with Confluent Platform for Apache Flink, for use with SQL. PyFlink, Flink ML, Stateful Functions and Queryable State are not supported.
@@ -75,14 +75,14 @@ Note that Confluent only offers support for the APIs, libraries and components o
 
 All Flink connectors are compatible with Confluent Platform for Apache Flink. However, professional support is limited to the connectors listed in the following table:
 
-Connector | Supported by Confluent | Distribution channel | Notes  
----|---|---|---  
-Kafka Source and Sink connectors | Yes | [Maven via packages.confluent.io](https://packages.confluent.io/maven/io/confluent/flink/flink-connector-kafka/) | This includes: Table API Upsert Kafka connector, Datastream API Kafka connector, and the Datastream API Dynamic Kafka connector. Java and SQL support only. Bundle with your user code JAR.  
-FileSystem Source and Sink | Yes | [Maven via packages.confluent.io](https://packages.confluent.io/maven/io/confluent/flink/) | Java and SQL support only. Additional support charges apply. Not bundled with the Confluent Docker image.  
-JDBC | Yes | [Maven via packages.confluent.io](https://packages.confluent.io/maven/io/confluent/flink/) | Java and SQL support only.  
-CDC Source | Yes | [Maven via packages.confluent.io](https://packages.confluent.io/maven/io/confluent/flink/) | Databases: DB2, MySQL, Oracle, Postgres, SQLServer. Java and SQL support only.  
-All other connectors | No | Apache Flink | No additional connectors are currently supported.  
-  
+Connector | Supported by Confluent | Distribution channel | Notes
+---|---|---|---
+Kafka Source and Sink connectors | Yes | [Maven via packages.confluent.io](https://packages.confluent.io/maven/io/confluent/flink/flink-connector-kafka/) | This includes: Table API Upsert Kafka connector, Datastream API Kafka connector, and the Datastream API Dynamic Kafka connector. Java and SQL support only. Bundle with your user code JAR.
+FileSystem Source and Sink | Yes | [Maven via packages.confluent.io](https://packages.confluent.io/maven/io/confluent/flink/) | Java and SQL support only. Additional support charges apply. Not bundled with the Confluent Docker image.
+JDBC | Yes | [Maven via packages.confluent.io](https://packages.confluent.io/maven/io/confluent/flink/) | Java and SQL support only.
+CDC Source | Yes | [Maven via packages.confluent.io](https://packages.confluent.io/maven/io/confluent/flink/) | Databases: DB2, MySQL, Oracle, Postgres, SQLServer. Java and SQL support only.
+All other connectors | No | Apache Flink | No additional connectors are currently supported.
+
 ## Deployment and monitoring¶
 
 Note the following about deploying Flink jobs with Confluent Platform for Apache Flink:

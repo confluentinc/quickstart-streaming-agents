@@ -83,12 +83,12 @@ Text generation models generate text based on a prompt. Text generation models r
 
 The following table shows example metrics for different task types.
 
-Task type | Example metrics  
----|---  
-Classification | {Accuracy=0.9999991465990892, Precision=0.9996998081063332, Recall=0.0013025368892873059, F1=0.0013025368892873059}  
-Clustering | {Mean Davies-Bouldin Index=0.9999991465990892}  
-Embedding | {Mean Cosine Similarity=0.9999991465990892, Mean Jaccard Similarity=0.9996998081063332, Mean Euclidean Distance=0.0013025368892873059}  
-Regression | {MAE=0.9999991465990892, MSE=0.9996998081063332, RMSE=0.0013025368892873059, MAPE=0.0013025368892873059, R²=0.0043025368892873059}  
-Text generation | {Mean BLEU=0.9999991465990892, Mean ROUGE=0.9996998081063332, Mean Semantic Similarity=0.0013025368892873059}  
-  
+Task type | Example metrics
+---|---
+Classification | {Accuracy=0.9999991465990892, Precision=0.9996998081063332, Recall=0.0013025368892873059, F1=0.0013025368892873059}
+Clustering | {Mean Davies-Bouldin Index=0.9999991465990892}
+Embedding | {Mean Cosine Similarity=0.9999991465990892, Mean Jaccard Similarity=0.9996998081063332, Mean Euclidean Distance=0.0013025368892873059}
+Regression | {MAE=0.9999991465990892, MSE=0.9996998081063332, RMSE=0.0013025368892873059, MAPE=0.0013025368892873059, R²=0.0043025368892873059}
+Text generation | {Mean BLEU=0.9999991465990892, Mean ROUGE=0.9996998081063332, Mean Semantic Similarity=0.0013025368892873059}
+
 ### Example¶

@@ -7,15 +7,15 @@ chunk_index: 8
 total_chunks: 8
 ---
 
-| BIGINT | google.protobuf.UInt32Value | –  
-MESSAGE | BOOLEAN | google.protobuf.BoolValue | –  
-MESSAGE | DOUBLE | google.protobuf.DoubleValue | –  
-MESSAGE | FLOAT | google.protobuf.FloatValue | –  
-MESSAGE | INT | google.protobuf.Int32Value | –  
-MESSAGE | VARBINARY | google.protobuf.BytesValue | –  
-MESSAGE | VARCHAR | google.protobuf.StringValue | –  
-oneOf | ROW | – | –  
-  
+| BIGINT | google.protobuf.UInt32Value | –
+MESSAGE | BOOLEAN | google.protobuf.BoolValue | –
+MESSAGE | DOUBLE | google.protobuf.DoubleValue | –
+MESSAGE | FLOAT | google.protobuf.FloatValue | –
+MESSAGE | INT | google.protobuf.Int32Value | –
+MESSAGE | VARBINARY | google.protobuf.BytesValue | –
+MESSAGE | VARCHAR | google.protobuf.StringValue | –
+oneOf | ROW | – | –
+
 ### Protobuf 3 nullable field behavior¶
 
 When working with Protobuf 3 schemas in Confluent Cloud for Apache Flink, it’s important to understand how nullable fields are handled.
@@ -29,7 +29,7 @@ In Protobuf, expressing something as NULLABLE or NOT NULL is not straightforward
   * Non-MESSAGE types marked with `optional` can be checked if they were set. If not set, Flink assumes NULL.
 
   * MESSAGE types are all NULLABLE, which means that all fields of MESSAGE type are optional, and there is no way to ensure on a format level they are NOT NULL. To store this information, Flink uses the `flink.notNull` property, for example:
-        
+
         message Row {
           .google.type.Date date = 1 [(confluent.field_meta) = {
             params: [

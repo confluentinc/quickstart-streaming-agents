@@ -16,16 +16,16 @@ In this section, you deploy a Flink SQL statement programmatically to Confluent 
   1. In VS Code or another IDE, clone your repository and create a new file in the root named “main.tf” with the following code.
 
 Replace the organization and workspace names with your Terraform Cloud organization name and workspace names from Step 1.
-         
+
          terraform {
            cloud {
              organization = "<your-terraform-org-name>"
-         
+
              workspaces {
                name = "cicd_flink_ccloud"
              }
            }
-         
+
            required_providers {
              confluent = {
                source  = "confluentinc/confluent"
@@ -65,12 +65,12 @@ To access Confluent Cloud securely, you must have a Confluent Cloud API key. Aft
 In this section, you add resources to your Terraform configuration file and provision them when the GitHub Action runs.
 
   1. In your repository, create a new file named “variables.tf” with the following code.
-         
+
          variable "confluent_cloud_api_key" {
            description = "Confluent Cloud API Key"
            type        = string
          }
-         
+
          variable "confluent_cloud_api_secret" {
            description = "Confluent Cloud API Secret"
            type        = string
@@ -80,26 +80,26 @@ In this section, you add resources to your Terraform configuration file and prov
   2. In the “main.tf” file, add the following code.
 
 This code references the Cloud API key and secret you added in the previous steps and creates a new environment and Kafka cluster for your organization. Optionally, you can choose to use an existing environment.
-         
+
          locals {
            cloud  = "AWS"
            region = "us-east-2"
          }
-         
+
          provider "confluent" {
            cloud_api_key    = var.confluent_cloud_api_key
            cloud_api_secret = var.confluent_cloud_api_secret
          }
-         
+
          # Create a new environment.
          resource "confluent_environment" "my_env" {
            display_name = "my_env"
-         
+
            stream_governance {
              package = "ESSENTIALS"
            }
          }
-         
+
          # Create a new Kafka cluster.
          resource "confluent_kafka_cluster" "my_kafka_cluster" {
            display_name = "my_kafka_cluster"
@@ -107,16 +107,16 @@ This code references the Cloud API key and secret you added in the previous step
            cloud        = local.cloud
            region       = local.region
            basic {}
-         
+
            environment {
              id = confluent_environment.my_env.id
            }
-         
+
            depends_on = [
              confluent_environment.my_env
            ]
          }
-         
+
          # Access the Stream Governance Essentials package to the environment.
          data "confluent_schema_registry_cluster" "my_sr_cluster" {
            environment {

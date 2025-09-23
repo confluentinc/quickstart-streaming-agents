@@ -38,11 +38,11 @@ In this step, you query the read-only `customers` table in the `examples.marketp
   3. In the **Use database** dropdown, select your Kafka cluster.
 
   4. Run the following statement to inspect the example `customers` stream.
-         
+
          SELECT * FROM examples.marketplace.customers;
 
 Your output should resemble:
-         
+
          customer_id name                  address                  postcode city              email
          3134        Dr. Andrew Terry      45488 Eileen Walk        78690    Latoyiaberg       romaine.lynch@hotmail.com
          3243        Miss Shelby Lueilwitz 199 Bernardina Brook     79991    Johnburgh         dominick.oconner@hotmail.c…
@@ -54,7 +54,7 @@ Your output should resemble:
 In the step, you create a `customers_source` table for the data from the example `customers` stream. You use the [INSERT INTO FROM SELECT](../reference/queries/insert-into-from-select.html#flink-sql-insert-into-from-select-statement) statement to populate the table with streaming data.
 
   1. Run the following statement to register the `customers_source` table. Confluent Cloud for Apache Flink creates a backing Kafka topic that has the same name automatically.
-         
+
          -- Register a customers source table.
          CREATE TABLE customers_source (
            customer_id INT NOT NULL,
@@ -67,7 +67,7 @@ In the step, you create a `customers_source` table for the data from the example
          );
 
   2. Run the following statement to populate the `customers_source` table with data from the example `customers` stream.
-         
+
          -- Persistent query to stream data from
          -- the customers example stream to the
          -- customers_source table.
@@ -82,11 +82,11 @@ In the step, you create a `customers_source` table for the data from the example
          SELECT customer_id, name, address, postcode, city, email FROM examples.marketplace.customers;
 
   3. Run the following statement to inspect the `customers_source` table.
-         
+
          SELECT * FROM customers_source;
 
 Your output should resemble:
-         
+
          customer_id name                  address                  postcode city              email
          3088        Phil Grimes          07738 Zieme Court        84845    Port Dillontown     garnett.abernathy@hotmail.com
          3022        Jeana Gaylord        021 Morgan Drives        35160    West Celena         emile.daniel@gmail.com

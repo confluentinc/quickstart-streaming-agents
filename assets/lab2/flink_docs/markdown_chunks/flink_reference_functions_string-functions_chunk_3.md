@@ -27,7 +27,7 @@ Examples
 
     -- returns 1
     SELECT POSITION('the' IN 'the quick brown fox');
-    
+
     -- returns 17
     SELECT POSITION('fox' IN 'the quick brown fox');
 
@@ -45,7 +45,7 @@ Examples
 
     -- returns TRUE
     SELECT REGEXP('800 439 3207', '.?(\d{3}).*(\d{3}).*(\d{4})');
-    
+
     -- returns TRUE
     SELECT REGEXP('2023-05-04', '((\d{4}.\d{2}).(\d{2}))');
 
@@ -120,7 +120,7 @@ Examples
 
     -- returns "hello flink"
     SELECT REPLACE('hello world', 'world', 'flink');
-    
+
     -- returns "zab"
     SELECT REPLACE('ababab', 'abab', 'z');
 
@@ -184,7 +184,7 @@ Examples
 
     -- returns "hi??"
     SELECT RPAD('hi', 4, '??');
-    
+
     -- returns "h"
     SELECT RPAD('hi', 1, '??');
 

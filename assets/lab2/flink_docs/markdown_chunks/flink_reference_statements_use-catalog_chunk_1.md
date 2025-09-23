@@ -35,10 +35,10 @@ By itself, a USE CATALOG statement is a no-op. To see its effect, you must follo
 
     -- Set the current catalog (environment).
     USE CATALOG my_env;
-    
+
     -- Set the current database (Kafka cluster).
     USE cluster_0;
-    
+
     -- Submit a DDL statement.
     SELECT * FROM my_table;
 

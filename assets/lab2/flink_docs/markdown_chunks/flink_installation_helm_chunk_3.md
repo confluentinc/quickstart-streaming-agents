@@ -10,7 +10,7 @@ total_chunks: 3
 create: true
          dataVolumeCapacity: 10Gi
          ##  storageClassName: # Without the storage class, the default storage class is used.
-         
+
          ## Volumes to mount for the CMF pod.
          ##
          ## Example with a PVC.
@@ -26,12 +26,12 @@ create: true
          mountedVolumes:
          volumes:
          volumeMounts:
-         
+
          ## Configure the CMF service for example Authn/Authz
          cmf:
          #  authentication:
          #    type: mtls
-         
+
          ## Enable Kubernetes RBAC
          # When set to true, it will create a proper role/rolebinding or cluster/clusterrolebinding based on namespaced field.
          # If a user doesn't have permission to create role/rolebinding then they can disable rbac field and
@@ -67,7 +67,7 @@ Note the following about CMF default values:
      * If you want to set your storage class, you can overwrite `persistence.storageClassName` during the installation.
 
      * By default, the chart uses the image hosted by [Confluent on DockerHub](https://hub.docker.com/r/confluentinc/cp-cmf). To specify your own registry, set the following configuration values:
-           
+
            image:
              repository: <image-registry>
              name: cp-cmf

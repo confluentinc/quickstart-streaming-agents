@@ -13,34 +13,34 @@ Confluent Cloud for Apache Flink® has a rich set of native data types that you 
 
 The query planner supports the following SQL types.
 
-Flink SQL type | Java type | JSON Schema type | Protobuf type | Avro type | Avro logical type  
----|---|---|---|---|---  
-ARRAY | t[] | Array | repeated T | array | –  
-BIGINT | long | Number | INT64 | long | –  
-BINARY | byte[] | String | BYTES | fixed | –  
-BOOLEAN | boolean | Boolean | BOOL | boolean | –  
-BYTES / VARBINARY | byte[] | String | BYTES | bytes | –  
-CHAR | String | String | STRING | string | –  
-DATE | java.time.LocalDate | Number | MESSAGE | int | date  
-DECIMAL | java.math.BigDecimal | Number | MESSAGE | bytes | decimal  
-DOUBLE | double | Number | DOUBLE | double | –  
-FLOAT | float | Number | FLOAT | float | –  
-INT | long | Number | INT32 | int | –  
-INTERVAL DAY TO SECOND | java.time.Duration | Not supported | Not supported | Not supported | –  
-INTERVAL YEAR TO MONTH | java.time.Period | Not supported | Not supported | Not supported | –  
-MAP | java.util.Map<kt, vt> | Array[Object] / Object | repeated MESSAGE | map / array | –  
-MULTISET | java.util.Map<t, Integer> | Array[Object] / Object | repeated MESSAGE | map / array | –  
-NULL | java.lang.Object | oneOf(Null, T) | [1] | union(avro_type, null) | –  
-ROW | org.apache.flink.types.Row | Object | MESSAGE | record [2] | –  
-SMALLINT | short | Number | INT32 | int | –  
-TIME | java.time.LocalTime | Number | – | int | time-millis  
-TIMESTAMP | java.time.LocalDateTime | Number | MESSAGE | long | local-timestamp-millis/local-timestamp-micros  
-TIMESTAMP_LTZ | java.time.Instant | Number | MESSAGE | long | timestamp-millis / timestamp-micros  
-TINYINT | byte | Number | INT32 | int | –  
-VARCHAR / STRING | String | String | STRING | string | –  
-[1]| See discussion at [Flink SQL types to Protobuf types](serialization.html#flink-sql-serialization-sql-to-protobuf)  
----|---  
-[2]| See discussion at [Flink SQL types to Avro types](serialization.html#flink-sql-serialization-sql-to-avro)  
+Flink SQL type | Java type | JSON Schema type | Protobuf type | Avro type | Avro logical type
+---|---|---|---|---|---
+ARRAY | t[] | Array | repeated T | array | –
+BIGINT | long | Number | INT64 | long | –
+BINARY | byte[] | String | BYTES | fixed | –
+BOOLEAN | boolean | Boolean | BOOL | boolean | –
+BYTES / VARBINARY | byte[] | String | BYTES | bytes | –
+CHAR | String | String | STRING | string | –
+DATE | java.time.LocalDate | Number | MESSAGE | int | date
+DECIMAL | java.math.BigDecimal | Number | MESSAGE | bytes | decimal
+DOUBLE | double | Number | DOUBLE | double | –
+FLOAT | float | Number | FLOAT | float | –
+INT | long | Number | INT32 | int | –
+INTERVAL DAY TO SECOND | java.time.Duration | Not supported | Not supported | Not supported | –
+INTERVAL YEAR TO MONTH | java.time.Period | Not supported | Not supported | Not supported | –
+MAP | java.util.Map<kt, vt> | Array[Object] / Object | repeated MESSAGE | map / array | –
+MULTISET | java.util.Map<t, Integer> | Array[Object] / Object | repeated MESSAGE | map / array | –
+NULL | java.lang.Object | oneOf(Null, T) | [1] | union(avro_type, null) | –
+ROW | org.apache.flink.types.Row | Object | MESSAGE | record [2] | –
+SMALLINT | short | Number | INT32 | int | –
+TIME | java.time.LocalTime | Number | – | int | time-millis
+TIMESTAMP | java.time.LocalDateTime | Number | MESSAGE | long | local-timestamp-millis/local-timestamp-micros
+TIMESTAMP_LTZ | java.time.Instant | Number | MESSAGE | long | timestamp-millis / timestamp-micros
+TINYINT | byte | Number | INT32 | int | –
+VARCHAR / STRING | String | String | STRING | string | –
+[1]| See discussion at [Flink SQL types to Protobuf types](serialization.html#flink-sql-serialization-sql-to-protobuf)
+---|---
+[2]| See discussion at [Flink SQL types to Avro types](serialization.html#flink-sql-serialization-sql-to-avro)
 ---|---
 
 ## Data type definition¶
@@ -71,30 +71,30 @@ Represents a fixed-length character string.
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-java.lang.String | ✓ | ✓ | Default  
-byte[] | ✓ | ✓ | Assumes UTF-8 encoding  
-org.apache.flink.table.data.StringData | ✓ | ✓ | Internal data structure  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+java.lang.String | ✓ | ✓ | Default
+byte[] | ✓ | ✓ | Assumes UTF-8 encoding
+org.apache.flink.table.data.StringData | ✓ | ✓ | Internal data structure
+
 **Formats**
 
 The following table shows examples of the CHAR type in different formats.
 
-JSON for data type | 
+JSON for data type |
 
     {"type":"CHAR","nullable":true,"length":8}
 
----|---  
-CLI/UI format | 
+---|---
+CLI/UI format |
 
     CHAR(8)
 
-JSON for payload | 
+JSON for payload |
 
     "Example string"
 
-CLI/UI format for payload | 
+CLI/UI format for payload |
 
     Example string
 
@@ -110,35 +110,35 @@ Represents a variable-length character string.
 
     VARCHAR
     VARCHAR(n)
-    
+
     STRING
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-java.lang.String | ✓ | ✓ | Default  
-byte[] | ✓ | ✓ | Assumes UTF-8 encoding  
-org.apache.flink.table.data.StringData | ✓ | ✓ | Internal data structure  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+java.lang.String | ✓ | ✓ | Default
+byte[] | ✓ | ✓ | Assumes UTF-8 encoding
+org.apache.flink.table.data.StringData | ✓ | ✓ | Internal data structure
+
 **Formats**
 
 The following table shows examples of the VARCHAR type in different formats.
 
-JSON for data type | 
+JSON for data type |
 
     {"type":"VARCHAR","nullable":true,"length":8}
 
----|---  
-CLI/UI format | 
+---|---
+CLI/UI format |
 
     VARCHAR(800)
 
-JSON for payload | 
+JSON for payload |
 
     "Example string"
 
-CLI/UI format for payload | 
+CLI/UI format for payload |
 
     Example string
 

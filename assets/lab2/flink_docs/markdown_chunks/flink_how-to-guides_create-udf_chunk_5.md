@@ -23,16 +23,16 @@ Confluent Cloud ConsoleConfluent CLITerraformREST API
   4. In the **Use database** dropdown, select Kafka cluster that you want to run the UDF.
 
   1. Run the following command to start the Flink shell.
-         
+
          confluent flink shell --environment ${ENV_ID} --compute-pool ${COMPUTE_POOL_ID}
 
   2. Run the following statements to specify the catalog and database.
-         
+
          -- Specify your catalog. This example uses the default.
          USE CATALOG default;
 
 Your output should resemble:
-         
+
          +---------------------+---------+
          |         Key         |  Value  |
          +---------------------+---------+
@@ -40,12 +40,12 @@ Your output should resemble:
          +---------------------+---------+
 
 Specify the database you want to use, for example, `cluster_0`.
-         
+
          -- Specify your database. This example uses cluster_0.
          USE cluster_0;
 
 Your output should resemble:
-         
+
          +----------------------+-----------+
          |         Key          |   Value   |
          +----------------------+-----------+
@@ -57,13 +57,13 @@ You can register a previously uploaded UDF by using the Confluent Terraform prov
 You can register a UDF by sending a POST request to the [Create Artifact endpoint](/cloud/current/api.html#tag/Flink-Artifacts-\(artifactv1\)/operation/createArtifactV1FlinkArtifact). For more information, see [Create a Flink artifact](../operate-and-deploy/flink-rest-api.html#flink-rest-api-create-artifact).
 
   * In Cloud Console or the Confluent CLI, run the [CREATE FUNCTION](../reference/statements/create-function.html#flink-sql-create-function) statement to register your UDF in the current catalog and database. Substitute your UDF’s value for `<artifact-id>`.
-        
+
         CREATE FUNCTION is_smaller
           AS 'com.example.my.TShirtSizingIsSmaller'
           USING JAR 'confluent-artifact://<artifact-id>';
 
 Your output should resemble:
-        
+
         Function 'is_smaller' created.
 
 ## Step 4: Use the UDF in a Flink SQL query¶
@@ -71,11 +71,11 @@ Your output should resemble:
 Once it is registered, your UDF is available to use in queries.
 
   1. Run the following statement to view the UDFs in the current database.
-         
+
          SHOW USER FUNCTIONS;
 
 Your output should resemble:
-         
+
          +---------------+
          | function name |
          +---------------+
@@ -83,14 +83,14 @@ Your output should resemble:
          +---------------+
 
   2. Run the following statement to create a `sizes` table.
-         
+
          CREATE TABLE sizes (
            `size_1` STRING,
            `size_2` STRING
          );
 
   3. Run the following statement to populate the `sizes` table with values.
-         
+
          INSERT INTO sizes VALUES
            ('XL', 'L'),
            ('small', 'L'),
@@ -98,11 +98,11 @@ Your output should resemble:
            ('XXL', 'XL');
 
   4. Run the following statement to view the rows in the `sizes` table.
-         
+
          SELECT * FROM sizes;
 
 Your output should resemble:
-         
+
          size_1 size_2
          XL     L
          small  L
@@ -110,13 +110,13 @@ Your output should resemble:
          XXL    XL
 
   5. Run the following statement to execute the `is_smaller` function on the data in the `sizes` table.
-         
+
          SELECT size_1, size_2, is_smaller (size_1, size_2)
            AS is_smaller
            FROM sizes;
 
 Your output should resemble:
-         
+
          size_1 size_2 is_smaller
          XL     L      FALSE
          small  L      TRUE

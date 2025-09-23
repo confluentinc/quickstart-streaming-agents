@@ -71,7 +71,7 @@ Run the following command to get details about the compute pool specified in the
 
 Your output should resemble:
 
-Response from a request to read a compute pool 
+Response from a request to read a compute pool
 
     {
         "api_version": "fcpm/v2",
@@ -109,18 +109,18 @@ To view details for a compute pool by using the Confluent Terraform provider, us
         id = "<your-environment-id>"
       }
     }
-    
+
     output "example_using_id" {
       value = data.confluent_flink_compute_pool.example_using_id
     }
-    
+
     data "confluent_flink_compute_pool" "example_using_name" {
       display_name = "my_compute_pool"
       environment {
         id = "<your-environment-id>"
       }
     }
-    
+
     output "example_using_name" {
       value = data.confluent_flink_compute_pool.example_using_name
     }

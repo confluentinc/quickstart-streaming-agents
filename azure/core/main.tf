@@ -17,17 +17,17 @@ locals {
     "ap-northeast-2" = "ap-northeast-2"
 
     # Azure Regions - MongoDB M0 Free Tier Supported
-    "eastus2"        = "eastus2"
-    "westus"         = "westus"
-    "canadacentral"  = "canadacentral"
-    "northeurope"    = "northeurope"
-    "westeurope"     = "westeurope"
-    "eastasia"       = "eastasia"
-    "centralindia"   = "centralindia"
+    "eastus2"       = "eastus2"
+    "westus"        = "westus"
+    "canadacentral" = "canadacentral"
+    "northeurope"   = "northeurope"
+    "westeurope"    = "westeurope"
+    "eastasia"      = "eastasia"
+    "centralindia"  = "centralindia"
   }
 
   confluent_region = lookup(local.region_mapping, var.cloud_region, var.cloud_region)
-  cloud_provider = "AZURE"
+  cloud_provider   = "AZURE"
 }
 
 resource "confluent_environment" "staging" {
@@ -83,10 +83,10 @@ resource "confluent_role_binding" "app-manager-kafka-cluster-admin" {
 }
 
 resource "confluent_flink_compute_pool" "flinkpool-main" {
-  display_name     = "${var.prefix}_standard_compute_pool_${random_id.resource_suffix.hex}"
-  cloud            = local.cloud_provider
-  region           = local.confluent_region
-  max_cfu          = 20
+  display_name = "${var.prefix}_standard_compute_pool_${random_id.resource_suffix.hex}"
+  cloud        = local.cloud_provider
+  region       = local.confluent_region
+  max_cfu      = 20
   environment {
     id = confluent_environment.staging.id
   }
@@ -144,8 +144,8 @@ resource "confluent_api_key" "app-manager-schema-registry-api-key" {
 }
 
 data "confluent_flink_region" "demo_flink_region" {
-  cloud   = local.cloud_provider
-  region  = local.confluent_region
+  cloud  = local.cloud_provider
+  region = local.confluent_region
 }
 
 resource "confluent_api_key" "app-manager-flink-api-key" {
@@ -269,14 +269,14 @@ module "azure_ai_services" {
   source = "./modules/azure-ai"
 
   prefix                         = var.prefix
-  cloud_region                  = var.cloud_region
-  random_id                     = random_id.resource_suffix.hex
-  confluent_organization_id     = data.confluent_organization.main.id
-  confluent_environment_id      = confluent_environment.staging.id
-  confluent_compute_pool_id     = confluent_flink_compute_pool.flinkpool-main.id
-  confluent_service_account_id  = confluent_service_account.app-manager.id
-  confluent_flink_rest_endpoint = data.confluent_flink_region.demo_flink_region.rest_endpoint
-  confluent_flink_api_key_id    = confluent_api_key.app-manager-flink-api-key.id
+  cloud_region                   = var.cloud_region
+  random_id                      = random_id.resource_suffix.hex
+  confluent_organization_id      = data.confluent_organization.main.id
+  confluent_environment_id       = confluent_environment.staging.id
+  confluent_compute_pool_id      = confluent_flink_compute_pool.flinkpool-main.id
+  confluent_service_account_id   = confluent_service_account.app-manager.id
+  confluent_flink_rest_endpoint  = data.confluent_flink_region.demo_flink_region.rest_endpoint
+  confluent_flink_api_key_id     = confluent_api_key.app-manager-flink-api-key.id
   confluent_flink_api_key_secret = confluent_api_key.app-manager-flink-api-key.secret
 }
 

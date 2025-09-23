@@ -55,7 +55,7 @@ The following example shows how to get “the top five products per category tha
       product_name STRING,
       sales        BIGINT
     ) WITH (...);
-    
+
     SELECT *
     FROM (
       SELECT *,
@@ -79,7 +79,7 @@ The following example shows how to optimize the previous Top-N example by :
       product_name STRING,
       sales        BIGINT
     ) WITH (...);
-    
+
     -- omit row_num field from the output
     SELECT product_id, category, product_name, sales
     FROM (
@@ -91,4 +91,3 @@ The following example shows how to optimize the previous Top-N example by :
 Note
 
 In Streaming Mode, to output the above query to an external storage and have a correct result, the external storage must have the same unique key with the Top-N query. In the above example query, if the `product_id` is the unique key of the query, then the external table should also has `product_id` as the unique key.
-

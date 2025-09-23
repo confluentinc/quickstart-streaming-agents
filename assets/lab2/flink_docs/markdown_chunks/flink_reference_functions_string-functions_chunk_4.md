@@ -27,7 +27,7 @@ Example
 
     -- returns {a=1, b=2, c=3}
     SELECT STR_TO_MAP('a=1,b=2,c=3');
-    
+
     -- returns {a=1, b=2, c=3}
     SELECT STR_TO_MAP('a:1;b:2;c:3', ';', ':');
 
@@ -51,7 +51,7 @@ Examples
 
     -- returns "fox"
     SELECT SUBSTR('The quick brown fox', 17);
-    
+
     -- returns "The"
     SELECT SUBSTR('The quick brown fox', 1, 3);
 
@@ -100,13 +100,13 @@ Examples:
 
     -- returns A1B2C3
     SELECT TRANSLATE('AaBbCc', 'abc', '123');
-    
+
     -- returns A1BC
     SELECT TRANSLATE('AaBbCc', 'abc', '1');
-    
+
     -- returns ABC
     SELECT TRANSLATE('AaBbCc', 'abc', '');
-    
+
     -- returns    .APACHE.com
     SELECT TRANSLATE('www.apache.org', 'wapcheorg', ' APCHEcom');
 
@@ -131,10 +131,10 @@ Examples
 
     -- returns "The quick brown "
     SELECT TRIM(TRAILING 'fox' FROM 'The quick brown fox');
-    
+
     -- returns " quick brown fox"
     SELECT TRIM(LEADING 'The' FROM 'The quick brown fox');
-    
+
     -- returns " The quick brown fox "
     SELECT TRIM(BOTH 'yyy' FROM 'yyy The quick brown fox yyy');
 

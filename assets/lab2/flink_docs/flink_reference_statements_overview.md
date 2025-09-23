@@ -69,4 +69,3 @@ USE
 
   * [USE CATALOG](use-catalog.html#flink-sql-use-catalog-statement): Set the current catalog.
   * [USE [database_name]](use-database.html#flink-sql-use-database-statement): Set the current database.
-

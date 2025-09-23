@@ -12,19 +12,19 @@ total_chunks: 7
 You can set the schema context for key and value formats to control the namespace for your schema resolution in Schema Registry.
 
   1. Set the schema context for the value format
-         
+
          ALTER TABLE `orders` SET ('value.format.schema-context' = '.lsrc-newcontext');
 
 Your output should resemble:
-         
+
          Statement phase is COMPLETED.
 
   2. Check the new table properties.
-         
+
          SHOW CREATE TABLE `orders`;
 
 Your output should resemble:
-         
+
          +----------------------------------------------------------------------+
          |                          SHOW CREATE TABLE                           |
          +----------------------------------------------------------------------+

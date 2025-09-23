@@ -37,37 +37,37 @@ The following SELECT statements return the values indicated in the comment lines
 
     -- returns '{ "b": 1 }'
     SELECT JSON_QUERY('{ "a": { "b": 1 } }', '$.a');
-    
+
     -- returns '[1, 2]'
     SELECT JSON_QUERY('[1, 2]', '$');
-    
+
     -- returns NULL
     SELECT JSON_QUERY(CAST(NULL AS STRING), '$');
-    
+
     -- returns array ['c1','c2']
     SELECT JSON_QUERY('{"a":[{"c":"c1"},{"c":"c2"}]}', 'lax $.a[*].c' RETURNING ARRAY<STRING>);
-    
+
     -- Wrap the result into an array.
     -- returns '[{}]'
     SELECT JSON_QUERY('{}', '$' WITH CONDITIONAL ARRAY WRAPPER);
-    
+
     -- returns '[1, 2]'
     SELECT JSON_QUERY('[1, 2]', '$' WITH CONDITIONAL ARRAY WRAPPER);
-    
+
     -- returns '[[1, 2]]'
     SELECT JSON_QUERY('[1, 2]', '$' WITH UNCONDITIONAL ARRAY WRAPPER);
-    
+
     -- Scalars must be wrapped to be returned.
     -- returns NULL
     SELECT JSON_QUERY(1, '$');
-    
+
     -- returns '[1]'
     SELECT JSON_QUERY(1, '$' WITH CONDITIONAL ARRAY WRAPPER);
-    
+
     -- Behavior if the path expression is empty.
     -- returns '{}'
     SELECT JSON_QUERY('{}', 'lax $.invalid' EMPTY OBJECT ON EMPTY);
-    
+
     -- Behavior if the path expression has an error.
     -- returns '[]'
     SELECT JSON_QUERY('{}', 'strict $.invalid' EMPTY ARRAY ON ERROR);
@@ -88,7 +88,7 @@ If `string` is NULL, the function returns NULL.
 
 Example
 
-> 
+>
 >     -- returns { "SQL string" }
 >     SELECT JSON_QUOTE('SQL string');
 >
@@ -109,16 +109,16 @@ The following SELECT statements return the values indicated in the comment lines
 
     -- returns NULL
     SELECT JSON_STRING(CAST(NULL AS INT));
-    
+
     -- returns '1'
     SELECT JSON_STRING(1);
-    
+
     -- returns 'true'
     SELECT JSON_STRING(TRUE);
-    
+
     -- returns '"Hello, World!"'
     JSON_STRING('Hello, World!');
-    
+
     -- returns '[1,2]'
     JSON_STRING(ARRAY[1, 2])
 
@@ -140,7 +140,7 @@ If `string` doesn’t start and end with double quotes, or if it starts and ends
 
 Example
 
-> 
+>
 >     -- returns { "SQL string" }
 >     SELECT JSON_UNQUOTE('SQL string');
 >

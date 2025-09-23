@@ -45,7 +45,7 @@ To add the Table API to an existing project, include the following dependencies 
        <artifactId>flink-table-api-java</artifactId>
        <version>${flink.version}</version>
     </dependency>
-    
+
     <!-- Confluent Flink Table API Java plugin -->
     <dependency>
        <groupId>io.confluent.flink</groupId>
@@ -57,21 +57,21 @@ To add the Table API to an existing project, include the following dependencies 
 
 The plugin requires a set of configuration options for establishing a connection to Confluent Cloud. The following configuration options are supported.
 
-Property key | Command-line argument | Environment variable | Required | Notes  
----|---|---|---|---  
-client.catalog-cache |  |  | No | Expiration time for catalog objects, for example, `'5 min'`. The default is `'1 min'`. `'0'` disables caching.  
-client.cloud | –cloud | CLOUD_PROVIDER | Yes | Confluent identifier for a cloud provider. Valid values are `aws`, `azure`, and `gcp`.  
-client.compute-pool | –compute-pool | COMPUTE_POOL_ID | Yes | ID of the compute pool, for example, `lfcp-8m03rm`  
-client.context | –context |  | No | A name for the current Table API session, for example, my_table_program.  
-client.environment | –environment | ENV_ID | Yes | ID of the environment, for example, `env-z3y2x1`.  
-client.flink-api-key | –flink-api-key | FLINK_API_KEY | Yes | API key for Flink access. For more information, see [Generate an API Key](../operate-and-deploy/generate-api-key-for-flink.html#flink-generate-api-key).  
-client.flink-api-secret | –flink-api-secret | FLINK_API_SECRET | Yes | API secret for Flink access. For more information, see [Generate an API Key](../operate-and-deploy/generate-api-key-for-flink.html#flink-generate-api-key).  
-client.organization | –organization | ORG_ID | Yes | ID of the organization, for example, `b0b21724-4586-4a07-b787-d0bb5aacbf87`.  
-client.principal-id | –principal | PRINCIPAL_ID | No | Principal that runs submitted statements, for example, `sa-23kgz4` for a service account.  
-client.region | –region | CLOUD_REGION | Yes | Confluent identifier for a cloud provider’s region, for example, `us-east-1`. For available regions, see [Supported Regions](../overview.html#ccloud-flink-overview-everywhere) or run `confluent flink region list`.  
-client.rest-endpoint | –rest-endpoint | REST_ENDPOINT | No | URL to the REST endpoint, for example, `proxyto.confluent.cloud`.  
-client.statement-name | –statement-name |  | No | Unique name for statement submission. By default, generated using a UUID.  
-  
+Property key | Command-line argument | Environment variable | Required | Notes
+---|---|---|---|---
+client.catalog-cache |  |  | No | Expiration time for catalog objects, for example, `'5 min'`. The default is `'1 min'`. `'0'` disables caching.
+client.cloud | –cloud | CLOUD_PROVIDER | Yes | Confluent identifier for a cloud provider. Valid values are `aws`, `azure`, and `gcp`.
+client.compute-pool | –compute-pool | COMPUTE_POOL_ID | Yes | ID of the compute pool, for example, `lfcp-8m03rm`
+client.context | –context |  | No | A name for the current Table API session, for example, my_table_program.
+client.environment | –environment | ENV_ID | Yes | ID of the environment, for example, `env-z3y2x1`.
+client.flink-api-key | –flink-api-key | FLINK_API_KEY | Yes | API key for Flink access. For more information, see [Generate an API Key](../operate-and-deploy/generate-api-key-for-flink.html#flink-generate-api-key).
+client.flink-api-secret | –flink-api-secret | FLINK_API_SECRET | Yes | API secret for Flink access. For more information, see [Generate an API Key](../operate-and-deploy/generate-api-key-for-flink.html#flink-generate-api-key).
+client.organization | –organization | ORG_ID | Yes | ID of the organization, for example, `b0b21724-4586-4a07-b787-d0bb5aacbf87`.
+client.principal-id | –principal | PRINCIPAL_ID | No | Principal that runs submitted statements, for example, `sa-23kgz4` for a service account.
+client.region | –region | CLOUD_REGION | Yes | Confluent identifier for a cloud provider’s region, for example, `us-east-1`. For available regions, see [Supported Regions](../overview.html#ccloud-flink-overview-everywhere) or run `confluent flink region list`.
+client.rest-endpoint | –rest-endpoint | REST_ENDPOINT | No | URL to the REST endpoint, for example, `proxyto.confluent.cloud`.
+client.statement-name | –statement-name |  | No | Unique name for statement submission. By default, generated using a UUID.
+
 ### `ConfluentSettings` class¶
 
 The `ConfluentSettings` class provides configuration options from various sources, so you can combine external input, code, and environment variables to set up your applications.
@@ -89,29 +89,29 @@ JavaPython
     public static void main(String[] args) {
       // Args might set cloud, region, org, env, and compute pool.
       // Environment variables might pass key and secret.
-    
+
       // Code sets the session name and SQL-specific options.
       ConfluentSettings settings = ConfluentSettings.newBuilder(args)
        .setContextName("MyTableProgram")
        .setOption("sql.local-time-zone", "UTC")
        .build();
-    
+
       TableEnvironment env = TableEnvironment.create(settings);
     }
 
     from pyflink.table.confluent import ConfluentSettings
     from pyflink.table import TableEnvironment
-    
+
     def run():
       # Properties file might set cloud, region, org, env, and compute pool.
       # Environment variables might pass key and secret.
-    
+
       # Code sets the session name and SQL-specific options.
       settings = ConfluentSettings.new_builder_from_file(...) \
        .set_context_name("MyTableProgram") \
        .set_option("sql.local-time-zone", "UTC") \
        .build()
-    
+
       env = TableEnvironment.create(settings)
 
 ### Properties file¶
@@ -121,7 +121,7 @@ You can store options in a `cloud.properties` file and reference the file in cod
     # Cloud region
     client.cloud=aws
     client.region=eu-west-1
-    
+
     # Access & compute resources
     client.flink-api-key=XXXXXXXXXXXXXXXX
     client.flink-api-secret=XxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXx
@@ -135,12 +135,12 @@ JavaPython
 
     // Arbitrary file location in file system
     ConfluentSettings settings = ConfluentSettings.fromPropertiesFile("/path/to/cloud.properties");
-    
+
     // Part of the JAR package (in src/main/resources)
     ConfluentSettings settings = ConfluentSettings.fromPropertiesResource("/cloud.properties");
 
     from pyflink.table.confluent import ConfluentSettings
-    
+
     # Arbitrary file location in file system
     settings = ConfluentSettings.from_file("/path/to/cloud.properties")
 
@@ -166,7 +166,7 @@ JavaPython
     }
 
     from pyflink.table.confluent import ConfluentSettings
-    
+
     settings = ConfluentSettings.from_global_variables()
 
 ### Code¶
@@ -186,7 +186,7 @@ JavaPython
       .build();
 
     from pyflink.table.confluent import ConfluentSettings
-    
+
     settings = ConfluentSettings.new_builder() \
       .set_cloud("aws") \
       .set_region("us-east-1") \
@@ -208,7 +208,7 @@ Set the following environment variables to provide configuration settings.
     export ORG_ID="b0b21724-4586-4a07-b787-d0bb5aacbf87"
     export ENV_ID="env-z3y2x1"
     export COMPUTE_POOL_ID="lfcp-8m03rm"
-    
+
     java -jar my-table-program.jar
 
 In code, call:
@@ -218,7 +218,7 @@ JavaPython
     ConfluentSettings settings = ConfluentSettings.fromGlobalVariables();
 
     from pyflink.table.confluent import ConfluentSettings
-    
+
     settings = ConfluentSettings.from_global_variables()
 
 ## Confluent utilities¶
@@ -239,31 +239,31 @@ JavaPython
     Table table = env.from("examples.marketplace.customers");
     List<Row> rows = ConfluentTools.collectMaterialized(table, 100);
     ConfluentTools.printMaterialized(table, 100);
-    
+
     // On a TableResult object
     TableResult tableResult = env.executeSql("SELECT * FROM examples.marketplace.customers");
     List<Row> rows = ConfluentTools.collectMaterialized(tableResult, 100);
     ConfluentTools.printMaterialized(tableResult, 100);
-    
+
     // For finite (i.e. bounded) tables
     ConfluentTools.collectMaterialized(table);
     ConfluentTools.printMaterialized(table);
 
     from pyflink.table.confluent import ConfluentSettings, ConfluentTools
     from pyflink.table import TableEnvironment
-    
+
     settings = ConfluentSettings.from_global_variables()
     env = TableEnvironment.create(settings)
     # On a Table object
     table = env.from_path("examples.marketplace.customers")
     rows = ConfluentTools.collect_changelog_limit(table, 100)
     ConfluentTools.print_changelog_limit(table, 100)
-    
+
     # On a TableResult object
     tableResult = env.execute_sql("SELECT * FROM examples.marketplace.customers")
     rows = ConfluentTools.collect_changelog_limit(tableResult, 100)
     ConfluentTools.print_changelog_limit(tableResult, 100)
-    
+
     # For finite (i.e. bounded) tables
     ConfluentTools.collect_changelog(table)
     ConfluentTools.print_changelog(table)
@@ -282,31 +282,31 @@ JavaPython
     Table table = env.from("examples.marketplace.customers");
     List<Row> rows = ConfluentTools.collectMaterialized(table, 100);
     ConfluentTools.printMaterialized(table, 100);
-    
+
     // On a TableResult object
     TableResult tableResult = env.executeSql("SELECT * FROM examples.marketplace.customers");
     List<Row> rows = ConfluentTools.collectMaterialized(tableResult, 100);
     ConfluentTools.printMaterialized(tableResult, 100);
-    
+
     // For finite (i.e. bounded) tables
     ConfluentTools.collectMaterialized(table);
     ConfluentTools.printMaterialized(table);
 
     from pyflink.table.confluent import ConfluentSettings, ConfluentTools
     from pyflink.table import TableEnvironment
-    
+
     settings = ConfluentSettings.from_global_variables()
     env = TableEnvironment.create(settings)
     # On Table object
     table = env.from_path("examples.marketplace.customers")
     rows = ConfluentTools.collect_materialized_limit(table, 100)
     ConfluentTools.print_materialized_limit(table, 100)
-    
+
     # On TableResult object
     tableResult = env.execute_sql("SELECT * FROM examples.marketplace.customers")
     rows = ConfluentTools.collect_materialized_limit(tableResult, 100)
     ConfluentTools.print_materialized_limit(tableResult, 100)
-    
+
     # For finite (i.e. bounded) tables
     ConfluentTools.collect_materialized(table)
     ConfluentTools.print_materialized(table)
@@ -321,7 +321,7 @@ JavaPython
     TableResult tableResult = env.executeSql("SELECT * FROM examples.marketplace.customers");
     String statementName = ConfluentTools.getStatementName(tableResult);
     ConfluentTools.stopStatement(tableResult);
-    
+
     // Based on statement name
     ConfluentTools.stopStatement(env, "table-api-2024-03-21-150457-36e0dbb2e366-sql");
 
@@ -329,7 +329,7 @@ JavaPython
     table_result = env.execute_sql("SELECT * FROM examples.marketplace.customers")
     statement_name = ConfluentTools.get_statement_name(table_result)
     ConfluentTools.stop_statement(table_result)
-    
+
     # Based on statement name
     ConfluentTools.stop_statement_by_name(env, "table-api-2024-03-21-150457-36e0dbb2e366-sql")
 
@@ -351,13 +351,13 @@ JavaPython
           .watermark("$rowtime", $("$rowtime").minus(lit(5).seconds())) // Access $rowtime system column
           .build())
       .build();
-    
+
     env.createTable("t1", descriptor);
 
     from pyflink.table.confluent import ConfluentTableDescriptor
     from pyflink.table import Schema, DataTypes
     from pyflink.table.expressions import col, lit
-    
+
     descriptor = ConfluentTableDescriptor.for_managed() \
       .schema(
          Schema.new_builder()
@@ -366,7 +366,7 @@ JavaPython
            .watermark("$rowtime", col("$rowtime").minus(lit(5).seconds)) # Access $rowtime system column
            .build()) \
       .build()
-    
+
     env.createTable("t1", descriptor)
 
 ## Known limitations¶
@@ -398,4 +398,3 @@ The following features are not supported.
   * String concatenation with `.plus` causes errors. Instead, use `Expressions.concat`.
   * Selecting `.rowtime` in windows causes errors.
   * Using `.limit()` can cause errors.
-

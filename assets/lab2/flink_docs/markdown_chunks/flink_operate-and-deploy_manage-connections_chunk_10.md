@@ -73,7 +73,7 @@ Run the following command to delete the connection specified in the CONNECTION_N
 To delete a connection by using the Confluent Terraform provider, use the [confluent_flink_connection](https://registry.terraform.io/providers/confluentinc/confluent/latest/docs/resources/confluent_flink_connection) resource.
 
   1. Find the definition for the connection resource in your Terraform configuration and copy the name of the resource. In the following example, the resource name is `main`.
-         
+
          resource "confluent_flink_connection" "main" {
            display_name = "standard_connection"
            ...
@@ -81,15 +81,15 @@ To delete a connection by using the Confluent Terraform provider, use the [confl
          }
 
   2. To avoid accidental deletions, review the plan before applying the `destroy` command.
-         
+
          terraform plan -destroy -target=confluent_flink_connection.main
 
   3. To delete the connection, run the following command to target the specific resource. This command deletes only the connection and not other resources.
-         
+
          terraform apply -destroy -target=confluent_flink_connection.main
 
 To remove all resources defined in your Terraform configuration file, including the connection, run the `terraform destroy` command.
-         
+
          terraform destroy
 
 For more information, see [confluent_flink_connection](https://registry.terraform.io/providers/confluentinc/confluent/latest/docs/resources/confluent_flink_connection).

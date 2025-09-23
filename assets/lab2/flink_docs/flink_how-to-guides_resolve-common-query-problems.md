@@ -29,7 +29,7 @@ The following example illustrates a query that triggers this warning:
         total_orders INT PRIMARY KEY NOT ENFORCED, -- Primary Key is total_orders
         customer_name STRING
     );
-    
+
     -- Insert aggregated order counts per customer
     INSERT INTO customer_orders
     SELECT
@@ -144,4 +144,3 @@ The following example shows the revised query that resolves the warning:
            DESCRIPTOR($rowtime),
            INTERVAL '5' MINUTES
        );
-

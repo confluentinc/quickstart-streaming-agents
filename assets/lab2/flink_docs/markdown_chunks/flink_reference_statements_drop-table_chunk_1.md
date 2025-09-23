@@ -66,9 +66,9 @@ To execute DROP TABLE, you need an [RBAC role](../../../security/access-control/
 
     -- Drop a Kafka-backed table.
     DROP TABLE my_table;
-    
+
     -- Drop a table if it exists.
     DROP TABLE IF EXISTS my_table;
-    
+
     -- Drop an external table.
     DROP TABLE `<external-table-name>`;

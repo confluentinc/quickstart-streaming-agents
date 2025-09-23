@@ -15,10 +15,10 @@ The local timezone defines the current session timezone id. You can configure th
 
     -- set to UTC timezone
     SET 'sql.local-time-zone' = 'UTC';
-    
+
     -- set to Shanghai timezone
     SET 'sql.local-time-zone' = 'Asia/Shanghai';
-    
+
     -- set to Los_Angeles timezone
     SET 'sql.local-time-zone' = 'America/Los_Angeles';
 
@@ -44,7 +44,7 @@ The following example code shows the return types of these datetime functions.
       CURRENT_TIMESTAMP,
       CURRENT_ROW_TIMESTAMP() as current_row_ts,
       NOW() as now;
-    
+
     DESC timeview;
 
 Your output should resemble:
@@ -88,7 +88,7 @@ The session timezone is used when represents a `TIMESTAMP_LTZ` value to string f
     CREATE TABLE timeview2 AS SELECT
       TO_TIMESTAMP_LTZ(4001, 3) AS ltz,
       TIMESTAMP '1970-01-01 00:00:01.001' AS ntz;
-    
+
     DESC timeview2;
 
 Your output should resemble:
@@ -127,7 +127,7 @@ The following table shows that columns with data types that result from casting.
       CAST(ltz AS STRING),
       ntz,
       CAST(ntz AS TIMESTAMP_LTZ(3)) FROM timeview2;
-    
+
     DESC timeview3;
 
 Your output should resemble:

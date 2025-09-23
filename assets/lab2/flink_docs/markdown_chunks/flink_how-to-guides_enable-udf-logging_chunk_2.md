@@ -25,13 +25,13 @@ Creating a UDF log requires the following inputs:
     export UDF_LOG_TOPIC_NAME="<udf-log-topic-name>" # example: "udf_log"
 
   1. Log in to Confluent Cloud.
-         
+
          confluent login --organization-id ${ORG_ID} --prompt
 
 The `--environment` option is an optional parameter. If not provided, the default environment is used.
 
   2. Run the following command to set up UDF logging for a region and environment by specifying a Kafka topic for logging. This command doesn’t create the Kafka topic. Instead, it enables logging per region and per environment to use the existing UDF_LOG_TOPIC_NAME topic as the log.
-         
+
          confluent custom-code-logging create \
            --cloud ${CLOUD_PROVIDER} \
            --region ${CLOUD_REGION} \
@@ -40,7 +40,7 @@ The `--environment` option is an optional parameter. If not provided, the defaul
            --environment ${ENV_ID}
 
 Your output should resemble:
-         
+
          +-------------+------------+
          | Id          | ccl-4l5klo |
          | Cloud       | aws        |
@@ -49,7 +49,7 @@ Your output should resemble:
          +-------------+------------+
 
 Note the identifier of the UDF log, which in the current example is `ccl-4l5klo`. For convenience, save it in an environment variable:
-         
+
          export UDF_LOG_ID="<udf-log-id>" # for example, ccl-4l5klo
 
 ## Step 2: Implement logging code¶
@@ -57,21 +57,21 @@ Note the identifier of the UDF log, which in the current example is `ccl-4l5klo`
 In your UDF project, import the `org.apache.logging.log4j.LogManager` and `org.apache.logging.log4j.Logger` namespaces. Get the `Logger` instance by calling the `LogManager.getLogger()` method.
 
     package your.package.namespace;
-    
+
     import org.apache.flink.table.functions.ScalarFunction;
     import org.apache.logging.log4j.LogManager;
     import org.apache.logging.log4j.Logger;
     import java.util.Date;
-    
+
     /* This class is a SumScalar function that logs messages at different levels */
     public class LogSumScalarFunction extends ScalarFunction {
-    
+
        private static final Logger LOGGER = LogManager.getLogger();
-    
+
        public int eval(int a, int b) {
          String value = String.format("SumScalar of %d and %d", a, b);
           Date now = new java.util.Date();
-    
+
           // You can choose the logging level for log messages.
           LOGGER.info(value + " info log messages by log4j logger --- " + now);
           LOGGER.error(value + " error log messages by log4j logger --- " + now);

@@ -18,4 +18,3 @@ Select a Flink connectivity type for the current environment as “public” or 
     -h, --help            Show help for this command.
         --unsafe-trace    Equivalent to -vvvv, but also log HTTP requests and responses which might contain plaintext secrets.
     -v, --verbose count   Increase verbosity (-v for warn, -vv for info, -vvv for debug, -vvvv for trace).
-

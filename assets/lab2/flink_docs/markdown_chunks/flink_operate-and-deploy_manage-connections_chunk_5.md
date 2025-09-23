@@ -43,7 +43,7 @@ To view details for a connection by using the Confluent Terraform provider, use 
       display_name = "my_connection"
       type         = "JDBC"
     }
-    
+
     output "connection_endpoint" {
       value = data.confluent_flink_connection.existing_connection.endpoint
     }

@@ -31,4 +31,3 @@ Use the following topics to learn more about securing Confluent Manager for Apac
   * [Configure Authentication for Confluent Manager for Apache Flink](authentication.html#cmf-authenticate)
   * [Configure Authorization for Confluent Manager for Apache Flink](authorization.html#cmf-authorize)
   * [Data Encryption in Confluent Manager for Apache Flink](encryption.html#data-encryption-cmf)
-

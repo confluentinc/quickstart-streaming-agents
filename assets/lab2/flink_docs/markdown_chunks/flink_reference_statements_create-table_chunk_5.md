@@ -30,7 +30,7 @@ The following two code examples are equivalent.
         name STRING,
         age INT
     );
-    
+
     INSERT INTO my_ctas_table SELECT id, name, age FROM source_table WHERE mod(id, 10) = 0;
 
 Similar to CREATE TABLE, CTAS requires all options of the target table to be specified in the WITH clause. The syntax is `CREATE TABLE t WITH (…) AS SELECT …`, for example:
@@ -67,5 +67,5 @@ The following two code examples are equivalent.
         id BIGINT NOT NULL PRIMARY KEY NOT ENFORCED,
         name STRING
     ) DISTRIBUTED BY HASH(id) INTO 4 BUCKETS;
-    
+
     INSERT INTO my_ctas_table SELECT id, name FROM source_table;

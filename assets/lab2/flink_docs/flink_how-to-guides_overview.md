@@ -29,4 +29,3 @@ Confluent Cloud for Apache Flink provides Flink Actions that enable you to perfo
   * [Deduplicate Rows in a Table](deduplicate-rows.html#flink-sql-deduplicate-topic-action): Remove duplicate records from a topic based on specified fields, ensuring that only unique records are retained in the output topic.
   * [Mask Fields in a Table](mask-fields.html#flink-sql-mask-fields-action): Mask sensitive data in specified fields of a topic by replacing the original data with a static value.
   * [Transform a Topic](transform-topic.html#flink-sql-transform-topic-action): Change a topic’s properties by applying custom Flink SQL transformations.
-

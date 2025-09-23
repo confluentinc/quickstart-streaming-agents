@@ -14,7 +14,7 @@ Confluent Cloud for Apache Flink® enables viewing and analyzing the query plans
 ## Syntax¶
 
     EXPLAIN { <query_statement> | <insert_statement> | <statement_set> | CREATE TABLE ... AS SELECT ... }
-    
+
     <statement_set>:
     STATEMENT SET
     BEGIN

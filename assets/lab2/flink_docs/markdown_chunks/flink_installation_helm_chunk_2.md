@@ -18,13 +18,13 @@ Warning
 If you do not specify a license, CMF will generate a trial license.
 
   1. (Optional) Store your Confluent license in a Kubernetes secret.
-         
+
          kubectl create secret generic <license-secret-name> --from-file=license.txt
 
   2. (Optional) Create a CMF database encryption key into a Kubernetes secret
 
 CMF is storing sensitive data such as secrets in its internal database. Below instructions are for setting up the encryption key for the CMF database. CMF has a `cmf.sql.production` property. When the property is set to `false`, encryption is disabled. Otherwise, an encryption key is required.
-         
+
          # Generate a 256-bit key (recommended for production)
          openssl rand -out cmf.key 32
          # Create a Kubernetes secret with the encryption key
@@ -33,12 +33,12 @@ CMF is storing sensitive data such as secrets in its internal database. Below in
            -n <your-cmf-namespace>
 
 During the CMF installation, pass the following Helm parameter to use the encryption key:
-         
+
          --set encryption.key.kubernetesSecretName=<secret-name> \
          --set encryption.key.kubernetesSecretProperty=<property-name>
 
 **Example**
-         
+
          openssl rand -out cmf.key 32
          kubectl create secret generic cmf-encryption-key \
            --from-file=encryption-key=cmf.key \
@@ -56,7 +56,7 @@ You must backup the encryption key, CMF does not keep a backup of it. If the key
   3. Install CMF using the default configuration:
 
 For deployment on OpenShift, you must also pass `--set podSecurity.securityContext.fsGroup=null --set podSecurity.securityContext.runAsUser=null` to below Helm command.
-         
+
          helm upgrade --install cmf --version "~2.0.0" \
            confluentinc/confluent-manager-for-apache-flink \
            --namespace <namespace> \
@@ -70,21 +70,21 @@ CMF will create a `PersistentVolumeClaim` (PVC) in Kubernetes. If the PVC remain
   4. Configure the Chart. Helm provides [several options](https://helm.sh/docs/intro/using_helm/#customizing-the-chart-before-installing) for setting and overriding values in a chart. For CMF, you should customize the chart by passing a values file with the `--values` flag.
 
 First, use Helm to show the default `values.yaml` file for CMF.
-         
+
          helm inspect values confluentinc/confluent-manager-for-apache-flink --version "~2.0.0"
 
 You should see output similar to the following:
-         
+
          ## Image pull secret
          imagePullSecretRef:
-         
+
          ## confluent-manager-for-apache-flink image
          image:
          repository: confluentinc
          name: cp-cmf
          pullPolicy: IfNotPresent
          tag: 1.0.1
-         
+
          ## CMF Pod Resources
          resources:
          limits:
@@ -93,7 +93,7 @@ You should see output similar to the following:
          requests:
             cpu: 1
             memory: 1024Mi
-         
+
          ## Load license either from K8s secret
          license:
          ##
@@ -103,7 +103,7 @@ You should see output similar to the following:
          ## Example:
             ##   secretRef: confluent-license-for-cmf
          secretRef: ""
-         
+
          ## Pod Security Context
          podSecurity:
          enabled: true
@@ -111,7 +111,7 @@ You should see output similar to the following:
             fsGroup: 1001
             runAsUser: 1001
             runAsNonRoot: true
-         
+
          ## Persistence for CMF
          persistence:
          # if set to false, the database will be on the pod ephemeral storage, e.g. gone when the pod stops

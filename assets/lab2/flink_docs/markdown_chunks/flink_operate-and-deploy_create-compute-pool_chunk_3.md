@@ -9,7 +9,7 @@ total_chunks: 7
 
 Your output should resemble:
 
-Response from a request to create a compute pool 
+Response from a request to create a compute pool
 
     {
         "api_version": "fcpm/v2",
@@ -42,7 +42,7 @@ Response from a request to create a compute pool
 To create a compute pool by using the Confluent Terraform provider, use the [confluent_flink_compute_pool](https://registry.terraform.io/providers/confluentinc/confluent/latest/docs/resources/confluent_flink_compute_pool) resource.
 
   1. Configure your Terraform file. Provide your Confluent Cloud API key and secret.
-         
+
          terraform {
            required_providers {
              confluent = {
@@ -51,14 +51,14 @@ To create a compute pool by using the Confluent Terraform provider, use the [con
              }
            }
          }
-         
+
          provider "confluent" {
            cloud_api_key    = var.confluent_cloud_api_key    # optionally use CONFLUENT_CLOUD_API_KEY env var
            cloud_api_secret = var.confluent_cloud_api_secret # optionally use CONFLUENT_CLOUD_API_SECRET env var
          }
 
   2. Define the environment where the compute pool will be created.
-         
+
          resource "confluent_environment" "development" {
            display_name = "Development"
            lifecycle {
@@ -67,24 +67,24 @@ To create a compute pool by using the Confluent Terraform provider, use the [con
          }
 
   3. Define the `confluent_flink_compute_pool` resource with the required parameters, like `display_name`, `cloud`, `region`, `max_cfu`, and the environment ID.
-         
+
          resource "confluent_flink_compute_pool" "main" {
            display_name = "standard_compute_pool"
            cloud        = "AWS"
            region       = "us-east-1"
            max_cfu      = 5
-         
+
            environment {
              id = confluent_environment.development.id
            }
          }
 
   4. Run the `terraform apply` command to create the resources.
-         
+
          terraform apply
 
   5. If you need to import an existing compute pool, use the `terraform import` command.
-         
+
          export CONFLUENT_CLOUD_API_KEY="<cloud_api_key>"
          export CONFLUENT_CLOUD_API_SECRET="<cloud_api_secret>"
          terraform import confluent_flink_compute_pool.main <your-environment-id>/<compute-pool-id>

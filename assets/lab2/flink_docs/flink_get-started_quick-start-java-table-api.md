@@ -54,18 +54,18 @@ The following code example shows how to run a “Hello World” statement and ho
   1. Copy the following project object model (POM) into a file named pom.xml.
 
 pom.xml
-         
+
          <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
              <modelVersion>4.0.0</modelVersion>
-         
+
              <groupId>example</groupId>
              <artifactId>flink-table-api-java-hello-world</artifactId>
              <version>1.0</version>
              <packaging>jar</packaging>
-         
+
              <name>Apache Flink® Table API Java Hello World Example on Confluent Cloud</name>
-         
+
              <properties>
                  <flink.version>1.20.0</flink.version>
                  <confluent-plugin.version>1.20-42</confluent-plugin.version>
@@ -75,7 +75,7 @@ pom.xml
                  <maven.compiler.target>${target.java.version}</maven.compiler.target>
                  <log4j.version>2.17.1</log4j.version>
              </properties>
-         
+
              <repositories>
                  <repository>
                      <id>confluent</id>
@@ -93,7 +93,7 @@ pom.xml
                      </snapshots>
                  </repository>
              </repositories>
-         
+
              <dependencies>
                  <!-- Apache Flink dependencies -->
                  <dependency>
@@ -101,14 +101,14 @@ pom.xml
                      <artifactId>flink-table-api-java</artifactId>
                      <version>${flink.version}</version>
                  </dependency>
-         
+
                  <!-- Confluent Flink Table API Java plugin -->
                  <dependency>
                      <groupId>io.confluent.flink</groupId>
                      <artifactId>confluent-flink-table-api-java-plugin</artifactId>
                      <version>${confluent-plugin.version}</version>
                  </dependency>
-         
+
                  <!-- Add logging framework, to produce console output when running in the IDE. -->
                  <!-- These dependencies are excluded from the application JAR by default. -->
                  <dependency>
@@ -130,11 +130,11 @@ pom.xml
                      <scope>runtime</scope>
                  </dependency>
              </dependencies>
-         
+
              <build>
              <sourceDirectory>./example</sourceDirectory>
                  <plugins>
-         
+
                      <!-- Java Compiler -->
                      <plugin>
                          <groupId>org.apache.maven.plugins</groupId>
@@ -145,7 +145,7 @@ pom.xml
                              <target>${target.java.version}</target>
                          </configuration>
                      </plugin>
-         
+
                      <!-- We use the maven-shade plugin to create a fat jar that contains all necessary dependencies. -->
                      <!-- Change the value of <mainClass>...</mainClass> if your program entry point changes. -->
                      <plugin>
@@ -191,10 +191,10 @@ pom.xml
                          </executions>
                      </plugin>
                  </plugins>
-         
+
                  <pluginManagement>
                      <plugins>
-         
+
                          <!-- This improves the out-of-the-box experience in Eclipse by resolving some warnings. -->
                          <plugin>
                              <groupId>org.eclipse.m2e</groupId>
@@ -240,15 +240,15 @@ pom.xml
          </project>
 
   2. Create a directory named “example”.
-         
+
          mkdir example
 
   3. Create a file named `hello_table_api.java` in the `example` directory.
-         
+
          touch example/hello_table_api.java
 
   4. Copy the following code into `hello_table_api.java`.
-         
+
          package example;
          import io.confluent.flink.plugin.ConfluentSettings;
          import io.confluent.flink.plugin.ConfluentTools;
@@ -257,7 +257,7 @@ pom.xml
          import org.apache.flink.table.api.TableEnvironment;
          import org.apache.flink.types.Row;
          import java.util.List;
-         
+
          /**
           * A table program example to get started with the Apache Flink® Table API.
           *
@@ -265,36 +265,36 @@ pom.xml
           * printed to the console.
           */
          public class hello_table_api {
-         
+
              // All logic is defined in a main() method. It can run both in an IDE or CI/CD system.
              public static void main(String[] args) {
-         
+
                  // Set up connection properties to Confluent Cloud.
                  // Use the fromGlobalVariables() method if you assigned environment variables.
                  // EnvironmentSettings settings = ConfluentSettings.fromGlobalVariables();
-         
+
                  // Use the fromArgs(args) method if you want to run with command-line arguments.
                  EnvironmentSettings settings = ConfluentSettings.fromArgs(args);
-         
+
                  // Initialize the session context to get started.
                  TableEnvironment env = TableEnvironment.create(settings);
-         
+
                  System.out.println("Running with printing...");
-         
+
                  // The Table API centers on 'Table' objects, which help in defining data pipelines
                  // fluently. You can define pipelines fully programmatically.
                  Table table = env.fromValues("Hello world!");
-         
+
                  // Also, You can define pipelines with embedded Flink SQL.
                  // Table table = env.sqlQuery("SELECT 'Hello world!'");
-         
+
                  // Once the pipeline is defined, execute it on Confluent Cloud.
                  // If no target table has been defined, results are streamed back and can be printed
                  // locally. This can be useful for development and debugging.
                  table.execute().print();
-         
+
                  System.out.println("Running with collecting...");
-         
+
                  // Results can be collected locally and accessed individually.
                  // This can be useful for testing.
                  Table moreHellos = env.fromValues("Hello Bob", "Hello Alice", "Hello Peter").as("greeting");
@@ -308,11 +308,11 @@ pom.xml
          }
 
   5. Run the following command to build the jar file.
-         
+
          mvn clean package
 
   6. Run the jar. If you assigned your cloud configuration to the environment variables specified in the Prerequisites section, and you used the `fromGlobalVariables` method in the `hello_table_api` code, you don’t need to provide the command-line options.
-         
+
          java -jar target/flink-table-api-java-hello-world-1.0.jar \
            --cloud aws \
            --region us-east-1 \
@@ -323,7 +323,7 @@ pom.xml
            --compute-pool-id lfcp-8m03rm
 
 Your output should resemble:
-         
+
          Running with printing...
          +----+--------------------------------+
          | op |                             f0 |
@@ -335,4 +335,3 @@ Your output should resemble:
          Greeting: Hello Bob
          Greeting: Hello Alice
          Greeting: Hello Peter
-

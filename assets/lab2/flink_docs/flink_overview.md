@@ -90,12 +90,12 @@ Kafka topics and schemas are always in sync with Flink, simplifying how you can 
 
 Because Flink follows the SQL standard, the terminology is slightly different from Kafka. The following table shows the mapping between Kafka and Flink terminology.
 
-Kafka | Flink | Notes  
----|---|---  
-Environment | Catalog | Flink can query and join data that are in any environments/catalogs  
-Cluster | Database | Flink can query and join data that are in different clusters/databases  
-Topic + Schema | Table | Kafka topics and Flink tables are always in sync. You never need to declare tables manually for existing topics. Creating a table in Flink creates a topic and the associated schema.  
-  
+Kafka | Flink | Notes
+---|---|---
+Environment | Catalog | Flink can query and join data that are in any environments/catalogs
+Cluster | Database | Flink can query and join data that are in different clusters/databases
+Topic + Schema | Table | Kafka topics and Flink tables are always in sync. You never need to declare tables manually for existing topics. Creating a table in Flink creates a topic and the associated schema.
+
 As a result, when you start using Flink, you can directly access all of the environments, clusters, and topics that you already have in Confluent Cloud, without any additional metadata creation.
 
 Automatic metadata integration in Confluent Cloud for Apache Flink¶
@@ -177,4 +177,3 @@ Comments, questions, and suggestions related to the Table API are encouraged and
 ## Confluent for VS Code¶
 
 Install [Confluent for VS Code](../client-apps/vs-code-extension.html#cc-vscode-extension) to access Smart Project Templates that accelerate project setup by providing ready-to-use templates tailored for common development patterns. These templates enable you to launch new projects quickly with minimal configuration, significantly reducing setup time.
-

@@ -27,11 +27,11 @@ These datetime types and the related [datetime functions](functions/datetime-fun
   * `TIMESTAMP` describes a timestamp that represents year, month, day, hour, minute, second, and fractional seconds.
 
   * `TIMESTAMP` can be specified from a string literal. The following code example shows a SELECT statement that creates a timestamp from a string.
-        
+
         SELECT TIMESTAMP '1970-01-01 00:00:04.001';
 
 Your output should resemble:
-        
+
         EXPR$0
         1970-01-01 00:00:04.001
 
@@ -44,11 +44,11 @@ Your output should resemble:
   * `TIMESTAMP_LTZ` can be used in cross timezones business because the absolute time point. for example, _4001_ milliseconds describes a same instantaneous point in different timezones. If the local system time of all machines in the world returns same value, for example, _4001_ milliseconds, this is the meaning of “absolute time point”.
 
   * `TIMESTAMP_LTZ` has no literal representation, so you can’t create it from a literal. It can be derived from a LONG epoch time, as shown in the following code example.
-        
+
         SET 'sql.local-time-zone' = 'UTC';
 
 Your output should resemble:
-        
+
         +---------------------+-------+
         |         Key         | Value |
         +---------------------+-------+
@@ -56,20 +56,20 @@ Your output should resemble:
         +---------------------+-------+
 
 Query the [TO_TIMESTAMP_LTZ](functions/datetime-functions.html#flink-sql-to-timestamp-ltz-function) function to convert a Unix time to a `TIMESTAMP_LTZ`.
-        
+
         SELECT TO_TIMESTAMP_LTZ(4001, 3);
 
 Your output should resemble:
-        
+
         EXPR$0
         1970-01-01 00:00:04.001
 
 Change the timezone:
-        
+
         SET 'sql.local-time-zone' = 'Asia/Shanghai';
 
 Your output should resemble:
-        
+
         +---------------------+---------------+
         |         Key         |     Value     |
         +---------------------+---------------+
@@ -77,11 +77,11 @@ Your output should resemble:
         +---------------------+---------------+
 
 Query the time again:
-        
+
         SELECT TO_TIMESTAMP_LTZ(4001, 3);
 
 Your output should resemble:
-        
+
         EXPR$0
         1970-01-01 08:00:04.001
 
@@ -91,10 +91,10 @@ The local timezone defines the current session timezone id. You can configure th
 
     -- set to UTC timezone
     SET 'sql.local-time-zone' = 'UTC';
-    
+
     -- set to Shanghai timezone
     SET 'sql.local-time-zone' = 'Asia/Shanghai';
-    
+
     -- set to Los_Angeles timezone
     SET 'sql.local-time-zone' = 'America/Los_Angeles';
 
@@ -120,7 +120,7 @@ The following example code shows the return types of these datetime functions.
       CURRENT_TIMESTAMP,
       CURRENT_ROW_TIMESTAMP() as current_row_ts,
       NOW() as now;
-    
+
     DESC timeview;
 
 Your output should resemble:
@@ -164,7 +164,7 @@ The session timezone is used when represents a `TIMESTAMP_LTZ` value to string f
     CREATE TABLE timeview2 AS SELECT
       TO_TIMESTAMP_LTZ(4001, 3) AS ltz,
       TIMESTAMP '1970-01-01 00:00:01.001' AS ntz;
-    
+
     DESC timeview2;
 
 Your output should resemble:
@@ -203,7 +203,7 @@ The following table shows that columns with data types that result from casting.
       CAST(ltz AS STRING),
       ntz,
       CAST(ntz AS TIMESTAMP_LTZ(3)) FROM timeview2;
-    
+
     DESC timeview3;
 
 Your output should resemble:

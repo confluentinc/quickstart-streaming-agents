@@ -20,4 +20,3 @@ Confluent Cloud for Apache Flink® enables registering customer user defined fun
 Register a user defined function (UDF) in the current database.
 
 To remove a (UDF) from the current database, use the DROP FUNCTION statement.
-

@@ -39,7 +39,7 @@ You can insert multiple rows by using a comma-separated list of values.
 In the Flink SQL shell or in a Cloud Console workspace, run the following commands to see an example of the INSERT VALUES statement.
 
   1. Create a users table.
-         
+
          -- Create a users table.
          CREATE TABLE users (
            user_id STRING,
@@ -49,7 +49,7 @@ In the Flink SQL shell or in a Cloud Console workspace, run the following comman
          );
 
   2. Insert rows into the `users` table.
-         
+
          -- Populate the table with mock users data.
          INSERT INTO users VALUES
            ('Thomas A. Anderson', 1677260724, 'male', 'Region_4'),
@@ -62,11 +62,11 @@ In the Flink SQL shell or in a Cloud Console workspace, run the following comman
            ('Zee', 1677260922, 'female', 'Region_5');
 
   3. Inspect the inserted rows.
-         
+
          SELECT * FROM users;
 
 Your output should resemble:
-         
+
          user_id            registertime gender regionid
          Thomas A. Anderson 1677260724   male   Region_4
          Trinity            1677260733   female Region_4

@@ -32,15 +32,15 @@ In this step, you examine the read-only `orders` and `clicks` tables in the `exa
   1. Log in to Confluent Cloud and navigate to your Flink workspace.
 
   2. Examine your source streams. The following example includes orders and clicks:
-         
+
          -- First stream
          SELECT * FROM `examples`.`marketplace`.`orders`;
-         
+
          -- Second stream
          SELECT * FROM `examples`.`marketplace`.`clicks`;
 
 Your output from `orders` should resemble:
-         
+
          order_id                                customer_id   product_id  price
          be396ae5-d7d9-4454-99d7-9b1c155d51d4    3243          1304        99.55
          79e295d3-5a0b-4127-9337-9a483794e7d4    3132          1201        21.43
@@ -51,7 +51,7 @@ Your output from `orders` should resemble:
          ebfec6c6-3294-444b-82e5-5a66e7dc5cd5    3233          1223        23.69
 
 Your output from `clicks` should resemble:
-         
+
          click_id                             user_id url                                user_agent                                                                      view_time
          a5c31d8b-cc93-4a48-a7d9-c1d389c83f4a 3099    https://www.acme.com/product/foxmh Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0 79
          b7d42e6f-85a1-4f7b-b1c2-d3e456789abc 3262    https://www.acme.com/product/lruuv Mozilla/5.0 (iPhone; CPU OS 9_3_5 like Mac OS X) AppleWebKit/601.1.46           108
@@ -70,7 +70,7 @@ Run the following statement to combine multiple streams while tracking the most 
 
     -- This query combines order and click data, tracking the latest values
     -- for each customer's interactions across both datasets
-    
+
     -- First, combine order data and clickstream data into a single structure
     -- Note: Fields not present in one source are filled with NULL
     WITH combined_data AS (
@@ -198,4 +198,3 @@ For example, when new events arrive for customer 3099 (first an order, then a cl
 Each event produces a new output record with the complete latest state for that customer.
 
 In contrast, a join produces a changelog output where existing records may be updated, requiring downstream systems to handle inserts, updates, and deletions.
-

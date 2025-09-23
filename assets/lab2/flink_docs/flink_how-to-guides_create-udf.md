@@ -37,7 +37,7 @@ You need the following prerequisites to use Confluent Cloud for Apache Flink.
   * The OrganizationAdmin, EnvironmentAdmin, or FlinkAdmin role for creating compute pools, or the FlinkDeveloper role if you already have a compute pool. If you don’t have the appropriate role, reach out to your OrganizationAdmin or EnvironmentAdmin.
 
   * The Confluent CLI. To use the Flink SQL shell, update to the latest version of the Confluent CLI by running the following command:
-        
+
         confluent update --yes
 
 If you used homebrew to install the Confluent CLI, update the CLI by using the `brew upgrade` command, instead of `confluent update`.
@@ -67,23 +67,23 @@ You can’t use your own Flink-related jars. If you package Flink core dependenc
 Also, this example shows how to capture all dependencies greedily, possibly including more than needed. As an alternative, you can optimize on artifact size by listing all dependencies and including their transitive dependencies.
 
 pom.xml
-         
+
          <?xml version="1.0" encoding="UTF-8"?>
          <project xmlns="http://maven.apache.org/POM/4.0.0"
                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
              <modelVersion>4.0.0</modelVersion>
-         
+
              <groupId>example</groupId>
              <artifactId>udf_example</artifactId>
              <version>1.0</version>
-         
+
              <properties>
                  <maven.compiler.source>11</maven.compiler.source>
                  <maven.compiler.target>11</maven.compiler.target>
                  <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
              </properties>
-         
+
              <dependencies>
                  <dependency>
                      <groupId>org.apache.flink</groupId>
@@ -91,11 +91,11 @@ pom.xml
                      <version>1.18.1</version>
                      <scope>provided</scope>
                  </dependency>
-         
+
                  <!-- Dependencies -->
-         
+
              </dependencies>
-         
+
              <build>
                  <sourceDirectory>./example</sourceDirectory>
                  <plugins>
@@ -138,27 +138,27 @@ pom.xml
          </project>
 
   2. Create a directory named “example”.
-         
+
          mkdir example
 
   3. In the `example` directory, create a file named `TShirtSizingIsSmaller.java`.
-         
+
          touch example/TShirtSizingIsSmaller.java
 
   4. Copy the following code into `TShirtSizingIsSmaller.java`.
-         
+
          package com.example.my;
-         
+
          import org.apache.flink.table.functions.ScalarFunction;
-         
+
          import java.util.Arrays;
          import java.util.List;
          import java.util.stream.IntStream;
-         
+
          /** TShirt sizing function for demo. */
          public class TShirtSizingIsSmaller extends ScalarFunction {
             public static final String NAME = "IS_SMALLER";
-         
+
             private static final List<Size> ORDERED_SIZES =
                      Arrays.asList(
                            new Size("X-Small", "XS"),
@@ -167,7 +167,7 @@ pom.xml
                            new Size("Large", "L"),
                            new Size("X-Large", "XL"),
                            new Size("XX-Large", "XXL"));
-         
+
             public boolean eval(String shirt1, String shirt2) {
                int size1 = findSize(shirt1);
                int size2 = findSize(shirt2);
@@ -177,7 +177,7 @@ pom.xml
                }
                return size1 < size2;
             }
-         
+
             private int findSize(String shirt) {
                return IntStream.range(0, ORDERED_SIZES.size())
                         .filter(
@@ -189,11 +189,11 @@ pom.xml
                         .findFirst()
                         .orElse(-1);
             }
-         
+
             private static class Size {
                private final String name;
                private final String abbreviation;
-         
+
                public Size(String name, String abbreviation) {
                      this.name = name;
                      this.abbreviation = abbreviation;
@@ -202,15 +202,15 @@ pom.xml
          }
 
   5. Run the following command to build the jar file.
-         
+
          mvn clean package
 
   6. Run the following command to check the contents of your jar.
-         
+
          jar -tf target/udf_example-1.0.jar | grep -i TShirtSizingIsSmaller
 
 Your output should resemble:
-         
+
          com/example/my/TShirtSizingIsSmaller$Size.class
          com/example/my/TShirtSizingIsSmaller.class
 
@@ -229,11 +229,11 @@ Confluent Cloud ConsoleConfluent CLIREST API
   7. When your JAR file is uploaded, it appears in the **Artifacts** list. In the list, click the row for your UDF artifact to open the details pane.
 
   1. Log in to Confluent Cloud.
-         
+
          confluent login --organization-id ${ORG_ID} --prompt
 
   2. Run the following command to upload the jar to Confluent Cloud.
-         
+
          confluent flink artifact create udf_example \
          --artifact-file target/udf_example-1.0.jar \
          --cloud ${CLOUD_PROVIDER} \
@@ -241,7 +241,7 @@ Confluent Cloud ConsoleConfluent CLIREST API
          --environment ${ENV_ID}
 
 Your output should resemble:
-         
+
          +--------------------+-------------+
          | ID                 | cfa-ldxmro  |
          | Name               | udf_example |
@@ -257,25 +257,25 @@ Your output should resemble:
 Note the artifact ID and version of your UDTF, which in this example are `cfa-ldxmro` and `ver-81vxm5`, because you use them later to register the UDTF in Flink SQL and to manage it.
 
   3. Run the following command to view all of the available UDFs.
-         
+
          confluent flink artifact list \
          --cloud ${CLOUD_PROVIDER} \
          --region ${CLOUD_REGION}
 
 Your output should resemble:
-         
+
          ID     |    Name     | Cloud |  Region   | Environment
          -------------+-------------+-------+-----------+--------------
          cfa-ldxmro | udf_example | AWS   | us-east-1 | env-z3q9rd
 
   4. Run the following command to view the details of your UDF. You can use the artifact ID from the previous step or the artifact name to specify your UDF.
-         
+
          # use the artifact ID
          confluent flink artifact describe \
          cfa-ldxmro \
          --cloud ${CLOUD_PROVIDER} \
          --region ${CLOUD_REGION}
-         
+
          # use the artifact name
          confluent flink artifact describe \
          udf_example \
@@ -283,7 +283,7 @@ Your output should resemble:
          --region ${CLOUD_REGION}
 
 Your output should resemble:
-         
+
          +--------------------+-------------+
          | ID                 | cfa-ldxmro  |
          | Name               | udf_example |
@@ -312,16 +312,16 @@ Confluent Cloud ConsoleConfluent CLITerraformREST API
   4. In the **Use database** dropdown, select Kafka cluster that you want to run the UDF.
 
   1. Run the following command to start the Flink shell.
-         
+
          confluent flink shell --environment ${ENV_ID} --compute-pool ${COMPUTE_POOL_ID}
 
   2. Run the following statements to specify the catalog and database.
-         
+
          -- Specify your catalog. This example uses the default.
          USE CATALOG default;
 
 Your output should resemble:
-         
+
          +---------------------+---------+
          |         Key         |  Value  |
          +---------------------+---------+
@@ -329,12 +329,12 @@ Your output should resemble:
          +---------------------+---------+
 
 Specify the database you want to use, for example, `cluster_0`.
-         
+
          -- Specify your database. This example uses cluster_0.
          USE cluster_0;
 
 Your output should resemble:
-         
+
          +----------------------+-----------+
          |         Key          |   Value   |
          +----------------------+-----------+
@@ -346,13 +346,13 @@ You can register a previously uploaded UDF by using the Confluent Terraform prov
 You can register a UDF by sending a POST request to the [Create Artifact endpoint](/cloud/current/api.html#tag/Flink-Artifacts-\(artifactv1\)/operation/createArtifactV1FlinkArtifact). For more information, see [Create a Flink artifact](../operate-and-deploy/flink-rest-api.html#flink-rest-api-create-artifact).
 
   * In Cloud Console or the Confluent CLI, run the [CREATE FUNCTION](../reference/statements/create-function.html#flink-sql-create-function) statement to register your UDF in the current catalog and database. Substitute your UDF’s value for `<artifact-id>`.
-        
+
         CREATE FUNCTION is_smaller
           AS 'com.example.my.TShirtSizingIsSmaller'
           USING JAR 'confluent-artifact://<artifact-id>';
 
 Your output should resemble:
-        
+
         Function 'is_smaller' created.
 
 ## Step 4: Use the UDF in a Flink SQL query¶
@@ -360,11 +360,11 @@ Your output should resemble:
 Once it is registered, your UDF is available to use in queries.
 
   1. Run the following statement to view the UDFs in the current database.
-         
+
          SHOW USER FUNCTIONS;
 
 Your output should resemble:
-         
+
          +---------------+
          | function name |
          +---------------+
@@ -372,14 +372,14 @@ Your output should resemble:
          +---------------+
 
   2. Run the following statement to create a `sizes` table.
-         
+
          CREATE TABLE sizes (
            `size_1` STRING,
            `size_2` STRING
          );
 
   3. Run the following statement to populate the `sizes` table with values.
-         
+
          INSERT INTO sizes VALUES
            ('XL', 'L'),
            ('small', 'L'),
@@ -387,11 +387,11 @@ Your output should resemble:
            ('XXL', 'XL');
 
   4. Run the following statement to view the rows in the `sizes` table.
-         
+
          SELECT * FROM sizes;
 
 Your output should resemble:
-         
+
          size_1 size_2
          XL     L
          small  L
@@ -399,13 +399,13 @@ Your output should resemble:
          XXL    XL
 
   5. Run the following statement to execute the `is_smaller` function on the data in the `sizes` table.
-         
+
          SELECT size_1, size_2, is_smaller (size_1, size_2)
            AS is_smaller
            FROM sizes;
 
 Your output should resemble:
-         
+
          size_1 size_2 is_smaller
          XL     L      FALSE
          small  L      TRUE
@@ -425,17 +425,17 @@ You can use the Confluent Cloud Console, the Confluent CLI, the Confluent Terraf
 ### Drop the function¶
 
   1. Run the following statement to remove the `is_smaller` function from the current database.
-         
+
          DROP FUNCTION is_smaller;
 
 Your output should resemble:
-         
+
          Function 'is_smaller' dropped.
 
 Currently running statements are not affected and continue running.
 
   2. Exit the Flink shell.
-         
+
          exit;
 
 ### Delete the JAR artifact¶
@@ -449,7 +449,7 @@ Confluent Cloud ConsoleConfluent CLITerraformREST API
   5. In the confirmation dialog, type “udf_example”, and click **Confirm**. The “Artifact deleted successfully” message appears.
 
   1. Run the following command to delete the artifact form the environment.
-         
+
          confluent flink artifact delete \
          <artifact-id> \
          --cloud ${CLOUD_PROVIDER} \
@@ -458,7 +458,7 @@ Confluent Cloud ConsoleConfluent CLITerraformREST API
 You receive a warning about breaking Flink statements that use the artifact. Type “y” when you’re prompted to proceed.
 
 Your output should resemble:
-         
+
          Deleted Flink artifact "<artifact-id>".
 
 You can delete a UDF by using the Confluent Terraform provider. For more information, see [confluent_flink_artifact Resource](https://registry.terraform.io/providers/confluentinc/confluent/latest/docs/resources/confluent_flink_artifact)
@@ -481,23 +481,23 @@ The following steps show how to implement a simple UDTF, upload it to Confluent 
 In this section, you compile a simple Java class, named `SplitFunction` into a jar file, similar to the previous section. The class is based on the `TableFunction` class in the Flink Table API. The `SplitFunction.java` class has an `eval` function that uses the Java `split` method to break up a string into words and returns the words as columns in a row.
 
   1. In the `example` directory, create a file named `SplitFunction.java`.
-         
+
          touch example/SplitFunction.java
 
   2. Copy the following code into `SplitFunction.java`.
-         
+
          package com.example.my;
-         
+
          import org.apache.flink.table.annotation.DataTypeHint;
          import org.apache.flink.table.annotation.FunctionHint;
          import org.apache.flink.table.api.*;
          import org.apache.flink.table.functions.TableFunction;
          import org.apache.flink.types.Row;
          import static org.apache.flink.table.api.Expressions.*;
-         
+
          @FunctionHint(output = @DataTypeHint("ROW<word STRING>"))
          public class SplitFunction extends TableFunction<Row> {
-         
+
             public void eval(String str, String delimiter) {
                for (String s : str.split(delimiter)) {
                   // use collect(...) to emit a row
@@ -507,15 +507,15 @@ In this section, you compile a simple Java class, named `SplitFunction` into a j
          }
 
   3. Run the following command to build the jar file. You can use the POM file from the previous section.
-         
+
          mvn clean package
 
   4. Run the following command to check the contents of your jar.
-         
+
          jar -tf target/udf_example-1.0.jar | grep -i SplitFunction
 
 Your output should resemble:
-         
+
          com/example/my/SplitFunction.class
 
 ## Step 2: Upload the UDTF jar as a Flink artifact¶
@@ -531,11 +531,11 @@ Confluent Cloud ConsoleConfluent CLI
   7. When your JAR file is uploaded, it appears in the **Artifacts** list. In the list, click the row for your UDF artifact to open the details pane.
 
   1. Log in to Confluent Cloud.
-         
+
          confluent login --organization-id ${ORG_ID} --prompt
 
   2. Run the following command to upload the jar to Confluent Cloud.
-         
+
          confluent flink artifact create udf_table_example \
          --artifact-file target/udf_example-1.0.jar \
          --cloud ${CLOUD_PROVIDER} \
@@ -543,7 +543,7 @@ Confluent Cloud ConsoleConfluent CLI
          --environment ${ENV_ID}
 
 Your output should resemble:
-         
+
          +--------------------+-------------------+
          | ID                 | cfa-l5xp82        |
          | Name               | udf_table_example |
@@ -563,13 +563,13 @@ Note the artifact ID and version of your UDTF, which in this example are `cfa-l5
   1. In the Flink shell or the Cloud Console, specify the catalog and database (environment and cluster) where you want to use the UDTF, as you did in the previous section.
 
   2. Run the [CREATE FUNCTION](../reference/statements/create-function.html#flink-sql-create-function) statement to register your UDTF in the current catalog and database. Substitute your UDTF’s value for `<artifact-id>`.
-         
+
          CREATE FUNCTION split_string
            AS 'com.example.my.SplitFunction'
            USING JAR 'confluent-artifact://<artifact-id>';
 
 Your output should resemble:
-         
+
          Function 'split_string' created.
 
 ## Step 4: Use the UDTF in a Flink SQL query¶
@@ -577,11 +577,11 @@ Your output should resemble:
 Once it is registered, your UDTF is available to use in queries.
 
   1. Run the following statement to view the UDFs in the current database.
-         
+
          SHOW USER FUNCTIONS;
 
 Your output should resemble:
-         
+
          +---------------+
          | Function Name |
          +---------------+
@@ -589,11 +589,11 @@ Your output should resemble:
          +---------------+
 
   2. Run the following statement to execute the `split_string` function.
-         
+
          SELECT * FROM (VALUES 'A;B', 'C;D;E;F') as T(f), LATERAL TABLE(split_string(f, ';'))
 
 Your output should resemble:
-         
+
          f        word
          A;B      A
          A;B      B
@@ -603,4 +603,3 @@ Your output should resemble:
          C;D;E;F  F
 
   3. When you’re done with the example UDTF, drop the function and delete the JAR artifact as you did in Step 6: Delete the UDF.
-

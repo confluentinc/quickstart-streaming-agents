@@ -35,39 +35,39 @@ Represents a time _without_ timezone consisting of `hour:minute:second[.fraction
 
     TIME
     TIME(p)
-    
+
     TIME_WITHOUT_TIME_ZONE
     TIME_WITHOUT_TIME_ZONE(p)
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-java.time.LocalTime | ✓ | ✓ | Default  
-java.sql.Time | ✓ | ✓ |   
-java.lang.Integer | ✓ | ✓ | Describes the number of milliseconds of the day.  
-int | ✓ | (✓) | Describes the number of milliseconds of the day. Output only if type is not nullable.  
-java.lang.Long | ✓ | ✓ | Describes the number of nanoseconds of the day.  
-long | ✓ | (✓) | Describes the number of nanoseconds of the day. Output only if type is not nullable.  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+java.time.LocalTime | ✓ | ✓ | Default
+java.sql.Time | ✓ | ✓ |
+java.lang.Integer | ✓ | ✓ | Describes the number of milliseconds of the day.
+int | ✓ | (✓) | Describes the number of milliseconds of the day. Output only if type is not nullable.
+java.lang.Long | ✓ | ✓ | Describes the number of nanoseconds of the day.
+long | ✓ | (✓) | Describes the number of nanoseconds of the day. Output only if type is not nullable.
+
 **Formats**
 
 The following table shows examples of the TIME type in different formats.
 
-JSON for data type | 
+JSON for data type |
 
     {"type":"TIME_WITHOUT_TIME_ZONE","nullable":true,"precision":3}
 
----|---  
-CLI/UI format | 
+---|---
+CLI/UI format |
 
     TIME(3)
 
-JSON for payload | 
+JSON for payload |
 
     "10:56:22.541"
 
-CLI/UI format for payload | 
+CLI/UI format for payload |
 
     10:56:22.541
 
@@ -91,36 +91,36 @@ Represents a timestamp _without_ timezone consisting of `year-month-day hour:min
 
     TIMESTAMP
     TIMESTAMP(p)
-    
+
     TIMESTAMP WITHOUT TIME ZONE
     TIMESTAMP(p) WITHOUT TIME ZONE
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-java.time.LocalDateTime | ✓ | ✓ | Default  
-java.sql.Timestamp | ✓ | ✓ |   
-org.apache.flink.table.data.TimestampData | ✓ | ✓ | Internal data structure  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+java.time.LocalDateTime | ✓ | ✓ | Default
+java.sql.Timestamp | ✓ | ✓ |
+org.apache.flink.table.data.TimestampData | ✓ | ✓ | Internal data structure
+
 **Formats**
 
 The following table shows examples of the TIMESTAMP type in different formats.
 
-JSON for data type | 
+JSON for data type |
 
     {"type":"TIMESTAMP_WITHOUT_TIME_ZONE","nullable":true,"precision":3}
 
----|---  
-CLI/UI format | 
+---|---
+CLI/UI format |
 
     TIMESTAMP(3)
 
-JSON for payload | 
+JSON for payload |
 
     "2023-04-06 10:59:32.628"
 
-CLI/UI format for payload | 
+CLI/UI format for payload |
 
     2023-04-06 10:59:32.628
 
@@ -146,20 +146,20 @@ Represents a timestamp with the _local_ timezone consisting of `year-month-day h
 
     TIMESTAMP_LTZ
     TIMESTAMP_LTZ(p)
-    
+
     TIMESTAMP WITH LOCAL TIME ZONE
     TIMESTAMP(p) WITH LOCAL TIME ZONE
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-java.time.Instant | ✓ | ✓ | Default  
-java.lang.Integer | ✓ | ✓ | Describes the number of seconds since Unix epoch.  
-int | ✓ | (✓) | Describes the number of seconds since Unix epoch. Output only if type is not nullable.  
-java.lang.Long | ✓ | ✓ | Describes the number of milliseconds since Unix epoch.  
-long | ✓ | (✓) | Describes the number of milliseconds since Unix epoch. Output only if type is not nullable.  
-java.sql.Timestamp | ✓ | ✓ | Describes the number of milliseconds since Unix epoch.  
-org.apache.flink.table.data.TimestampData | ✓ | ✓ | Internal data structure  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+java.time.Instant | ✓ | ✓ | Default
+java.lang.Integer | ✓ | ✓ | Describes the number of seconds since Unix epoch.
+int | ✓ | (✓) | Describes the number of seconds since Unix epoch. Output only if type is not nullable.
+java.lang.Long | ✓ | ✓ | Describes the number of milliseconds since Unix epoch.
+long | ✓ | (✓) | Describes the number of milliseconds since Unix epoch. Output only if type is not nullable.
+java.sql.Timestamp | ✓ | ✓ | Describes the number of milliseconds since Unix epoch.
+org.apache.flink.table.data.TimestampData | ✓ | ✓ | Internal data structure
+
 **Formats**

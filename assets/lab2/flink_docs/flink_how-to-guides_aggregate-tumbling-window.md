@@ -33,11 +33,11 @@ In this step, you query the read-only `orders` table in the `examples.marketplac
   3. In the **Use database** dropdown, select your Kafka cluster.
 
   4. Run the following statement to inspect the example `orders` stream.
-         
+
          SELECT * FROM examples.marketplace.orders;
 
 Your output should resemble:
-         
+
          order_id                                customer_id   product_id  price
          68362284-34df-41a3-87fb-50b79647b786    3195          1267        47.48
          6e03663e-d20b-4a23-848a-aec959d794e3    3094          1412        50.92
@@ -47,7 +47,7 @@ Your output should resemble:
 ## Step 2: View aggregated results in a tumbling window¶
 
   1. Run the following statement to start a windowed query on the `orders` data.
-         
+
          SELECT
            window_start,
            window_end,
@@ -57,7 +57,7 @@ Your output should resemble:
          GROUP BY window_start, window_end;
 
 Your output should resemble:
-         
+
          window_start            window_end              minimum_order_value maximum_order_value
          2023-09-12 08:54:20.000 2023-09-12 08:54:30.000 10.05               99.75
          2023-09-12 08:54:30.000 2023-09-12 08:54:40.000 10.22               99.88
@@ -65,4 +65,3 @@ Your output should resemble:
          ...
 
 The Flink statement created with this query identifies the minimum and maximum order value in each 10-second window.
-

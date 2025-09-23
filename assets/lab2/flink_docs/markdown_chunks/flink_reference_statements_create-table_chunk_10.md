@@ -38,7 +38,7 @@ Properties
   * Key and value formats are raw (binary format) with BYTES.
 
   * Following Kafka message semantics, both key and value support NULL as well, so the following code is valid:
-        
+
         INSERT INTO t_raw (key, val) SELECT CAST(NULL AS BYTES), CAST(NULL AS BYTES);
 
 ### No key and but record value in Schema Registry¶
@@ -80,7 +80,7 @@ Properties
   * The key format is raw (binary format) with BYTES.
 
   * Following Kafka message semantics, the key supports NULL as well, so the following code is valid:
-        
+
         INSERT INTO t_raw_key SELECT CAST(NULL AS BYTES), 12, 'Bob';
 
 ### Atomic key and record value in Schema Registry¶

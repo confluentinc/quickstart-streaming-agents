@@ -42,4 +42,3 @@ In addition, the user can execute `USE CATALOG` and `USE` commands to change the
 Note
 
 A statement is submitted by terminating it with a semicolon and hitting Enter.
-

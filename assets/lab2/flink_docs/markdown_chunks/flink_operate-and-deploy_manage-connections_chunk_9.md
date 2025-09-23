@@ -32,7 +32,7 @@ The following command sends a PUT request to update a connection.
 
 Your output should resemble:
 
-Response from a request to update a connection 
+Response from a request to update a connection
 
     {
       "api_version": "sql/v1",
@@ -65,7 +65,7 @@ Response from a request to update a connection
 To update a connection by using the Confluent Terraform provider, use the [confluent_flink_connection](https://registry.terraform.io/providers/confluentinc/confluent/latest/docs/resources/confluent_flink_connection) resource.
 
   1. Find the definition for the connection resource in your Terraform configuration, for example:
-         
+
          resource "confluent_flink_connection" "openai-connection" {
            ...
            credentials {
@@ -74,7 +74,7 @@ To update a connection by using the Confluent Terraform provider, use the [confl
          }
 
   2. Modify the attributes of the `confluent_flink_connection` resource in the Terraform configuration file. The following example updates the `api_key` attribute.
-         
+
          resource "confluent_flink_connection" "openai-connection" {
             ...
             credentials {
@@ -83,7 +83,7 @@ To update a connection by using the Confluent Terraform provider, use the [confl
           }
 
   3. Run the `terraform apply` command to update the connection with the new configuration.
-         
+
          terraform apply
 
 For more information, see [confluent_flink_connection](https://registry.terraform.io/providers/confluentinc/confluent/latest/docs/resources/confluent_flink_connection).

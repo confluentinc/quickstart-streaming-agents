@@ -11,36 +11,36 @@ Confluent Cloud for Apache Flink® has a rich set of native data types that you 
 
 The query planner supports the following SQL types.
 
-Flink SQL type | Java type | JSON Schema type | Protobuf type | Avro type | Avro logical type  
----|---|---|---|---|---  
-ARRAY | t[] | Array | repeated T | array | –  
-BIGINT | long | Number | INT64 | long | –  
-BINARY | byte[] | String | BYTES | fixed | –  
-BOOLEAN | boolean | Boolean | BOOL | boolean | –  
-BYTES / VARBINARY | byte[] | String | BYTES | bytes | –  
-CHAR | String | String | STRING | string | –  
-DATE | java.time.LocalDate | Number | MESSAGE | int | date  
-DECIMAL | java.math.BigDecimal | Number | MESSAGE | bytes | decimal  
-DOUBLE | double | Number | DOUBLE | double | –  
-FLOAT | float | Number | FLOAT | float | –  
-INT | long | Number | INT32 | int | –  
-INTERVAL DAY TO SECOND | java.time.Duration | Not supported | Not supported | Not supported | –  
-INTERVAL YEAR TO MONTH | java.time.Period | Not supported | Not supported | Not supported | –  
-MAP | java.util.Map<kt, vt> | Array[Object] / Object | repeated MESSAGE | map / array | –  
-MULTISET | java.util.Map<t, Integer> | Array[Object] / Object | repeated MESSAGE | map / array | –  
-NULL | java.lang.Object | oneOf(Null, T) | [1] | union(avro_type, null) | –  
-ROW | org.apache.flink.types.Row | Object | MESSAGE | record [2] | –  
-SMALLINT | short | Number | INT32 | int | –  
-TIME | java.time.LocalTime | Number | – | int | time-millis  
-TIMESTAMP | java.time.LocalDateTime | Number | MESSAGE | long | local-timestamp-millis/local-timestamp-micros  
-TIMESTAMP_LTZ | java.time.Instant | Number | MESSAGE | long | timestamp-millis / timestamp-micros  
-TINYINT | byte | Number | INT32 | int | –  
-VARCHAR / STRING | String | String | STRING | string | –  
-[1]| See discussion at [Flink SQL types to Protobuf types](serialization.html#flink-sql-serialization-sql-to-protobuf)  
----|---  
-[2]| See discussion at [Flink SQL types to Avro types](serialization.html#flink-sql-serialization-sql-to-avro)  
----|---  
-  
+Flink SQL type | Java type | JSON Schema type | Protobuf type | Avro type | Avro logical type
+---|---|---|---|---|---
+ARRAY | t[] | Array | repeated T | array | –
+BIGINT | long | Number | INT64 | long | –
+BINARY | byte[] | String | BYTES | fixed | –
+BOOLEAN | boolean | Boolean | BOOL | boolean | –
+BYTES / VARBINARY | byte[] | String | BYTES | bytes | –
+CHAR | String | String | STRING | string | –
+DATE | java.time.LocalDate | Number | MESSAGE | int | date
+DECIMAL | java.math.BigDecimal | Number | MESSAGE | bytes | decimal
+DOUBLE | double | Number | DOUBLE | double | –
+FLOAT | float | Number | FLOAT | float | –
+INT | long | Number | INT32 | int | –
+INTERVAL DAY TO SECOND | java.time.Duration | Not supported | Not supported | Not supported | –
+INTERVAL YEAR TO MONTH | java.time.Period | Not supported | Not supported | Not supported | –
+MAP | java.util.Map<kt, vt> | Array[Object] / Object | repeated MESSAGE | map / array | –
+MULTISET | java.util.Map<t, Integer> | Array[Object] / Object | repeated MESSAGE | map / array | –
+NULL | java.lang.Object | oneOf(Null, T) | [1] | union(avro_type, null) | –
+ROW | org.apache.flink.types.Row | Object | MESSAGE | record [2] | –
+SMALLINT | short | Number | INT32 | int | –
+TIME | java.time.LocalTime | Number | – | int | time-millis
+TIMESTAMP | java.time.LocalDateTime | Number | MESSAGE | long | local-timestamp-millis/local-timestamp-micros
+TIMESTAMP_LTZ | java.time.Instant | Number | MESSAGE | long | timestamp-millis / timestamp-micros
+TINYINT | byte | Number | INT32 | int | –
+VARCHAR / STRING | String | String | STRING | string | –
+[1]| See discussion at [Flink SQL types to Protobuf types](serialization.html#flink-sql-serialization-sql-to-protobuf)
+---|---
+[2]| See discussion at [Flink SQL types to Avro types](serialization.html#flink-sql-serialization-sql-to-avro)
+---|---
+
 ## Data type definition¶
 
 A _data type_ describes the logical type of a value in a SQL table. You use data types to declare the input and output types of an operation.
@@ -69,30 +69,30 @@ Represents a fixed-length character string.
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-java.lang.String | ✓ | ✓ | Default  
-byte[] | ✓ | ✓ | Assumes UTF-8 encoding  
-org.apache.flink.table.data.StringData | ✓ | ✓ | Internal data structure  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+java.lang.String | ✓ | ✓ | Default
+byte[] | ✓ | ✓ | Assumes UTF-8 encoding
+org.apache.flink.table.data.StringData | ✓ | ✓ | Internal data structure
+
 **Formats**
 
 The following table shows examples of the CHAR type in different formats.
 
-JSON for data type | 
+JSON for data type |
 
     {"type":"CHAR","nullable":true,"length":8}
 
----|---  
-CLI/UI format | 
+---|---
+CLI/UI format |
 
     CHAR(8)
 
-JSON for payload | 
+JSON for payload |
 
     "Example string"
 
-CLI/UI format for payload | 
+CLI/UI format for payload |
 
     Example string
 
@@ -108,35 +108,35 @@ Represents a variable-length character string.
 
     VARCHAR
     VARCHAR(n)
-    
+
     STRING
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-java.lang.String | ✓ | ✓ | Default  
-byte[] | ✓ | ✓ | Assumes UTF-8 encoding  
-org.apache.flink.table.data.StringData | ✓ | ✓ | Internal data structure  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+java.lang.String | ✓ | ✓ | Default
+byte[] | ✓ | ✓ | Assumes UTF-8 encoding
+org.apache.flink.table.data.StringData | ✓ | ✓ | Internal data structure
+
 **Formats**
 
 The following table shows examples of the VARCHAR type in different formats.
 
-JSON for data type | 
+JSON for data type |
 
     {"type":"VARCHAR","nullable":true,"length":8}
 
----|---  
-CLI/UI format | 
+---|---
+CLI/UI format |
 
     VARCHAR(800)
 
-JSON for payload | 
+JSON for payload |
 
     "Example string"
 
-CLI/UI format for payload | 
+CLI/UI format for payload |
 
     Example string
 
@@ -159,28 +159,28 @@ Represents a fixed-length binary string (=a sequence of bytes).
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-byte[] | ✓ | ✓ | Default  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+byte[] | ✓ | ✓ | Default
+
 **Formats**
 
 The following table shows examples of the BINARY type in different formats.
 
-JSON for data type | 
+JSON for data type |
 
     {"type":"BINARY","nullable":true,"length":1}
 
----|---  
-CLI/UI format | 
+---|---
+CLI/UI format |
 
     BINARY(3)
 
-JSON for payload | 
+JSON for payload |
 
     "x'7f0203'"
 
-CLI/UI format for payload | 
+CLI/UI format for payload |
 
     x'7f0203'
 
@@ -197,34 +197,34 @@ Represents a variable-length binary string (=a sequence of bytes).
 **Declaration**
 
     BYTES
-    
+
     VARBINARY
     VARBINARY(n)
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-byte[] | ✓ | ✓ | Default  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+byte[] | ✓ | ✓ | Default
+
 **Formats**
 
 The following table shows examples of the VARBINARY type in different formats.
 
-JSON for data type | 
+JSON for data type |
 
     {"type":"VARBINARY","nullable":true,"length":1}
 
----|---  
-CLI/UI format | 
+---|---
+CLI/UI format |
 
     VARBINARY(800)
 
-JSON for payload | 
+JSON for payload |
 
     "x'7f0203'"
 
-CLI/UI format for payload | 
+CLI/UI format for payload |
 
     x'7f0203'
 
@@ -246,29 +246,29 @@ Represents an 8-byte signed integer with values from _-9,223,372,036,854,775,808
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-java.lang.Long | ✓ | ✓ | Default  
-long | ✓ | (✓) | Output only if type is not nullable  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+java.lang.Long | ✓ | ✓ | Default
+long | ✓ | (✓) | Output only if type is not nullable
+
 **Formats**
 
 The following table shows examples of the BIGINT type in different formats.
 
-JSON for data type | 
+JSON for data type |
 
     {"type":"BIGINT","nullable":true}
 
----|---  
-CLI/UI format | 
+---|---
+CLI/UI format |
 
     BIGINT
 
-JSON for payload | 
+JSON for payload |
 
     "23"
 
-CLI/UI format for payload | 
+CLI/UI format for payload |
 
     23
 
@@ -281,40 +281,40 @@ Represents a decimal number with fixed precision and scale.
     DECIMAL
     DECIMAL(p)
     DECIMAL(p, s)
-    
+
     DEC
     DEC(p)
     DEC(p, s)
-    
+
     NUMERIC
     NUMERIC(p)
     NUMERIC(p, s)
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-java.math.BigDecimal | ✓ | ✓ | Default  
-org.apache.flink.table.data.DecimalData | ✓ | ✓ | Internal data structure  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+java.math.BigDecimal | ✓ | ✓ | Default
+org.apache.flink.table.data.DecimalData | ✓ | ✓ | Internal data structure
+
 **Formats**
 
 The following table shows examples of the DECIMAL type in different formats.
 
-JSON for data type | 
+JSON for data type |
 
     {"type":"DECIMAL","nullable":true,"precision":5,"scale":3}
 
----|---  
-CLI/UI format | 
+---|---
+CLI/UI format |
 
     DECIMAL(5, 3)
 
-JSON for payload | 
+JSON for payload |
 
     "12.123"
 
-CLI/UI format for payload | 
+CLI/UI format for payload |
 
     12.123
 
@@ -337,34 +337,34 @@ Represents a 4-byte signed integer with values from _-2,147,483,648_ to _2,147,4
 **Declaration**
 
     INT
-    
+
     INTEGER
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-java.lang.Integer | ✓ | ✓ | Default  
-long | ✓ | (✓) | Output only if type is not nullable  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+java.lang.Integer | ✓ | ✓ | Default
+long | ✓ | (✓) | Output only if type is not nullable
+
 **Formats**
 
 The following table shows examples of the INT type in different formats.
 
-JSON for data type | 
+JSON for data type |
 
     {"type":"INT","nullable":true}
 
----|---  
-CLI/UI format | 
+---|---
+CLI/UI format |
 
     INT
 
-JSON for payload | 
+JSON for payload |
 
     "23"
 
-CLI/UI format for payload | 
+CLI/UI format for payload |
 
     23
 
@@ -380,29 +380,29 @@ Represents a 2-byte signed integer with values from _-32,768_ to _32,767_.
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-java.lang.Short | ✓ | ✓ | Default  
-short | ✓ | (✓) | Output only if type is not nullable  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+java.lang.Short | ✓ | ✓ | Default
+short | ✓ | (✓) | Output only if type is not nullable
+
 **Formats**
 
 The following table shows examples of the SMALLINT type in different formats.
 
-JSON for data type | 
+JSON for data type |
 
     {"type":"SMALLINT","nullable":true}
 
----|---  
-CLI/UI format | 
+---|---
+CLI/UI format |
 
     SMALLINT
 
-JSON for payload | 
+JSON for payload |
 
     "23"
 
-CLI/UI format for payload | 
+CLI/UI format for payload |
 
     23
 
@@ -416,29 +416,29 @@ Represents a 1-byte signed integer with values from _-128_ to _127_.
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-java.lang.Byte | ✓ | ✓ | Default  
-byte | ✓ | (✓) | Output only if type is not nullable  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+java.lang.Byte | ✓ | ✓ | Default
+byte | ✓ | (✓) | Output only if type is not nullable
+
 **Formats**
 
 The following table shows examples of the TINYINT type in different formats.
 
-JSON for data type | 
+JSON for data type |
 
     {"type":"TINYINT","nullable":true}
 
----|---  
-CLI/UI format | 
+---|---
+CLI/UI format |
 
     TINYINT
 
-JSON for payload | 
+JSON for payload |
 
     "23"
 
-CLI/UI format for payload | 
+CLI/UI format for payload |
 
     23
 
@@ -451,34 +451,34 @@ Represents an 8-byte double precision floating point number.
 **Declaration**
 
     DOUBLE
-    
+
     DOUBLE PRECISION
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-java.lang.Double | ✓ | ✓ | Default  
-double | ✓ | (✓) | Output only if type is not nullable  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+java.lang.Double | ✓ | ✓ | Default
+double | ✓ | (✓) | Output only if type is not nullable
+
 **Formats**
 
 The following table shows examples of the DOUBLE type in different formats.
 
-JSON for data type | 
+JSON for data type |
 
     {"type":"DOUBLE","nullable":true}
 
----|---  
-CLI/UI format | 
+---|---
+CLI/UI format |
 
     DOUBLE
 
-JSON for payload | 
+JSON for payload |
 
     "1.1111112120000001E7"
 
-CLI/UI format for payload | 
+CLI/UI format for payload |
 
     1.1111112120000001E7
 
@@ -494,29 +494,29 @@ Represents a 4-byte single precision floating point number.
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-java.lang.Float | ✓ | ✓ | Default  
-float | ✓ | (✓) | Output only if type is not nullable  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+java.lang.Float | ✓ | ✓ | Default
+float | ✓ | (✓) | Output only if type is not nullable
+
 **Formats**
 
 The following table shows examples of the FLOAT type in different formats.
 
-JSON for data type | 
+JSON for data type |
 
     {"type":"FLOAT","nullable":true}
 
----|---  
-CLI/UI format | 
+---|---
+CLI/UI format |
 
     FLOAT
 
-JSON for payload | 
+JSON for payload |
 
     "1.1111112E7"
 
-CLI/UI format for payload | 
+CLI/UI format for payload |
 
     1.1111112E7
 
@@ -534,31 +534,31 @@ Represents a date consisting of `year-month-day` with values ranging from `0000-
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-java.time.LocalDate | ✓ | ✓ | Default  
-java.sql.Date | ✓ | ✓ |   
-java.lang.Integer | ✓ | ✓ | Describes the number of days since Unix epoch  
-int | ✓ | (✓) | Describes the number of days since Unix epoch. Output only if type is not nullable.  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+java.time.LocalDate | ✓ | ✓ | Default
+java.sql.Date | ✓ | ✓ |
+java.lang.Integer | ✓ | ✓ | Describes the number of days since Unix epoch
+int | ✓ | (✓) | Describes the number of days since Unix epoch. Output only if type is not nullable.
+
 **Formats**
 
 The following table shows examples of the DATE type in different formats.
 
-JSON for data type | 
+JSON for data type |
 
     {"type":"DATE","nullable":true}
 
----|---  
-CLI/UI format | 
+---|---
+CLI/UI format |
 
     DATE
 
-JSON for payload | 
+JSON for payload |
 
     "2023-04-06"
 
-CLI/UI format for payload | 
+CLI/UI format for payload |
 
     2023-04-06
 
@@ -585,30 +585,30 @@ Data type for a group of day-time interval types.
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-java.time.Duration | ✓ | ✓ | Default  
-java.lang.Long | ✓ | ✓ | Describes the number of milliseconds  
-long | ✓ | (✓) | Describes the number of milliseconds. Output only if type is not nullable.  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+java.time.Duration | ✓ | ✓ | Default
+java.lang.Long | ✓ | ✓ | Describes the number of milliseconds
+long | ✓ | (✓) | Describes the number of milliseconds. Output only if type is not nullable.
+
 **Formats**
 
 The following table shows examples of the INTERVAL DAY TO SECOND type in different formats.
 
-JSON for data type | 
+JSON for data type |
 
     {"type":"INTERVAL_DAY_TIME","nullable":true,"precision":1,"fractionalPrecision":3,"resolution":"DAY_TO_SECOND"}
 
----|---  
-CLI/UI format | 
+---|---
+CLI/UI format |
 
     INTERVAL DAY(1) TO SECOND(3)
 
-JSON for payload | 
+JSON for payload |
 
     "+2 07:33:20.000"
 
-CLI/UI format for payload | 
+CLI/UI format for payload |
 
     +2 07:33:20.000
 
@@ -672,30 +672,30 @@ Data type for a group of year-month interval types.
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-java.time.Period | ✓ | ✓ | Default. Ignores the `days` part.  
-java.lang.Integer | ✓ | ✓ | Describes the number of months.  
-int | ✓ | (✓) | Describes the number of months. Output only if type is not nullable.  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+java.time.Period | ✓ | ✓ | Default. Ignores the `days` part.
+java.lang.Integer | ✓ | ✓ | Describes the number of months.
+int | ✓ | (✓) | Describes the number of months. Output only if type is not nullable.
+
 **Formats**
 
 The following table shows examples of the INTERVAL YEAR TO MONTH type in different formats.
 
-JSON for data type | 
+JSON for data type |
 
     {"type":"INTERVAL_YEAR_MONTH","nullable":true,"precision":4,"resolution":"YEAR_TO_MONTH"}
 
----|---  
-CLI/UI format | 
+---|---
+CLI/UI format |
 
     INTERVAL YEAR(4) TO MONTH
 
-JSON for payload | 
+JSON for payload |
 
     "+2000-02"
 
-CLI/UI format for payload | 
+CLI/UI format for payload |
 
     +2000-02
 
@@ -733,39 +733,39 @@ Represents a time _without_ timezone consisting of `hour:minute:second[.fraction
 
     TIME
     TIME(p)
-    
+
     TIME_WITHOUT_TIME_ZONE
     TIME_WITHOUT_TIME_ZONE(p)
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-java.time.LocalTime | ✓ | ✓ | Default  
-java.sql.Time | ✓ | ✓ |   
-java.lang.Integer | ✓ | ✓ | Describes the number of milliseconds of the day.  
-int | ✓ | (✓) | Describes the number of milliseconds of the day. Output only if type is not nullable.  
-java.lang.Long | ✓ | ✓ | Describes the number of nanoseconds of the day.  
-long | ✓ | (✓) | Describes the number of nanoseconds of the day. Output only if type is not nullable.  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+java.time.LocalTime | ✓ | ✓ | Default
+java.sql.Time | ✓ | ✓ |
+java.lang.Integer | ✓ | ✓ | Describes the number of milliseconds of the day.
+int | ✓ | (✓) | Describes the number of milliseconds of the day. Output only if type is not nullable.
+java.lang.Long | ✓ | ✓ | Describes the number of nanoseconds of the day.
+long | ✓ | (✓) | Describes the number of nanoseconds of the day. Output only if type is not nullable.
+
 **Formats**
 
 The following table shows examples of the TIME type in different formats.
 
-JSON for data type | 
+JSON for data type |
 
     {"type":"TIME_WITHOUT_TIME_ZONE","nullable":true,"precision":3}
 
----|---  
-CLI/UI format | 
+---|---
+CLI/UI format |
 
     TIME(3)
 
-JSON for payload | 
+JSON for payload |
 
     "10:56:22.541"
 
-CLI/UI format for payload | 
+CLI/UI format for payload |
 
     10:56:22.541
 
@@ -789,36 +789,36 @@ Represents a timestamp _without_ timezone consisting of `year-month-day hour:min
 
     TIMESTAMP
     TIMESTAMP(p)
-    
+
     TIMESTAMP WITHOUT TIME ZONE
     TIMESTAMP(p) WITHOUT TIME ZONE
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-java.time.LocalDateTime | ✓ | ✓ | Default  
-java.sql.Timestamp | ✓ | ✓ |   
-org.apache.flink.table.data.TimestampData | ✓ | ✓ | Internal data structure  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+java.time.LocalDateTime | ✓ | ✓ | Default
+java.sql.Timestamp | ✓ | ✓ |
+org.apache.flink.table.data.TimestampData | ✓ | ✓ | Internal data structure
+
 **Formats**
 
 The following table shows examples of the TIMESTAMP type in different formats.
 
-JSON for data type | 
+JSON for data type |
 
     {"type":"TIMESTAMP_WITHOUT_TIME_ZONE","nullable":true,"precision":3}
 
----|---  
-CLI/UI format | 
+---|---
+CLI/UI format |
 
     TIMESTAMP(3)
 
-JSON for payload | 
+JSON for payload |
 
     "2023-04-06 10:59:32.628"
 
-CLI/UI format for payload | 
+CLI/UI format for payload |
 
     2023-04-06 10:59:32.628
 
@@ -844,40 +844,40 @@ Represents a timestamp with the _local_ timezone consisting of `year-month-day h
 
     TIMESTAMP_LTZ
     TIMESTAMP_LTZ(p)
-    
+
     TIMESTAMP WITH LOCAL TIME ZONE
     TIMESTAMP(p) WITH LOCAL TIME ZONE
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-java.time.Instant | ✓ | ✓ | Default  
-java.lang.Integer | ✓ | ✓ | Describes the number of seconds since Unix epoch.  
-int | ✓ | (✓) | Describes the number of seconds since Unix epoch. Output only if type is not nullable.  
-java.lang.Long | ✓ | ✓ | Describes the number of milliseconds since Unix epoch.  
-long | ✓ | (✓) | Describes the number of milliseconds since Unix epoch. Output only if type is not nullable.  
-java.sql.Timestamp | ✓ | ✓ | Describes the number of milliseconds since Unix epoch.  
-org.apache.flink.table.data.TimestampData | ✓ | ✓ | Internal data structure  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+java.time.Instant | ✓ | ✓ | Default
+java.lang.Integer | ✓ | ✓ | Describes the number of seconds since Unix epoch.
+int | ✓ | (✓) | Describes the number of seconds since Unix epoch. Output only if type is not nullable.
+java.lang.Long | ✓ | ✓ | Describes the number of milliseconds since Unix epoch.
+long | ✓ | (✓) | Describes the number of milliseconds since Unix epoch. Output only if type is not nullable.
+java.sql.Timestamp | ✓ | ✓ | Describes the number of milliseconds since Unix epoch.
+org.apache.flink.table.data.TimestampData | ✓ | ✓ | Internal data structure
+
 **Formats**
 
 The following table shows examples of the TIMESTAMP_LTZ type in different formats.
 
-JSON for data type | 
+JSON for data type |
 
     {"type":"TIMESTAMP_WITH_LOCAL_TIME_ZONE","nullable":true,"precision":3}
 
----|---  
-CLI/UI format | 
+---|---
+CLI/UI format |
 
     TIMESTAMP(3) WITH LOCAL TIME ZONE
 
-JSON for payload | 
+JSON for payload |
 
     "2023-04-06 11:06:47.224"
 
-CLI/UI format for payload | 
+CLI/UI format for payload |
 
     2023-04-06 11:06:47.224
 
@@ -925,11 +925,11 @@ Represents a timestamp with time zone consisting of `year-month-day hour:minute:
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-java.time.OffsetDateTime | ✓ | ✓ | Default  
-java.time.ZonedDateTime | ✓ |  | Ignores the zone ID  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+java.time.OffsetDateTime | ✓ | ✓ | Default
+java.time.ZonedDateTime | ✓ |  | Ignores the zone ID
+
 Compared to TIMESTAMP_LTZ, the time zone offset information is stored physically in every datum. It is used individually for every computation, visualization, or communication to external systems.
 
 ## Collection data types¶
@@ -945,31 +945,31 @@ Represents an array of elements with same subtype.
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-t[] | ✓ | ✓ | Default. Depends on the subtype.  
-java.util.List<t> | ✓ | ✓ |   
-subclass of java.util.List<t> | ✓ |  |   
-org.apache.flink.table.data.ArrayData | ✓ | ✓ | Internal data structure  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+t[] | ✓ | ✓ | Default. Depends on the subtype.
+java.util.List<t> | ✓ | ✓ |
+subclass of java.util.List<t> | ✓ |  |
+org.apache.flink.table.data.ArrayData | ✓ | ✓ | Internal data structure
+
 **Formats**
 
 The following table shows examples of the ARRAY type in different formats.
 
-JSON for data type | 
+JSON for data type |
 
     {"type":"ARRAY","nullable":true,"elementType":{"type":"INTEGER","nullable":true}}
 
----|---  
-CLI/UI format | 
+---|---
+CLI/UI format |
 
     ARRAY<INT>
 
-JSON for payload | 
+JSON for payload |
 
     ["1", "2", "3", null]
 
-CLI/UI format for payload | 
+CLI/UI format for payload |
 
     [1, 2, 3, NULL]
 
@@ -989,30 +989,30 @@ Represents an associative array that maps keys (including `NULL`) to values (inc
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-java.util.Map<kt, vt> | ✓ | ✓ | Default  
-subclass of java.util.Map<kt, vt> | ✓ |  |   
-org.apache.flink.table.data.MapData | ✓ | ✓ | Internal data structure  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+java.util.Map<kt, vt> | ✓ | ✓ | Default
+subclass of java.util.Map<kt, vt> | ✓ |  |
+org.apache.flink.table.data.MapData | ✓ | ✓ | Internal data structure
+
 **Formats**
 
 The following table shows examples of the MAP type in different formats.
 
-JSON for data type | 
+JSON for data type |
 
     {"type":"MAP","nullable":true,"keyType":{"type":"INTEGER","nullable":true},"valueType":{"type":"VARCHAR","nullable":true,"length":2147483647}}
 
----|---  
-CLI/UI format | 
+---|---
+CLI/UI format |
 
     MAP<STRING>
 
-JSON for payload | 
+JSON for payload |
 
     [["1", "a"], ["2", "b"], [null, "c"]]
 
-CLI/UI format for payload | 
+CLI/UI format for payload |
 
     {1=a, 2=b, NULL=c}
 
@@ -1035,30 +1035,30 @@ Represents a multiset (=bag).
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-java.util.Map<t, java.lang.Integer> | ✓ | ✓ | Default. Assigns each value to an integer multiplicity.  
-subclass of java.util.Map<t, java.lang.Integer> | ✓ |  |   
-org.apache.flink.table.data.MapData | ✓ | ✓ | Internal data structure  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+java.util.Map<t, java.lang.Integer> | ✓ | ✓ | Default. Assigns each value to an integer multiplicity.
+subclass of java.util.Map<t, java.lang.Integer> | ✓ |  |
+org.apache.flink.table.data.MapData | ✓ | ✓ | Internal data structure
+
 **Formats**
 
 The following table shows examples of the MULTISET type in different formats.
 
-JSON for data type | 
+JSON for data type |
 
     {"type":"MULTISET","nullable":true,"elementType":{"type":"INTEGER","nullable":true}}
 
----|---  
-CLI/UI format | 
+---|---
+CLI/UI format |
 
     MULTISET<INT>
 
-JSON for payload | 
+JSON for payload |
 
     [["a", "1"], ["b", "2"], [null, "1"]]
 
-CLI/UI format for payload | 
+CLI/UI format for payload |
 
     {a=1, b=2, NULL=1}
 
@@ -1078,35 +1078,35 @@ Represents a sequence of fields.
 
     ROW<name0 type0, name1 type1, ...>
     ROW<name0 type0 'description0', name1 type1 'description1', ...>
-    
+
     ROW(name0 type0, name1 type1, ...)
     ROW(name0 type0 'description0', name1 type1 'description1', ...)
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-org.apache.flink.types.Row | ✓ | ✓ | Default  
-org.apache.flink.table.data.RowData | ✓ | ✓ | Internal data structure  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+org.apache.flink.types.Row | ✓ | ✓ | Default
+org.apache.flink.table.data.RowData | ✓ | ✓ | Internal data structure
+
 **Formats**
 
 The following table shows examples of the ROW type in different formats.
 
-JSON for data type | 
+JSON for data type |
 
     {"type":"ROW","nullable":true,"fields":[{"name":"a","fieldType":{"type":"INTEGER","nullable":true}},{"name":"b","fieldType":{"type":"VARCHAR","nullable":true,"length":2147483647}}]}
 
----|---  
-CLI/UI format | 
+---|---
+CLI/UI format |
 
     MULTISET<INT>
 
-JSON for payload | 
+JSON for payload |
 
     [["a", "1"], ["b", "2"], [null, "1"]]
 
-CLI/UI format for payload | 
+CLI/UI format for payload |
 
     {a=1, b=2, NULL=1}
 
@@ -1166,29 +1166,29 @@ Represents a boolean with a (possibly) three-valued logic of `TRUE`, `FALSE`, an
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-java.lang.Boolean | ✓ | ✓ | Default  
-boolean | ✓ | (✓) | Output only if type is not nullable.  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+java.lang.Boolean | ✓ | ✓ | Default
+boolean | ✓ | (✓) | Output only if type is not nullable.
+
 **Formats**
 
 The following table shows examples of the BOOLEAN type in different formats.
 
-JSON for data type | 
+JSON for data type |
 
     {"type":"BOOLEAN","nullable":true}
 
----|---  
-CLI/UI format | 
+---|---
+CLI/UI format |
 
     NULL
 
-JSON for payload | 
+JSON for payload |
 
     null
 
-CLI/UI format for payload | 
+CLI/UI format for payload |
 
     NULL
 
@@ -1202,29 +1202,29 @@ Data type for representing untyped `NULL` values.
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-java.lang.Object | ✓ | ✓ | Default  
-any class |  | (✓) | Any non-primitive type.  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+java.lang.Object | ✓ | ✓ | Default
+any class |  | (✓) | Any non-primitive type.
+
 **Formats**
 
 The following table shows examples of the NULL type in different formats.
 
-JSON for data type | 
+JSON for data type |
 
     {"type":"NULL"}
 
----|---  
-CLI/UI format | 
+---|---
+CLI/UI format |
 
     NULL
 
-JSON for payload | 
+JSON for payload |
 
     null
 
-CLI/UI format for payload | 
+CLI/UI format for payload |
 
     NULL
 
@@ -1249,49 +1249,49 @@ For example:
 
     -- returns 42 of type INT NOT NULL
     SELECT CAST('42' AS INT);
-    
+
     -- returns NULL of type VARCHAR
     SELECT CAST(NULL AS VARCHAR);
-    
+
     -- throws an exception and fails the job
     SELECT CAST('non-number' AS INT);
-    
+
     -- returns 42 of type INT
     SELECT TRY_CAST('42' AS INT);
-    
+
     -- returns NULL of type VARCHAR
     SELECT TRY_CAST(NULL AS VARCHAR);
-    
+
     -- returns NULL of type INT
     SELECT TRY_CAST('non-number' AS INT);
-    
+
     -- returns 0 of type INT NOT NULL
     SELECT COALESCE(TRY_CAST('non-number' AS INT), 0);
 
 The following matrix shows the supported cast pairs, where “Y” means supported, “!” means fallible, and “N” means unsupported:
 
-Input / Target | CHAR¹ / VARCHAR¹ / STRING | BINARY¹ / VARBINARY¹ / BYTES | BOOLEAN | DECIMAL | TINYINT | SMALLINT | INTEGER | BIGINT | FLOAT | DOUBLE | DATE | TIME | TIMESTAMP | TIMESTAMP_LTZ | INTERVAL | ARRAY | MULTISET | MAP | ROW  
----|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---  
-CHAR / VARCHAR / STRING | Y | ! | ! | ! | ! | ! | ! | ! | ! | ! | ! | ! | ! | ! | N | N | N | N | N  
-BINARY / VARBINARY / BYTES | Y | Y | N | N | N | N | N | N | N | N | N | N | N | N | N | N | N | N | N  
-BOOLEAN | Y | N | Y | Y | Y | Y | Y | Y | Y | Y | N | N | N | N | N | N | N | N | N  
-DECIMAL | Y | N | N | Y | Y | Y | Y | Y | Y | Y | N | N | N | N | N | N | N | N | N  
-TINYINT | Y | N | Y | Y | Y | Y | Y | Y | Y | Y | N | N | N² | N² | N | N | N | N | N  
-SMALLINT | Y | N | Y | Y | Y | Y | Y | Y | Y | Y | N | N | N² | N² | N | N | N | N | N  
-INTEGER | Y | N | Y | Y | Y | Y | Y | Y | Y | Y | N | N | N² | N² | Y⁵ | N | N | N | N  
-BIGINT | Y | N | Y | Y | Y | Y | Y | Y | Y | Y | N | N | N² | N² | Y⁶ | N | N | N | N  
-FLOAT | Y | N | N | Y | Y | Y | Y | Y | Y | Y | N | N | N | N | N | N | N | N | N  
-DOUBLE | Y | N | N | Y | Y | Y | Y | Y | Y | Y | N | N | N | N | N | N | N | N | N  
-DATE | Y | N | N | N | N | N | N | N | N | N | Y | N | Y | Y | N | N | N | N | N  
-TIME | Y | N | N | N | N | N | N | N | N | N | N | Y | Y | Y | N | N | N | N | N  
-TIMESTAMP | Y | N | N | N | N | N | N | N | N | N | Y | Y | Y | Y | N | N | N | N | N  
-TIMESTAMP_LTZ | Y | N | N | N | N | N | N | N | N | N | Y | Y | Y | Y | N | N | N | N | N  
-INTERVAL | Y | N | N | N | N | N | Y⁵ | Y⁶ | N | N | N | N | N | N | Y | N | N | N | N  
-ARRAY | Y | N | N | N | N | N | N | N | N | N | N | N | N | N | N | !³ | N | N | N  
-MULTISET | Y | N | N | N | N | N | N | N | N | N | N | N | N | N | N | N | !³ | N | N  
-MAP | Y | N | N | N | N | N | N | N | N | N | N | N | N | N | N | N | N | !³ | N  
-ROW | Y | N | N | N | N | N | N | N | N | N | N | N | N | N | N | N | N | N | !³  
-  
+Input / Target | CHAR¹ / VARCHAR¹ / STRING | BINARY¹ / VARBINARY¹ / BYTES | BOOLEAN | DECIMAL | TINYINT | SMALLINT | INTEGER | BIGINT | FLOAT | DOUBLE | DATE | TIME | TIMESTAMP | TIMESTAMP_LTZ | INTERVAL | ARRAY | MULTISET | MAP | ROW
+---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---
+CHAR / VARCHAR / STRING | Y | ! | ! | ! | ! | ! | ! | ! | ! | ! | ! | ! | ! | ! | N | N | N | N | N
+BINARY / VARBINARY / BYTES | Y | Y | N | N | N | N | N | N | N | N | N | N | N | N | N | N | N | N | N
+BOOLEAN | Y | N | Y | Y | Y | Y | Y | Y | Y | Y | N | N | N | N | N | N | N | N | N
+DECIMAL | Y | N | N | Y | Y | Y | Y | Y | Y | Y | N | N | N | N | N | N | N | N | N
+TINYINT | Y | N | Y | Y | Y | Y | Y | Y | Y | Y | N | N | N² | N² | N | N | N | N | N
+SMALLINT | Y | N | Y | Y | Y | Y | Y | Y | Y | Y | N | N | N² | N² | N | N | N | N | N
+INTEGER | Y | N | Y | Y | Y | Y | Y | Y | Y | Y | N | N | N² | N² | Y⁵ | N | N | N | N
+BIGINT | Y | N | Y | Y | Y | Y | Y | Y | Y | Y | N | N | N² | N² | Y⁶ | N | N | N | N
+FLOAT | Y | N | N | Y | Y | Y | Y | Y | Y | Y | N | N | N | N | N | N | N | N | N
+DOUBLE | Y | N | N | Y | Y | Y | Y | Y | Y | Y | N | N | N | N | N | N | N | N | N
+DATE | Y | N | N | N | N | N | N | N | N | N | Y | N | Y | Y | N | N | N | N | N
+TIME | Y | N | N | N | N | N | N | N | N | N | N | Y | Y | Y | N | N | N | N | N
+TIMESTAMP | Y | N | N | N | N | N | N | N | N | N | Y | Y | Y | Y | N | N | N | N | N
+TIMESTAMP_LTZ | Y | N | N | N | N | N | N | N | N | N | Y | Y | Y | Y | N | N | N | N | N
+INTERVAL | Y | N | N | N | N | N | Y⁵ | Y⁶ | N | N | N | N | N | N | Y | N | N | N | N
+ARRAY | Y | N | N | N | N | N | N | N | N | N | N | N | N | N | N | !³ | N | N | N
+MULTISET | Y | N | N | N | N | N | N | N | N | N | N | N | N | N | N | N | !³ | N | N
+MAP | Y | N | N | N | N | N | N | N | N | N | N | N | N | N | N | N | N | !³ | N
+ROW | Y | N | N | N | N | N | N | N | N | N | N | N | N | N | N | N | N | N | !³
+
 Notes:
 
   1. All the casting to constant length or variable length also trims and pads, according to the type definition.
@@ -1311,35 +1311,34 @@ In many locations in the API, Flink tries to extract data types automatically fr
 
 The following table lists classes that map implicitly to a data type without requiring further information. Other JVM bridging classes require the [@DataTypeHint](../concepts/user-defined-functions.html#flink-sql-udfs-type-inference-data-type-hints) annotation.
 
-Class | Data Type  
----|---  
-boolean | BOOLEAN NOT NULL  
-byte | TINYINT NOT NULL  
-byte[] | BYTES  
-double | DOUBLE NOT NULL  
-float | FLOAT NOT NULL  
-int | INT NOT NULL  
-java.lang.Boolean | BOOLEAN  
-java.lang.Byte | TINYINT  
-java.lang.Double | DOUBLE  
-java.lang.Float | FLOAT  
-java.lang.Integer | INT  
-java.lang.Long | BIGINT  
-java.lang.Short | SMALLINT  
-java.lang.String | STRING  
-java.sql.Date | DATE  
-java.sql.Time | TIME(0)  
-java.sql.Timestamp | TIMESTAMP(9)  
-java.time.Duration | INTERVAL SECOND(9)  
-java.time.Instant | TIMESTAMP_LTZ(9)  
-java.time.LocalDate | DATE  
-java.time.LocalTime | TIME(9)  
-java.time.LocalDateTime | TIMESTAMP(9)  
-java.time.OffsetDateTime | TIMESTAMP(9) WITH TIME ZONE  
-java.time.Period | INTERVAL YEAR(4) TO MONTH  
-java.util.Map<K, V> | MAP<K, V>  
-short | SMALLINT NOT NULL  
-structured type T | anonymous structured type T  
-long | BIGINT NOT NULL  
-T[] | ARRAY<T>  
-  
+Class | Data Type
+---|---
+boolean | BOOLEAN NOT NULL
+byte | TINYINT NOT NULL
+byte[] | BYTES
+double | DOUBLE NOT NULL
+float | FLOAT NOT NULL
+int | INT NOT NULL
+java.lang.Boolean | BOOLEAN
+java.lang.Byte | TINYINT
+java.lang.Double | DOUBLE
+java.lang.Float | FLOAT
+java.lang.Integer | INT
+java.lang.Long | BIGINT
+java.lang.Short | SMALLINT
+java.lang.String | STRING
+java.sql.Date | DATE
+java.sql.Time | TIME(0)
+java.sql.Timestamp | TIMESTAMP(9)
+java.time.Duration | INTERVAL SECOND(9)
+java.time.Instant | TIMESTAMP_LTZ(9)
+java.time.LocalDate | DATE
+java.time.LocalTime | TIME(9)
+java.time.LocalDateTime | TIMESTAMP(9)
+java.time.OffsetDateTime | TIMESTAMP(9) WITH TIME ZONE
+java.time.Period | INTERVAL YEAR(4) TO MONTH
+java.util.Map<K, V> | MAP<K, V>
+short | SMALLINT NOT NULL
+structured type T | anonymous structured type T
+long | BIGINT NOT NULL
+T[] | ARRAY<T>

@@ -52,7 +52,7 @@ Run the following command to delete the compute pool specified in the COMPUTE_PO
 To delete a compute pool by using the Confluent Terraform provider, use the [confluent_flink_compute_pool](https://registry.terraform.io/providers/confluentinc/confluent/latest/docs/resources/confluent_flink_compute_pool) resource.
 
   1. Define the compute pool resource in your Terraform configuration file, for example:
-         
+
          resource "confluent_flink_compute_pool" "main" {
            display_name = "standard_compute_pool"
            cloud        = "AWS"
@@ -64,15 +64,15 @@ To delete a compute pool by using the Confluent Terraform provider, use the [con
          }
 
   2. To avoid accidental deletions, review the plan before applying the `destroy` command.
-         
+
          terraform plan -destroy -target=confluent_flink_compute_pool.main
 
   3. To delete the compute pool, run the following command to target the specific resource. This command deletes only the compute pool and not other resources.
-         
+
          terraform apply -destroy -target=confluent_flink_compute_pool.main
 
 To remove all resources defined in your Terraform configuration file, including the compute pool, run the `terraform destroy` command.
-         
+
          terraform destroy
 
 For more information, see [confluent_flink_compute_pool](https://registry.terraform.io/providers/confluentinc/confluent/latest/docs/resources/confluent_flink_compute_pool).

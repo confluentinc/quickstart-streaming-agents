@@ -31,9 +31,9 @@ The **Statements** list opens.
 
   7. The following information is available in the **Flink** statements table to help you monitor your statements.
 
-Field | Description  
----|---  
-Flink Statement Name | The name of the statement. The name is populated automatically when a statement is submitted. You can set the name by using the [SET](../reference/statements/set.html#flink-sql-set-statement) command.  
+Field | Description
+---|---
+Flink Statement Name | The name of the statement. The name is populated automatically when a statement is submitted. You can set the name by using the [SET](../reference/statements/set.html#flink-sql-set-statement) command.
 Status | The statement status Represents what is currently happening with the statement. These are the status values:
      * **Pending** : The statement has been submitted and Flink is preparing to start running the statement.
      * **Running** : Flink is actively running the statement.
@@ -42,13 +42,13 @@ Status | The statement status Represents what is currently happening with the st
      * **Failed** : The statement has encountered an error and is no longer running.
      * **Degraded** : The statement appears unhealthy, for example, no transactions have been committed for a long time, or the statement has frequently restarted recently.
      * **Stopping** : The statement is about to be stopped.
-     * **Stopped** : The statement has been stopped and is no longer running.  
-Statement Type | The type of SQL function that is used in the statement.  
-Created | Indicates when the statement started running. If you stop and resume the statement, the Created date shows the date when the statement was first submitted.  
-Messages Behind | The [Consumer Lag](../../monitoring/monitor-lag.html#cloud-monitoring-lag) of the statement. You are also shown an indicator of whether the back pressure is increasing, decreasing, or if the back pressure is being maintained at a stable rate. Ideally, the Messages Behind metric should be as close to zero as possible. A low, close-to-zero consumer lag is the best indicator that your statement is running smoothly and keeping up with all of its inputs. A growing consumer lag indicates there is a problem.  
-Messages in | The count of Messages in per minute which represents the rate at which records are read. You also have a watermark for the messages read. The watermark displayed in the Flink statements table is the minimum watermark from the source(s) in the query.  
-Messages out | The count of Messages out per minute which represents the rate at which records are written. You also have a watermark for the messages written. The watermark displayed in the Flink statements table is the minimum watermark from the sink(s) in the query.  
-Account | The name of the user account or service account the statement is running with.  
+     * **Stopped** : The statement has been stopped and is no longer running.
+Statement Type | The type of SQL function that is used in the statement.
+Created | Indicates when the statement started running. If you stop and resume the statement, the Created date shows the date when the statement was first submitted.
+Messages Behind | The [Consumer Lag](../../monitoring/monitor-lag.html#cloud-monitoring-lag) of the statement. You are also shown an indicator of whether the back pressure is increasing, decreasing, or if the back pressure is being maintained at a stable rate. Ideally, the Messages Behind metric should be as close to zero as possible. A low, close-to-zero consumer lag is the best indicator that your statement is running smoothly and keeping up with all of its inputs. A growing consumer lag indicates there is a problem.
+Messages in | The count of Messages in per minute which represents the rate at which records are read. You also have a watermark for the messages read. The watermark displayed in the Flink statements table is the minimum watermark from the source(s) in the query.
+Messages out | The count of Messages out per minute which represents the rate at which records are written. You also have a watermark for the messages written. The watermark displayed in the Flink statements table is the minimum watermark from the sink(s) in the query.
+Account | The name of the user account or service account the statement is running with.
   8. When you click on a particular statement a detailed side panel opens up. The panel provides detailed information on the statement at a more granular level, showing how messages are being read from sources and written to sinks. The watermarks for each individual source and sink table are shown in this panel along with the statement’s catalog, database, local time zone, and [Scaling status](../concepts/autopilot.html#flink-sql-autopilot) .
 
 The **SQL Content** section shows the code used to generate the statement.

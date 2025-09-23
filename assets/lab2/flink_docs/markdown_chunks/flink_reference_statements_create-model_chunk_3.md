@@ -22,12 +22,12 @@ Only model options are versioned, which that means input/output format and comme
 The following code example shows the result of running CREATE MODEL twice with the same model name.
 
     CREATE MODEL `my-model` ...
-    
+
     -- Output
     `my-model` with version 1 created. Default version: 1
-    
+
     CREATE MODEL `my-model` ...
-    
+
     -- Output
     `my-model` with version 2 created. Default version: 1
 
@@ -43,7 +43,7 @@ The following code examples show how to use a specific version of a model in a q
 
     -- Use version 2 of the model.
     SELECT * FROM `my-table` LATERAL TABLE (ML_PREDICT('my-model$2', col1, col2));
-    
+
     -- Use the default version of the model.
     SELECT * FROM `my-table` LATERAL TABLE (ML_PREDICT('my-model', col1, col2));
 
@@ -51,7 +51,7 @@ Use the `<model_name>$<model_version>` syntax to delete a specific version of a 
 
     -- Delete a specific version of the model.
     DROP MODEL `<model-name>$<version>`;
-    
+
     -- Delete all versions and the model.
     DROP MODEL `<model-name>$all`;
 

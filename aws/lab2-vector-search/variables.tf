@@ -44,4 +44,3 @@ variable "mongodb_password" {
   type        = string
   sensitive   = true
 }
-

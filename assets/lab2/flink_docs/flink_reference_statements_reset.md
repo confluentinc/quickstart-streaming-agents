@@ -46,4 +46,3 @@ Your output should resemble:
     | client.service-account | <unset> (default)   |
     | sql.local-time-zone    | GMT+02:00 (default) |
     +------------------------+---------------------+
-

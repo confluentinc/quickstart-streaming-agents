@@ -37,7 +37,7 @@ This guide shows the following steps:
   1. Log in to Confluent Cloud and navigate to your Flink workspace.
 
   2. Run the following statement to create a `users` table.
-         
+
          -- Create a users table.
          CREATE TABLE users (
            user_id STRING,
@@ -47,7 +47,7 @@ This guide shows the following steps:
          );
 
   3. Insert rows with mock data into the `users` table.
-         
+
          -- Populate the table with mock users data.
          INSERT INTO users VALUES
            ('Thomas A. Anderson', 1677260724, 'male', 'Region_4'),
@@ -60,11 +60,11 @@ This guide shows the following steps:
            ('Zee', 1677260922, 'female', 'Region_5');
 
   4. Inspect the inserted rows.
-         
+
          SELECT * FROM users;
 
 Your output should resemble:
-         
+
          user_id            registertime gender regionid
          Thomas A. Anderson 1677260724   male   Region_4
          Trinity            1677260733   female Region_4

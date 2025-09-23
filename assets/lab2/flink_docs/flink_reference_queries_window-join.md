@@ -173,4 +173,3 @@ Currently, the window join requires that the join-on condition contains window-s
 ### Limitation on Windowing TVFs of inputs¶
 
 Currently, the windowing TVFs must be the same for left and right inputs. This could be extended in the future, for example, tumbling windows join sliding windows with the same window size.
-

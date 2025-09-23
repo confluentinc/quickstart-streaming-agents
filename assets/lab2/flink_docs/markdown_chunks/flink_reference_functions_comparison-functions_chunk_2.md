@@ -11,15 +11,15 @@ FALSE if `boolean` is UNKNOWN.
 
 ## Comparison functions¶
 
-BETWEEN | NOT BETWEEN  
----|---  
-IN | NOT IN  
-IS DISTINCT FROM | IS NOT DISTINCT FROM  
-IS NULL | IS NOT NULL  
-LIKE | NOT LIKE  
-SIMILAR TO | NOT SIMILAR TO  
-EXISTS |   
-  
+BETWEEN | NOT BETWEEN
+---|---
+IN | NOT IN
+IS DISTINCT FROM | IS NOT DISTINCT FROM
+IS NULL | IS NOT NULL
+LIKE | NOT LIKE
+SIMILAR TO | NOT SIMILAR TO
+EXISTS |
+
 ### BETWEEN¶
 
 Checks whether a value is between two other values.
@@ -40,16 +40,16 @@ Examples
 
     - returns FALSE
     SELECT 12 BETWEEN 15 AND 12;
-    
+
     - returns TRUE
     SELECT 12 BETWEEN SYMMETRIC 15 AND 12;
-    
+
     - returns UNKNOWN
     SELECT 12 BETWEEN 10 AND NULL;
-    
+
     - returns FALSE
     SELECT 12 BETWEEN NULL AND 10;
-    
+
     - returns UNKNOWN
     SELECT 12 BETWEEN SYMMETRIC NULL AND 12;
 
@@ -75,16 +75,16 @@ Examples
 
     -- returns TRUE
     SELECT 12 NOT BETWEEN 15 AND 12;
-    
+
     -- returns FALSE
     SELECT 12 NOT BETWEEN SYMMETRIC 15 AND 12;
-    
+
     -- returns UNKNOWN
     SELECT 12 NOT BETWEEN NULL AND 15;
-    
+
     -- returns TRUE
     SELECT 12 NOT BETWEEN 15 AND NULL;
-    
+
     --  returns UNKNOWN
     SELECT 12 NOT BETWEEN SYMMETRIC 12 AND NULL;
 
@@ -139,10 +139,10 @@ Examples
 
     -- returns FALSE
     SELECT 4 IN (1, 2, 3);
-    
+
     -- returns TRUE
     SELECT 1 IN (1, 2, NULL);
-    
+
     -- returns UNKNOWN
     SELECT 4 IN (1, 2, NULL);
 
@@ -169,10 +169,10 @@ Examples
 
     -- returns TRUE
     SELECT 4 NOT IN (1, 2, 3);
-    
+
     -- returns FALSE
     SELECT 1 NOT IN (1, 2, NULL);
-    
+
     -- returns UNKNOWN
     SELECT 4 NOT IN (1, 2, NULL);
 
@@ -194,10 +194,10 @@ Examples
 
     --  returns TRUE
     SELECT 1 IS DISTINCT FROM 2;
-    
+
     --  returns TRUE
     SELECT 1 IS DISTINCT FROM NULL;
-    
+
     --  returns FALSE
     SELECT NULL IS DISTINCT FROM NULL;
 

@@ -32,13 +32,13 @@ The following example statements are syntactically valid Flink SQL input:
       gender STRING,
       regionid STRING
     );
-    
+
     -- Populate the table with mock users data.
     INSERT INTO users VALUES
       ('Thomas A. Anderson', 1677260724, 'male', 'Region_4'),
       ('Trinity', 1677260733, 'female', 'Region_4'),
       ('Morpheus', 1677260742, 'male', 'Region_8');
-    
+
     SELECT * FROM users;
 
 ## Keywords¶

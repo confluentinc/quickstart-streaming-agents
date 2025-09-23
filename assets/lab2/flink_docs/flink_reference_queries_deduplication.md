@@ -47,7 +47,7 @@ Apply the [Deduplicate Topic](../../how-to-guides/deduplicate-rows.html#flink-sq
 In the Flink SQL shell or in a Cloud Console workspace, run the following statement to see an example of row deduplication. It returns the first URL that the customer has visited. The rows are deduplicated by the `$rowtime` column, which is the system column mapped to the Kafka record timestamp and can be either `LogAppendTime` or `CreateTime`.
 
   1. Run the following statement to return the deduplicated rows.
-         
+
          SELECT user_id, url, $rowtime
          FROM (
             SELECT *, $rowtime,
@@ -57,9 +57,8 @@ In the Flink SQL shell or in a Cloud Console workspace, run the following statem
          WHERE rownum = 1;
 
 Your output should resemble:
-         
+
          user_id    url                                  $rowtime
          3246       https://www.acme.com/product/upmtv   2024-04-16 08:04:47.365
          4028       https://www.acme.com/product/jtahp   2024-04-16 08:04:47.367
          4549       https://www.acme.com/product/ixsir   2024-04-16 08:04:47.367
-

@@ -441,4 +441,3 @@ There is a known bug in CLI v4.7.0 which requires you to pass the URL to the CMF
 If you experience issues with the Confluent CLI, you can use the `flag --unsafe-trace` to get more insights into the command that is running. You will notice more output when you use this flag.
 
 If you get a `not found` error response, and you are sure that the specified resource exists, verify that the CMF server is up and running and you have connectivity to the server.
-

@@ -33,11 +33,11 @@ The following examples show frequently encountered scenarios with ALTER TABLE.
 Flink guarantees that rows are always emitted before the watermark is generated. The following statements ensure that for perfectly ordered events, meaning events without time-skew, a watermark can be equal to the timestamp or 1 ms less than the timestamp.
 
     CREATE TABLE t_perfect_watermark (i INT);
-    
+
     -- If multiple events can have the same timestamp.
     ALTER TABLE t_perfect_watermark
       MODIFY WATERMARK FOR $rowtime AS $rowtime - INTERVAL '0.001' SECOND;
-    
+
     -- If a single event can have the timestamp.
     ALTER TABLE t_perfect_watermark
       MODIFY WATERMARK FOR $rowtime AS $rowtime;
@@ -47,11 +47,11 @@ Flink guarantees that rows are always emitted before the watermark is generated.
 Remove the custom watermark strategy to restore the [default watermark strategy](create-table.html#flink-sql-watermark-clause).
 
   1. View the current table schema and metadata.
-         
+
          DESCRIBE `orders`;
 
 Your output should resemble:
-         
+
          +-------------+------------------------+----------+-------------------+
          | Column Name |       Data Type        | Nullable |      Extras       |
          +-------------+------------------------+----------+-------------------+
@@ -62,19 +62,19 @@ Your output should resemble:
          +-------------+------------------------+----------+-------------------+
 
   2. Remove the watermark strategy of the table.
-         
+
          ALTER TABLE `orders` DROP WATERMARK;
 
 Your output should resemble:
-         
+
          Statement phase is COMPLETED.
 
   3. Check the new table schema and metadata.
-         
+
          DESCRIBE `orders`;
 
 Your output should resemble:
-         
+
          +-------------+--------------+----------+-------------+
          | Column Name |  Data Type   | Nullable |   Extras    |
          +-------------+--------------+----------+-------------+
@@ -144,13 +144,13 @@ For tables with any type of data that need a different processing mode for handl
     ALTER TABLE customer_changes SET (
       'changelog.mode' = 'append'
     );
-    
+
     -- Change to retract mode
     -- Useful when changes to the same row are represented as paired operations
     ALTER TABLE customer_changes SET (
       'changelog.mode' = 'retract'
     );
-    
+
     -- Change upsert mode when working with primary keys
     -- Best when tracking state changes using a primary key (derived from Kafka message key)
     ALTER TABLE customer_changes SET (
@@ -161,16 +161,16 @@ For tables with any type of data that need a different processing mode for handl
 
     -- Create example topic
     CREATE TABLE t_headers (i INT);
-    
+
     -- For read-only (virtual)
     ALTER TABLE t_headers ADD headers MAP<BYTES, BYTES> METADATA VIRTUAL;
-    
+
     -- For read and write (persisted). Column becomes mandatory in INSERT INTO.
     ALTER TABLE t_headers MODIFY headers MAP<BYTES, BYTES> METADATA;
-    
+
     -- Use implicit casting (origin is always MAP<BYTES, BYTES>)
     ALTER TABLE t_headers MODIFY headers MAP<STRING, STRING> METADATA;
-    
+
     -- Insert and read
     INSERT INTO t_headers SELECT 42, MAP['k1', 'v1', 'k2', 'v2'];
     SELECT * FROM t_headers;
@@ -185,16 +185,16 @@ Properties
 You can get the headers of a Kafka record as a map of raw bytes by adding a `headers` virtual metadata column.
 
   1. Run the following statement to add the Kafka partition as a metadata column:
-         
+
          ALTER TABLE `orders` ADD (
            `headers` MAP<BYTES,BYTES> METADATA VIRTUAL);
 
   2. View the new schema.
-         
+
          DESCRIBE `orders`;
 
 Your output should resemble:
-         
+
          +-------------+-------------------+----------+-------------------------+
          | Column Name |     Data Type     | Nullable |         Extras          |
          +-------------+-------------------+----------+-------------------------+
@@ -210,16 +210,16 @@ Your output should resemble:
     -- Create example topic with 1 partition filled with values
     CREATE TABLE t_specific_offsets (i INT) DISTRIBUTED INTO 1 BUCKETS;
     INSERT INTO t_specific_offsets VALUES (1), (2), (3), (4), (5);
-    
+
     -- Returns 1, 2, 3, 4, 5
     SELECT * FROM t_specific_offsets;
-    
+
     -- Changes the scan range
     ALTER TABLE t_specific_offsets SET (
       'scan.startup.mode' = 'specific-offsets',
       'scan.startup.specific-offsets' = 'partition:0,offset:3'
     );
-    
+
     -- Returns 4, 5
     SELECT * FROM t_specific_offsets;
 
@@ -244,19 +244,19 @@ The following statements may be helpful for debugging issues related to watermar
     -- example table
     CREATE TABLE t_watermark_debugging (k INT, s STRING)
       DISTRIBUTED BY (k) INTO 4 BUCKETS;
-    
+
     -- Each value lands in a separate Kafka partition (out of 4).
     -- Leave out values to see missing watermarks.
     INSERT INTO t_watermark_debugging
       VALUES (1, 'Bob'), (2, 'Alice'), (8, 'John'), (15, 'David');
-    
+
     -- If ROW_NUMBER doesn't show results, it's clearly a watermark issue.
     SELECT ROW_NUMBER() OVER (ORDER BY $rowtime ASC) AS `number`, *
       FROM t_watermark_debugging;
-    
+
     -- Add partition information as metadata column
     ALTER TABLE t_watermark_debugging ADD part INT METADATA FROM 'partition' VIRTUAL;
-    
+
     -- Use the CURRENT_WATERMARK() function to check which watermark is calculated
     SELECT
       *,
@@ -264,21 +264,21 @@ The following statements may be helpful for debugging issues related to watermar
       $rowtime AS `Row Timestamp`,
       CURRENT_WATERMARK($rowtime) AS `Operator Watermark`
     FROM t_watermark_debugging;
-    
+
     -- Visualize the highest timestamp per Kafka partition
     -- Due to the table declaration (with 4 buckets), this query should show 4 rows.
     -- If not, the missing partitions might be the cause for watermark issues.
     SELECT part AS `Partition`, MAX($rowtime) AS `Max Timestamp in Partition`
       FROM t_watermark_debugging
       GROUP BY part;
-    
+
     -- A workaround could be to not use the system watermark:
     ALTER TABLE t_watermark_debugging
       MODIFY WATERMARK FOR $rowtime AS $rowtime - INTERVAL '2' SECOND;
     -- Or for perfect input data:
     ALTER TABLE t_watermark_debugging
       MODIFY WATERMARK FOR $rowtime AS $rowtime - INTERVAL '0.001' SECOND;
-    
+
     -- Add "fresh" data while the above statements with
     -- ROW_NUMBER() or CURRENT_WATERMARK() are running.
     INSERT INTO t_watermark_debugging VALUES
@@ -306,27 +306,27 @@ Idle partitions often cause missing watermarks. Also, no data in a partition or 
     -- Create a topic with 4 partitions.
     CREATE TABLE t_watermark_idle (k INT, s STRING)
       DISTRIBUTED BY (k) INTO 4 BUCKETS;
-    
+
     -- Avoid the "not enough data" problem by using a custom watermark.
     -- The watermark strategy is still coarse-grained enough for this example.
     ALTER TABLE t_watermark_idle
       MODIFY WATERMARK FOR $rowtime AS $rowtime - INTERVAL '2' SECONDS;
-    
+
     -- Each value lands in a separate Kafka partition, and partition 1 is empty.
     INSERT INTO t_watermark_idle
       VALUES
         (1, 'Bob in partition 0'),
         (2, 'Alice in partition 3'),
         (8, 'John in partition 2');
-    
+
     -- Thread 1: Start a streaming job.
     SELECT ROW_NUMBER() OVER (ORDER BY $rowtime ASC) AS `number`, *
       FROM t_watermark_idle;
-    
+
     -- Thread 2: Insert some data immediately -> Thread 1 still without results.
     INSERT INTO t_watermark_idle
       VALUES (1, 'Another Bob in partition 0 shortly after');
-    
+
     -- Thread 2: Insert some data after 15s -> Thread 1 should show results.
     INSERT INTO t_watermark_idle
       VALUES (1, 'Another Bob in partition 0 after 15s')
@@ -344,7 +344,7 @@ In the following code, the `sql.tables.scan.idle-timeout` configuration override
     SET 'sql.tables.scan.idle-timeout' = '1s';
     SELECT ROW_NUMBER() OVER (ORDER BY $rowtime ASC) AS `number`, *
       FROM t_watermark_idle;
-    
+
     -- Thread 2: Insert some data immediately -> Thread 1 should show results.
     INSERT INTO t_watermark_idle
       VALUES (1, 'Another Bob in partition 0 shortly after');
@@ -354,19 +354,19 @@ In the following code, the `sql.tables.scan.idle-timeout` configuration override
 You can set the schema context for key and value formats to control the namespace for your schema resolution in Schema Registry.
 
   1. Set the schema context for the value format
-         
+
          ALTER TABLE `orders` SET ('value.format.schema-context' = '.lsrc-newcontext');
 
 Your output should resemble:
-         
+
          Statement phase is COMPLETED.
 
   2. Check the new table properties.
-         
+
          SHOW CREATE TABLE `orders`;
 
 Your output should resemble:
-         
+
          +----------------------------------------------------------------------+
          |                          SHOW CREATE TABLE                           |
          +----------------------------------------------------------------------+
@@ -436,17 +436,17 @@ Properties
   * In this case, metadata columns and computed columns have precedence, and Confluent Cloud for Apache Flink removes the physical column from the schema.
 
   * Because Confluent Cloud for Apache Flink advertises [FULL_TRANSITIVE mode](../../../sr/fundamentals/schema-evolution.html#sr-compatibility-types), queries still work, and the physical column is set to NULL in the payload:
-        
+
         INSERT INTO t_metadata_overlap
           SELECT CAST(NULL AS BYTES), 42, TO_TIMESTAMP_LTZ(0, 3);
 
 Evolve the table by renaming metadata:
 
     ALTER TABLE t_metadata_overlap DROP `timestamp`;
-    
+
     ALTER TABLE t_metadata_overlap
       ADD message_timestamp TIMESTAMP_LTZ(3) METADATA FROM 'timestamp';
-    
+
     SELECT * FROM t_metadata_overlap;
 
 SHOW CREATE TABLE returns the following output:
@@ -607,4 +607,3 @@ The following code example shows how to log errors to the specified Dead Letter 
       'error-handling.mode' = 'log',
       'error-handling.log.target' = 'my_error_table'
     );
-

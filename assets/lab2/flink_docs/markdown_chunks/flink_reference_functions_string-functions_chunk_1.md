@@ -11,16 +11,16 @@ total_chunks: 5
 
 Confluent Cloud for Apache Flink® provides these built-in string functions to use in SQL queries:
 
-ASCII | BTRIM | string1 || string2 | CHARACTER_LENGTH  
----|---|---|---  
-CHR | CONCAT | CONCAT_WS | DECODE  
-ELT | ENCODE | FROM_BASE64 | INITCAP  
-INSTR | LEFT | LOCATE | LOWER  
-LPAD | LTRIM | OVERLAY | PARSE_URL  
-POSITION | REGEXP | REGEXP_EXTRACT | REGEXP_REPLACE  
-REPEAT | REPLACE | REVERSE | RIGHT  
-RPAD | RTRIM | SPLIT_INDEX | STR_TO_MAP  
-SUBSTRING | TO_BASE64 | TRANSLATE | TRIM  
+ASCII | BTRIM | string1 || string2 | CHARACTER_LENGTH
+---|---|---|---
+CHR | CONCAT | CONCAT_WS | DECODE
+ELT | ENCODE | FROM_BASE64 | INITCAP
+INSTR | LEFT | LOCATE | LOWER
+LPAD | LTRIM | OVERLAY | PARSE_URL
+POSITION | REGEXP | REGEXP_EXTRACT | REGEXP_REPLACE
+REPEAT | REPLACE | REVERSE | RIGHT
+RPAD | RTRIM | SPLIT_INDEX | STR_TO_MAP
+SUBSTRING | TO_BASE64 | TRANSLATE | TRIM
 UPPER | URL_DECODE | URL_ENCODE |
 
 ## ASCII¶
@@ -37,7 +37,7 @@ Examples
 
     -- returns 97
     SELECT ASCII('abc');
-    
+
     -- returns NULL
     SELECT ASCII(CAST(NULL AS VARCHAR));
 
@@ -82,10 +82,10 @@ Examples
 
     -- returns 'www.apache.org'
     SELECT BTRIM("  www.apache.org  ");
-    
+
     -- returns 'www.apache.org'
     SELECT BTRIM('/www.apache.org/', '/');
-    
+
     -- returns 'www.apache.org'
     SELECT BTRIM('/*www.apache.org*/', '/*');
 
@@ -132,7 +132,7 @@ Examples
 
     -- returns 'a'
     SELECT CHR(97);
-    
+
     -- returns 'a'
     SELECT CHR(353);
 

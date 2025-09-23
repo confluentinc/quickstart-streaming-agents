@@ -36,7 +36,7 @@ Run a remote AI/ML model for tasks like predicting outcomes, generating text, an
 Syntax
 
     ML_PREDICT(`model_name[$version_id]`, column);
-    
+
     -- map settings are optional
     ML_PREDICT(`model_name[$version_id]`, column, map['async_enabled', [boolean], 'client_timeout', [int], 'max_parallelism', [int], 'retry_count', [int]]);
 
@@ -72,6 +72,6 @@ The following examples call the ML_PREDICT function with different configuration
 
     -- Specify the timeout.
     SELECT * FROM `db1`.`tb1`, LATERAL TABLE(ML_PREDICT('md1', key, map['client_timeout', 60 ]));
-    
+
     -- Specify all configuration parameters.
     SELECT * FROM `db1`.`tb1`, LATERAL TABLE(ML_PREDICT('md1', key, map['async_enabled', true, 'client_timeout', 60, 'max_parallelism', 20, 'retry_count', 5]));

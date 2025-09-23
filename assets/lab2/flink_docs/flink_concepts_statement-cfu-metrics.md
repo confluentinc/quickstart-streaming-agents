@@ -49,4 +49,3 @@ For statements not utilizing UDFs, the maximum expected discrepancy between the 
 Note
 
 You are billed based on the compute pool CFU metrics, not on the summed total of individual statement CFU metrics.
-

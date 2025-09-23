@@ -20,17 +20,17 @@ terraform {
 
 # AWS IAM User for Bedrock access
 resource "aws_iam_user" "bedrock_user" {
-  name  = "bedrock-user-${var.random_id}"
+  name = "bedrock-user-${var.random_id}"
 }
 
 # AWS IAM Access Key for Bedrock user
 resource "aws_iam_access_key" "bedrock_user_key" {
-  user  = aws_iam_user.bedrock_user.name
+  user = aws_iam_user.bedrock_user.name
 }
 
 # AWS IAM Policy for Bedrock permissions
 resource "aws_iam_policy" "bedrock_policy" {
-  name  = "bedrock-policy-${var.random_id}"
+  name = "bedrock-policy-${var.random_id}"
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -73,9 +73,9 @@ resource "confluent_flink_connection" "bedrock_connection" {
     secret = var.confluent_flink_api_key_secret
   }
 
-  display_name = "${var.prefix}-bedrock-connection"
-  type         = "BEDROCK"
-  endpoint     = "https://bedrock-runtime.${var.cloud_region}.amazonaws.com/model/${var.model_prefix}.anthropic.claude-3-7-sonnet-20250219-v1:0/invoke"
+  display_name   = "${var.prefix}-bedrock-connection"
+  type           = "BEDROCK"
+  endpoint       = "https://bedrock-runtime.${var.cloud_region}.amazonaws.com/model/${var.model_prefix}.anthropic.claude-3-7-sonnet-20250219-v1:0/invoke"
   aws_access_key = aws_iam_access_key.bedrock_user_key.id
   aws_secret_key = aws_iam_access_key.bedrock_user_key.secret
 
@@ -131,7 +131,7 @@ variable "cloud_region" {
   description = "Region for deployment"
   type        = string
   default     = "us-east-2"
-} 
+}
 
 variable "random_id" {
   description = "random suffix"
@@ -207,5 +207,5 @@ output "secret" {
 }
 
 output "flink_connection_name" {
-  value       = confluent_flink_connection.bedrock_connection.display_name
+  value = confluent_flink_connection.bedrock_connection.display_name
 }

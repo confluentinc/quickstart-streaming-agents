@@ -5,8 +5,8 @@ hierarchy: ['confluent-cli', 'command-reference', 'confluent_flink_shell.html']
 scraped_date: 2025-09-05T13:51:58.607274
 ---
 
-# confluent flink shell¶  
-  
+# confluent flink shell¶
+
 ## Description¶
 
 Start Flink interactive SQL client.
@@ -30,4 +30,3 @@ Start Flink interactive SQL client.
 ## Examples¶
 
 For a Quick Start with examples in context, see <https://docs.confluent.io/cloud/current/flink/get-started/quick-start-shell.html>.
-

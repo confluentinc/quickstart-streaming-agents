@@ -72,11 +72,11 @@ The rows returned are limited to the schemas that you have permission to interac
 
 This view is an extension to the SQL standard.
 
-Column Name | Data Type | Nullable | Standard | Description  
----|---|---|---|---  
-CATALOG_ID | STRING | No | No | The ID of the catalog/environment, for example, `env-xmzdkk`.  
-CATALOG_NAME | STRING | No | No | The human readable name of the catalog/environment, for example, `default`.  
-  
+Column Name | Data Type | Nullable | Standard | Description
+---|---|---|---|---
+CATALOG_ID | STRING | No | No | The ID of the catalog/environment, for example, `env-xmzdkk`.
+CATALOG_NAME | STRING | No | No | The human readable name of the catalog/environment, for example, `default`.
+
 Example
 
 Run the following code to query for all catalogs across environments.
@@ -90,25 +90,25 @@ Run the following code to query for all catalogs across environments.
 
 Describes columns of tables and virtual tables (views) in the catalog.
 
-Column Name | Data Type | Nullable | Standard | Description  
----|---|---|---|---  
-COLUMN_NAME | STRING | No | Yes | Column reference.  
-COMMENT | STRING | Yes | No | An optional comment that describes the relation.  
-DATA_TYPE | STRING | No | Yes | Type root, for example, VARCHAR or ROW.  
-DISTRIBUTION_ORDINAL_POSITION | INT | Yes | No | If the table IS_DISTRIBUTED, contains the position of the key in a DISTRIBUTED BY clause.  
-FULL_DATA_TYPE | STRING | No | No | Fully qualified data type. for example, VARCHAR(32) or ROW<…>.  
-GENERATION_EXPRESSION | STRING | Yes | Yes | For computed columns.  
-IS_GENERATED | STRING | No | Yes | Indicates whether column is a computed column. Values are YES or NO.  
-IS_HIDDEN | STRING | No | No | Indicates whether a column is a system column. Values are YES or NO.  
-IS_METADATA | STRING | No | No | Indicates whether column is a metadata column. Values are YES or NO.  
-IS_PERSISTED | STRING | No | No | Indicates whether a metadata column is stored during INSERT INTO. Also YES if a physical column. Values are YES or NO.  
-METADATA_KEY | STRING | Yes | No | For metadata columns.  
-TABLE_CATALOG | STRING | No | Yes | The human readable name of the catalog.  
-TABLE_CATALOG_ID | STRING | No | No | The ID of the catalog.  
-TABLE_NAME | STRING | No | Yes | The name of the relation.  
-TABLE_SCHEMA | STRING | No | Yes | The human readable name of the database.  
-TABLE_SCHEMA_ID | STRING | No | No | The ID of the database.  
-  
+Column Name | Data Type | Nullable | Standard | Description
+---|---|---|---|---
+COLUMN_NAME | STRING | No | Yes | Column reference.
+COMMENT | STRING | Yes | No | An optional comment that describes the relation.
+DATA_TYPE | STRING | No | Yes | Type root, for example, VARCHAR or ROW.
+DISTRIBUTION_ORDINAL_POSITION | INT | Yes | No | If the table IS_DISTRIBUTED, contains the position of the key in a DISTRIBUTED BY clause.
+FULL_DATA_TYPE | STRING | No | No | Fully qualified data type. for example, VARCHAR(32) or ROW<…>.
+GENERATION_EXPRESSION | STRING | Yes | Yes | For computed columns.
+IS_GENERATED | STRING | No | Yes | Indicates whether column is a computed column. Values are YES or NO.
+IS_HIDDEN | STRING | No | No | Indicates whether a column is a system column. Values are YES or NO.
+IS_METADATA | STRING | No | No | Indicates whether column is a metadata column. Values are YES or NO.
+IS_PERSISTED | STRING | No | No | Indicates whether a metadata column is stored during INSERT INTO. Also YES if a physical column. Values are YES or NO.
+METADATA_KEY | STRING | Yes | No | For metadata columns.
+TABLE_CATALOG | STRING | No | Yes | The human readable name of the catalog.
+TABLE_CATALOG_ID | STRING | No | No | The ID of the catalog.
+TABLE_NAME | STRING | No | Yes | The name of the relation.
+TABLE_SCHEMA | STRING | No | Yes | The human readable name of the database.
+TABLE_SCHEMA_ID | STRING | No | No | The ID of the database.
+
 Examples
 
 This example shows a complex query. The complexity comes from reducing the number of requests. Because the views are in normal form, instead of issuing three requests, you can batch them into single one by using UNION ALL. UNION ALL avoids the need for various inner/outer joins. The result is a sparse table that contains different “sections”.
@@ -143,7 +143,7 @@ Run the following code to list columns, like name, position, data type, and thei
         `TABLE_SCHEMA` = '<current-database>' AND
         `TABLE_NAME` = '<current-table>' AND
         `IS_HIDDEN` = 'NO'
-    
+
     )
     UNION ALL
     (
@@ -186,11 +186,11 @@ Run the following code to list columns, like name, position, data type, and thei
 
 Local catalog view. Returns the name of the current information schema’s catalog.
 
-Column Name | Data Type | Nullable | Standard | Description  
----|---|---|---|---  
-CATALOG_ID | STRING | No | No | The ID of the catalog/environment, for example, `env-xmzdkk`.  
-CATALOG_NAME | STRING | No | Yes | The human readable name of the catalog/environment, for example, `default`.  
-  
+Column Name | Data Type | Nullable | Standard | Description
+---|---|---|---|---
+CATALOG_ID | STRING | No | No | The ID of the catalog/environment, for example, `env-xmzdkk`.
+CATALOG_NAME | STRING | No | Yes | The human readable name of the catalog/environment, for example, `default`.
+
 Example
 
 Run the following code to query for the name of this information schema’s catalog.
@@ -204,21 +204,21 @@ Run the following code to query for the name of this information schema’s cata
 
 Side view of TABLE_CONSTRAINTS for key columns.
 
-Column Name | Data Type | Nullable | Standard | Description  
----|---|---|---|---  
-COLUMN_NAME | STRING | No | Yes | The name of the constrained column.  
-CONSTRAINT_CATALOG | STRING | No | Yes | Catalog name containing the constraint.  
-CONSTRAINT_CATALOG_ID | STRING | No | No | Catalog ID containing the constraint.  
-CONSTRAINT_SCHEMA | STRING | No | Yes | Schema name containing the constraint.  
-CONSTRAINT_SCHEMA_ID | STRING | No | No | Schema ID containing the constraint.  
-CONSTRAINT_NAME | STRING | No | Yes | Name of the constraint.  
-ORDINAL_POSITION | INT | No | Yes | The ordinal position of the column within the constraint key (starting at 1).  
-TABLE_CATALOG | STRING | No | Yes | The human readable name of the catalog.  
-TABLE_CATALOG_ID | STRING | No | No | The ID of the catalog.  
-TABLE_NAME | STRING | No | Yes | The name of the relation.  
-TABLE_SCHEMA | STRING | No | Yes | The human readable name of the database.  
-TABLE_SCHEMA_ID | STRING | No | No | The ID of the database.  
-  
+Column Name | Data Type | Nullable | Standard | Description
+---|---|---|---|---
+COLUMN_NAME | STRING | No | Yes | The name of the constrained column.
+CONSTRAINT_CATALOG | STRING | No | Yes | Catalog name containing the constraint.
+CONSTRAINT_CATALOG_ID | STRING | No | No | Catalog ID containing the constraint.
+CONSTRAINT_SCHEMA | STRING | No | Yes | Schema name containing the constraint.
+CONSTRAINT_SCHEMA_ID | STRING | No | No | Schema ID containing the constraint.
+CONSTRAINT_NAME | STRING | No | Yes | Name of the constraint.
+ORDINAL_POSITION | INT | No | Yes | The ordinal position of the column within the constraint key (starting at 1).
+TABLE_CATALOG | STRING | No | Yes | The human readable name of the catalog.
+TABLE_CATALOG_ID | STRING | No | No | The ID of the catalog.
+TABLE_NAME | STRING | No | Yes | The name of the relation.
+TABLE_SCHEMA | STRING | No | Yes | The human readable name of the database.
+TABLE_SCHEMA_ID | STRING | No | No | The ID of the database.
+
 Example
 
 Run the following code to query for a side view of TABLE_CONSTRAINTS for key columns.
@@ -234,13 +234,13 @@ For convenience, DATABASES is an alias for SCHEMATA.
 
 The rows returned are limited to the schemas that you have permission to interact with.
 
-Column Name | Data Type | Nullable | Standard | Description  
----|---|---|---|---  
-CATALOG_ID | STRING | No | No | The ID of the catalog/environment, for example, `env-xmzdkk`.  
-CATALOG_NAME | STRING | No | Yes | The human readable name of the catalog/environment, for example, `default`.  
-SCHEMA_ID | STRING | No | No | The ID of the database/cluster, for example, `lkc-kgjwwv`.  
-SCHEMA_NAME | STRING | No | Yes | The human readable name of the database/cluster, for example, MyCluster.  
-  
+Column Name | Data Type | Nullable | Standard | Description
+---|---|---|---|---
+CATALOG_ID | STRING | No | No | The ID of the catalog/environment, for example, `env-xmzdkk`.
+CATALOG_NAME | STRING | No | Yes | The human readable name of the catalog/environment, for example, `default`.
+SCHEMA_ID | STRING | No | No | The ID of the database/cluster, for example, `lkc-kgjwwv`.
+SCHEMA_NAME | STRING | No | Yes | The human readable name of the database/cluster, for example, MyCluster.
+
 Example
 
 Run the following code to list all Flink databases within a catalog, (Kafka clusters within an environment), excluding information schema.
@@ -257,23 +257,23 @@ Contains the object level metadata for tables and virtual tables (views) within 
 
 The rows returned are limited to the schemas that you have permission to interact with.
 
-Column Name | Data Type | Nullable | Standard | Description  
----|---|---|---|---  
-COMMENT | STRING | Yes | No | An optional comment that describes the relation.  
-DISTRIBUTION_ALGORITHM | STRING | Yes | No | Currently, only HASH.  
-DISTRIBUTION_BUCKETS | INT | Yes | No | Number of buckets, if defined.  
-IS_DISTRIBUTED | STRING | No | No | Indicates whether the table is bucketed using the DISTRIBUTED BY clause. Values are YES or NO.  
-IS_WATERMARKED | STRING | No | No | Indicates whether the table has a [watermark](../../_glossary.html#term-watermark) from the WATERMARK FOR clause. Values are YES or NO.  
-TABLE_CATALOG | STRING | No | Yes | The human readable name of the catalog.  
-TABLE_CATALOG_ID | STRING | No | No | The ID of the catalog.  
-TABLE_NAME | STRING | No | Yes | The name of the relation.  
-TABLE_SCHEMA | STRING | No | Yes | The human readable name of the database.  
-TABLE_SCHEMA_ID | STRING | No | No | The ID of the database.  
-TABLE_TYPE | STRING | No | Yes | Values are BASE TABLE or VIEW.  
-WATERMARK_COLUMN | STRING | Yes | No | Time attribute column for which the watermark is defined.  
-WATERMARK_EXPRESSION | STRING | Yes | No | Watermark expression.  
-WATERMARK_IS_HIDDEN | STRING | Yes | No | Indicates whether the watermark is the default, system-provided one.  
-  
+Column Name | Data Type | Nullable | Standard | Description
+---|---|---|---|---
+COMMENT | STRING | Yes | No | An optional comment that describes the relation.
+DISTRIBUTION_ALGORITHM | STRING | Yes | No | Currently, only HASH.
+DISTRIBUTION_BUCKETS | INT | Yes | No | Number of buckets, if defined.
+IS_DISTRIBUTED | STRING | No | No | Indicates whether the table is bucketed using the DISTRIBUTED BY clause. Values are YES or NO.
+IS_WATERMARKED | STRING | No | No | Indicates whether the table has a [watermark](../../_glossary.html#term-watermark) from the WATERMARK FOR clause. Values are YES or NO.
+TABLE_CATALOG | STRING | No | Yes | The human readable name of the catalog.
+TABLE_CATALOG_ID | STRING | No | No | The ID of the catalog.
+TABLE_NAME | STRING | No | Yes | The name of the relation.
+TABLE_SCHEMA | STRING | No | Yes | The human readable name of the database.
+TABLE_SCHEMA_ID | STRING | No | No | The ID of the database.
+TABLE_TYPE | STRING | No | Yes | Values are BASE TABLE or VIEW.
+WATERMARK_COLUMN | STRING | Yes | No | Time attribute column for which the watermark is defined.
+WATERMARK_EXPRESSION | STRING | Yes | No | Watermark expression.
+WATERMARK_IS_HIDDEN | STRING | Yes | No | Indicates whether the watermark is the default, system-provided one.
+
 Examples
 
 Run the following code to list all tables within a catalog (Kafka topics within an environment), excluding the information schema.
@@ -298,21 +298,21 @@ Run the following code to list all tables within a database (Kafka topics within
 
 Side view of TABLES for all primary key constraints within the catalog.
 
-Column Name | Data Type | Nullable | Standard | Description  
----|---|---|---|---  
-CONSTRAINT_CATALOG | STRING | No | Yes | Catalog name containing the constraint.  
-CONSTRAINT_CATALOG_ID | STRING | No | No | Catalog ID containing the constraint.  
-CONSTRAINT_SCHEMA | STRING | No | Yes | Schema name containing the constraint.  
-CONSTRAINT_SCHEMA_ID | STRING | No | No | Schema ID containing the constraint.  
-CONSTRAINT_NAME | STRING | No | Yes | Name of the constraint.  
-CONSTRAINT_TYPE | STRING | No | Yes | Currently, only PRIMARY KEY.  
-ENFORCED | STRING | No | Yes | YES if constraint is enforced, otherwise NO.  
-TABLE_CATALOG | STRING | No | Yes | The human readable name of the catalog.  
-TABLE_CATALOG_ID | STRING | No | No | The ID of the catalog.  
-TABLE_NAME | STRING | No | Yes | The name of the relation.  
-TABLE_SCHEMA | STRING | No | Yes | The human readable name of the database.  
-TABLE_SCHEMA_ID | STRING | No | No | The ID of the database.  
-  
+Column Name | Data Type | Nullable | Standard | Description
+---|---|---|---|---
+CONSTRAINT_CATALOG | STRING | No | Yes | Catalog name containing the constraint.
+CONSTRAINT_CATALOG_ID | STRING | No | No | Catalog ID containing the constraint.
+CONSTRAINT_SCHEMA | STRING | No | Yes | Schema name containing the constraint.
+CONSTRAINT_SCHEMA_ID | STRING | No | No | Schema ID containing the constraint.
+CONSTRAINT_NAME | STRING | No | Yes | Name of the constraint.
+CONSTRAINT_TYPE | STRING | No | Yes | Currently, only PRIMARY KEY.
+ENFORCED | STRING | No | Yes | YES if constraint is enforced, otherwise NO.
+TABLE_CATALOG | STRING | No | Yes | The human readable name of the catalog.
+TABLE_CATALOG_ID | STRING | No | No | The ID of the catalog.
+TABLE_NAME | STRING | No | Yes | The name of the relation.
+TABLE_SCHEMA | STRING | No | Yes | The human readable name of the database.
+TABLE_SCHEMA_ID | STRING | No | No | The ID of the database.
+
 Examples
 
 Run the following code to query for a side view of TABLES for all primary key constraints within the catalog.
@@ -326,20 +326,19 @@ Side view of TABLES for WITH.
 
 Extension to the SQL Standard Information Schema.
 
-Column Name | Data Type | Nullable | Description  
----|---|---|---  
-TABLE_CATALOG | STRING | No | The human readable name of the catalog.  
-TABLE_CATALOG_ID | STRING | No | The ID of the catalog.  
-TABLE_NAME | STRING | No | The name of the relation.  
-TABLE_SCHEMA | STRING | No | The human readable name of the database.  
-TABLE_SCHEMA_ID | STRING | No | The ID of the database.  
-OPTION_KEY | STRING | No | Option key.  
-OPTION_VALUE | STRING | No | Option value.  
-  
+Column Name | Data Type | Nullable | Description
+---|---|---|---
+TABLE_CATALOG | STRING | No | The human readable name of the catalog.
+TABLE_CATALOG_ID | STRING | No | The ID of the catalog.
+TABLE_NAME | STRING | No | The name of the relation.
+TABLE_SCHEMA | STRING | No | The human readable name of the database.
+TABLE_SCHEMA_ID | STRING | No | The ID of the database.
+OPTION_KEY | STRING | No | Option key.
+OPTION_VALUE | STRING | No | Option value.
+
 Examples
 
 Run the following code to query for a side view of TABLES for WITH.
 
     SELECT *
     FROM `INFORMATION_SCHEMA`.`TABLE_OPTIONS`;
-

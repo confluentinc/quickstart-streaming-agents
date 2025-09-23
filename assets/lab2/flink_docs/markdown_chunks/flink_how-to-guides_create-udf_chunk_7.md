@@ -22,11 +22,11 @@ Confluent Cloud ConsoleConfluent CLI
   7. When your JAR file is uploaded, it appears in the **Artifacts** list. In the list, click the row for your UDF artifact to open the details pane.
 
   1. Log in to Confluent Cloud.
-         
+
          confluent login --organization-id ${ORG_ID} --prompt
 
   2. Run the following command to upload the jar to Confluent Cloud.
-         
+
          confluent flink artifact create udf_table_example \
          --artifact-file target/udf_example-1.0.jar \
          --cloud ${CLOUD_PROVIDER} \
@@ -34,7 +34,7 @@ Confluent Cloud ConsoleConfluent CLI
          --environment ${ENV_ID}
 
 Your output should resemble:
-         
+
          +--------------------+-------------------+
          | ID                 | cfa-l5xp82        |
          | Name               | udf_table_example |
@@ -54,13 +54,13 @@ Note the artifact ID and version of your UDTF, which in this example are `cfa-l5
   1. In the Flink shell or the Cloud Console, specify the catalog and database (environment and cluster) where you want to use the UDTF, as you did in the previous section.
 
   2. Run the [CREATE FUNCTION](../reference/statements/create-function.html#flink-sql-create-function) statement to register your UDTF in the current catalog and database. Substitute your UDTF’s value for `<artifact-id>`.
-         
+
          CREATE FUNCTION split_string
            AS 'com.example.my.SplitFunction'
            USING JAR 'confluent-artifact://<artifact-id>';
 
 Your output should resemble:
-         
+
          Function 'split_string' created.
 
 ## Step 4: Use the UDTF in a Flink SQL query¶
@@ -68,11 +68,11 @@ Your output should resemble:
 Once it is registered, your UDTF is available to use in queries.
 
   1. Run the following statement to view the UDFs in the current database.
-         
+
          SHOW USER FUNCTIONS;
 
 Your output should resemble:
-         
+
          +---------------+
          | Function Name |
          +---------------+
@@ -80,11 +80,11 @@ Your output should resemble:
          +---------------+
 
   2. Run the following statement to execute the `split_string` function.
-         
+
          SELECT * FROM (VALUES 'A;B', 'C;D;E;F') as T(f), LATERAL TABLE(split_string(f, ';'))
 
 Your output should resemble:
-         
+
          f        word
          A;B      A
          A;B      B

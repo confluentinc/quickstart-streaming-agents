@@ -47,7 +47,7 @@ To add the Table API to an existing project, include the following dependencies 
        <artifactId>flink-table-api-java</artifactId>
        <version>${flink.version}</version>
     </dependency>
-    
+
     <!-- Confluent Flink Table API Java plugin -->
     <dependency>
        <groupId>io.confluent.flink</groupId>

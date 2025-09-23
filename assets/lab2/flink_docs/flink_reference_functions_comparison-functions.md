@@ -16,40 +16,40 @@ Confluent Cloud for Apache Flink® provides these built-in comparison functions 
 
 ## Equality operations¶
 
-SQL function | Description  
----|---  
-`value1 = value2` | Returns TRUE if value1 is equal to value2. Returns UNKNOWN if value1 or value2 is NULL.  
-`value1 <> value2` | Returns TRUE if value1 is not equal to value2. Returns UNKNOWN if value1 or value2 is NULL.  
-`value1 > value2` | Returns TRUE if value1 is greater than value2. Returns UNKNOWN if value1 or value2 is NULL.  
-`value1 >= value2` | Returns TRUE if value1 is greater than or equal to value2. Returns UNKNOWN if value1 or value2 is NULL.  
-`value1 < value2` | Returns TRUE if value1 is less than value2. Returns UNKNOWN if value1 or value2 is NULL.  
-`value1 <= value2` | Returns TRUE if value1 is less than or equal to value2. Returns UNKNOWN if value1 or value2 is NULL.  
-  
+SQL function | Description
+---|---
+`value1 = value2` | Returns TRUE if value1 is equal to value2. Returns UNKNOWN if value1 or value2 is NULL.
+`value1 <> value2` | Returns TRUE if value1 is not equal to value2. Returns UNKNOWN if value1 or value2 is NULL.
+`value1 > value2` | Returns TRUE if value1 is greater than value2. Returns UNKNOWN if value1 or value2 is NULL.
+`value1 >= value2` | Returns TRUE if value1 is greater than or equal to value2. Returns UNKNOWN if value1 or value2 is NULL.
+`value1 < value2` | Returns TRUE if value1 is less than value2. Returns UNKNOWN if value1 or value2 is NULL.
+`value1 <= value2` | Returns TRUE if value1 is less than or equal to value2. Returns UNKNOWN if value1 or value2 is NULL.
+
 ## Logical operations¶
 
-Logical operation | Description  
----|---  
-`boolean1 OR boolean2` | Returns TRUE if `boolean1` is TRUE or `boolean2` is TRUE. Supports three-valued logic. For example, `TRUE || NULL(BOOLEAN)` returns TRUE.  
-`boolean1 AND boolean2` | Returns TRUE if `boolean1` and `boolean2` are both TRUE. Supports three-valued logic. For example, `TRUE && NULL(BOOLEAN)` returns UNKNOWN.  
-`NOT boolean` | Returns TRUE if `boolean` is FALSE; returns FALSE if `boolean` is TRUE; returns UNKNOWN if boolean is UNKNOWN.  
-`boolean IS FALSE` | Returns TRUE if `boolean` is FALSE; returns FALSE if `boolean` is TRUE or UNKNOWN.  
-`boolean IS NOT FALSE` | Returns TRUE if `boolean` is TRUE or UNKNOWN; returns FALSE if `boolean` is FALSE.  
-`boolean IS TRUE` | Returns TRUE if `boolean` is TRUE; returns FALSE if `boolean` is FALSE or UNKNOWN.  
-`boolean IS NOT TRUE` | Returns TRUE if `boolean` is FALSE or UNKNOWN; returns FALSE if `boolean` is TRUE.  
-`boolean IS UNKNOWN` | Returns TRUE if `boolean` is UNKNOWN; returns FALSE if `boolean` is TRUE or FALSE.  
-`boolean IS NOT UNKNOWN` | Returns TRUE if `boolean` is TRUE or FALSE; returns FALSE if `boolean` is UNKNOWN.  
-  
+Logical operation | Description
+---|---
+`boolean1 OR boolean2` | Returns TRUE if `boolean1` is TRUE or `boolean2` is TRUE. Supports three-valued logic. For example, `TRUE || NULL(BOOLEAN)` returns TRUE.
+`boolean1 AND boolean2` | Returns TRUE if `boolean1` and `boolean2` are both TRUE. Supports three-valued logic. For example, `TRUE && NULL(BOOLEAN)` returns UNKNOWN.
+`NOT boolean` | Returns TRUE if `boolean` is FALSE; returns FALSE if `boolean` is TRUE; returns UNKNOWN if boolean is UNKNOWN.
+`boolean IS FALSE` | Returns TRUE if `boolean` is FALSE; returns FALSE if `boolean` is TRUE or UNKNOWN.
+`boolean IS NOT FALSE` | Returns TRUE if `boolean` is TRUE or UNKNOWN; returns FALSE if `boolean` is FALSE.
+`boolean IS TRUE` | Returns TRUE if `boolean` is TRUE; returns FALSE if `boolean` is FALSE or UNKNOWN.
+`boolean IS NOT TRUE` | Returns TRUE if `boolean` is FALSE or UNKNOWN; returns FALSE if `boolean` is TRUE.
+`boolean IS UNKNOWN` | Returns TRUE if `boolean` is UNKNOWN; returns FALSE if `boolean` is TRUE or FALSE.
+`boolean IS NOT UNKNOWN` | Returns TRUE if `boolean` is TRUE or FALSE; returns FALSE if `boolean` is UNKNOWN.
+
 ## Comparison functions¶
 
-BETWEEN | NOT BETWEEN  
----|---  
-IN | NOT IN  
-IS DISTINCT FROM | IS NOT DISTINCT FROM  
-IS NULL | IS NOT NULL  
-LIKE | NOT LIKE  
-SIMILAR TO | NOT SIMILAR TO  
-EXISTS |   
-  
+BETWEEN | NOT BETWEEN
+---|---
+IN | NOT IN
+IS DISTINCT FROM | IS NOT DISTINCT FROM
+IS NULL | IS NOT NULL
+LIKE | NOT LIKE
+SIMILAR TO | NOT SIMILAR TO
+EXISTS |
+
 ### BETWEEN¶
 
 Checks whether a value is between two other values.
@@ -70,16 +70,16 @@ Examples
 
     - returns FALSE
     SELECT 12 BETWEEN 15 AND 12;
-    
+
     - returns TRUE
     SELECT 12 BETWEEN SYMMETRIC 15 AND 12;
-    
+
     - returns UNKNOWN
     SELECT 12 BETWEEN 10 AND NULL;
-    
+
     - returns FALSE
     SELECT 12 BETWEEN NULL AND 10;
-    
+
     - returns UNKNOWN
     SELECT 12 BETWEEN SYMMETRIC NULL AND 12;
 
@@ -105,16 +105,16 @@ Examples
 
     -- returns TRUE
     SELECT 12 NOT BETWEEN 15 AND 12;
-    
+
     -- returns FALSE
     SELECT 12 NOT BETWEEN SYMMETRIC 15 AND 12;
-    
+
     -- returns UNKNOWN
     SELECT 12 NOT BETWEEN NULL AND 15;
-    
+
     -- returns TRUE
     SELECT 12 NOT BETWEEN 15 AND NULL;
-    
+
     --  returns UNKNOWN
     SELECT 12 NOT BETWEEN SYMMETRIC 12 AND NULL;
 
@@ -169,10 +169,10 @@ Examples
 
     -- returns FALSE
     SELECT 4 IN (1, 2, 3);
-    
+
     -- returns TRUE
     SELECT 1 IN (1, 2, NULL);
-    
+
     -- returns UNKNOWN
     SELECT 4 IN (1, 2, NULL);
 
@@ -199,10 +199,10 @@ Examples
 
     -- returns TRUE
     SELECT 4 NOT IN (1, 2, 3);
-    
+
     -- returns FALSE
     SELECT 1 NOT IN (1, 2, NULL);
-    
+
     -- returns UNKNOWN
     SELECT 4 NOT IN (1, 2, NULL);
 
@@ -224,10 +224,10 @@ Examples
 
     --  returns TRUE
     SELECT 1 IS DISTINCT FROM 2;
-    
+
     --  returns TRUE
     SELECT 1 IS DISTINCT FROM NULL;
-    
+
     --  returns FALSE
     SELECT NULL IS DISTINCT FROM NULL;
 
@@ -249,10 +249,10 @@ Examples
 
     --  returns FALSE
     SELECT 1 IS NOT DISTINCT FROM 2;
-    
+
     --  returns FALSE
     SELECT 1 IS NOT DISTINCT FROM NULL;
-    
+
     --  returns TRUE
     SELECT NULL IS NOT DISTINCT FROM NULL;
 
@@ -270,7 +270,7 @@ Examples
 
     --  returns FALSE
     SELECT 1 IS NULL;
-    
+
     --  returns TRUE
     SELECT NULL IS NULL;
 
@@ -288,7 +288,7 @@ Examples
 
     --  returns TRUE
     SELECT 1 IS NOT NULL;
-    
+
     --  returns FALSE
     SELECT NULL IS NOT NULL;
 
@@ -315,10 +315,10 @@ Examples
 
     -- returns TRUE
     SELECT 'book-23' LIKE 'book-%';
-    
+
     -- returns FALSE
     SELECT 'book23' LIKE 'book_';
-    
+
     -- returns TRUE
     SELECT 'book2' LIKE 'book_';
 
@@ -345,10 +345,10 @@ Examples
 
     -- returns FALSE
     SELECT 'book-23' NOT LIKE 'book-%';
-    
+
     -- returns TRUE
     SELECT 'book23' NOT LIKE 'book_';
-    
+
     -- returns FALSE
     SELECT 'book2' NOT LIKE 'book_';
 
@@ -372,7 +372,7 @@ Examples
 
     -- returns TRUE
     SELECT 'book-523' SIMILAR TO 'book-[0-9]+';
-    
+
     -- returns TRUE
     SELECT 'bob.dobbs@example.com' SIMILAR TO '%@example.com';
 
@@ -394,7 +394,7 @@ Examples
 
     -- returns TRUE
     SELECT 'book-nan' NOT SIMILAR TO 'book-[0-9]+';
-    
+
     -- returns TRUE
     SELECT 'bob.dobbs@company.com' NOT SIMILAR TO '%@example.com';
 
@@ -426,10 +426,10 @@ Examples
 
     --  returns 42
     SELECT CAST('42' AS INT);
-    
+
     -- returns NULL of type STRING
     SELECT CAST(NULL AS STRING);
-    
+
     --  throws an exception and fails the job
     SELECT CAST('not-a-number' AS INT);
 
@@ -447,13 +447,13 @@ Examples
 
     --  returns 42
     SELECT TRY_CAST('42' AS INT);
-    
+
     --  returns NULL of type STRING
     SELECT TRY_CAST(NULL AS STRING);
-    
+
     --  returns NULL of type INT
     SELECT TRY_CAST('not-a-number' AS INT);
-    
+
     --  returns 0 of type INT
     SELECT COALESCE(TRY_CAST('not-a-number' AS INT), 0);
 
@@ -480,13 +480,13 @@ Examples
 
     -- returns "CHAR(13) NOT NULL"
     SELECT TYPEOF('a string type');
-    
+
     -- returns "INT NOT NULL"
     SELECT TYPEOF(23);
-    
+
     -- returns "DATE NOT NULL"
     SELECT TYPEOF(DATE '2023-05-04');
-    
+
     -- returns "NULL"
     SELECT TYPEOF(NULL);
 
@@ -504,4 +504,3 @@ Examples
   * [Numeric Functions](numeric-functions.html#flink-sql-numeric-functions)
   * [String Functions](string-functions.html#flink-sql-string-functions)
   * [Table API Functions](table-api-functions.html#flink-table-api-functions)
-

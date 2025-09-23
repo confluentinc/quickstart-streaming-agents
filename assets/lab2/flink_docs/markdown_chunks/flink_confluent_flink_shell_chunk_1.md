@@ -7,8 +7,8 @@ chunk_index: 1
 total_chunks: 1
 ---
 
-# confluent flink shell¶  
-  
+# confluent flink shell¶
+
 ## Description¶
 
 Start Flink interactive SQL client.

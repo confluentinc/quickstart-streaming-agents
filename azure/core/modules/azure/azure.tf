@@ -20,24 +20,24 @@ resource "azurerm_resource_group" "openai_rg" {
 }
 
 resource "azurerm_cognitive_account" "openai_account" {
-  name                = "openai-${var.random_id}"
-  location            = azurerm_resource_group.openai_rg.location
-  resource_group_name = azurerm_resource_group.openai_rg.name
-  kind                = "OpenAI"
-  sku_name            = "S0"
-  public_network_access_enabled = true 
-  custom_subdomain_name = "openai-${var.random_id}"
+  name                          = "openai-${var.random_id}"
+  location                      = azurerm_resource_group.openai_rg.location
+  resource_group_name           = azurerm_resource_group.openai_rg.name
+  kind                          = "OpenAI"
+  sku_name                      = "S0"
+  public_network_access_enabled = true
+  custom_subdomain_name         = "openai-${var.random_id}"
 }
 
 resource "azurerm_cognitive_deployment" "openai_deployment" {
-  name                = "gpt4-deployment-${var.random_id}"
+  name                 = "gpt4-deployment-${var.random_id}"
   cognitive_account_id = azurerm_cognitive_account.openai_account.id
   model {
-    format  = "OpenAI"
-    name    = "gpt-4.1"
+    format = "OpenAI"
+    name   = "gpt-4.1"
   }
   scale {
-    type = "GlobalStandard"
+    type     = "GlobalStandard"
     capacity = 100
   }
 }
@@ -118,7 +118,7 @@ variable "cloud_region" {
   description = "Region for deployment"
   type        = string
   default     = "us-east-2"
-} 
+}
 
 variable "random_id" {
   description = "random suffix"
@@ -176,18 +176,17 @@ variable "zapier_sse_endpoint" {
 }
 
 output "endpoint" {
-  value       = azurerm_cognitive_account.openai_account.endpoint
+  value = azurerm_cognitive_account.openai_account.endpoint
 }
 
 output "name" {
-  value       = azurerm_cognitive_deployment.openai_deployment.name
+  value = azurerm_cognitive_deployment.openai_deployment.name
 }
 
 output "primary_access_key" {
-  value       = azurerm_cognitive_account.openai_account.primary_access_key
+  value = azurerm_cognitive_account.openai_account.primary_access_key
 }
 
 output "flink_connection_name" {
-  value       = confluent_flink_connection.azure_connection.display_name
+  value = confluent_flink_connection.azure_connection.display_name
 }
-

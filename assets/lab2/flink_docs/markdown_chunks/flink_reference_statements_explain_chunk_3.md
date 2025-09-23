@@ -37,7 +37,7 @@ This example shows window functions and self-joins:
 The output shows the complex processing required for windowed aggregations:
 
     == Physical Plan ==
-    
+
     StreamSink [14]
       +- StreamCalc [13]
         +- StreamGroupAggregate [12]
@@ -53,62 +53,62 @@ The output shows the complex processing required for windowed aggregations:
                 :            +- StreamCalc [2]
                 :              +- StreamTableSourceScan [1]
                 +- (reused) [8]
-    
+
     == Physical Details ==
-    
+
     [1] StreamTableSourceScan
     Table: `examples`.`marketplace`.`customers`
     Primary key: (customer_id)
     Changelog mode: upsert
     Upsert key: (customer_id)
     State size: low
-    
+
     [2] StreamCalc
     Changelog mode: upsert
     Upsert key: (customer_id)
-    
+
     [3] StreamExchange
     Changelog mode: upsert
     Upsert key: (customer_id)
-    
+
     [4] StreamChangelogNormalize
     Changelog mode: retract
     Upsert key: (customer_id)
     State size: medium
-    
+
     [5] StreamCalc
     Changelog mode: retract
     Upsert key: (customer_id)
-    
+
     [6] StreamWindowTableFunction
     Changelog mode: retract
     State size: low
-    
+
     [7] StreamCalc
     Changelog mode: retract
-    
+
     [8] StreamExchange
     Changelog mode: retract
-    
+
     [9] StreamJoin
     Changelog mode: retract
     State size: medium
-    
+
     [10] StreamCalc
     Changelog mode: retract
-    
+
     [11] StreamExchange
     Changelog mode: retract
-    
+
     [12] StreamGroupAggregate
     Changelog mode: retract
     Upsert key: (window_start,city)
     State size: medium
-    
+
     [13] StreamCalc
     Changelog mode: retract
     Upsert key: (window_start,city)
-    
+
     [14] StreamSink
     Table: Foreground
     Changelog mode: retract

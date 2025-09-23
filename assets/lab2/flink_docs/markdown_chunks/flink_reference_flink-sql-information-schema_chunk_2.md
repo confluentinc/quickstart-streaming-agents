@@ -19,11 +19,11 @@ The rows returned are limited to the schemas that you have permission to interac
 
 This view is an extension to the SQL standard.
 
-Column Name | Data Type | Nullable | Standard | Description  
----|---|---|---|---  
-CATALOG_ID | STRING | No | No | The ID of the catalog/environment, for example, `env-xmzdkk`.  
-CATALOG_NAME | STRING | No | No | The human readable name of the catalog/environment, for example, `default`.  
-  
+Column Name | Data Type | Nullable | Standard | Description
+---|---|---|---|---
+CATALOG_ID | STRING | No | No | The ID of the catalog/environment, for example, `env-xmzdkk`.
+CATALOG_NAME | STRING | No | No | The human readable name of the catalog/environment, for example, `default`.
+
 Example
 
 Run the following code to query for all catalogs across environments.
@@ -37,25 +37,25 @@ Run the following code to query for all catalogs across environments.
 
 Describes columns of tables and virtual tables (views) in the catalog.
 
-Column Name | Data Type | Nullable | Standard | Description  
----|---|---|---|---  
-COLUMN_NAME | STRING | No | Yes | Column reference.  
-COMMENT | STRING | Yes | No | An optional comment that describes the relation.  
-DATA_TYPE | STRING | No | Yes | Type root, for example, VARCHAR or ROW.  
-DISTRIBUTION_ORDINAL_POSITION | INT | Yes | No | If the table IS_DISTRIBUTED, contains the position of the key in a DISTRIBUTED BY clause.  
-FULL_DATA_TYPE | STRING | No | No | Fully qualified data type. for example, VARCHAR(32) or ROW<…>.  
-GENERATION_EXPRESSION | STRING | Yes | Yes | For computed columns.  
-IS_GENERATED | STRING | No | Yes | Indicates whether column is a computed column. Values are YES or NO.  
-IS_HIDDEN | STRING | No | No | Indicates whether a column is a system column. Values are YES or NO.  
-IS_METADATA | STRING | No | No | Indicates whether column is a metadata column. Values are YES or NO.  
-IS_PERSISTED | STRING | No | No | Indicates whether a metadata column is stored during INSERT INTO. Also YES if a physical column. Values are YES or NO.  
-METADATA_KEY | STRING | Yes | No | For metadata columns.  
-TABLE_CATALOG | STRING | No | Yes | The human readable name of the catalog.  
-TABLE_CATALOG_ID | STRING | No | No | The ID of the catalog.  
-TABLE_NAME | STRING | No | Yes | The name of the relation.  
-TABLE_SCHEMA | STRING | No | Yes | The human readable name of the database.  
-TABLE_SCHEMA_ID | STRING | No | No | The ID of the database.  
-  
+Column Name | Data Type | Nullable | Standard | Description
+---|---|---|---|---
+COLUMN_NAME | STRING | No | Yes | Column reference.
+COMMENT | STRING | Yes | No | An optional comment that describes the relation.
+DATA_TYPE | STRING | No | Yes | Type root, for example, VARCHAR or ROW.
+DISTRIBUTION_ORDINAL_POSITION | INT | Yes | No | If the table IS_DISTRIBUTED, contains the position of the key in a DISTRIBUTED BY clause.
+FULL_DATA_TYPE | STRING | No | No | Fully qualified data type. for example, VARCHAR(32) or ROW<…>.
+GENERATION_EXPRESSION | STRING | Yes | Yes | For computed columns.
+IS_GENERATED | STRING | No | Yes | Indicates whether column is a computed column. Values are YES or NO.
+IS_HIDDEN | STRING | No | No | Indicates whether a column is a system column. Values are YES or NO.
+IS_METADATA | STRING | No | No | Indicates whether column is a metadata column. Values are YES or NO.
+IS_PERSISTED | STRING | No | No | Indicates whether a metadata column is stored during INSERT INTO. Also YES if a physical column. Values are YES or NO.
+METADATA_KEY | STRING | Yes | No | For metadata columns.
+TABLE_CATALOG | STRING | No | Yes | The human readable name of the catalog.
+TABLE_CATALOG_ID | STRING | No | No | The ID of the catalog.
+TABLE_NAME | STRING | No | Yes | The name of the relation.
+TABLE_SCHEMA | STRING | No | Yes | The human readable name of the database.
+TABLE_SCHEMA_ID | STRING | No | No | The ID of the database.
+
 Examples
 
 This example shows a complex query. The complexity comes from reducing the number of requests. Because the views are in normal form, instead of issuing three requests, you can batch them into single one by using UNION ALL. UNION ALL avoids the need for various inner/outer joins. The result is a sparse table that contains different “sections”.
@@ -90,7 +90,7 @@ Run the following code to list columns, like name, position, data type, and thei
         `TABLE_SCHEMA` = '<current-database>' AND
         `TABLE_NAME` = '<current-table>' AND
         `IS_HIDDEN` = 'NO'
-    
+
     )
     UNION ALL
     (

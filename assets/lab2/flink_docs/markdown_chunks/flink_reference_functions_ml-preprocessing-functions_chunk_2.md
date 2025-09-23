@@ -36,7 +36,7 @@ Arguments
 
   * **formatName** : ENUM of the format names. Valid values are:
 
-Valid values for formatName 
+Valid values for formatName
     * `C`
     * `CPP`
     * `CSHARP`
@@ -96,7 +96,7 @@ Example
 
     -- returns 1
     SELECT ML_LABEL_ENCODER('abc', ARRAY['abc', 'def', 'efg', 'hikj']);
-    
+
     -- returns 0
     SELECT ML_LABEL_ENCODER('abc', ARRAY['abc', 'def', 'efg', 'hikj'], TRUE );
 

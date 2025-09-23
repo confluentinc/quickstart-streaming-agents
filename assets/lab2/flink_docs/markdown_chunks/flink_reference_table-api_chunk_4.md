@@ -27,31 +27,31 @@ JavaPython
     Table table = env.from("examples.marketplace.customers");
     List<Row> rows = ConfluentTools.collectMaterialized(table, 100);
     ConfluentTools.printMaterialized(table, 100);
-    
+
     // On a TableResult object
     TableResult tableResult = env.executeSql("SELECT * FROM examples.marketplace.customers");
     List<Row> rows = ConfluentTools.collectMaterialized(tableResult, 100);
     ConfluentTools.printMaterialized(tableResult, 100);
-    
+
     // For finite (i.e. bounded) tables
     ConfluentTools.collectMaterialized(table);
     ConfluentTools.printMaterialized(table);
 
     from pyflink.table.confluent import ConfluentSettings, ConfluentTools
     from pyflink.table import TableEnvironment
-    
+
     settings = ConfluentSettings.from_global_variables()
     env = TableEnvironment.create(settings)
     # On a Table object
     table = env.from_path("examples.marketplace.customers")
     rows = ConfluentTools.collect_changelog_limit(table, 100)
     ConfluentTools.print_changelog_limit(table, 100)
-    
+
     # On a TableResult object
     tableResult = env.execute_sql("SELECT * FROM examples.marketplace.customers")
     rows = ConfluentTools.collect_changelog_limit(tableResult, 100)
     ConfluentTools.print_changelog_limit(tableResult, 100)
-    
+
     # For finite (i.e. bounded) tables
     ConfluentTools.collect_changelog(table)
     ConfluentTools.print_changelog(table)
@@ -70,31 +70,31 @@ JavaPython
     Table table = env.from("examples.marketplace.customers");
     List<Row> rows = ConfluentTools.collectMaterialized(table, 100);
     ConfluentTools.printMaterialized(table, 100);
-    
+
     // On a TableResult object
     TableResult tableResult = env.executeSql("SELECT * FROM examples.marketplace.customers");
     List<Row> rows = ConfluentTools.collectMaterialized(tableResult, 100);
     ConfluentTools.printMaterialized(tableResult, 100);
-    
+
     // For finite (i.e. bounded) tables
     ConfluentTools.collectMaterialized(table);
     ConfluentTools.printMaterialized(table);
 
     from pyflink.table.confluent import ConfluentSettings, ConfluentTools
     from pyflink.table import TableEnvironment
-    
+
     settings = ConfluentSettings.from_global_variables()
     env = TableEnvironment.create(settings)
     # On Table object
     table = env.from_path("examples.marketplace.customers")
     rows = ConfluentTools.collect_materialized_limit(table, 100)
     ConfluentTools.print_materialized_limit(table, 100)
-    
+
     # On TableResult object
     tableResult = env.execute_sql("SELECT * FROM examples.marketplace.customers")
     rows = ConfluentTools.collect_materialized_limit(tableResult, 100)
     ConfluentTools.print_materialized_limit(tableResult, 100)
-    
+
     # For finite (i.e. bounded) tables
     ConfluentTools.collect_materialized(table)
     ConfluentTools.print_materialized(table)
@@ -109,7 +109,7 @@ JavaPython
     TableResult tableResult = env.executeSql("SELECT * FROM examples.marketplace.customers");
     String statementName = ConfluentTools.getStatementName(tableResult);
     ConfluentTools.stopStatement(tableResult);
-    
+
     // Based on statement name
     ConfluentTools.stopStatement(env, "table-api-2024-03-21-150457-36e0dbb2e366-sql");
 
@@ -117,6 +117,6 @@ JavaPython
     table_result = env.execute_sql("SELECT * FROM examples.marketplace.customers")
     statement_name = ConfluentTools.get_statement_name(table_result)
     ConfluentTools.stop_statement(table_result)
-    
+
     # Based on statement name
     ConfluentTools.stop_statement_by_name(env, "table-api-2024-03-21-150457-36e0dbb2e366-sql")

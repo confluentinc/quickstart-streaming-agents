@@ -16,16 +16,16 @@ in the Confluent Cloud cluster.
 If you use the workspace in Cloud Console, set the **Use catalog** and **Use database** controls to your environment and Kafka cluster.
 
 If you use the Flink SQL shell, run the following statements to set the current environment and Kafka cluster.
-         
+
          USE CATALOG <your-environment-name>;
          USE DATABASE <your-cluster-name>;
 
   2. Run the following statement to see the data flowing into the `gaming_player_activity_source` table.
-         
+
          SELECT * FROM gaming_player_activity_source;
 
 Your output should resemble:
-         
+
          key         player_id game_room_id points coordinates
          x'31303833' 1083      4634         85     [30,39]
          x'31303731' 1071      3406         432    [91,61]
@@ -35,11 +35,11 @@ Your output should resemble:
          ...
 
   3. If you add `$rowtime` to the `SELECT` statement, you can see the Kafka timestamp for each record.
-         
+
          SELECT $rowtime, * FROM gaming_player_activity_source;
 
 Your output should resemble:
-         
+
          $rowtime                key         player_id game_room_id points coordinates
          2023-11-08 14:27:27.647 x'31303838' 1088      4198         22     [02,86]
          2023-11-08 14:27:27.695 x'31303638' 1068      1446         132    [80,86]

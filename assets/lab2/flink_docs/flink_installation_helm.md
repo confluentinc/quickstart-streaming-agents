@@ -17,23 +17,23 @@ The underlying processor architecture of your Kubernetes worker nodes must be a 
 
 Currently, Confluent Platform for Apache Flink supports x86 and ARM64 hardware architecture.
 
-Component | Nodes | Storage | Memory | CPU  
----|---|---|---|---  
-Confluent Manager for Apache Flink | 1 | 10 GB (persistent storage as PVC) [1] | 1 GB RAM [1] | 2 [1]  
-Flink Kubernetes Operator [2] | 1 | N/A | 3 GB RAM | 2  
-[1]| _(1, 2, 3)_ Storage, memory and CPU values are configurable through the Helm installation.  
----|---  
-[2]| These resource requirements are calculated to support the execution of 200 Flink applications.  
----|---  
+Component | Nodes | Storage | Memory | CPU
+---|---|---|---|---
+Confluent Manager for Apache Flink | 1 | 10 GB (persistent storage as PVC) [1] | 1 GB RAM [1] | 2 [1]
+Flink Kubernetes Operator [2] | 1 | N/A | 3 GB RAM | 2
+[1]| _(1, 2, 3)_ Storage, memory and CPU values are configurable through the Helm installation.
+---|---
+[2]| These resource requirements are calculated to support the execution of 200 Flink applications.
+---|---
   2. Install the required tools.
 
 This installation guide assumes you have already installed Helm. CMF supports Helm 3 for installation. You should have already configured Helm using the Helm documentation. To verify that your environment is prepared, the following commands should complete without error:
-         
+
          kubectl get pods
          helm list
 
 Add the Confluent Platform for Apache Flink Helm repository.
-         
+
          helm repo add confluentinc https://packages.confluent.io/helm
          helm repo update
 
@@ -42,7 +42,7 @@ Add the Confluent Platform for Apache Flink Helm repository.
 You must install the Confluent Platform for Apache Flink Kubernetes operator _before_ you install CMF because CMF uses the operator to manage the Flink clusters.
 
   1. Install the certificate manager.
-         
+
          kubectl create -f https://github.com/jetstack/cert-manager/releases/download/v1.18.2/cert-manager.yaml
 
   2. Install the Flink Kubernetes operator.
@@ -52,7 +52,7 @@ Use the `watchNamespaces` configuration to prepare the Kubernetes namespaces you
 Instead of using Helm, you can also manually prepare a Kubernetes namespace for deploying Flink clusters, by creating the necessary `flink` service account, role and role binding, as documented in the Flink Kubernetes operator [documentation](https://nightlies.apache.org/flink/flink-kubernetes-operator-docs-release-1.12/docs/operations/rbac/#cluster-scoped-flink-operator-with-jobs-running-in-other-namespaces). If you omit the `watchNamespaces` flag, the operator will watch all namespaces, but the necessary `flink` service account will only by created in the namespace where the operator is installed. Additional namespaces must be setup manually.
 
 For deployment on OpenShift, you must also pass `--set podSecurityContext.runAsUser=null --set podSecurityContext.runAsGroup=null` to below Helm command.
-         
+
          helm upgrade --install cp-flink-kubernetes-operator --version "~1.120.0" \
            confluentinc/flink-kubernetes-operator \
            --set watchNamespaces="{namespace1,namespace2,...}"
@@ -66,13 +66,13 @@ Warning
 If you do not specify a license, CMF will generate a trial license.
 
   1. (Optional) Store your Confluent license in a Kubernetes secret.
-         
+
          kubectl create secret generic <license-secret-name> --from-file=license.txt
 
   2. (Optional) Create a CMF database encryption key into a Kubernetes secret
 
 CMF is storing sensitive data such as secrets in its internal database. Below instructions are for setting up the encryption key for the CMF database. CMF has a `cmf.sql.production` property. When the property is set to `false`, encryption is disabled. Otherwise, an encryption key is required.
-         
+
          # Generate a 256-bit key (recommended for production)
          openssl rand -out cmf.key 32
          # Create a Kubernetes secret with the encryption key
@@ -81,12 +81,12 @@ CMF is storing sensitive data such as secrets in its internal database. Below in
            -n <your-cmf-namespace>
 
 During the CMF installation, pass the following Helm parameter to use the encryption key:
-         
+
          --set encryption.key.kubernetesSecretName=<secret-name> \
          --set encryption.key.kubernetesSecretProperty=<property-name>
 
 **Example**
-         
+
          openssl rand -out cmf.key 32
          kubectl create secret generic cmf-encryption-key \
            --from-file=encryption-key=cmf.key \
@@ -104,7 +104,7 @@ You must backup the encryption key, CMF does not keep a backup of it. If the key
   3. Install CMF using the default configuration:
 
 For deployment on OpenShift, you must also pass `--set podSecurity.securityContext.fsGroup=null --set podSecurity.securityContext.runAsUser=null` to below Helm command.
-         
+
          helm upgrade --install cmf --version "~2.0.0" \
            confluentinc/confluent-manager-for-apache-flink \
            --namespace <namespace> \
@@ -118,21 +118,21 @@ CMF will create a `PersistentVolumeClaim` (PVC) in Kubernetes. If the PVC remain
   4. Configure the Chart. Helm provides [several options](https://helm.sh/docs/intro/using_helm/#customizing-the-chart-before-installing) for setting and overriding values in a chart. For CMF, you should customize the chart by passing a values file with the `--values` flag.
 
 First, use Helm to show the default `values.yaml` file for CMF.
-         
+
          helm inspect values confluentinc/confluent-manager-for-apache-flink --version "~2.0.0"
 
 You should see output similar to the following:
-         
+
          ## Image pull secret
          imagePullSecretRef:
-         
+
          ## confluent-manager-for-apache-flink image
          image:
          repository: confluentinc
          name: cp-cmf
          pullPolicy: IfNotPresent
          tag: 1.0.1
-         
+
          ## CMF Pod Resources
          resources:
          limits:
@@ -141,7 +141,7 @@ You should see output similar to the following:
          requests:
             cpu: 1
             memory: 1024Mi
-         
+
          ## Load license either from K8s secret
          license:
          ##
@@ -151,7 +151,7 @@ You should see output similar to the following:
          ## Example:
             ##   secretRef: confluent-license-for-cmf
          secretRef: ""
-         
+
          ## Pod Security Context
          podSecurity:
          enabled: true
@@ -159,14 +159,14 @@ You should see output similar to the following:
             fsGroup: 1001
             runAsUser: 1001
             runAsNonRoot: true
-         
+
          ## Persistence for CMF
          persistence:
          # if set to false, the database will be on the pod ephemeral storage, e.g. gone when the pod stops
          create: true
          dataVolumeCapacity: 10Gi
          ##  storageClassName: # Without the storage class, the default storage class is used.
-         
+
          ## Volumes to mount for the CMF pod.
          ##
          ## Example with a PVC.
@@ -182,12 +182,12 @@ You should see output similar to the following:
          mountedVolumes:
          volumes:
          volumeMounts:
-         
+
          ## Configure the CMF service for example Authn/Authz
          cmf:
          #  authentication:
          #    type: mtls
-         
+
          ## Enable Kubernetes RBAC
          # When set to true, it will create a proper role/rolebinding or cluster/clusterrolebinding based on namespaced field.
          # If a user doesn't have permission to create role/rolebinding then they can disable rbac field and
@@ -223,7 +223,7 @@ Note the following about CMF default values:
      * If you want to set your storage class, you can overwrite `persistence.storageClassName` during the installation.
 
      * By default, the chart uses the image hosted by [Confluent on DockerHub](https://hub.docker.com/r/confluentinc/cp-cmf). To specify your own registry, set the following configuration values:
-           
+
            image:
              repository: <image-registry>
              name: cp-cmf
@@ -237,4 +237,3 @@ Note the following about CMF default values:
 ## Step 4: Cleanup¶
 
 For cleanup instructions, see the [cleanup section in the quickstart guide](../get-started/get-started-application.html#cpf-get-started-cleanup).
-

@@ -109,7 +109,7 @@ For example, the following two queries are equivalent.
         ('supplier2', 'product4', 4))
     AS Products(supplier_id, product_id, rating)
     GROUP BY CUBE (supplier_id, rating, product_id)
-    
+
     SELECT supplier_id, rating, product_id, COUNT(*)
     FROM (VALUES
         ('supplier1', 'product1', 4),
@@ -140,4 +140,3 @@ The `HAVING` clause eliminates group rows that don’t satisfy the specified con
     HAVING SUM(amount) > 50
 
 The presence of a `HAVING` clause turns a query into a grouped query, even if there is no `GROUP BY` clause. It’s the same as what happens when the query contains aggregate functions but no `GROUP BY` clause. The query considers all selected rows to form a single group, and the `SELECT` list and `HAVING` clause can reference only table columns from within aggregate functions. Such a query emits a single row if the `HAVING` condition is true, and zero rows if it’s not true.
-

@@ -9,12 +9,12 @@ scraped_date: 2025-09-05T13:50:27.725852
 
 Confluent Cloud for Apache Flink® provides these built-in functions to help with JSON in SQL queries:
 
-IS JSON | JSON_ARRAY | JSON_ARRAYAGG  
----|---|---  
-JSON_EXISTS | JSON_OBJECT | JSON_OBJECTAGG  
-JSON_QUERY | JSON_QUOTE | JSON_STRING  
-JSON_UNQUOTE | JSON_VALUE |   
-  
+IS JSON | JSON_ARRAY | JSON_ARRAYAGG
+---|---|---
+JSON_EXISTS | JSON_OBJECT | JSON_OBJECTAGG
+JSON_QUERY | JSON_QUOTE | JSON_STRING
+JSON_UNQUOTE | JSON_VALUE |
+
 JSON functions make use of JSON path expressions as described in [ISO/IEC TR 19075-6](https://www.iso.org/standard/78937.html) of the SQL standard. Their syntax is inspired by and adopts many features of ECMAScript, but is neither a subset nor superset of the standard.
 
 Path expressions come in two flavors, lax and strict. When omitted, it defaults to the strict mode. Strict mode is intended to examine data from a schema perspective and will throw errors whenever data does not adhere to the path expression. However, functions like `JSON_VALUE` allow defining fallback behavior if an error is encountered. Lax mode, on the other hand, is more forgiving and converts errors to empty sequences.
@@ -83,24 +83,24 @@ The following SELECT statements return the values indicated in the comment lines
 
     -- returns '[]'
     SELECT JSON_ARRAY();
-    
+
     -- returns '[1,"2"]'
     SELECT JSON_ARRAY(1, '2');
-    
+
     -- Use an expression as a value.
     SELECT JSON_ARRAY(orders.orderId);
-    
+
     -- ON NULL
     -- returns '[null]'
     SELECT JSON_ARRAY(CAST(NULL AS STRING) NULL ON NULL);
-    
+
     -- ON NULL
     -- returns '[]'
     SELECT JSON_ARRAY(CAST(NULL AS STRING) ABSENT ON NULL);
-    
+
     -- returns '[[1]]'
     SELECT JSON_ARRAY(JSON_ARRAY(1));
-    
+
     -- returns '[{"nested_json":{"value":42}}]'
     SELECT JSON_ARRAY(JSON('{"nested_json": {"value": 42}}'));
 
@@ -180,24 +180,24 @@ The following SELECT statements return the values indicated in the comment lines
 
     -- returns '{}'
     SELECT JSON_OBJECT();
-    
+
     -- returns '{"K1":"V1","K2":"V2"}'
     SELECT JSON_OBJECT('K1' VALUE 'V1', 'K2' VALUE 'V2');
-    
+
     -- Use an expression as a value.
     SELECT JSON_OBJECT('orderNo' VALUE orders.orderId);
-    
+
     -- ON NULL
     -- '{"K1":null}'
     SELECT JSON_OBJECT(KEY 'K1' VALUE CAST(NULL AS STRING) NULL ON NULL);
-    
+
     -- ON NULL
     -- '{}'
     SELECT JSON_OBJECT(KEY 'K1' VALUE CAST(NULL AS STRING) ABSENT ON NULL);
-    
+
     -- returns '{"K1":{"nested_json":{"value":42}}}'
     SELECT JSON_OBJECT('K1' VALUE JSON('{"nested_json": {"value": 42}}'));
-    
+
     -- returns '{"K1":{"K2":"V"}}'
     SELECT JSON_OBJECT(
       KEY 'K1'
@@ -257,37 +257,37 @@ The following SELECT statements return the values indicated in the comment lines
 
     -- returns '{ "b": 1 }'
     SELECT JSON_QUERY('{ "a": { "b": 1 } }', '$.a');
-    
+
     -- returns '[1, 2]'
     SELECT JSON_QUERY('[1, 2]', '$');
-    
+
     -- returns NULL
     SELECT JSON_QUERY(CAST(NULL AS STRING), '$');
-    
+
     -- returns array ['c1','c2']
     SELECT JSON_QUERY('{"a":[{"c":"c1"},{"c":"c2"}]}', 'lax $.a[*].c' RETURNING ARRAY<STRING>);
-    
+
     -- Wrap the result into an array.
     -- returns '[{}]'
     SELECT JSON_QUERY('{}', '$' WITH CONDITIONAL ARRAY WRAPPER);
-    
+
     -- returns '[1, 2]'
     SELECT JSON_QUERY('[1, 2]', '$' WITH CONDITIONAL ARRAY WRAPPER);
-    
+
     -- returns '[[1, 2]]'
     SELECT JSON_QUERY('[1, 2]', '$' WITH UNCONDITIONAL ARRAY WRAPPER);
-    
+
     -- Scalars must be wrapped to be returned.
     -- returns NULL
     SELECT JSON_QUERY(1, '$');
-    
+
     -- returns '[1]'
     SELECT JSON_QUERY(1, '$' WITH CONDITIONAL ARRAY WRAPPER);
-    
+
     -- Behavior if the path expression is empty.
     -- returns '{}'
     SELECT JSON_QUERY('{}', 'lax $.invalid' EMPTY OBJECT ON EMPTY);
-    
+
     -- Behavior if the path expression has an error.
     -- returns '[]'
     SELECT JSON_QUERY('{}', 'strict $.invalid' EMPTY ARRAY ON ERROR);
@@ -308,10 +308,10 @@ If `string` is NULL, the function returns NULL.
 
 Example
 
-> 
+>
 >     -- returns { "SQL string" }
 >     SELECT JSON_QUOTE('SQL string');
->     
+>
 
 ## JSON_STRING¶
 
@@ -329,16 +329,16 @@ The following SELECT statements return the values indicated in the comment lines
 
     -- returns NULL
     SELECT JSON_STRING(CAST(NULL AS INT));
-    
+
     -- returns '1'
     SELECT JSON_STRING(1);
-    
+
     -- returns 'true'
     SELECT JSON_STRING(TRUE);
-    
+
     -- returns '"Hello, World!"'
     JSON_STRING('Hello, World!');
-    
+
     -- returns '[1,2]'
     JSON_STRING(ARRAY[1, 2])
 
@@ -360,10 +360,10 @@ If `string` doesn’t start and end with double quotes, or if it starts and ends
 
 Example
 
-> 
+>
 >     -- returns { "SQL string" }
 >     SELECT JSON_UNQUOTE('SQL string');
->     
+>
 
 ## JSON_VALUE¶
 
@@ -401,19 +401,19 @@ The following SELECT statements return the values indicated in the comment lines
 
     -- returns "true"
     SELECT JSON_VALUE('{"a": true}', '$.a');
-    
+
     -- returns TRUE
     SELECT JSON_VALUE('{"a": true}', '$.a' RETURNING BOOLEAN);
-    
+
     -- returns "false"
     SELECT JSON_VALUE('{"a": true}', 'lax $.b' DEFAULT FALSE ON EMPTY);
-    
+
     -- returns "false"
     SELECT JSON_VALUE('{"a": true}', 'strict $.b' DEFAULT FALSE ON ERROR);
-    
+
     -- returns 0.998D
     SELECT JSON_VALUE('{"a.b": [0.998,0.996]}','$.["a.b"][0]' RETURNING DOUBLE);
-    
+
     -- returns "right"
     SELECT JSON_VALUE('{"contains blank": "right"}', 'strict $.[''contains blank'']' NULL ON EMPTY DEFAULT 'wrong' ON ERROR);
 
@@ -431,4 +431,3 @@ The following SELECT statements return the values indicated in the comment lines
   * [Numeric Functions](numeric-functions.html#flink-sql-numeric-functions)
   * [String Functions](string-functions.html#flink-sql-string-functions)
   * [Table API Functions](table-api-functions.html#flink-table-api-functions)
-

@@ -32,7 +32,7 @@ In this step, you use the [EXPLAIN](../reference/statements/explain.html#flink-s
   1. Log in to Confluent Cloud and navigate to your Flink workspace.
 
   2. Run the following EXPLAIN statement to view a static analysis of a query.
-         
+
          EXPLAIN
          SELECT
            o.order_id,
@@ -46,9 +46,9 @@ In this step, you use the [EXPLAIN](../reference/statements/explain.html#flink-s
          WHERE o.`$rowtime` >= CURRENT_TIMESTAMP - INTERVAL '1' HOUR;
 
 Your output should resemble:
-         
+
          == Physical Plan ==
-         
+
          StreamSink [12]
            +- StreamCalc [11]
              +- StreamTemporalJoin [10]
@@ -64,7 +64,7 @@ Your output should resemble:
          ...
 
   3. Run the statement.
-         
+
          SELECT
            o.order_id,
            o.`$rowtime`,

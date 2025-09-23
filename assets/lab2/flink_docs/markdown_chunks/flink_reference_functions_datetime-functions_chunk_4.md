@@ -104,7 +104,7 @@ Example
 
     -- returns TRUE
     SELECT (TIME '2:55:00', INTERVAL '1' HOUR) OVERLAPS (TIME '3:30:00', INTERVAL '2' HOUR);
-    
+
     -- returns FALSE
     SELECT (TIME '9:00:00', TIME '10:00:00') OVERLAPS (TIME '10:15:00', INTERVAL '3' HOUR);
 
@@ -178,13 +178,13 @@ The minimum out-of-orderness is 50 milliseconds. The maximum out-of-orderness is
 
 The algorithm always considers the out-of-orderness of the last 5000 events per partition. During warmup, before the algorithm has seen 1000 messages (per partition) it applies an additional safety margin to the observed out-of-orderness. The safety margin depends on the number of messages seen so far.
 
-Number of messages | Safety margin  
----|---  
-1 - 250 | 7 days  
-251 - 500 | 30s  
-501 - 750 | 10s  
-751 - 1000 | 1s  
-  
+Number of messages | Safety margin
+---|---
+1 - 250 | 7 days
+251 - 500 | 30s
+501 - 750 | 10s
+751 - 1000 | 1s
+
 In effect, the algorithm doesn’t provide a usable watermark before it has seen 250 records per partition.
 
 Example
@@ -195,7 +195,7 @@ Example
        i INT,
        ts TIMESTAMP_LTZ(3),
        WATERMARK FOR ts AS SOURCE_WATERMARK());
-    
+
      -- The queryable schema for the table has the default watermark
      -- strategy on the ts column.
      (

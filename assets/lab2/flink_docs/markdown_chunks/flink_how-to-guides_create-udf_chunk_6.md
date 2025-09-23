@@ -18,17 +18,17 @@ You can use the Confluent Cloud Console, the Confluent CLI, the Confluent Terraf
 ### Drop the function¶
 
   1. Run the following statement to remove the `is_smaller` function from the current database.
-         
+
          DROP FUNCTION is_smaller;
 
 Your output should resemble:
-         
+
          Function 'is_smaller' dropped.
 
 Currently running statements are not affected and continue running.
 
   2. Exit the Flink shell.
-         
+
          exit;
 
 ### Delete the JAR artifact¶
@@ -42,7 +42,7 @@ Confluent Cloud ConsoleConfluent CLITerraformREST API
   5. In the confirmation dialog, type “udf_example”, and click **Confirm**. The “Artifact deleted successfully” message appears.
 
   1. Run the following command to delete the artifact form the environment.
-         
+
          confluent flink artifact delete \
          <artifact-id> \
          --cloud ${CLOUD_PROVIDER} \
@@ -51,7 +51,7 @@ Confluent Cloud ConsoleConfluent CLITerraformREST API
 You receive a warning about breaking Flink statements that use the artifact. Type “y” when you’re prompted to proceed.
 
 Your output should resemble:
-         
+
          Deleted Flink artifact "<artifact-id>".
 
 You can delete a UDF by using the Confluent Terraform provider. For more information, see [confluent_flink_artifact Resource](https://registry.terraform.io/providers/confluentinc/confluent/latest/docs/resources/confluent_flink_artifact)
@@ -74,23 +74,23 @@ The following steps show how to implement a simple UDTF, upload it to Confluent 
 In this section, you compile a simple Java class, named `SplitFunction` into a jar file, similar to the previous section. The class is based on the `TableFunction` class in the Flink Table API. The `SplitFunction.java` class has an `eval` function that uses the Java `split` method to break up a string into words and returns the words as columns in a row.
 
   1. In the `example` directory, create a file named `SplitFunction.java`.
-         
+
          touch example/SplitFunction.java
 
   2. Copy the following code into `SplitFunction.java`.
-         
+
          package com.example.my;
-         
+
          import org.apache.flink.table.annotation.DataTypeHint;
          import org.apache.flink.table.annotation.FunctionHint;
          import org.apache.flink.table.api.*;
          import org.apache.flink.table.functions.TableFunction;
          import org.apache.flink.types.Row;
          import static org.apache.flink.table.api.Expressions.*;
-         
+
          @FunctionHint(output = @DataTypeHint("ROW<word STRING>"))
          public class SplitFunction extends TableFunction<Row> {
-         
+
             public void eval(String str, String delimiter) {
                for (String s : str.split(delimiter)) {
                   // use collect(...) to emit a row
@@ -100,13 +100,13 @@ In this section, you compile a simple Java class, named `SplitFunction` into a j
          }
 
   3. Run the following command to build the jar file. You can use the POM file from the previous section.
-         
+
          mvn clean package
 
   4. Run the following command to check the contents of your jar.
-         
+
          jar -tf target/udf_example-1.0.jar | grep -i SplitFunction
 
 Your output should resemble:
-         
+
          com/example/my/SplitFunction.class

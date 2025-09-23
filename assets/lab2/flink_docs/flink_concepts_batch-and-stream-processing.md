@@ -41,33 +41,33 @@ Stream processing in Flink handles _unbounded data streams_ , which have data th
 
 In Flink, tables can be either _bounded_ (batch) or _unbounded_ (streaming). The following table compares the key differences between these two modes.
 
-Aspect | Bounded Mode (Batch) | Unbounded Mode (Streaming)  
----|---|---  
-Data Size | Finite (static) | Infinite (dynamic, continuous)  
-Processing Style | Batch processing | Real-time/continuous processing  
-Query Semantics | All data available at once | Data arrives over time  
-State Management | Minimal, can drop state when done | Must retain state for late/out-of-order data  
-Use Cases | ETL, reporting, historical analytics | Real-time analytics, monitoring, alerting  
-  
+Aspect | Bounded Mode (Batch) | Unbounded Mode (Streaming)
+---|---|---
+Data Size | Finite (static) | Infinite (dynamic, continuous)
+Processing Style | Batch processing | Real-time/continuous processing
+Query Semantics | All data available at once | Data arrives over time
+State Management | Minimal, can drop state when done | Must retain state for late/out-of-order data
+Use Cases | ETL, reporting, historical analytics | Real-time analytics, monitoring, alerting
+
 ## Differences between batch and stream processing¶
 
 The following table compares the important differences between batch and stream processing.
 
-Aspect | Batch Processing | Stream Processing  
----|---|---  
-Data Model | Processes complete, finite datasets. | Processes infinite, continuous data streams.  
-Execution Model | Jobs run to completion. | Jobs run continuously.  
-Latency vs. Throughput | Optimized for high throughput. | Optimized for low latency.  
-State Management | Minimal state, which is dropped when no longer needed. | Robust state, which is retained for late or out-of-order data.  
-Fault Tolerance | Can restart from the beginning. | Requires checkpointing for fault recovery.  
-Query Semantics | All data is available at once, so global operations are possible. | Data arrives over time, so results are incremental.  
-SQL/API Differences | 
+Aspect | Batch Processing | Stream Processing
+---|---|---
+Data Model | Processes complete, finite datasets. | Processes infinite, continuous data streams.
+Execution Model | Jobs run to completion. | Jobs run continuously.
+Latency vs. Throughput | Optimized for high throughput. | Optimized for low latency.
+State Management | Minimal state, which is dropped when no longer needed. | Robust state, which is retained for late or out-of-order data.
+Fault Tolerance | Can restart from the beginning. | Requires checkpointing for fault recovery.
+Query Semantics | All data is available at once, so global operations are possible. | Data arrives over time, so results are incremental.
+SQL/API Differences |
 
   * **ORDER BY** : You can use any sort order.
   * **Windowing** : Supports time-based windows on static data.
   * **Deduplication** : Deduplication is global.
 
-| 
+|
 
   * **ORDER BY** : The primary sort must be on a time attribute.
   * **Windowing** : Uses windows to scope aggregations over unbounded data.
@@ -128,4 +128,3 @@ The following code example shows a streaming query.
     FROM TABLE(
       TUMBLE(TABLE orders, DESCRIPTOR(order_time), INTERVAL '1' MINUTE))
     GROUP BY window_start, window_end;
-

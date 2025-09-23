@@ -8,7 +8,7 @@ total_chunks: 8
 ---
 
 * Example:
-        
+
         {
           "type" : "record",
           "name" : "row",
@@ -29,7 +29,7 @@ total_chunks: 8
   * Additional properties: `connect.type=int16`
 
   * Example:
-        
+
         {
           "type" : "int",
           "connect.type" : "int16"
@@ -44,7 +44,7 @@ total_chunks: 8
   * Additional properties: `flink.maxLength = flink.minLength` (MAX_LENGTH if not set)
 
   * Example:
-        
+
         {
           "type" : "string",
           "flink.maxLength" : 123,
@@ -60,7 +60,7 @@ total_chunks: 8
   * Additional properties: `flink.precision` (default: 3, max supported: 3)
 
   * Example:
-        
+
         {
           "type" : "int",
           "flink.precision" : 2,
@@ -77,7 +77,7 @@ total_chunks: 8
   * Additional properties: `flink.precision` (default: 3/6, max supported: 3/9)
 
   * Example:
-        
+
         {
           "type" : "long",
           "flink.precision" : 2,
@@ -94,7 +94,7 @@ total_chunks: 8
   * Additional properties: `flink.precision` (default: 3/6, max supported: 3/9)
 
   * Example:
-        
+
         {
           "type" : "long",
           "flink.precision" : 2,
@@ -111,7 +111,7 @@ total_chunks: 8
   * Additional properties: `connect.type=int8`
 
   * Example:
-        
+
         {
           "type" : "int",
           "connect.type" : "int8"
@@ -126,7 +126,7 @@ total_chunks: 8
   * Additional properties: `flink.maxLength` (MAX_LENGTH if not set)
 
   * Example:
-        
+
         {
             "type" : "bytes",
             "flink.maxLength" : 123,
@@ -141,12 +141,12 @@ This mapping is important when consuming/reading records with a schema that was 
 
 Flink SQL supports reading and writing nullable types. A nullable type is mapped to an Avro `union(avro_type, null)`, with the `avro_type` converted from the corresponding Flink type.
 
-Avro type | Avro logical type | Flink SQL type | Example  
----|---|---|---  
-long | time-micros | BIGINT | –  
-enum | – | STRING | –  
-union with null type (null + one other type) | – | NULLABLE(type) | –  
-union (other unions) | – | ROW(type_name Type0, …) | 
+Avro type | Avro logical type | Flink SQL type | Example
+---|---|---|---
+long | time-micros | BIGINT | –
+enum | – | STRING | –
+union with null type (null + one other type) | – | NULLABLE(type) | –
+union (other unions) | – | ROW(type_name Type0, …) |
 
     [
       "long",
@@ -164,5 +164,5 @@ union (other unions) | – | ROW(type_name Type0, …) |
       }
     ]
 
-string (uuid) | – | STRING | –  
+string (uuid) | – | STRING | –
 fixed (duration) | – | BINARY(size) | –

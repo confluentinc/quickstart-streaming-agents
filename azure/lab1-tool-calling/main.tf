@@ -28,7 +28,7 @@ resource "local_file" "mcp_commands" {
   filename = "${path.module}/mcp_commands.txt"
   content  = <<-EOT
 # Lab1 Tool Calling - Generated Commands
-# 
+#
 # 🎉 AUTOMATED BY TERRAFORM:
 # ✅ Core LLM infrastructure (deployed in core terraform)
 # ✅ LLM connection: ${data.terraform_remote_state.core.outputs.llm_connection_name}

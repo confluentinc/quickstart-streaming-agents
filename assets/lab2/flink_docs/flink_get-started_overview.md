@@ -26,4 +26,3 @@ Also, you can access Flink by using the [REST API](../operate-and-deploy/flink-r
   * [Sample Project for Confluent Terraform Provider](https://registry.terraform.io/providers/confluentinc/confluent/latest/docs/guides/sample-project)
 
 If you get stuck, have a question, or want to provide feedback or feature requests, don’t hesitate to reach out. Check out [Get Help with Confluent Cloud for Apache Flink](../get-help.html#ccloud-flink-help) for our support channels.
-

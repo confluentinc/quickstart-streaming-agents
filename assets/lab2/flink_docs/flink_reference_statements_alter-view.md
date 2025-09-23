@@ -12,7 +12,7 @@ Confluent Cloud for Apache Flink® enables modifying properties of an existing v
 ## Syntax¶
 
     ALTER VIEW [catalog_name.][db_name.]view_name RENAME TO new_view_name
-    
+
     ALTER VIEW [catalog_name.][db_name.]view_name AS new_statement_expression
 
 ## Description¶
@@ -32,22 +32,22 @@ The following examples show frequently encountered scenarios with ALTER VIEW.
 In the Confluent CLI or in a Cloud Console workspace, run the following commands to rename a view.
 
   1. Create a view.
-         
+
          CREATE VIEW customer_orders AS
          SELECT customer_id, SUM(price) AS total_spent
          FROM `examples`.`marketplace`.`orders`
          GROUP BY customer_id;
 
   2. Rename the view.
-         
+
          ALTER VIEW customer_orders RENAME TO vip_customers;
 
 Your output should resemble:
-         
+
          Statement phase is COMPLETED.
 
   3. Query the renamed view.
-         
+
          SELECT * FROM vip_customers;
 
 The statement now references the view by its new name.
@@ -55,11 +55,11 @@ The statement now references the view by its new name.
 ### Change the statement expression of a view¶
 
   1. View the current definition of the view.
-         
+
          SHOW CREATE VIEW vip_customers;
 
 Your output should resemble:
-         
+
          +------------------------------------------------------------------------------+
          |                              SHOW CREATE VIEW                                |
          +------------------------------------------------------------------------------+
@@ -69,7 +69,7 @@ Your output should resemble:
          +------------------------------------------------------------------------------+
 
   2. Change the statement expression of the view.
-         
+
          ALTER VIEW vip_customers AS
          SELECT customer_id, SUM(price) AS total_spent, COUNT(*) AS order_count
          FROM `examples`.`marketplace`.`orders`
@@ -77,15 +77,15 @@ Your output should resemble:
          HAVING SUM(price) > 1000;
 
 Your output should resemble:
-         
+
          Statement phase is COMPLETED.
 
   3. View the updated definition of the view.
-         
+
          SHOW CREATE VIEW vip_customers;
 
 Your output should resemble:
-         
+
          +-----------------------------------------------------------------------------------------------------+
          |                                         SHOW CREATE VIEW                                            |
          +-----------------------------------------------------------------------------------------------------+
@@ -96,4 +96,3 @@ Your output should resemble:
          +-----------------------------------------------------------------------------------------------------+
 
 The view now includes an additional `order_count` column representing the number of orders per customer, and filters for only those customers who have spent more than 1000.
-

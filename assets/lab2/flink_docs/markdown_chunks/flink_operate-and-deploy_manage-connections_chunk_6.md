@@ -78,7 +78,7 @@ Run the following command to list the connections in your environment.
 
 Your output should resemble:
 
-Response from a request to list connections 
+Response from a request to list connections
 
     {
       "api_version": "sql/v1",

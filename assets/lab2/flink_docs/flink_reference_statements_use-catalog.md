@@ -33,10 +33,10 @@ By itself, a USE CATALOG statement is a no-op. To see its effect, you must follo
 
     -- Set the current catalog (environment).
     USE CATALOG my_env;
-    
+
     -- Set the current database (Kafka cluster).
     USE cluster_0;
-    
+
     -- Submit a DDL statement.
     SELECT * FROM my_table;
 
@@ -49,4 +49,3 @@ When you run the USE CATALOG statement in a Cloud Console workspace, it sets the
 The catalog parameter is unquoted, for example, `USE CATALOG catalog1;`.
 
 Any USE statements within an editor cell take precedence over the settings in the workspace’s global **catalog** and **database** dropdown controls.
-

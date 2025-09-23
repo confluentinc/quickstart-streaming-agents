@@ -61,7 +61,7 @@ If required, install openjdk and export the `JAVA_HOME` variable:
 Use [uv](https://docs.astral.sh/uv/) to create a virtual environment that contains all required dependencies and project files.
 
   1. Use one of the following commands to install uv.
-         
+
          curl -LsSf https://astral.sh/uv/install.sh | sh
          # or
          brew install uv
@@ -69,51 +69,50 @@ Use [uv](https://docs.astral.sh/uv/) to create a virtual environment that contai
          pip install uv
 
   2. Create a new virtual environment.
-         
+
          uv venv --python 3.11
 
   3. Copy the following code into a file named `hello_table_api.py`.
-         
+
          # /// script
          # requires-python = ">=3.9,<3.12"
          # dependencies = [
          #   "confluent-flink-table-api-python-plugin>=1.20.52",
          # ]
          # ///
-         
+
          from pyflink.table.confluent import ConfluentSettings, ConfluentTools
          from pyflink.table import TableEnvironment, Row
          from pyflink.table.expressions import col, row
-         
+
          def run():
              # Set up the connection to Confluent Cloud
              settings = ConfluentSettings.from_global_variables()
              env = TableEnvironment.create(settings)
-         
+
              # Run your first Flink statement in Table API
              env.from_elements([row("Hello world!")]).execute().print()
-         
+
              # Or use SQL
              env.sql_query("SELECT 'Hello world!'").execute().print()
-         
+
              # Structure your code with Table objects - the main ingredient of Table API.
              table = env.from_path("examples.marketplace.clicks") \
                  .filter(col("user_agent").like("Mozilla%")) \
                  .select(col("click_id"), col("user_id"))
-         
+
              table.print_schema()
              print(table.explain())
-         
+
              # Use the provided tools to test on a subset of the streaming data
              expected = ConfluentTools.collect_materialized_limit(table, 50)
              actual = [Row(42, 500)]
              if expected != actual:
                  print("Results don't match!")
-         
+
          if __name__ == "__main__":
              run()
 
   4. Run the following command to execute the Table API program from the directory where you created `hello_table_api.py`.
-         
-         uv run hello_table_api.py
 
+         uv run hello_table_api.py

@@ -29,7 +29,7 @@ For SQL queries, your UDF must be registered by using the [CREATE FUNCTION](../r
     import org.apache.flink.table.api.*;
     import org.apache.flink.table.functions.ScalarFunction;
     import static org.apache.flink.table.api.Expressions.*;
-    
+
     // define function logic
     public static class SubstringFunction extends ScalarFunction {
       public String eval(String s, Integer begin, Integer end) {
@@ -70,18 +70,18 @@ Internally, Table API and SQL code generation works with primitive values where 
 The following code example shows a user-defined function that has overloaded `eval` methods.
 
     import org.apache.flink.table.functions.ScalarFunction;
-    
+
     // function with overloaded evaluation methods
     public static class SumFunction extends ScalarFunction {
-    
+
       public Integer eval(Integer a, Integer b) {
         return a + b;
       }
-    
+
       public Integer eval(String a, String b) {
         return Integer.valueOf(a) + Integer.valueOf(b);
       }
-    
+
       public Integer eval(Double... d) {
         double result = 0;
         for (double value : d)

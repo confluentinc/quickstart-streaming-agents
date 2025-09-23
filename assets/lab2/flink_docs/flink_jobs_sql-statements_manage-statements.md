@@ -148,4 +148,3 @@ The following example shows how you can use the Confluent CLI to delete a statem
     confluent --environment env-1 flink statement delete stmt-1
 
 The deletion of a statement deletes all Kubernetes resources.
-

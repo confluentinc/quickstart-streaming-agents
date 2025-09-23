@@ -24,49 +24,49 @@ For example:
 
     -- returns 42 of type INT NOT NULL
     SELECT CAST('42' AS INT);
-    
+
     -- returns NULL of type VARCHAR
     SELECT CAST(NULL AS VARCHAR);
-    
+
     -- throws an exception and fails the job
     SELECT CAST('non-number' AS INT);
-    
+
     -- returns 42 of type INT
     SELECT TRY_CAST('42' AS INT);
-    
+
     -- returns NULL of type VARCHAR
     SELECT TRY_CAST(NULL AS VARCHAR);
-    
+
     -- returns NULL of type INT
     SELECT TRY_CAST('non-number' AS INT);
-    
+
     -- returns 0 of type INT NOT NULL
     SELECT COALESCE(TRY_CAST('non-number' AS INT), 0);
 
 The following matrix shows the supported cast pairs, where “Y” means supported, “!” means fallible, and “N” means unsupported:
 
-Input / Target | CHAR¹ / VARCHAR¹ / STRING | BINARY¹ / VARBINARY¹ / BYTES | BOOLEAN | DECIMAL | TINYINT | SMALLINT | INTEGER | BIGINT | FLOAT | DOUBLE | DATE | TIME | TIMESTAMP | TIMESTAMP_LTZ | INTERVAL | ARRAY | MULTISET | MAP | ROW  
----|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---  
-CHAR / VARCHAR / STRING | Y | ! | ! | ! | ! | ! | ! | ! | ! | ! | ! | ! | ! | ! | N | N | N | N | N  
-BINARY / VARBINARY / BYTES | Y | Y | N | N | N | N | N | N | N | N | N | N | N | N | N | N | N | N | N  
-BOOLEAN | Y | N | Y | Y | Y | Y | Y | Y | Y | Y | N | N | N | N | N | N | N | N | N  
-DECIMAL | Y | N | N | Y | Y | Y | Y | Y | Y | Y | N | N | N | N | N | N | N | N | N  
-TINYINT | Y | N | Y | Y | Y | Y | Y | Y | Y | Y | N | N | N² | N² | N | N | N | N | N  
-SMALLINT | Y | N | Y | Y | Y | Y | Y | Y | Y | Y | N | N | N² | N² | N | N | N | N | N  
-INTEGER | Y | N | Y | Y | Y | Y | Y | Y | Y | Y | N | N | N² | N² | Y⁵ | N | N | N | N  
-BIGINT | Y | N | Y | Y | Y | Y | Y | Y | Y | Y | N | N | N² | N² | Y⁶ | N | N | N | N  
-FLOAT | Y | N | N | Y | Y | Y | Y | Y | Y | Y | N | N | N | N | N | N | N | N | N  
-DOUBLE | Y | N | N | Y | Y | Y | Y | Y | Y | Y | N | N | N | N | N | N | N | N | N  
-DATE | Y | N | N | N | N | N | N | N | N | N | Y | N | Y | Y | N | N | N | N | N  
-TIME | Y | N | N | N | N | N | N | N | N | N | N | Y | Y | Y | N | N | N | N | N  
-TIMESTAMP | Y | N | N | N | N | N | N | N | N | N | Y | Y | Y | Y | N | N | N | N | N  
-TIMESTAMP_LTZ | Y | N | N | N | N | N | N | N | N | N | Y | Y | Y | Y | N | N | N | N | N  
-INTERVAL | Y | N | N | N | N | N | Y⁵ | Y⁶ | N | N | N | N | N | N | Y | N | N | N | N  
-ARRAY | Y | N | N | N | N | N | N | N | N | N | N | N | N | N | N | !³ | N | N | N  
-MULTISET | Y | N | N | N | N | N | N | N | N | N | N | N | N | N | N | N | !³ | N | N  
-MAP | Y | N | N | N | N | N | N | N | N | N | N | N | N | N | N | N | N | !³ | N  
-ROW | Y | N | N | N | N | N | N | N | N | N | N | N | N | N | N | N | N | N | !³  
-  
+Input / Target | CHAR¹ / VARCHAR¹ / STRING | BINARY¹ / VARBINARY¹ / BYTES | BOOLEAN | DECIMAL | TINYINT | SMALLINT | INTEGER | BIGINT | FLOAT | DOUBLE | DATE | TIME | TIMESTAMP | TIMESTAMP_LTZ | INTERVAL | ARRAY | MULTISET | MAP | ROW
+---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---
+CHAR / VARCHAR / STRING | Y | ! | ! | ! | ! | ! | ! | ! | ! | ! | ! | ! | ! | ! | N | N | N | N | N
+BINARY / VARBINARY / BYTES | Y | Y | N | N | N | N | N | N | N | N | N | N | N | N | N | N | N | N | N
+BOOLEAN | Y | N | Y | Y | Y | Y | Y | Y | Y | Y | N | N | N | N | N | N | N | N | N
+DECIMAL | Y | N | N | Y | Y | Y | Y | Y | Y | Y | N | N | N | N | N | N | N | N | N
+TINYINT | Y | N | Y | Y | Y | Y | Y | Y | Y | Y | N | N | N² | N² | N | N | N | N | N
+SMALLINT | Y | N | Y | Y | Y | Y | Y | Y | Y | Y | N | N | N² | N² | N | N | N | N | N
+INTEGER | Y | N | Y | Y | Y | Y | Y | Y | Y | Y | N | N | N² | N² | Y⁵ | N | N | N | N
+BIGINT | Y | N | Y | Y | Y | Y | Y | Y | Y | Y | N | N | N² | N² | Y⁶ | N | N | N | N
+FLOAT | Y | N | N | Y | Y | Y | Y | Y | Y | Y | N | N | N | N | N | N | N | N | N
+DOUBLE | Y | N | N | Y | Y | Y | Y | Y | Y | Y | N | N | N | N | N | N | N | N | N
+DATE | Y | N | N | N | N | N | N | N | N | N | Y | N | Y | Y | N | N | N | N | N
+TIME | Y | N | N | N | N | N | N | N | N | N | N | Y | Y | Y | N | N | N | N | N
+TIMESTAMP | Y | N | N | N | N | N | N | N | N | N | Y | Y | Y | Y | N | N | N | N | N
+TIMESTAMP_LTZ | Y | N | N | N | N | N | N | N | N | N | Y | Y | Y | Y | N | N | N | N | N
+INTERVAL | Y | N | N | N | N | N | Y⁵ | Y⁶ | N | N | N | N | N | N | Y | N | N | N | N
+ARRAY | Y | N | N | N | N | N | N | N | N | N | N | N | N | N | N | !³ | N | N | N
+MULTISET | Y | N | N | N | N | N | N | N | N | N | N | N | N | N | N | N | !³ | N | N
+MAP | Y | N | N | N | N | N | N | N | N | N | N | N | N | N | N | N | N | !³ | N
+ROW | Y | N | N | N | N | N | N | N | N | N | N | N | N | N | N | N | N | N | !³
+
 Notes:
 
   1. All the casting to constant length or variable length also trims and pads, according to the type definition.

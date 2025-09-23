@@ -19,7 +19,7 @@ total_chunks: 8
             }
           ]
         }];
-        
+
         message MultisetEntry {
           optional string key = 1;
           int32 value = 2;
@@ -34,9 +34,9 @@ total_chunks: 8
   * Additional properties: –
 
   * Example:
-        
+
         meta_Row meta = 1;
-        
+
         message meta_Row {
           float a = 1;
           float b = 2;
@@ -51,7 +51,7 @@ total_chunks: 8
   * Additional properties: MetaProto extension: `connect.type = int16`
 
   * Example:
-        
+
         optional int32 smallInt = 6 [(confluent.field_meta) = {
           doc: "smallInt comment",
           params: [
@@ -77,7 +77,7 @@ total_chunks: 8
     * `flink.precision`
     * `flink.type=timestamp`
   * Example:
-        
+
         optional .google.protobuf.Timestamp timestamp_ltz_3 = 16 [(confluent.field_meta) = {
           params: [
             {
@@ -104,7 +104,7 @@ total_chunks: 8
   * Additional properties: `flink.precision`
 
   * Example:
-        
+
         optional .google.protobuf.Timestamp timestamp_ltz_3 = 15 [(confluent.field_meta) = {
           params: [
             {
@@ -127,7 +127,7 @@ total_chunks: 8
   * Additional properties: –
 
   * Example:
-        
+
         optional .google.type.TimeOfDay time = 18 [(confluent.field_meta) = {
           params: [
             {
@@ -150,7 +150,7 @@ total_chunks: 8
   * Additional properties: MetaProto extension: `connect.type = int8`
 
   * Example:
-        
+
         optional int32 tinyInt = 4 [(confluent.field_meta) = {
           doc: "tinyInt comment",
           params: [
@@ -174,7 +174,7 @@ total_chunks: 8
   * Additional properties: `flink.maxLength` (default = MAX_LENGTH)
 
   * Example:
-        
+
         optional bytes varbinary = 14 [(confluent.field_meta) = {
           params: [
             {
@@ -197,7 +197,7 @@ total_chunks: 8
   * Additional properties: `flink.maxLength` (default = MAX_LENGTH)
 
   * Example:
-        
+
         optional string varchar = 12 [(confluent.field_meta) = {
           params: [
             {
@@ -217,14 +217,14 @@ The following table shows the mapping of Protobuf types to Flink SQL and Connect
 
 This mapping is important when consuming/reading records with a schema that was created outside of Flink. The mapping defines the Flink table’s schema [inferred](statements/show.html#flink-sql-show-inferred-tables) from a Protobuf schema.
 
-Protobuf type | Flink SQL type | Message type | Connect type annotation  
----|---|---|---  
-FIXED32 | FIXED64 | SFIXED64 | BIGINT | – | –  
-INT32 | SINT32 | SFIXED32 | INT | – | –  
-INT32 | SINT32 | SFIXED32 | SMALLINT | – | int16  
-INT32 | SINT32 | SFIXED32 | TINYINT | – | int8  
-INT64 | SINT64 | BIGINT | – | –  
-UINT32 | UINT64 | BIGINT | – | –  
-MESSAGE | BIGINT | google.protobuf.Int64Value | –  
-MESSAGE | BIGINT | google.protobuf.UInt64Value | –  
+Protobuf type | Flink SQL type | Message type | Connect type annotation
+---|---|---|---
+FIXED32 | FIXED64 | SFIXED64 | BIGINT | – | –
+INT32 | SINT32 | SFIXED32 | INT | – | –
+INT32 | SINT32 | SFIXED32 | SMALLINT | – | int16
+INT32 | SINT32 | SFIXED32 | TINYINT | – | int8
+INT64 | SINT64 | BIGINT | – | –
+UINT32 | UINT64 | BIGINT | – | –
+MESSAGE | BIGINT | google.protobuf.Int64Value | –
+MESSAGE | BIGINT | google.protobuf.UInt64Value | –
 MESSAGE

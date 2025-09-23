@@ -44,12 +44,12 @@ If you combine multiple SQL statements into a single semicolon-separated string,
 If the query size is greater than the 4 MB limit, you receive the following error.
 
     This query is too large to process (exceeds 4194304 bytes).
-    
+
     This can happen due to:
-    
+
     * Complex query structure.
     * Too many columns selected or expanded due to * usage.
     * Multiple table joins.
     * Large number of conditions.
-    
+
     Try simplifying your query or breaking it into smaller parts.

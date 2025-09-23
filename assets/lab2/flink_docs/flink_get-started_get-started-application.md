@@ -62,20 +62,20 @@ Warning
 This quickstart guide assumes that everything will be installed into the same Kubernetes namespace. In this example it is `default`. You can use a different namespace, as long as it is consistent across all the commands. Please refer to the [Helm installation guide](../installation/helm.html#install-cmf-helm) for more information on how to setup Confluent Platform for Apache Flink in a multi-namespace environment, in a production environment or on OpenShift.
 
   1. Add the Confluent Platform repository.
-         
+
          helm repo add confluentinc https://packages.confluent.io/helm
          helm repo update
 
   2. Install the certificate manager.
-         
+
          kubectl create -f https://github.com/jetstack/cert-manager/releases/download/v1.18.2/cert-manager.yaml
 
   3. Install the Flink Kubernetes Operator
-         
+
          helm upgrade --install --version "~1.120.0" cp-flink-kubernetes-operator confluentinc/flink-kubernetes-operator
 
   4. Install Confluent Manager for Apache Flink.
-         
+
          helm upgrade --install cmf --version "~2.0.0" \
          confluentinc/confluent-manager-for-apache-flink \
          --namespace default --set cmf.sql.production=false
@@ -85,7 +85,7 @@ Note
 The `cmf.sql.production=false` setting initializing the CMF database without encryption. You can not enable encryption later on. A new CMF installation with a new database is required to setup encryption.
 
   1. Check that everything deployed correctly.
-         
+
          kubectl get pods
 
 ## Step 2: Deploy Flink jobs¶
@@ -93,15 +93,15 @@ The `cmf.sql.production=false` setting initializing the CMF database without enc
 To deploy Flink jobs, you should open port forwarding to CMF, and create an environment and application. You can then use the Web UI to confirm that your application has been created.
 
   1. Open port forwarding to CMF.
-         
+
          kubectl port-forward svc/cmf-service 8080:80
 
   2. Create an environment using the Confluent CLI. For a list of Confluent CLI commands for Confluent Platform for Apache Flink, see [confluent flink (On-Premises tab)](/confluent-cli/current/command-reference/flink/).
-         
+
          confluent flink environment create env1 --url http://localhost:8080 --kubernetes-namespace default
 
   3. Create the JSON application file. Following is an example.
-         
+
          {
          "apiVersion": "cmf.confluent.io/v1",
          "kind": "FlinkApplication",
@@ -139,21 +139,20 @@ To deploy Flink jobs, you should open port forwarding to CMF, and create an envi
          }
 
   4. Use the application command, passing the `application.json file` to create the application.
-         
+
          confluent flink application create application.json --environment env1 --url http://localhost:8080
 
   5. Access the Flink Web UI to confirm you have successfully created the application:
-         
+
          confluent flink application web-ui-forward basic-example --environment env1 --port 8090 --url http://localhost:8080
 
 ## Step 3: Cleanup¶
 
   1. Delete the Flink Application:
-         
+
          confluent flink application delete basic-example --environment env1 --url http://localhost:8080
 
   2. Uninstall the Flink Kubernetes Operator and CMF:
-         
+
          helm uninstall cp-flink-kubernetes-operator
          helm uninstall cmf
-

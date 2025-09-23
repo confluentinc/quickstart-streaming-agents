@@ -16,7 +16,7 @@ Flink SQLConfluent Cloud ConsoleConfluent CLIREST APITerraform
   1. In the Confluent Cloud Console or in the Flink SQL shell, run the [CREATE CONNECTION](../reference/statements/create-connection.html#flink-sql-create-connection) statement to create a connection.
 
 The following example creates an OpenAI connection with an API key.
-         
+
          CREATE CONNECTION `my-connection`
            WITH (
              'type' = 'OPENAI',
@@ -25,12 +25,12 @@ The following example creates an OpenAI connection with an API key.
            );
 
 The following example creates a MongoDB connection with basic authorization.
-         
+
          CREATE CONNECTION `my-mongodb-connection`
            WITH (
              'type' = 'MONGODB',
              'endpoint' = 'mongodb+srv://myCluster.mongodb.net/myDatabase',
-         
+
              'username' = '<atlas-user-name>',
              'password' = '<atlas-password>'
            );
@@ -38,7 +38,7 @@ The following example creates a MongoDB connection with basic authorization.
   2. Run the [CREATE TABLE](../reference/statements/create-table.html#flink-sql-create-table) statement to create a table that uses the connection.
 
 The following example creates a MongoDB external table that uses the MongoDB connection.
-         
+
          -- Use the MongoDB connection to create a MongoDB external table.
          CREATE TABLE mongodb_movies_full_text_search (
              title STRING,

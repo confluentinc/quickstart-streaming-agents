@@ -32,7 +32,7 @@ Before you can deduplicate rows, you need a table with sample data that contains
   1. Log in to Confluent Cloud and navigate to your Flink workspace.
 
   2. Run the following statement to create a `users` table.
-         
+
          CREATE TABLE users (
            user_id STRING NOT NULL,
            registertime BIGINT,
@@ -41,7 +41,7 @@ Before you can deduplicate rows, you need a table with sample data that contains
          );
 
   3. Insert rows with mock data into the `users` table.
-         
+
          INSERT INTO users VALUES
            ('Thomas A. Anderson', 1677260724, 'male', 'Region_4'),
            ('Thomas A. Anderson', 1677260724, 'male', 'Region_4'),
@@ -58,11 +58,11 @@ Before you can deduplicate rows, you need a table with sample data that contains
            ('Zee', 1677260922, 'female', 'Region_5');
 
   4. Inspect the inserted rows.
-         
+
          SELECT * FROM users;
 
 Your output should resemble:
-         
+
          user_id            registertime gender regionid
          Thomas A. Anderson 1677260724   male   Region_4
          Thomas A. Anderson 1677260724   male   Region_4

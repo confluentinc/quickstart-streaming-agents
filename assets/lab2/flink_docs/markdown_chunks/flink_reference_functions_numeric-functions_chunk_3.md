@@ -27,7 +27,7 @@ Examples
 
     -- returns 227
     SELECT RAND_INTEGER(23, 1000);
-    
+
     -- returns 1130
     SELECT RAND_INTEGER(42, 10000);
 
@@ -45,7 +45,7 @@ Examples
 
     -- returns 23.6
     SELECT ROUND(23.58, 1);
-    
+
     -- returns 3.1416
     SELECT ROUND(PI(), 4);
 
@@ -63,7 +63,7 @@ Examples
 
     -- returns -1.00
     SELECT SIGN(-23.55);
-    
+
     -- returns 1.000
     SELECT SIGN(606.808);
 
@@ -81,7 +81,7 @@ Examples
 
     -- returns 1.0
     SELECT SIN(PI()/2);
-    
+
     -- returns -1.0
     SELECT SIN(-PI()/2);
 
@@ -114,10 +114,10 @@ Examples
 
     -- returns 8.0
     SELECT SQRT(64);
-    
+
     -- returns 10.0
     SELECT SQRT(100);
-    
+
     -- returns 12.0
     SELECT SQRT(144);
 
@@ -135,7 +135,7 @@ Examples
 
     -- returns 0.0
     SELECT TAN(0);
-    
+
     -- returns 0.9999999999999999
     SELECT TAN(PI()/4);
 
@@ -153,7 +153,7 @@ Examples
 
     -- returns 0.0
     SELECT TANH(0);
-    
+
     -- returns 0.9999092042625951
     SELECT TANH(5);
 
@@ -179,10 +179,10 @@ Examples
 
     --  returns 42.32
     SELECT TRUNCATE(42.324, 2);
-    
+
     -- returns 42.0
     SELECT TRUNCATE(42.324);
-    
+
     -- returns 40
     SELECT TRUNCATE(42.324, -1);
 
@@ -208,7 +208,7 @@ Examples
 
     -- returns "Flink"
     SELECT DECODE(UNHEX('466C696E6B') , 'UTF-8');
-    
+
     -- returns NULL
     SELECT UNHEX('ZZ');
 

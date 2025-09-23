@@ -72,15 +72,15 @@ In the following example, five streaming statements are running in a single comp
 
 [](../../_images/flink-sql-five-queries-changing-workloads.png)
 
-Statement | CFU-minutes | Statement Type  
----|---|---  
-Q1 | 5 | Interactive  
-Q2 | 60 | Streaming  
-Q3 | 110 | Streaming  
-Q4 | 10 | Interactive  
-Q5 | 124 | Streaming  
-Total | 309 |   
-  
+Statement | CFU-minutes | Statement Type
+---|---|---
+Q1 | 5 | Interactive
+Q2 | 60 | Streaming
+Q3 | 110 | Streaming
+Q4 | 10 | Interactive
+Q5 | 124 | Streaming
+Total | 309 |
+
 Example pricing calculation
 
   * Number of statements executing = 5
@@ -88,4 +88,3 @@ Example pricing calculation
   * Total charge: 309 CFU-minutes x $0.0035/CFU-minute = **$1.0815**
 
 **Note:** The charge appears on the invoice as “5.15 CFU-hours x $0.21/CFU-hour”.
-

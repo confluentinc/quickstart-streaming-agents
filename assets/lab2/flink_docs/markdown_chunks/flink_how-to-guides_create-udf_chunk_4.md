@@ -24,11 +24,11 @@ Confluent Cloud ConsoleConfluent CLIREST API
   7. When your JAR file is uploaded, it appears in the **Artifacts** list. In the list, click the row for your UDF artifact to open the details pane.
 
   1. Log in to Confluent Cloud.
-         
+
          confluent login --organization-id ${ORG_ID} --prompt
 
   2. Run the following command to upload the jar to Confluent Cloud.
-         
+
          confluent flink artifact create udf_example \
          --artifact-file target/udf_example-1.0.jar \
          --cloud ${CLOUD_PROVIDER} \
@@ -36,7 +36,7 @@ Confluent Cloud ConsoleConfluent CLIREST API
          --environment ${ENV_ID}
 
 Your output should resemble:
-         
+
          +--------------------+-------------+
          | ID                 | cfa-ldxmro  |
          | Name               | udf_example |
@@ -52,25 +52,25 @@ Your output should resemble:
 Note the artifact ID and version of your UDTF, which in this example are `cfa-ldxmro` and `ver-81vxm5`, because you use them later to register the UDTF in Flink SQL and to manage it.
 
   3. Run the following command to view all of the available UDFs.
-         
+
          confluent flink artifact list \
          --cloud ${CLOUD_PROVIDER} \
          --region ${CLOUD_REGION}
 
 Your output should resemble:
-         
+
          ID     |    Name     | Cloud |  Region   | Environment
          -------------+-------------+-------+-----------+--------------
          cfa-ldxmro | udf_example | AWS   | us-east-1 | env-z3q9rd
 
   4. Run the following command to view the details of your UDF. You can use the artifact ID from the previous step or the artifact name to specify your UDF.
-         
+
          # use the artifact ID
          confluent flink artifact describe \
          cfa-ldxmro \
          --cloud ${CLOUD_PROVIDER} \
          --region ${CLOUD_REGION}
-         
+
          # use the artifact name
          confluent flink artifact describe \
          udf_example \
@@ -78,7 +78,7 @@ Your output should resemble:
          --region ${CLOUD_REGION}
 
 Your output should resemble:
-         
+
          +--------------------+-------------+
          | ID                 | cfa-ldxmro  |
          | Name               | udf_example |

@@ -14,11 +14,11 @@ Confluent Cloud for Apache Flink® enables real-time inference and prediction wi
     -- Rename a model.
     ALTER MODEL [IF EXISTS][catalog_name.][database_name.]model_name
     RENAME TO [catalog_name.][database_name.]new_model_name
-    
+
     -- Alter model options.
     ALTER MODEL [IF EXISTS] [catalog_name.][database_name.]model_name[$version_id]
     SET (key1=val1[, key2=val2]...)
-    
+
     -- Reset model options.
     ALTER MODEL [IF EXISTS] [catalog_name.][database_name.]model_name[$version_id]
     RESET (key1[, key2]...)
@@ -41,16 +41,15 @@ For RESET, the specified model option keys are reset to the default value.
 
     -- Rename a model.
     ALTER MODEL `my_model` RENAME TO `my_new_model`
-    
+
     -- Check for model existence and rename if it exists.
     ALTER MODEL IF EXISTS `my_model` RENAME TO `my_new_model`
-    
+
     -- Change options for version 2.
     ALTER MODEL `my_model$2` SET (
       tag = 'prod',
       description = "new_description"
     );
-    
+
     -- Reset the tag option.
     ALTER MODEL `my_model` RESET (tag)
-

@@ -84,11 +84,11 @@ To list all compute pools using the Confluent Terraform provider, use the [confl
       cloud_api_key    = var.confluent_cloud_api_key
       cloud_api_secret = var.confluent_cloud_api_secret
     }
-    
+
     data "confluent_flink_compute_pools" "all_pools" {
       environment_id = "<your-environment-id>"
     }
-    
+
     output "compute_pools" {
       value = data.confluent_flink_compute_pools.all_pools.compute_pools
     }

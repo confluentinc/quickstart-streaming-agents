@@ -33,7 +33,7 @@ The following SQL examples show how to use `offset` in a tumbling window.
 
     SELECT * FROM TABLE(
        TUMBLE(TABLE `examples`.`marketplace`.`orders`, DESCRIPTOR($rowtime), INTERVAL '10' MINUTES, INTERVAL '1' MINUTES));
-    
+
     -- or with the named params
     -- note: the DATA param must be the first
     SELECT * FROM TABLE(

@@ -22,13 +22,13 @@ Throughout this topic, the following statement is used as a running example.
 
     SET 'sql.state-ttl' = '1h';
     SET 'client.statement-name' = 'orders-with-customers-v1-1';
-    
+
     CREATE FUNCTION to_minor_currency
     AS 'io.confluent.flink.demo.toMinorCurrency'
     USING JAR 'confluent-artifact://ccp-lzj320/ver-4y0qw7';
-    
+
     CREATE TABLE v_orders AS SELECT order.* FROM sales_lifecycle_events WHERE order != NULL;
-    
+
     CREATE TABLE orders_with_customers_v1
     PRIMARY KEY (v_orders.order_id)
     DISTRIBUTED INTO 10 BUCKETS
@@ -51,7 +51,7 @@ The `orders_with_customers_v1` table uses a user-defined function named `to_mino
 A statement has the following components:
 
   * an **immutable** query, for example:
-        
+
         SELECT
           v_orders.product,
           to_minor_currency(v_orders.price),
@@ -61,7 +61,7 @@ A statement has the following components:
         ON v_orders.customer_id = customers.id;
 
   * **immutable** statement properties, for example:
-        
+
         'sql.state-ttl' = '1h'
 
   * a **mutable** principal, that is, the user or service account under which this statement runs.
@@ -79,7 +79,7 @@ The table which the statement is writing to has these components:
   * An immutable name, for example: `orders_with_customers_v1`.
 
   * Mutable constraints, for example:
-        
+
         PRIMARY KEY (v_orders.order_id)
 
   * A mutable watermark definition.

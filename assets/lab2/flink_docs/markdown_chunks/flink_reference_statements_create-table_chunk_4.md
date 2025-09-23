@@ -54,19 +54,19 @@ When you use event-time semantics, your tables must contain an event-time attrib
 Flink SQL provides these watermark strategies.
 
   * **Strictly ascending timestamps:** Emit a watermark of the maximum observed timestamp so far. Rows that have a timestamp larger than the max timestamp are not late.
-        
+
         WATERMARK FOR rowtime_column AS rowtime_column
 
   * **Ascending timestamps:** Emit a watermark of the maximum observed timestamp so far, minus _1_. Rows that have a timestamp larger than or equal to the max timestamp are not late.
-        
+
         WATERMARK FOR rowtime_column AS rowtime_column - INTERVAL '0.001' SECOND
 
   * **Bounded out-of-orderness timestamps:** Emit watermarks which are the maximum observed timestamp minus the specified delay.
-        
+
         WATERMARK FOR rowtime_column AS rowtime_column - INTERVAL 'string' timeUnit
 
 The following example shows a “5-seconds delayed” watermark strategy.
-        
+
         WATERMARK FOR rowtime_column AS rowtime_column - INTERVAL '5' SECOND
 
 Example

@@ -39,7 +39,7 @@ The following example shows how to register a `TShirtSizingIsSmaller` function a
     CREATE FUNCTION is_smaller
       AS 'com.example.my.TShirtSizingIsSmaller'
       USING JAR 'confluent-artifact://<artifact-id>/<version-id>';
-    
+
     -- Invoke the function.
     SELECT IS_SMALLER ('L', 'M');
 
@@ -68,9 +68,9 @@ The following code example shows how to define your own hash code function.
     import org.apache.flink.table.api.*;
     import org.apache.flink.table.functions.ScalarFunction;
     import static org.apache.flink.table.api.Expressions.*;
-    
+
     public static class HashFunction extends ScalarFunction {
-    
+
       // take any data type and return INT
       public int eval(@DataTypeHint(inputGroup = InputGroup.ANY) Object o) {
         return o.hashCode();

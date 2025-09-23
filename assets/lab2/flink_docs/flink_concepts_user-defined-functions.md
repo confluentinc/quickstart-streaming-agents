@@ -37,7 +37,7 @@ The following example shows how to register a `TShirtSizingIsSmaller` function a
     CREATE FUNCTION is_smaller
       AS 'com.example.my.TShirtSizingIsSmaller'
       USING JAR 'confluent-artifact://<artifact-id>/<version-id>';
-    
+
     -- Invoke the function.
     SELECT IS_SMALLER ('L', 'M');
 
@@ -66,9 +66,9 @@ The following code example shows how to define your own hash code function.
     import org.apache.flink.table.api.*;
     import org.apache.flink.table.functions.ScalarFunction;
     import static org.apache.flink.table.api.Expressions.*;
-    
+
     public static class HashFunction extends ScalarFunction {
-    
+
       // take any data type and return INT
       public int eval(@DataTypeHint(inputGroup = InputGroup.ANY) Object o) {
         return o.hashCode();
@@ -103,10 +103,10 @@ The following code example shows how to implement a simple string splitting func
     import org.apache.flink.table.functions.TableFunction;
     import org.apache.flink.types.Row;
     import static org.apache.flink.table.api.Expressions.*;
-    
+
     @FunctionHint(output = @DataTypeHint("ROW<word STRING, length INT>"))
     public static class SplitFunction extends TableFunction<Row> {
-    
+
       public void eval(String str) {
         for (String s : str.split(" ")) {
           // use collect(...) to emit a row
@@ -143,7 +143,7 @@ For SQL queries, your UDF must be registered by using the [CREATE FUNCTION](../r
     import org.apache.flink.table.api.*;
     import org.apache.flink.table.functions.ScalarFunction;
     import static org.apache.flink.table.api.Expressions.*;
-    
+
     // define function logic
     public static class SubstringFunction extends ScalarFunction {
       public String eval(String s, Integer begin, Integer end) {
@@ -184,18 +184,18 @@ Internally, Table API and SQL code generation works with primitive values where 
 The following code example shows a user-defined function that has overloaded `eval` methods.
 
     import org.apache.flink.table.functions.ScalarFunction;
-    
+
     // function with overloaded evaluation methods
     public static class SumFunction extends ScalarFunction {
-    
+
       public Integer eval(Integer a, Integer b) {
         return a + b;
       }
-    
+
       public Integer eval(String a, String b) {
         return Integer.valueOf(a) + Integer.valueOf(b);
       }
-    
+
       public Integer eval(Double... d) {
         double result = 0;
         for (double value : d)
@@ -230,26 +230,26 @@ The following code example shows how to use data type hints.
     import org.apache.flink.table.annotation.InputGroup;
     import org.apache.flink.table.functions.ScalarFunction;
     import org.apache.flink.types.Row;
-    
+
     // user-defined function that has overloaded evaluation methods.
     public static class OverloadedFunction extends ScalarFunction {
-    
+
       // No hint required for type inference.
       public Long eval(long a, long b) {
         return a + b;
       }
-    
+
       // Define the precision and scale of a decimal.
       public @DataTypeHint("DECIMAL(12, 3)") BigDecimal eval(double a, double b) {
         return BigDecimal.valueOf(a + b);
       }
-    
+
       // Define a nested data type.
       @DataTypeHint("ROW<s STRING, t TIMESTAMP_LTZ(3)>")
       public Row eval(int i) {
         return Row.of(String.valueOf(i), Instant.ofEpochSecond(i));
       }
-    
+
       // Enable wildcard input and custom serialized output.
       @DataTypeHint(value = "RAW", bridgedTo = ByteBuffer.class)
       public ByteBuffer eval(@DataTypeHint(inputGroup = InputGroup.ANY) Object o) {
@@ -271,22 +271,22 @@ The following code example shows how to use function hints.
     import org.apache.flink.table.annotation.FunctionHint;
     import org.apache.flink.table.functions.TableFunction;
     import org.apache.flink.types.Row;
-    
+
     // User-defined function with overloaded evaluation methods
     // but globally defined output type.
     @FunctionHint(output = @DataTypeHint("ROW<s STRING, i INT>"))
     public static class OverloadedFunction extends ScalarFunction<Row> {
-    
+
       public void eval(int a, int b) {
         collect(Row.of("Sum", a + b));
       }
-    
+
       // Overloading arguments is still possible.
       public void eval() {
         collect(Row.of("Empty args", -1));
       }
     }
-    
+
     // Decouples the type inference from evaluation methods.
     // The type inference is entirely determined by the function hints.
     @FunctionHint(
@@ -301,9 +301,9 @@ The following code example shows how to use function hints.
       input = {},
       output = @DataTypeHint("BOOLEAN")
     )
-    
+
     public static class OverloadedFunction extends ScalarFunction<Object> {
-    
+
       // Ensure a method exists that the JVM can call.
       public void eval(Object... o) {
         if (o.length == 0) {
@@ -320,13 +320,13 @@ When you call a user-define function, you can use parameter names to specify the
 The following code examples demonstrate how to use `@ArgumentHint` in different scopes.
 
   1. Use the `@ArgumentHint` annotation on the parameters of the `eval` method of the function:
-         
+
          import com.sun.tracing.dtrace.ArgsAttributes;
          import org.apache.flink.table.annotation.ArgumentHint;
          import org.apache.flink.table.functions.ScalarFunction;
-         
+
          public static class NamedParameterClass extends ScalarFunction {
-         
+
              // Use the @ArgumentHint annotation to specify the name, type, and whether a parameter is required.
              public String eval(@ArgumentHint(name = "param1", isOptional = false, type = @DataTypeHint("STRING")) String s1,
                                @ArgumentHint(name = "param2", isOptional = true, type = @DataTypeHint("INT")) Integer s2) {
@@ -335,12 +335,12 @@ The following code examples demonstrate how to use `@ArgumentHint` in different 
          }
 
   2. Use the `@ArgumentHint` annotation on the `eval` method of the function.
-         
+
          import org.apache.flink.table.annotation.ArgumentHint;
          import org.apache.flink.table.functions.ScalarFunction;
-         
+
          public static class NamedParameterClass extends ScalarFunction {
-         
+
            // Use the @ArgumentHint annotation to specify the name, type, and whether a parameter is required.
            @FunctionHint(
                    argument = {@ArgumentHint(name = "param1", isOptional = false, type = @DataTypeHint("STRING")),
@@ -352,17 +352,17 @@ The following code examples demonstrate how to use `@ArgumentHint` in different 
          }
 
   3. Use the `@ArgumentHint` annotation on the class of the function.
-         
+
          import org.apache.flink.table.annotation.ArgumentHint;
          import org.apache.flink.table.functions.ScalarFunction;
-         
+
          // Use the @ArgumentHint annotation to specify the name, type, and whether a parameter is required.
          @FunctionHint(
                  argument = {@ArgumentHint(name = "param1", isOptional = false, type = @DataTypeHint("STRING")),
                          @ArgumentHint(name = "param2", isOptional = true, type = @DataTypeHint("INTEGER"))}
          )
          public static class NamedParameterClass extends ScalarFunction {
-         
+
            public String eval(String s1, Integer s2) {
              return s1 + ", " + s2;
            }
@@ -404,7 +404,7 @@ The determinism of system (built-in) functions is immutable. According to Apache
     public boolean isDeterministic() {
       return true;
     }
-    
+
     /**
      * Returns whether it is unsafe to cache query plans referencing this
      * operator; false is assumed by default.
@@ -512,4 +512,3 @@ Libraries that use Java Native Interface (JNI) or require native binaries are no
   * **Public Kafka destinations only:** Private networked cluster types aren’t supported as logging destinations.
   * **Log4j logging only:** External UDF loggers can be composed only with the Apache Log4j logging framework.
   * **Burst rate to 1000/s** : UDF logging supports up to 1000 log events per second for each UDF during a short burst of high activity. This helps to optimize performance and to reduce noise in logs. Events that exceed the maximum rate are dropped.
-

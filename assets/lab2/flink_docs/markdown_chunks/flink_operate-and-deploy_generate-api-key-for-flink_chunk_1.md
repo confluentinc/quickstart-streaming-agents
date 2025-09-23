@@ -26,5 +26,5 @@ If you need to create long-running Flink SQL statements, create a service accoun
   2. Assign the OrganizationAdmin role to the service account by following the steps in [Add a role binding to a principal](../../security/access-control/rbac/manage-role-bindings.html#cloud-rbac-assign-role-to-user).
 
   3. Store the service account ID in a convenient location, for example, in an environment variable:
-         
+
          export PRINCIPAL_ID="<service-account-id>"

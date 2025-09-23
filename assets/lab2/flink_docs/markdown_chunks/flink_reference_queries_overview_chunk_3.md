@@ -29,15 +29,15 @@ The following BNF-grammar describes the superset of supported SQL features.
         [ LIMIT { count | ALL } ]
         [ OFFSET start { ROW | ROWS } ]
         [ FETCH { FIRST | NEXT } [ count ] { ROW | ROWS } ONLY]
-    
+
     withItem:
         name
         [ '(' column [, column ]* ')' ]
         AS '(' query ')'
-    
+
     orderItem:
         expression [ ASC | DESC ]
-    
+
     select:
         SELECT [ ALL | DISTINCT ]
         { * | projectItem [, projectItem ]* }
@@ -46,52 +46,52 @@ The following BNF-grammar describes the superset of supported SQL features.
         [ GROUP BY { groupItem [, groupItem ]* } ]
         [ HAVING booleanExpression ]
         [ WINDOW windowName AS windowSpec [, windowName AS windowSpec ]* ]
-    
+
     selectWithoutFrom:
         SELECT [ ALL | DISTINCT ]
         { * | projectItem [, projectItem ]* }
-    
+
     projectItem:
         expression [ [ AS ] columnAlias ]
       | tableAlias . *
-    
+
     tableExpression:
         tableReference [, tableReference ]*
       | tableExpression [ NATURAL ] [ LEFT | RIGHT | FULL ] JOIN tableExpression [ joinCondition ]
-    
+
     joinCondition:
         ON booleanExpression
       | USING '(' column [, column ]* ')'
-    
+
     tableReference:
         tablePrimary
         [ matchRecognize ]
         [ [ AS ] alias [ '(' columnAlias [, columnAlias ]* ')' ] ]
-    
+
     tablePrimary:
         [ TABLE ] tablePath [ dynamicTableOptions ] [systemTimePeriod] [[AS] correlationName]
       | LATERAL TABLE '(' functionName '(' expression [, expression ]* ')' ')'
       | [ LATERAL ] '(' query ')'
       | UNNEST '(' expression ')'
-    
+
     tablePath:
         [ [ catalogName . ] databaseName . ] tableName
-    
+
     systemTimePeriod:
         FOR SYSTEM_TIME AS OF dateTimeExpression
-    
+
     dynamicTableOptions:
         /*+ OPTIONS(key=val [, key=val]*) */
-    
+
     key:
         stringLiteral
-    
+
     val:
         stringLiteral
-    
+
     values:
         VALUES expression [, expression ]*
-    
+
     groupItem:
         expression
       | '(' ')'
@@ -99,11 +99,11 @@ The following BNF-grammar describes the superset of supported SQL features.
       | CUBE '(' expression [, expression ]* ')'
       | ROLLUP '(' expression [, expression ]* ')'
       | GROUPING SETS '(' groupItem [, groupItem ]* ')'
-    
+
     windowRef:
         windowName
       | windowSpec
-    
+
     windowSpec:
         [ windowName ]
         '('
@@ -114,7 +114,7 @@ The following BNF-grammar describes the superset of supported SQL features.
           | ROWS numericExpression {PRECEDING}
         ]
         ')'
-    
+
     matchRecognize:
         MATCH_RECOGNIZE '('
         [ PARTITION BY expression [, expression ]* ]
@@ -132,19 +132,19 @@ The following BNF-grammar describes the superset of supported SQL features.
         [ WITHIN intervalLiteral ]
         DEFINE variable AS condition [, variable AS condition ]*
         ')'
-    
+
     measureColumn:
         expression AS alias
-    
+
     pattern:
         patternTerm [ '|' patternTerm ]*
-    
+
     patternTerm:
         patternFactor [ patternFactor ]*
-    
+
     patternFactor:
         variable [ patternQuantifier ]
-    
+
     patternQuantifier:
         '*'
       | '*?'
@@ -154,7 +154,7 @@ The following BNF-grammar describes the superset of supported SQL features.
       | '??'
       | '{' { [ minRepeat ], [ maxRepeat ] } '}' ['?']
       | '{' repeat '}'
-    
+
     statementSet:
         EXECUTE STATEMENT SET
         BEGIN
@@ -168,7 +168,7 @@ Flink uses a lexical policy for identifier (table, attribute, function names) th
   * After which, identifiers are matched case-sensitively.
 
   * Unlike Java, back-ticks enable identifiers to contain non-alphanumeric characters, for example:
-        
+
         SELECT a AS `my field` FROM t;
 
 String literals must be enclosed in single quotes, for example, `SELECT 'Hello World'`. Duplicate a single quote for escaping, for example, `SELECT 'It''s me'`.

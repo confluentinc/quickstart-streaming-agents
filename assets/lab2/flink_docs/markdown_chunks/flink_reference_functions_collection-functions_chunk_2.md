@@ -175,7 +175,7 @@ Example
 
     -- returns [1,2,3,4,5]
     SELECT ARRAY_SORT(ARRAY[5,4,3,2,1]);
-    
+
     -- returns [NULL,SQL,Python,Java,Go,C#]
     SELECT ARRAY_SORT(ARRAY['Java', 'SQL', 'Python', NULL, 'Go', 'C#'], FALSE, TRUE);
 

@@ -174,4 +174,3 @@ Example
   * [Numeric Functions](numeric-functions.html#flink-sql-numeric-functions)
   * [String Functions](string-functions.html#flink-sql-string-functions)
   * [Table API Functions](table-api-functions.html#flink-table-api-functions)
-

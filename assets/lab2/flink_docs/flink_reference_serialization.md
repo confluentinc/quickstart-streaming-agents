@@ -40,7 +40,7 @@ This mapping is important for creating tables, because it defines the Avro schem
   * Additional properties: –
 
   * Example:
-        
+
         {
           "type" : "array",
           "items" : "long"
@@ -62,7 +62,7 @@ This mapping is important for creating tables, because it defines the Avro schem
   * Additional properties: `flink.maxLength` (MAX_LENGTH if not set)
 
   * Example:
-        
+
         {
             "type" : "fixed",
             "name" : "row",
@@ -86,7 +86,7 @@ This mapping is important for creating tables, because it defines the Avro schem
   * Additional properties: `flink.maxLength` (MAX_LENGTH if not set)
 
   * Example:
-        
+
         {
           "type" : "string",
           "flink.maxLength" : 123,
@@ -103,7 +103,7 @@ This mapping is important for creating tables, because it defines the Avro schem
   * Additional properties: –
 
   * Example:
-        
+
         {
           "type" : "int",
           "logicalType" : "date"
@@ -118,7 +118,7 @@ This mapping is important for creating tables, because it defines the Avro schem
   * Additional properties: –
 
   * Example:
-        
+
         {
           "type" : "bytes",
           "logicalType" : "decimal",
@@ -156,7 +156,7 @@ This mapping is important for creating tables, because it defines the Avro schem
   * Additional properties: –
 
   * Example:
-        
+
         {
           "type" : "map",
           "values" : "boolean"
@@ -171,7 +171,7 @@ This mapping is important for creating tables, because it defines the Avro schem
   * Additional properties: array of `io.confluent.connect.avro.MapEntry(key, value)`
 
   * Example:
-        
+
         {
           "type" : "array",
           "items" : {
@@ -197,7 +197,7 @@ This mapping is important for creating tables, because it defines the Avro schem
   * Additional properties: `flink.type : multiset`
 
   * Example:
-        
+
         {
           "type" : "map",
           "values" : "int",
@@ -214,7 +214,7 @@ This mapping is important for creating tables, because it defines the Avro schem
   * Additional properties: array of `io.confluent.connect.avro.MapEntry(key, value)`, `flink.type : multiset`
 
   * Example:
-        
+
         {
           "type" : "array",
           "items" : {
@@ -246,7 +246,7 @@ This mapping is important for creating tables, because it defines the Avro schem
   * Nested records name: `org.apache.flink.avro.generated.record_$fieldName`
 
   * Example:
-        
+
         {
           "type" : "record",
           "name" : "row",
@@ -267,7 +267,7 @@ This mapping is important for creating tables, because it defines the Avro schem
   * Additional properties: `connect.type=int16`
 
   * Example:
-        
+
         {
           "type" : "int",
           "connect.type" : "int16"
@@ -282,7 +282,7 @@ This mapping is important for creating tables, because it defines the Avro schem
   * Additional properties: `flink.maxLength = flink.minLength` (MAX_LENGTH if not set)
 
   * Example:
-        
+
         {
           "type" : "string",
           "flink.maxLength" : 123,
@@ -298,7 +298,7 @@ This mapping is important for creating tables, because it defines the Avro schem
   * Additional properties: `flink.precision` (default: 3, max supported: 3)
 
   * Example:
-        
+
         {
           "type" : "int",
           "flink.precision" : 2,
@@ -315,7 +315,7 @@ This mapping is important for creating tables, because it defines the Avro schem
   * Additional properties: `flink.precision` (default: 3/6, max supported: 3/9)
 
   * Example:
-        
+
         {
           "type" : "long",
           "flink.precision" : 2,
@@ -332,7 +332,7 @@ This mapping is important for creating tables, because it defines the Avro schem
   * Additional properties: `flink.precision` (default: 3/6, max supported: 3/9)
 
   * Example:
-        
+
         {
           "type" : "long",
           "flink.precision" : 2,
@@ -349,7 +349,7 @@ This mapping is important for creating tables, because it defines the Avro schem
   * Additional properties: `connect.type=int8`
 
   * Example:
-        
+
         {
           "type" : "int",
           "connect.type" : "int8"
@@ -364,7 +364,7 @@ This mapping is important for creating tables, because it defines the Avro schem
   * Additional properties: `flink.maxLength` (MAX_LENGTH if not set)
 
   * Example:
-        
+
         {
             "type" : "bytes",
             "flink.maxLength" : 123,
@@ -379,12 +379,12 @@ This mapping is important when consuming/reading records with a schema that was 
 
 Flink SQL supports reading and writing nullable types. A nullable type is mapped to an Avro `union(avro_type, null)`, with the `avro_type` converted from the corresponding Flink type.
 
-Avro type | Avro logical type | Flink SQL type | Example  
----|---|---|---  
-long | time-micros | BIGINT | –  
-enum | – | STRING | –  
-union with null type (null + one other type) | – | NULLABLE(type) | –  
-union (other unions) | – | ROW(type_name Type0, …) | 
+Avro type | Avro logical type | Flink SQL type | Example
+---|---|---|---
+long | time-micros | BIGINT | –
+enum | – | STRING | –
+union with null type (null + one other type) | – | NULLABLE(type) | –
+union (other unions) | – | ROW(type_name Type0, …) |
 
     [
       "long",
@@ -402,9 +402,9 @@ union (other unions) | – | ROW(type_name Type0, …) |
       }
     ]
 
-string (uuid) | – | STRING | –  
-fixed (duration) | – | BINARY(size) | –  
-  
+string (uuid) | – | STRING | –
+fixed (duration) | – | BINARY(size) | –
+
 ## JSON Schema¶
 
 ### Flink SQL types to JSON Schema types¶
@@ -426,7 +426,7 @@ This mapping is important for creating tables, because it defines the JSON Schem
   * JSON type title: –
 
   * Example:
-        
+
         {
           "type": "array",
           "items": {
@@ -447,7 +447,7 @@ This mapping is important for creating tables, because it defines the JSON Schem
   * JSON type title: –
 
   * Example:
-        
+
         {
           "type": "number",
           "connect.type": "int64"
@@ -464,7 +464,7 @@ This mapping is important for creating tables, because it defines the JSON Schem
   * JSON type title: –
 
   * Example:
-        
+
         {
           "type": "string",
           "flink.maxLength": 123,
@@ -482,7 +482,7 @@ This mapping is important for creating tables, because it defines the JSON Schem
   * JSON type title: –
 
   * Example:
-        
+
         {
           "type": "array",
           "items": {
@@ -503,7 +503,7 @@ This mapping is important for creating tables, because it defines the JSON Schem
   * JSON type title: –
 
   * Example:
-        
+
         {
           "type": "string",
           "minLength": 123,
@@ -533,7 +533,7 @@ This mapping is important for creating tables, because it defines the JSON Schem
   * JSON type title: –
 
   * Example:
-        
+
         {
           "type": "number",
           "connect.type": "float64"
@@ -548,7 +548,7 @@ This mapping is important for creating tables, because it defines the JSON Schem
   * JSON type title: –
 
   * Example:
-        
+
         {
           "type": "number",
           "connect.type": "float32"
@@ -563,7 +563,7 @@ This mapping is important for creating tables, because it defines the JSON Schem
   * JSON type title: –
 
   * Example:
-        
+
         {
           "type": "number",
           "connect.type": "int32"
@@ -578,7 +578,7 @@ This mapping is important for creating tables, because it defines the JSON Schem
   * JSON type title: –
 
   * Example:
-        
+
         {
           "type": "array",
           "connect.type": "map",
@@ -606,7 +606,7 @@ This mapping is important for creating tables, because it defines the JSON Schem
   * JSON type title: –
 
   * Example:
-        
+
         {
           "type":"object",
           "connect.type":"map",
@@ -628,7 +628,7 @@ This mapping is important for creating tables, because it defines the JSON Schem
   * JSON type title: The count (value) in the JSON schema must map to a Flink INT type. For MULTISET types, the count (value) in the JSON schema must map to a Flink INT type, which corresponds to `connect.type: int32` in the JSON Schema. Using `connect.type: int64` causes a validation error.
 
   * Example:
-        
+
         {
           "type": "array",
           "connect.type": "map",
@@ -659,7 +659,7 @@ This mapping is important for creating tables, because it defines the JSON Schem
   * JSON type title: The count (value) in the JSON schema must map to a Flink INT type. For MULTISET types, the count (value) in the JSON schema must map to a Flink INT type, which corresponds to `connect.type: int32` in the JSON Schema. Using `connect.type: int64` causes a validation error.
 
   * Example:
-        
+
         {
           "type": "object",
           "connect.type": "map",
@@ -686,7 +686,7 @@ This mapping is important for creating tables, because it defines the JSON Schem
   * JSON type title: –
 
   * Example:
-        
+
         {
           "type": "number",
           "connect.type": "int16"
@@ -703,7 +703,7 @@ This mapping is important for creating tables, because it defines the JSON Schem
   * JSON type title: `org.apache.kafka.connect.data.Time`
 
   * Example:
-        
+
         {
           "type":"number",
           "title":"org.apache.kafka.connect.data.Time",
@@ -724,7 +724,7 @@ This mapping is important for creating tables, because it defines the JSON Schem
   * JSON type title: `org.apache.kafka.connect.data.Timestamp`
 
   * Example:
-        
+
         {
           "type":"number",
           "title":"org.apache.kafka.connect.data.Timestamp",
@@ -745,7 +745,7 @@ This mapping is important for creating tables, because it defines the JSON Schem
   * JSON type title: `org.apache.kafka.connect.data.Timestamp`
 
   * Example:
-        
+
         {
           "type":"number",
           "title":"org.apache.kafka.connect.data.Timestamp",
@@ -763,7 +763,7 @@ This mapping is important for creating tables, because it defines the JSON Schem
   * JSON type title: –
 
   * Example:
-        
+
         {
           "type": "number",
           "connect.type": "int8"
@@ -780,7 +780,7 @@ This mapping is important for creating tables, because it defines the JSON Schem
   * JSON type title: –
 
   * Example:
-        
+
         {
           "type": "string",
           "flink.maxLength": 123,
@@ -797,7 +797,7 @@ This mapping is important for creating tables, because it defines the JSON Schem
   * JSON type title: –
 
   * Example:
-        
+
         {
           "type": "string",
           "maxLength": 123
@@ -809,13 +809,13 @@ The following table shows the mapping of JSON types to Flink SQL types. It shows
 
 This mapping is important when consuming/reading records with a schema that was created outside of Flink. The mapping defines the Flink table’s schema [inferred](statements/show.html#flink-sql-show-inferred-tables) from JSON Schema.
 
-JSON type | Flink SQL type  
----|---  
-Combined | ROW  
-Enum | VARCHAR  
-Number(requiresInteger=true) | BIGINT  
-Number(requiresInteger=false) | DOUBLE  
-  
+JSON type | Flink SQL type
+---|---
+Combined | ROW
+Enum | VARCHAR
+Number(requiresInteger=true) | BIGINT
+Number(requiresInteger=false) | DOUBLE
+
 ## Protobuf schema¶
 
 ### Flink SQL types to Protobuf types¶
@@ -833,11 +833,11 @@ This mapping is important for creating tables, because it defines the Protobuf s
   * Additional properties: `flink.wrapped`, which indicates that Flink wrappers are used to represent nullability, because Protobuf doesn’t support nullable repeated natively.
 
   * Example:
-        
+
         repeated int64 value = 1;
 
 Nullable array:
-        
+
         arrayNullableRepeatedWrapper arrayNullable = 1 [(confluent.field_meta) = {
           params: [
             {
@@ -850,13 +850,13 @@ Nullable array:
             }
           ]
         }];
-        
+
         message arrayNullableRepeatedWrapper {
           repeated int64 value = 1;
         }
 
 Nullable elements:
-        
+
         repeated elementNullableElementWrapper elementNullable = 2 [(confluent.field_meta) = {
           params: [
             {
@@ -869,7 +869,7 @@ Nullable elements:
             }
           ]
         }];
-        
+
         message elementNullableElementWrapper {
           optional int64 value = 1;
         }
@@ -883,7 +883,7 @@ Nullable elements:
   * Additional properties: –
 
   * Example:
-        
+
         optional int64 bigint = 8;
 
 #### BINARY¶
@@ -895,7 +895,7 @@ Nullable elements:
   * Additional properties: `flink.maxLength=flink.minLength`
 
   * Example:
-        
+
         optional bytes binary = 13 [(confluent.field_meta) = {
           params: [
             {
@@ -922,7 +922,7 @@ Nullable elements:
   * Additional properties: –
 
   * Example:
-        
+
         optional bool boolean = 2;
 
 #### CHAR¶
@@ -934,7 +934,7 @@ Nullable elements:
   * Additional properties: `flink.maxLength=flink.minLength`
 
   * Example:
-        
+
         optional string char = 11 [(confluent.field_meta) = {
           params: [
             {
@@ -961,7 +961,7 @@ Nullable elements:
   * Additional properties: –
 
   * Example:
-        
+
         optional .google.type.Date date = 17;
 
 #### DECIMAL¶
@@ -973,7 +973,7 @@ Nullable elements:
   * Additional properties: –
 
   * Example:
-        
+
         optional .confluent.type.Decimal decimal = 19 [(confluent.field_meta) = {
           params: [
             {
@@ -1000,7 +1000,7 @@ Nullable elements:
   * Additional properties: –
 
   * Example:
-        
+
         optional double double = 10;
 
 #### FLOAT¶
@@ -1012,7 +1012,7 @@ Nullable elements:
   * Additional properties: –
 
   * Example:
-        
+
         optional float float = 9;
 
 #### INT¶
@@ -1024,7 +1024,7 @@ Nullable elements:
   * Additional properties: –
 
   * Example:
-        
+
         optional int32 int = 7;
 
 #### MAP[K, V]¶
@@ -1036,9 +1036,9 @@ Nullable elements:
   * Additional properties: `flink.wrapped`, which indicates that Flink wrappers are used to represent nullability, because Protobuf doesn’t support nullable repeated natively. For examples, see the ARRAY type.
 
   * Example:
-        
+
         repeated MapEntry map = 20;
-        
+
         message MapEntry {
             optional string key = 1;
             optional int64 value = 2;
@@ -1055,7 +1055,7 @@ Nullable elements:
     * `flink.wrapped`, which indicates that Flink wrappers are used to represent nullability, because Protobuf doesn’t support nullable repeated natively. For examples, see the ARRAY type.
     * `flink.type=multiset`
   * Example:
-        
+
         repeated MultisetEntry multiset = 1 [(confluent.field_meta) = {
           params: [
             {
@@ -1068,7 +1068,7 @@ Nullable elements:
             }
           ]
         }];
-        
+
         message MultisetEntry {
           optional string key = 1;
           int32 value = 2;
@@ -1083,9 +1083,9 @@ Nullable elements:
   * Additional properties: –
 
   * Example:
-        
+
         meta_Row meta = 1;
-        
+
         message meta_Row {
           float a = 1;
           float b = 2;
@@ -1100,7 +1100,7 @@ Nullable elements:
   * Additional properties: MetaProto extension: `connect.type = int16`
 
   * Example:
-        
+
         optional int32 smallInt = 6 [(confluent.field_meta) = {
           doc: "smallInt comment",
           params: [
@@ -1126,7 +1126,7 @@ Nullable elements:
     * `flink.precision`
     * `flink.type=timestamp`
   * Example:
-        
+
         optional .google.protobuf.Timestamp timestamp_ltz_3 = 16 [(confluent.field_meta) = {
           params: [
             {
@@ -1153,7 +1153,7 @@ Nullable elements:
   * Additional properties: `flink.precision`
 
   * Example:
-        
+
         optional .google.protobuf.Timestamp timestamp_ltz_3 = 15 [(confluent.field_meta) = {
           params: [
             {
@@ -1176,7 +1176,7 @@ Nullable elements:
   * Additional properties: –
 
   * Example:
-        
+
         optional .google.type.TimeOfDay time = 18 [(confluent.field_meta) = {
           params: [
             {
@@ -1199,7 +1199,7 @@ Nullable elements:
   * Additional properties: MetaProto extension: `connect.type = int8`
 
   * Example:
-        
+
         optional int32 tinyInt = 4 [(confluent.field_meta) = {
           doc: "tinyInt comment",
           params: [
@@ -1223,7 +1223,7 @@ Nullable elements:
   * Additional properties: `flink.maxLength` (default = MAX_LENGTH)
 
   * Example:
-        
+
         optional bytes varbinary = 14 [(confluent.field_meta) = {
           params: [
             {
@@ -1246,7 +1246,7 @@ Nullable elements:
   * Additional properties: `flink.maxLength` (default = MAX_LENGTH)
 
   * Example:
-        
+
         optional string varchar = 12 [(confluent.field_meta) = {
           params: [
             {
@@ -1266,25 +1266,25 @@ The following table shows the mapping of Protobuf types to Flink SQL and Connect
 
 This mapping is important when consuming/reading records with a schema that was created outside of Flink. The mapping defines the Flink table’s schema [inferred](statements/show.html#flink-sql-show-inferred-tables) from a Protobuf schema.
 
-Protobuf type | Flink SQL type | Message type | Connect type annotation  
----|---|---|---  
-FIXED32 | FIXED64 | SFIXED64 | BIGINT | – | –  
-INT32 | SINT32 | SFIXED32 | INT | – | –  
-INT32 | SINT32 | SFIXED32 | SMALLINT | – | int16  
-INT32 | SINT32 | SFIXED32 | TINYINT | – | int8  
-INT64 | SINT64 | BIGINT | – | –  
-UINT32 | UINT64 | BIGINT | – | –  
-MESSAGE | BIGINT | google.protobuf.Int64Value | –  
-MESSAGE | BIGINT | google.protobuf.UInt64Value | –  
-MESSAGE | BIGINT | google.protobuf.UInt32Value | –  
-MESSAGE | BOOLEAN | google.protobuf.BoolValue | –  
-MESSAGE | DOUBLE | google.protobuf.DoubleValue | –  
-MESSAGE | FLOAT | google.protobuf.FloatValue | –  
-MESSAGE | INT | google.protobuf.Int32Value | –  
-MESSAGE | VARBINARY | google.protobuf.BytesValue | –  
-MESSAGE | VARCHAR | google.protobuf.StringValue | –  
-oneOf | ROW | – | –  
-  
+Protobuf type | Flink SQL type | Message type | Connect type annotation
+---|---|---|---
+FIXED32 | FIXED64 | SFIXED64 | BIGINT | – | –
+INT32 | SINT32 | SFIXED32 | INT | – | –
+INT32 | SINT32 | SFIXED32 | SMALLINT | – | int16
+INT32 | SINT32 | SFIXED32 | TINYINT | – | int8
+INT64 | SINT64 | BIGINT | – | –
+UINT32 | UINT64 | BIGINT | – | –
+MESSAGE | BIGINT | google.protobuf.Int64Value | –
+MESSAGE | BIGINT | google.protobuf.UInt64Value | –
+MESSAGE | BIGINT | google.protobuf.UInt32Value | –
+MESSAGE | BOOLEAN | google.protobuf.BoolValue | –
+MESSAGE | DOUBLE | google.protobuf.DoubleValue | –
+MESSAGE | FLOAT | google.protobuf.FloatValue | –
+MESSAGE | INT | google.protobuf.Int32Value | –
+MESSAGE | VARBINARY | google.protobuf.BytesValue | –
+MESSAGE | VARCHAR | google.protobuf.StringValue | –
+oneOf | ROW | – | –
+
 ### Protobuf 3 nullable field behavior¶
 
 When working with Protobuf 3 schemas in Confluent Cloud for Apache Flink, it’s important to understand how nullable fields are handled.
@@ -1298,7 +1298,7 @@ In Protobuf, expressing something as NULLABLE or NOT NULL is not straightforward
   * Non-MESSAGE types marked with `optional` can be checked if they were set. If not set, Flink assumes NULL.
 
   * MESSAGE types are all NULLABLE, which means that all fields of MESSAGE type are optional, and there is no way to ensure on a format level they are NOT NULL. To store this information, Flink uses the `flink.notNull` property, for example:
-        
+
         message Row {
           .google.type.Date date = 1 [(confluent.field_meta) = {
             params: [
@@ -1331,4 +1331,3 @@ In a Protobuf 3 schema, if you want a field to be nullable in Flink, you must ex
       repeated string array_field = 3;     // NOT NULL array in Flink
       repeated optional string nullable_array_field = 4;  // NOT NULL array with nullable elements
     }
-

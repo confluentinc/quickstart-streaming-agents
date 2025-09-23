@@ -79,7 +79,7 @@ output "lab_suffix" {
 }
 
 output "zapier_mcp_connection_name" {
-  value = "zapier-mcp-connection"
+  value       = "zapier-mcp-connection"
   description = "Name for the Zapier MCP connection (must be created manually via CLI)"
 }
 

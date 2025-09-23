@@ -10,14 +10,14 @@ total_chunks: 4
 This strategy enables you to evolve statements arbitrarily with **exactly-once semantics** across the update, if and only if the statement is “stateless”, which mean that every output message is affected by a single input message. The following statements are common example of “stateless” statements:
 
   * Filters
-        
+
         INSERT INTO shipped_orders
         SELECT *
         FROM orders
         WHERE status = shipped;
 
   * Routers
-        
+
         EXECUTE STATEMENT SET
         BEGIN
           INSERT INTO shipped_orders SELECT * FROM orders WHERE status = 'shipped';
@@ -27,7 +27,7 @@ This strategy enables you to evolve statements arbitrarily with **exactly-once s
         END;
 
   * Per-row transformations, including UDFs and array expansions:
-        
+
         INSERT INTO ordered_products
         SELECT
            o.*,

@@ -41,7 +41,7 @@ You need the following prerequisites to use Confluent Cloud for Apache Flink.
   * The OrganizationAdmin, EnvironmentAdmin, or FlinkAdmin role for creating compute pools, or the FlinkDeveloper role if you already have a compute pool. If you don’t have the appropriate role, reach out to your OrganizationAdmin or EnvironmentAdmin.
 
   * The Confluent CLI. To use the Flink SQL shell, update to the latest version of the Confluent CLI by running the following command:
-        
+
         confluent update --yes
 
 If you used homebrew to install the Confluent CLI, update the CLI by using the `brew upgrade` command, instead of `confluent update`.

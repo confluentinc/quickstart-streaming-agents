@@ -33,12 +33,12 @@ Kafka topics and schemas are always in sync with Flink, simplifying how you can 
 
 Because Flink follows the SQL standard, the terminology is slightly different from Kafka. The following table shows the mapping between Kafka and Flink terminology.
 
-Kafka | Flink | Notes  
----|---|---  
-Environment | Catalog | Flink can query and join data that are in any environments/catalogs  
-Cluster | Database | Flink can query and join data that are in different clusters/databases  
-Topic + Schema | Table | Kafka topics and Flink tables are always in sync. You never need to declare tables manually for existing topics. Creating a table in Flink creates a topic and the associated schema.  
-  
+Kafka | Flink | Notes
+---|---|---
+Environment | Catalog | Flink can query and join data that are in any environments/catalogs
+Cluster | Database | Flink can query and join data that are in different clusters/databases
+Topic + Schema | Table | Kafka topics and Flink tables are always in sync. You never need to declare tables manually for existing topics. Creating a table in Flink creates a topic and the associated schema.
+
 As a result, when you start using Flink, you can directly access all of the environments, clusters, and topics that you already have in Confluent Cloud, without any additional metadata creation.
 
 Automatic metadata integration in Confluent Cloud for Apache Flink¶

@@ -11,16 +11,16 @@ Examples
 
     -- returns 1683201600
     SELECT UNIX_TIMESTAMP('2023-05-04 12:00:00');
-    
+
     -- Returns 25201
     SELECT UNIX_TIMESTAMP('1970-01-01 08:00:01.001', 'yyyy-MM-dd HH:mm:ss.SSS');
-    
+
     -- Returns 1
     SELECT UNIX_TIMESTAMP('1970-01-01 08:00:01.001 +0800', 'yyyy-MM-dd HH:mm:ss.SSS X');
-    
+
     -- Returns 25201
     SELECT UNIX_TIMESTAMP('1970-01-01 08:00:01.001 +0800', 'yyyy-MM-dd HH:mm:ss.SSS');
-    
+
     -- Returns -9223372036854775808
     SELECT UNIX_TIMESTAMP('1970-01-01 08:00:01.001', 'yyyy-MM-dd HH:mm:ss.SSS X');
 

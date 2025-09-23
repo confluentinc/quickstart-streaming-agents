@@ -243,7 +243,7 @@ Flink SQL supports defining an event-time attribute on TIMESTAMP and TIMESTAMP_L
     ) WITH (
       ...
     );
-    
+
     SELECT TUMBLE_START(user_action_time, INTERVAL '10' MINUTE), COUNT(DISTINCT user_name)
     FROM user_actions
     GROUP BY TUMBLE(user_action_time, INTERVAL '10' MINUTE);
@@ -261,7 +261,7 @@ If the timestamp data in the source is represented as epoch time, which is usual
     ) WITH (
       ...
     );
-    
+
     SELECT TUMBLE_START(time_ltz, INTERVAL '10' MINUTE), COUNT(DISTINCT user_name)
     FROM user_actions
     GROUP BY TUMBLE(time_ltz, INTERVAL '10' MINUTE);
@@ -271,4 +271,3 @@ If the timestamp data in the source is represented as epoch time, which is usual
 Processing time enables a table program to produce results based on the time of the local machine. It’s the simplest notion of time, but it generates non-deterministic results. Processing time doesn’t require timestamp extraction or watermark generation.
 
 Processing time is not supported in Confluent Cloud for Apache Flink.
-

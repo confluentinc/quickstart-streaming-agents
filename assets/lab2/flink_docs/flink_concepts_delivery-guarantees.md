@@ -22,4 +22,3 @@ This implies that depending on the delivery guarantees required by your use case
 Note
 
 Confluent is actively working on reducing the latency under exactly-once semantics. If your use case requires a lower latency, reach out to Support or your account manager.
-

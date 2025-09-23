@@ -173,7 +173,7 @@ For example, the following two queries are equivalent.
        FROM TABLE(
          TUMBLE(TABLE `examples`.`marketplace`.`orders`, DESCRIPTOR($rowtime), INTERVAL '10' MINUTES))
        GROUP BY window_start, window_end, CUBE (player_id, game_room_id);
-    
+
     SELECT window_start, window_end, game_room_id, player_id, SUM(points) as `sum`
        FROM TABLE(
          TUMBLE(TABLE `examples`.`marketplace`.`orders`, DESCRIPTOR($rowtime), INTERVAL '10' MINUTES))
@@ -212,4 +212,3 @@ The following code shows a cascading window aggregation in which the first windo
       FROM TABLE(
           TUMBLE(TABLE fiveminutewindow, DESCRIPTOR($rowtime), INTERVAL '10' MINUTES))
       GROUP BY window_start, window_end;
-

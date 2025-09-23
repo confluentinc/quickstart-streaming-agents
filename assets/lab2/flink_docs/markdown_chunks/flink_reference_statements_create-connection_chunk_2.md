@@ -18,7 +18,7 @@ string is converted to bytes.
         'endpoint' = 'https://myworkspace.myregion.inference.ml.azure.com/test',
         'api_key' = '<your-api-key>'
       );
-    
+
     -- example AzureML connection with comment
     CREATE CONNECTION `my-azureml-connection`
       COMMENT 'Connection Comment'
@@ -27,7 +27,7 @@ string is converted to bytes.
         'endpoint' = 'https://myworkspace.myregion.inference.ml.azure.com/test',
         'api_key' = '<your-api-key>'
       );
-    
+
     -- example Couchbase connection with basic authorization
     CREATE CONNECTION `my-couchbase-connection`
       WITH (
@@ -36,7 +36,7 @@ string is converted to bytes.
         'username' = '<user-name>',
         'password' = '<password>'
       );
-    
+
     -- example Bedrock connection with AWS authentication
     CREATE CONNECTION `my-bedrock-connection`
       WITH (
@@ -57,7 +57,7 @@ string is converted to bytes.
         'username' = '<atlas-user-name>',
         'password' = '<atlas-password>'
       );
-    
+
     -- Use the MongoDB connection to create a MongoDB external table.
     CREATE TABLE mongodb_movies_full_text_search (
         title STRING,
@@ -79,7 +79,7 @@ string is converted to bytes.
         'endpoint' = 'jdbc:postgresql://my.example.com:5432/mydatabase',
         'username' = '<user-name>',
         'password' = '<password>');
-    
+
     -- Use the Confluent JDBC connection to create a table.
     CREATE TABLE jdbc_postgres (
         show_id STRING,

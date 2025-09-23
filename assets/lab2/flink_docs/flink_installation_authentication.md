@@ -75,4 +75,3 @@ The following configuration file shows how to provision Confluent Manager for Ap
              confluent.metadata.oauthbearer.token.endpoint.url: <idp-token-url>
              confluent.metadata.oauthbearer.login.client.id: <client-id-for-cmf>
              confluent.metadata.oauthbearer.login.client.secret: <client-secret-for-cmf>
-

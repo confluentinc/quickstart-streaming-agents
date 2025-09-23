@@ -55,4 +55,3 @@ Implementing the previous steps should result in a `FlinkApplication` specificat
         jarURI: local:///opt/flink/examples/streaming/StateMachineExample.jar
         state: running
         parallelism: 1
-

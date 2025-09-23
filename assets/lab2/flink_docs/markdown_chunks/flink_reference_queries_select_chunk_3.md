@@ -41,7 +41,7 @@ Syntax
     CREATE TABLE t_union_1 (i INT);
     CREATE TABLE t_union_2 (i INT);
     TABLE t_union_1 UNION ALL TABLE t_union_2;
-    
+
     -- alternate syntax
     SELECT * FROM t_union_1
     UNION ALL
@@ -52,9 +52,9 @@ Syntax
 Syntax
 
     CREATE TABLE t_watermarked_insight (s STRING) DISTRIBUTED INTO 1 BUCKETS;
-    
+
     INSERT INTO t_watermarked_insight VALUES ('Bob'), ('Alice'), ('Charly');
-    
+
     SELECT $rowtime, CURRENT_WATERMARK($rowtime) FROM t_watermarked_insight;
 
 The output resembles:
@@ -84,7 +84,7 @@ Sources emit watermarks every 200 ms, but within the first 200 ms they emit per 
 Syntax
 
     CREATE TABLE t_flattening (i INT, r1 ROW<i INT, s STRING>, r2 ROW<other INT>);
-    
+
     SELECT r1.*, r2.* FROM t_flattening;
 
 Properties

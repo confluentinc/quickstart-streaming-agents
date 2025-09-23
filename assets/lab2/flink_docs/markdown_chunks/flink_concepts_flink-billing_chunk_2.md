@@ -39,15 +39,15 @@ In the following example, five streaming statements are running in a single comp
 
 [](../../_images/flink-sql-five-queries-changing-workloads.png)
 
-Statement | CFU-minutes | Statement Type  
----|---|---  
-Q1 | 5 | Interactive  
-Q2 | 60 | Streaming  
-Q3 | 110 | Streaming  
-Q4 | 10 | Interactive  
-Q5 | 124 | Streaming  
-Total | 309 |   
-  
+Statement | CFU-minutes | Statement Type
+---|---|---
+Q1 | 5 | Interactive
+Q2 | 60 | Streaming
+Q3 | 110 | Streaming
+Q4 | 10 | Interactive
+Q5 | 124 | Streaming
+Total | 309 |
+
 Example pricing calculation
 
   * Number of statements executing = 5

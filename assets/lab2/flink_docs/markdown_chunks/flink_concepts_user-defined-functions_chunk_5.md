@@ -15,12 +15,12 @@ the name, type, and whether a parameter is required.
          }
 
   2. Use the `@ArgumentHint` annotation on the `eval` method of the function.
-         
+
          import org.apache.flink.table.annotation.ArgumentHint;
          import org.apache.flink.table.functions.ScalarFunction;
-         
+
          public static class NamedParameterClass extends ScalarFunction {
-         
+
            // Use the @ArgumentHint annotation to specify the name, type, and whether a parameter is required.
            @FunctionHint(
                    argument = {@ArgumentHint(name = "param1", isOptional = false, type = @DataTypeHint("STRING")),
@@ -32,17 +32,17 @@ the name, type, and whether a parameter is required.
          }
 
   3. Use the `@ArgumentHint` annotation on the class of the function.
-         
+
          import org.apache.flink.table.annotation.ArgumentHint;
          import org.apache.flink.table.functions.ScalarFunction;
-         
+
          // Use the @ArgumentHint annotation to specify the name, type, and whether a parameter is required.
          @FunctionHint(
                  argument = {@ArgumentHint(name = "param1", isOptional = false, type = @DataTypeHint("STRING")),
                          @ArgumentHint(name = "param2", isOptional = true, type = @DataTypeHint("INTEGER"))}
          )
          public static class NamedParameterClass extends ScalarFunction {
-         
+
            public String eval(String s1, Integer s2) {
              return s1 + ", " + s2;
            }
@@ -84,7 +84,7 @@ The determinism of system (built-in) functions is immutable. According to Apache
     public boolean isDeterministic() {
       return true;
     }
-    
+
     /**
      * Returns whether it is unsafe to cache query plans referencing this
      * operator; false is assumed by default.

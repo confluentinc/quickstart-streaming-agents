@@ -14,7 +14,7 @@ Confluent Cloud for Apache Flink® supports dynamic table options, or SQL _hints
 To use dynamic table options, employ the following Oracle-style SQL hint syntax:
 
     table_path /*+ OPTIONS(key=val [, key=val]*) */
-    
+
     key:
         stringLiteral
     val:
@@ -36,24 +36,24 @@ Dynamic Table Options in Confluent Cloud for Apache Flink offer the following be
 Here are some examples of using dynamic table options in Confluent Cloud for Apache Flink:
 
   * Override [scan startup mode](create-table.html#flink-sql-create-table-with-scan-startup-mode) for a table:
-        
+
         SELECT id, name
         FROM table /*+ OPTIONS('scan.startup.mode'='earliest-offset') */;
 
   * Set options for multiple tables in a [join](../queries/joins.html#flink-sql-joins):
-        
+
         SELECT *
         FROM table1 /*+ OPTIONS('scan.startup.mode'='earliest-offset') */ t1
         JOIN table2 /*+ OPTIONS('scan.startup.mode'='earliest-offset') */ t2
         ON t1.id = t2.id;
 
   * Set the scan startup mode to use the latest offset:
-        
+
         SELECT *
         FROM orders /*+ OPTIONS('scan.startup.mode'='latest-offset') */;
 
   * Set the scan startup mode to use the specific offsets, for example, using the latest_offsets attribute from a previous statement:
-        
+
         INSERT INTO customers_sink (customer_id, name, address, postcode, city, email)
             SELECT customer_id, name, address, postcode, city, email
             FROM customers_source
@@ -61,7 +61,7 @@ Here are some examples of using dynamic table options in Confluent Cloud for Apa
                 'scan.startup.mode' = 'specific-offsets',
                 'scan.startup.specific-offsets'  = 'partition:0,offset:10;partition:1,offset:123'
             ) */;
-        
+
         // Note: for a statement with multiple topics, use OPTIONS for each table
         SELECT *
         FROM table1 /*+ OPTIONS('scan.startup.mode'='specific-offsets', 'scan.startup.specific-offsets' = '...') */ t1
@@ -77,7 +77,7 @@ For stateful computations such as Regular Joins and Group Aggregations, Confluen
 The syntax for using State TTL hints is as follows:
 
     table_path /*+ STATE_TTL('table_name_or_alias'='ttl_value') */
-    
+
     ttl_value:
         stringLiteral (e.g., '6h', '2d', '10800s')
 
@@ -86,19 +86,19 @@ The syntax for using State TTL hints is as follows:
 Here are some examples of using State TTL hints in Confluent Cloud for Apache Flink for social media analytics:
 
   * Set State TTL for a Regular Join of posts and users:
-        
+
         SELECT /*+ STATE_TTL('posts'='6h', 'users'='2d') */ *
         FROM posts
         JOIN users ON posts.user_id = users.id;
 
   * Use table aliases with State TTL hints for analyzing engagement:
-        
+
         SELECT /*+ STATE_TTL('p'='4h', 'e'='12h') */ *
         FROM posts p
         JOIN engagement e ON p.post_id = e.post_id;
 
   * Apply State TTL hints in a Group Aggregation for trending hashtags:
-        
+
         SELECT /*+ STATE_TTL('hashtags' = '1h') */
                hashtag, COUNT(*) AS usage_count
         FROM hashtags
@@ -114,4 +114,3 @@ When using State TTL hints, keep the following in mind:
   * The STATE_TTL hint only affects the query block where it’s applied.
   * If a hint key is duplicated, the last occurrence takes precedence.
   * When multiple STATE_TTL hints are used with the same hint key, the first occurrence is applied.
-

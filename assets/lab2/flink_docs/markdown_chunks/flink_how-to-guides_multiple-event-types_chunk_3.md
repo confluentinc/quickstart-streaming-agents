@@ -77,19 +77,19 @@ AvroJSON SchemaProtobuf
     }
 
     syntax = "proto3";
-    
+
     package io.confluent.examples.proto;
-    
+
     message Order {
        string order_id = 1;
        double amount = 2;
     }
-    
+
     message Shipment {
        string tracking_id = 1;
        string status = 2;
     }
-    
+
     message AllTypes {
        oneof event_type {
           Order order = 1;
@@ -117,7 +117,7 @@ You can query specific event types:
 
     -- Query orders
     SELECT event_type.Order.* FROM `events` WHERE event_type.Order IS NOT NULL;
-    
+
     -- Query shipments
     SELECT event_type.Shipment.* FROM `events` WHERE event_type.Shipment IS NOT NULL;
 
@@ -131,7 +131,7 @@ You can query specific event types:
 
     -- Query orders
     SELECT connect_union_field_0.* FROM `events` WHERE connect_union_field_0 IS NOT NULL;
-    
+
     -- Query shipments
     SELECT connect_union_field_1.* FROM `events` WHERE connect_union_field_1 IS NOT NULL;
 
@@ -149,6 +149,6 @@ You can query specific event types:
 
     -- Query orders
     SELECT AllTypes.event_type.order.* FROM `events` WHERE AllTypes.event_type.order IS NOT NULL;
-    
+
     -- Query shipments
     SELECT AllTypes.event_type.shipment.* FROM `events` WHERE AllTypes.event_type.shipment IS NOT NULL;

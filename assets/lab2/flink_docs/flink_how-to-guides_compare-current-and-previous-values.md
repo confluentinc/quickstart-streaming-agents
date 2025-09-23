@@ -33,11 +33,11 @@ In this step, you query the read-only `orders` table in the `examples.marketplac
   3. In the **Use database** dropdown, select your Kafka cluster.
 
   4. Run the following statement to inspect the example `orders` stream.
-         
+
          SELECT * FROM examples.marketplace.orders;
 
 Your output should resemble:
-         
+
          order_id                                customer_id   product_id  price
          68362284-34df-41a3-87fb-50b79647b786    3195          1267        47.48
          6e03663e-d20b-4a23-848a-aec959d794e3    3094          1412        50.92
@@ -47,7 +47,7 @@ Your output should resemble:
 ## Step 2: View aggregated results¶
 
   1. Run the following statement to start a query on the `orders` data using the LAG function to return current and previous order data for each customer.
-         
+
          SELECT $rowtime AS row_time
                , customer_id
                , order_id
@@ -57,7 +57,7 @@ Your output should resemble:
            FROM examples.marketplace.orders;
 
 Your output should resemble:
-         
+
          row_time                 customer_id  order_id                               price    previous_order_id                       previous_order_price
          2024-01-11 15:42:00.557  3213         821f81d4-d912-4e0f-ab8b-88fe8d9af397   89.34    2c26a03b-4cd5-4df6-90d0-0b11916533d2    57.89
          2024-01-11 15:42:01.079  3090         57b20b43-3f52-49d8-b8bc-3a55d0440482   50.22    c913ea7b-a7dc-4b22-b966-8df3f28e8e5e    66.12
@@ -68,4 +68,3 @@ Your output should resemble:
          ...
 
   2. Note that there are some `NULL` values for `previous_order_id` and `previous_order_price`. For these customers, the current order is the first order they have made, so there is no historical previous order data to return.
-

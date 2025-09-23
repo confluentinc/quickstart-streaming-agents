@@ -75,4 +75,3 @@ The following query computes for every order the sum of amounts of all orders fo
         RANGE BETWEEN INTERVAL '1' HOUR PRECEDING AND CURRENT ROW
       ) AS one_hour_prod_amount_sum
     FROM orders
-

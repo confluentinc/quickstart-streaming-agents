@@ -59,7 +59,7 @@ The following queries return all rows in the `orders` table in hopping windows w
 
     SELECT * FROM TABLE(
         HOP(TABLE `examples`.`marketplace`.`orders`, DESCRIPTOR($rowtime), INTERVAL '5' MINUTES, INTERVAL '10' MINUTES))
-    
+
     -- or with the named params
     -- note: the DATA param must be the first
     SELECT * FROM TABLE(

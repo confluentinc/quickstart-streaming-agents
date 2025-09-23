@@ -37,10 +37,10 @@ Examples
 
     --  returns 42
     SELECT CAST('42' AS INT);
-    
+
     -- returns NULL of type STRING
     SELECT CAST(NULL AS STRING);
-    
+
     --  throws an exception and fails the job
     SELECT CAST('not-a-number' AS INT);
 
@@ -58,13 +58,13 @@ Examples
 
     --  returns 42
     SELECT TRY_CAST('42' AS INT);
-    
+
     --  returns NULL of type STRING
     SELECT TRY_CAST(NULL AS STRING);
-    
+
     --  returns NULL of type INT
     SELECT TRY_CAST('not-a-number' AS INT);
-    
+
     --  returns 0 of type INT
     SELECT COALESCE(TRY_CAST('not-a-number' AS INT), 0);
 
@@ -91,13 +91,13 @@ Examples
 
     -- returns "CHAR(13) NOT NULL"
     SELECT TYPEOF('a string type');
-    
+
     -- returns "INT NOT NULL"
     SELECT TYPEOF(23);
-    
+
     -- returns "DATE NOT NULL"
     SELECT TYPEOF(DATE '2023-05-04');
-    
+
     -- returns "NULL"
     SELECT TYPEOF(NULL);
 

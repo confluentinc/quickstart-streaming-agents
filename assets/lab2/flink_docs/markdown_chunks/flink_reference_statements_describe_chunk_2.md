@@ -16,7 +16,7 @@ Type * Endpoint * Comment
 In the Flink SQL shell or in a Cloud Console workspace, run the following commands to see an example of the DESCRIBE statement.
 
   1. Create a table.
-         
+
          CREATE TABLE orders (
            `user` BIGINT NOT NULL,
            product STRING,
@@ -26,15 +26,15 @@ In the Flink SQL shell or in a Cloud Console workspace, run the following comman
          );
 
 Your output should resemble:
-         
+
          [INFO] Execute statement succeed.
 
   2. View the table’s schema.
-         
+
          DESCRIBE orders;
 
 Your output should resemble:
-         
+
          +-------------+--------------+----------+-------------------------+
          | Column Name |  Data Type   | Nullable |         Extras          |
          +-------------+--------------+----------+-------------------------+
@@ -45,11 +45,11 @@ Your output should resemble:
          +-------------+--------------+----------+-------------------------+
 
   3. View the table’s schema and system columns.
-         
+
          DESCRIBE EXTENDED orders;
 
 Your output should resemble:
-         
+
          +-------------+----------------------------+----------+-----------------------------------------------------+---------+
          | Column Name |         Data Type          | Nullable |                       Extras                        | Comment |
          +-------------+----------------------------+----------+-----------------------------------------------------+---------+

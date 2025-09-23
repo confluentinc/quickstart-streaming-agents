@@ -40,4 +40,3 @@ The following limitations exist in the current version:
   * Custom Connectors: Custom connectors for tables backed by other storage systems are not supported.
   * Custom Catalogs: Custom catalogs are not supported.
   * Deployment modes: Only application-deployment mode is supported. Each statement runs on a dedicated Flink cluster with dedicated JobManager and TaskManager pods. Session-cluster deployment mode is not supported.
-

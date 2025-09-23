@@ -11,10 +11,10 @@ total_chunks: 1
 
 Confluent Cloud for Apache Flink® provides these built-in functions for controlling execution flow in SQL queries:
 
-CASE | CASE WHEN CONDITION | COALESCE  
----|---|---  
-GREATEST | IF | IFNULL  
-IS_ALPHA | IS_DECIMAL | IS_DIGIT  
+CASE | CASE WHEN CONDITION | COALESCE
+---|---|---
+GREATEST | IF | IFNULL
+IS_ALPHA | IS_DECIMAL | IS_DIGIT
 LEAST | NULLIF |
 
 ## CASE¶
@@ -62,7 +62,7 @@ The following SELECT statements return the values indicated in the comment lines
 
     -- Returns 'default'
     SELECT COALESCE(NULL, 'default');
-    
+
     -- Returns the first non-null value among column0 and column1,
     -- or 'default' if column0 and column1 are both NULL.
     SELECT COALESCE(column0, column1, 'default');
@@ -79,7 +79,7 @@ Example
 
     -- returns 4
     SELECT GREATEST(1, 2, 3, 4);
-    
+
     -- returns d
     SELECT GREATEST('a', 'b', 'c', 'd');
 
@@ -124,7 +124,7 @@ Example
 
     -- returns FALSE
     SELECT IS_ALPHA('42');
-    
+
     -- returns TRUE
     SELECT IS_ALPHA('string');
 
@@ -140,7 +140,7 @@ Example
 
     -- returns TRUE
     SELECT IS_DECIMAL('23');
-    
+
     -- returns FALSE
     SELECT IS_DECIMAL('not a number');
 
@@ -156,7 +156,7 @@ Example
 
     -- returns TRUE
     SELECT IS_DIGIT('23');
-    
+
     -- returns FALSE
     SELECT IS_DIGIT('2 not a digit 3');
 
@@ -172,7 +172,7 @@ Example
 
     -- returns 1
     SELECT LEAST(1, 2, 3, 4);
-    
+
     -- returns a
     SELECT LEAST('a', 'b', 'c', 'd');
 
@@ -188,7 +188,7 @@ Example
 
     -- returns NULL
     SELECT NULLIF(5, 5);
-    
+
     -- returns 5
     SELECT NULLIF(5, 0);
 

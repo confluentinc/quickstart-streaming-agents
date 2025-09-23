@@ -11,24 +11,24 @@ total_chunks: 4
 
 Confluent Cloud for Apache Flink® provides these built-in numeric functions to use in SQL queries:
 
-Numeric | Trigonometry | Random number generators | Utility  
----|---|---|---  
-ABS | ACOS | RAND | HEX  
-BIN | ASIN | RAND(INT) | UUID  
-CEILING | ATAN | RAND_INTEGER(INT) | UNHEX  
-E | ATAN2 | RAND_INTEGER(INT1, INT2) |   
-EXP | COS |  |   
-FLOOR | COSH |  |   
-LN | COT |  |   
-LOG | DEGREES |  |   
-LOG10 | RADIANS |  |   
-LOG2 | SIN |  |   
-PERCENTILE | SINH |  |   
-PI | TAN |  |   
-POWER | TANH |  |   
-ROUND |  |  |   
-SIGN |  |  |   
-SQRT |  |  |   
+Numeric | Trigonometry | Random number generators | Utility
+---|---|---|---
+ABS | ACOS | RAND | HEX
+BIN | ASIN | RAND(INT) | UUID
+CEILING | ATAN | RAND_INTEGER(INT) | UNHEX
+E | ATAN2 | RAND_INTEGER(INT1, INT2) |
+EXP | COS |  |
+FLOOR | COSH |  |
+LN | COT |  |
+LOG | DEGREES |  |
+LOG10 | RADIANS |  |
+LOG2 | SIN |  |
+PERCENTILE | SINH |  |
+PI | TAN |  |
+POWER | TANH |  |
+ROUND |  |  |
+SIGN |  |  |
+SQRT |  |  |
 TRUNCATE |  |  |
 
 ## ABS¶
@@ -45,7 +45,7 @@ Examples
 
     -- returns 23
     SELECT ABS(-23);
-    
+
     -- returns 23
     SELECT ABS(23);
 
@@ -64,7 +64,7 @@ Examples
     -- returns 1.5707963267948966
     -- (approximately PI/2)
     SELECT ACOS(0);
-    
+
     -- returns 0.0
     SELECT ACOS(1);
 
@@ -82,7 +82,7 @@ Examples
 
     -- returns 0.0
     SELECT ASIN(0);
-    
+
     -- returns 1.5707963267948966
     -- (approximately PI/2)
     SELECT ASIN(1);
@@ -101,7 +101,7 @@ Examples
 
     -- returns 0.0
     SELECT ATAN(0);
-    
+
     -- returns 0.7853981633974483
     -- (approximately PI/4)
     SELECT ATAN2(1);
@@ -120,7 +120,7 @@ Examples
 
     -- returns 0.0
     SELECT ATAN2(0, 0);
-    
+
     -- returns 0.7853981633974483
     -- (approximately PI/4)
     SELECT ATAN2(1, 1);
@@ -139,7 +139,7 @@ Examples
 
     -- returns "100"
     SELECT BIN(4);
-    
+
     -- returns "1100"
     SELECT BIN(12);
 
@@ -161,7 +161,7 @@ Examples
 
     -- returns 24
     SELECT CEIL(23.55);
-    
+
     -- returns -23
     SELECT CEIL(-23.55);
 
@@ -179,7 +179,7 @@ Examples
 
     -- returns 1.0
     SELECT COS(0);
-    
+
     -- returns 6.123233995736766E-17
     -- (approximately 0)
     SELECT COS(PI()/2);
@@ -229,10 +229,10 @@ Examples
 
     -- returns 90.0
     SELECT DEGREES(PI()/2);
-    
+
     -- returns 180.0
     SELECT DEGREES(PI());
-    
+
     -- returns -45.0
     SELECT DEGREES(-PI()/4);
 
@@ -251,7 +251,7 @@ Examples
     -- returns 2.718281828459045
     -- which is the approximate value of e
     SELECT E();
-    
+
     -- returns 1.0
     SELECT LN(E());
 
@@ -270,10 +270,10 @@ Examples
     -- returns 2.718281828459045
     -- which is the approximate value of e
     SELECT EXP(1);
-    
+
     -- returns 7.38905609893065
     SELECT EXP(2);
-    
+
     -- returns 0.36787944117144233
     SELECT EXP(-1);
 
@@ -291,6 +291,6 @@ Examples
 
     -- returns 23
     SELECT FLOOR(23.55);
-    
+
     -- returns -24
     SELECT FLOOR(-23.55);

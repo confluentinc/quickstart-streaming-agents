@@ -121,4 +121,3 @@ Flink implements many techniques from the Dataflow Model. For a good introductio
 
   * Blog post: [Streaming 101 by Tyler Akidau](https://www.oreilly.com/ideas/the-world-beyond-batch-streaming-101)
   * [Dataflow Model](https://research.google.com/pubs/archive/43864.pdf)
-

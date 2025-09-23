@@ -123,4 +123,3 @@ An example response might look like the following:
         }
       ]
     }
-

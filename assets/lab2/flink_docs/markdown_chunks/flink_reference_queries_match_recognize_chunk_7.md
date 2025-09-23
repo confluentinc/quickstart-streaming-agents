@@ -58,11 +58,11 @@ The table shows that the first row is mapped to pattern variable `A`, and subseq
 
 _Logical offsets_ enable navigation within the events that were mapped to a particular pattern variable. This can be expressed with two corresponding functions.
 
-Offset functions | Description  
----|---  
-`LAST(variable.field, n)` | Returns the value of the field from the event that was mapped to the _n_ -th _last_ element of the variable. The counting starts at the last element mapped.  
-`FIRST(variable.field, n)` | Returns the value of the field from the event that was mapped to the _n_ -th element of the variable. The counting starts at the first element mapped.  
-  
+Offset functions | Description
+---|---
+`LAST(variable.field, n)` | Returns the value of the field from the event that was mapped to the _n_ -th _last_ element of the variable. The counting starts at the last element mapped.
+`FIRST(variable.field, n)` | Returns the value of the field from the event that was mapped to the _n_ -th element of the variable. The counting starts at the first element mapped.
+
 #### Examples¶
 
 For a more thorough example, consider the following pattern and corresponding conditions:

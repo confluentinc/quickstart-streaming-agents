@@ -101,4 +101,3 @@ This behavior contrasts with streaming queries which:
 ## Billing¶
 
 Snapshot queries are billed in CFUs, in the same way that streaming queries are. For more information, see [Flink Billing](../../billing/overview.html#flink-billing).
-

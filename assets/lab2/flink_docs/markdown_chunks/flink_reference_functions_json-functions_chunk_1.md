@@ -11,12 +11,12 @@ total_chunks: 4
 
 Confluent Cloud for Apache Flink® provides these built-in functions to help with JSON in SQL queries:
 
-IS JSON | JSON_ARRAY | JSON_ARRAYAGG  
----|---|---  
-JSON_EXISTS | JSON_OBJECT | JSON_OBJECTAGG  
-JSON_QUERY | JSON_QUOTE | JSON_STRING  
-JSON_UNQUOTE | JSON_VALUE |   
-  
+IS JSON | JSON_ARRAY | JSON_ARRAYAGG
+---|---|---
+JSON_EXISTS | JSON_OBJECT | JSON_OBJECTAGG
+JSON_QUERY | JSON_QUOTE | JSON_STRING
+JSON_UNQUOTE | JSON_VALUE |
+
 JSON functions make use of JSON path expressions as described in [ISO/IEC TR 19075-6](https://www.iso.org/standard/78937.html) of the SQL standard. Their syntax is inspired by and adopts many features of ECMAScript, but is neither a subset nor superset of the standard.
 
 Path expressions come in two flavors, lax and strict. When omitted, it defaults to the strict mode. Strict mode is intended to examine data from a schema perspective and will throw errors whenever data does not adhere to the path expression. However, functions like `JSON_VALUE` allow defining fallback behavior if an error is encountered. Lax mode, on the other hand, is more forgiving and converts errors to empty sequences.
@@ -85,24 +85,24 @@ The following SELECT statements return the values indicated in the comment lines
 
     -- returns '[]'
     SELECT JSON_ARRAY();
-    
+
     -- returns '[1,"2"]'
     SELECT JSON_ARRAY(1, '2');
-    
+
     -- Use an expression as a value.
     SELECT JSON_ARRAY(orders.orderId);
-    
+
     -- ON NULL
     -- returns '[null]'
     SELECT JSON_ARRAY(CAST(NULL AS STRING) NULL ON NULL);
-    
+
     -- ON NULL
     -- returns '[]'
     SELECT JSON_ARRAY(CAST(NULL AS STRING) ABSENT ON NULL);
-    
+
     -- returns '[[1]]'
     SELECT JSON_ARRAY(JSON_ARRAY(1));
-    
+
     -- returns '[{"nested_json":{"value":42}}]'
     SELECT JSON_ARRAY(JSON('{"nested_json": {"value": 42}}'));
 

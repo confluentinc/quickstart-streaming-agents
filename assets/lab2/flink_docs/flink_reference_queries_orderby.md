@@ -22,4 +22,3 @@ When running in batch mode, there is no sort-order limitation.
     SELECT *
     FROM orders
     ORDER BY order_time, order_id
-

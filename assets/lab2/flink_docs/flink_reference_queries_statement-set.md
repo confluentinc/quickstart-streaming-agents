@@ -35,4 +35,3 @@ The following query results in a single statement being executed which reads fro
        INSERT INTO `sales` (product, quantity) SELECT product, quantity FROM orders WHERE status = 'completed';
        INSERT INTO `returns` (product, quantity) SELECT product, quantity FROM orders WHERE status = 'returned';
     END;
-

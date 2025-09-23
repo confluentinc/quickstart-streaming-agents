@@ -163,7 +163,7 @@ Run the [confluent flink statement delete](https://docs.confluent.io/confluent-c
 
     # Request to stop a statement.
     confluent flink statement update ${STATEMENT_NAME} --stopped=true
-    
+
     # Request to resume a stopped statement.
     confluent flink statement update ${STATEMENT_NAME} --stopped=false
 
@@ -423,4 +423,3 @@ Run the [confluent flink region use](https://docs.confluent.io/confluent-cli/cur
 For `CLOUD_PROVIDER=aws` and `CLOUD_REGION=us-east-2`, your output should resemble:
 
     Using Flink region "Ohio (us-east-2)".
-

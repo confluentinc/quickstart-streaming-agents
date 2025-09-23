@@ -9,54 +9,54 @@ scraped_date: 2025-09-05T13:48:27.331329
 
 Confluent Cloud for Apache Flink® provides these built-in functions for handling date and time logic in SQL queries:
 
-Date | Time | Timestamp | Utility  
----|---|---|---  
-CURRENT_DATE | CONVERT_TZ | CURRENT_TIMESTAMP | CEIL  
-DATE_FORMAT | CURRENT_TIME | CURRENT_ROW_TIMESTAMP | CURRENT_WATERMARK  
-DATE | HOUR | LOCALTIMESTAMP | EXTRACT  
-DAYOFMONTH | LOCALTIME | TIMESTAMP | FLOOR  
-DAYOFWEEK | MINUTE | TO_TIMESTAMP | FROM_UNIXTIME  
-DAYOFYEAR | NOW | TO_TIMESTAMP_LTZ | INTERVAL  
-MONTH | SECOND | TIMESTAMPADD | SOURCE_WATERMARK  
-QUARTER | TIME | TIMESTAMPDIFF | OVERLAPS  
-TO_DATE |  | UNIX_TIMESTAMP |   
-WEEK |  | UNIX_TIMESTAMP |   
-YEAR |  |  |   
-  
+Date | Time | Timestamp | Utility
+---|---|---|---
+CURRENT_DATE | CONVERT_TZ | CURRENT_TIMESTAMP | CEIL
+DATE_FORMAT | CURRENT_TIME | CURRENT_ROW_TIMESTAMP | CURRENT_WATERMARK
+DATE | HOUR | LOCALTIMESTAMP | EXTRACT
+DAYOFMONTH | LOCALTIME | TIMESTAMP | FLOOR
+DAYOFWEEK | MINUTE | TO_TIMESTAMP | FROM_UNIXTIME
+DAYOFYEAR | NOW | TO_TIMESTAMP_LTZ | INTERVAL
+MONTH | SECOND | TIMESTAMPADD | SOURCE_WATERMARK
+QUARTER | TIME | TIMESTAMPDIFF | OVERLAPS
+TO_DATE |  | UNIX_TIMESTAMP |
+WEEK |  | UNIX_TIMESTAMP |
+YEAR |  |  |
+
 ## Time interval and point unit specifiers¶
 
 The following table lists specifiers for time interval and time point units.
 
-Time interval unit | Time point unit  
----|---  
-`MILLENNIUM` |   
-`CENTURY` |   
-`DECADE` |   
-`YEAR` | `YEAR`  
-`YEAR TO MONTH` |   
-`QUARTER` | `QUARTER`  
-`MONTH` | `MONTH`  
-`WEEK` | `WEEK`  
-`DAY` | `DAY`  
-`DAY TO HOUR` |   
-`DAY TO MINUTE` |   
-`DAY TO SECOND` |   
-`HOUR` | `HOUR`  
-`HOUR TO MINUTE` |   
-`HOUR TO SECOND` |   
-`MINUTE` | `MINUTE`  
-`MINUTE TO SECOND` |   
-`SECOND` | `SECOND`  
-`MILLISECOND` | `MILLISECOND`  
-`MICROSECOND` | `MICROSECOND`  
-`NANOSECOND` |   
-`EPOCH` |   
-`DOY` |   
-`DOW` |   
-`EPOCH` |   
-`ISODOW` |   
-`ISOYEAR` | `SQL_TSI_YEAR` `SQL_TSI_QUARTER` `SQL_TSI_MONTH` `SQL_TSI_WEEK` `SQL_TSI_DAY` `SQL_TSI_HOUR` `SQL_TSI_MINUTE` `SQL_TSI_SECOND`  
-  
+Time interval unit | Time point unit
+---|---
+`MILLENNIUM` |
+`CENTURY` |
+`DECADE` |
+`YEAR` | `YEAR`
+`YEAR TO MONTH` |
+`QUARTER` | `QUARTER`
+`MONTH` | `MONTH`
+`WEEK` | `WEEK`
+`DAY` | `DAY`
+`DAY TO HOUR` |
+`DAY TO MINUTE` |
+`DAY TO SECOND` |
+`HOUR` | `HOUR`
+`HOUR TO MINUTE` |
+`HOUR TO SECOND` |
+`MINUTE` | `MINUTE`
+`MINUTE TO SECOND` |
+`SECOND` | `SECOND`
+`MILLISECOND` | `MILLISECOND`
+`MICROSECOND` | `MICROSECOND`
+`NANOSECOND` |
+`EPOCH` |
+`DOY` |
+`DOW` |
+`EPOCH` |
+`ISODOW` |
+`ISOYEAR` | `SQL_TSI_YEAR` `SQL_TSI_QUARTER` `SQL_TSI_MONTH` `SQL_TSI_WEEK` `SQL_TSI_DAY` `SQL_TSI_HOUR` `SQL_TSI_MINUTE` `SQL_TSI_SECOND`
+
 ### CEIL¶
 
 Rounds a time point up.
@@ -416,10 +416,10 @@ The following SELECT statements return the values indicated in the comment lines
 
     -- returns +10 00:00:00.004
     SELECT INTERVAL '10 00:00:00.004' DAY TO SECOND;
-    
+
     -- returns +10 00:00:00.000
     SELECT INTERVAL '10' DAY;
-    
+
     -- returns +2-10
     SELECT INTERVAL '2-10' YEAR TO MONTH;
 
@@ -553,7 +553,7 @@ Example
 
     -- returns TRUE
     SELECT (TIME '2:55:00', INTERVAL '1' HOUR) OVERLAPS (TIME '3:30:00', INTERVAL '2' HOUR);
-    
+
     -- returns FALSE
     SELECT (TIME '9:00:00', TIME '10:00:00') OVERLAPS (TIME '10:15:00', INTERVAL '3' HOUR);
 
@@ -627,13 +627,13 @@ The minimum out-of-orderness is 50 milliseconds. The maximum out-of-orderness is
 
 The algorithm always considers the out-of-orderness of the last 5000 events per partition. During warmup, before the algorithm has seen 1000 messages (per partition) it applies an additional safety margin to the observed out-of-orderness. The safety margin depends on the number of messages seen so far.
 
-Number of messages | Safety margin  
----|---  
-1 - 250 | 7 days  
-251 - 500 | 30s  
-501 - 750 | 10s  
-751 - 1000 | 1s  
-  
+Number of messages | Safety margin
+---|---
+1 - 250 | 7 days
+251 - 500 | 30s
+501 - 750 | 10s
+751 - 1000 | 1s
+
 In effect, the algorithm doesn’t provide a usable watermark before it has seen 250 records per partition.
 
 Example
@@ -644,7 +644,7 @@ Example
        i INT,
        ts TIMESTAMP_LTZ(3),
        WATERMARK FOR ts AS SOURCE_WATERMARK());
-    
+
      -- The queryable schema for the table has the default watermark
      -- strategy on the ts column.
      (
@@ -762,11 +762,11 @@ Examples
     -- convert 1000 epoch seconds
     -- returns 1970-01-01 00:16:40.000 as a TIMESTAMP_LTZ
     SELECT TO_TIMESTAMP_LTZ(1000, 0);
-    
+
     -- convert 1000 epoch milliseconds
     -- returns 1970-01-01 00:00:01.000 as a TIMESTAMP_LTZ
     SELECT TO_TIMESTAMP_LTZ(1000, 3);
-    
+
     -- convert timestamp string with custom format and timezone
     -- returns appropriate TIMESTAMP_LTZ based on the timezone
     SELECT TO_TIMESTAMP_LTZ('2023-05-04 12:00:00', 'yyyy-MM-dd HH:mm:ss', 'America/Los_Angeles');
@@ -796,7 +796,7 @@ Example
 
     -- returns 2000-01-01
     SELECT TIMESTAMPADD(DAY, 1, DATE '1999-12-31');
-    
+
     -- returns 2000-01-01 01:00:00
     SELECT TIMESTAMPADD(HOUR, 2, TIMESTAMP '1999-12-31 23:00:00');
 
@@ -825,7 +825,7 @@ Example
 
     -- returns -1
     SELECT TIMESTAMPDIFF(DAY, DATE '2000-01-01', DATE '1999-12-31');
-    
+
     -- returns -2
     SELECT TIMESTAMPDIFF(HOUR, TIMESTAMP '2000-01-01 01:00:00', TIMESTAMP '1999-12-31 23:00:00');
 
@@ -865,16 +865,16 @@ Examples
 
     -- returns 1683201600
     SELECT UNIX_TIMESTAMP('2023-05-04 12:00:00');
-    
+
     -- Returns 25201
     SELECT UNIX_TIMESTAMP('1970-01-01 08:00:01.001', 'yyyy-MM-dd HH:mm:ss.SSS');
-    
+
     -- Returns 1
     SELECT UNIX_TIMESTAMP('1970-01-01 08:00:01.001 +0800', 'yyyy-MM-dd HH:mm:ss.SSS X');
-    
+
     -- Returns 25201
     SELECT UNIX_TIMESTAMP('1970-01-01 08:00:01.001 +0800', 'yyyy-MM-dd HH:mm:ss.SSS');
-    
+
     -- Returns -9223372036854775808
     SELECT UNIX_TIMESTAMP('1970-01-01 08:00:01.001', 'yyyy-MM-dd HH:mm:ss.SSS X');
 

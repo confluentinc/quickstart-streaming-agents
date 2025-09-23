@@ -34,7 +34,7 @@ The following example shows how to generate vector embeddings for text or other 
         'endpoint' = 'https://api.openai.com/v1/embeddings',
         'api-key' = '<api-key>'
       );
-    
+
       CREATE MODEL description_embedding
       INPUT (input STRING)
       OUTPUT (embeddings ARRAY<FLOAT>)
@@ -43,8 +43,8 @@ The following example shows how to generate vector embeddings for text or other 
         'openai.connection' = 'openai_embedding_connection',
         'task' = 'embedding'
       );
-    
+
       CREATE TABLE claims_embeddings(id INT, customer_id INT, embeddings ARRAY<FLOAT>);
-    
+
       INSERT INTO claims_embeddings
         SELECT id, customer_id, embeddings FROM claims_submitted, LATERAL TABLE(AI_EMBEDDING('description_embedding', description));

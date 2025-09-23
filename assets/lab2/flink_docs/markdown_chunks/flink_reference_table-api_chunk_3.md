@@ -25,7 +25,7 @@ JavaPython
     }
 
     from pyflink.table.confluent import ConfluentSettings
-    
+
     settings = ConfluentSettings.from_global_variables()
 
 ### Code¶
@@ -45,7 +45,7 @@ JavaPython
       .build();
 
     from pyflink.table.confluent import ConfluentSettings
-    
+
     settings = ConfluentSettings.new_builder() \
       .set_cloud("aws") \
       .set_region("us-east-1") \
@@ -67,7 +67,7 @@ Set the following environment variables to provide configuration settings.
     export ORG_ID="b0b21724-4586-4a07-b787-d0bb5aacbf87"
     export ENV_ID="env-z3y2x1"
     export COMPUTE_POOL_ID="lfcp-8m03rm"
-    
+
     java -jar my-table-program.jar
 
 In code, call:
@@ -77,5 +77,5 @@ JavaPython
     ConfluentSettings settings = ConfluentSettings.fromGlobalVariables();
 
     from pyflink.table.confluent import ConfluentSettings
-    
+
     settings = ConfluentSettings.from_global_variables()

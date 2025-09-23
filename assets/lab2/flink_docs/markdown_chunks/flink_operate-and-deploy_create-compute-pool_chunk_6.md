@@ -108,7 +108,7 @@ Run the following command to update the compute pool specified in the COMPUTE_PO
 To update a compute pool by using the Confluent Terraform provider, use the [confluent_flink_compute_pool](https://registry.terraform.io/providers/confluentinc/confluent/latest/docs/resources/confluent_flink_compute_pool) resource.
 
   1. Find the definition for the compute pool resource in your Terraform configuration, for example:
-         
+
          resource "confluent_flink_compute_pool" "example" {
            cloud  = "AWS"
            region = "us-west-2"
@@ -117,7 +117,7 @@ To update a compute pool by using the Confluent Terraform provider, use the [con
          }
 
   2. Modify the attributes of the `confluent_flink_compute_pool` resource in the Terraform configuration file. The following example updates the `max_cfu` attribute.
-         
+
          resource "confluent_flink_compute_pool" "example" {
            cloud  = "AWS"
            region = "us-west-2"
@@ -126,7 +126,7 @@ To update a compute pool by using the Confluent Terraform provider, use the [con
          }
 
   3. Run the `terraform apply` command to update the compute pool with the new configuration.
-         
+
          terraform apply
 
 For more information, see [confluent_flink_compute_pool](https://registry.terraform.io/providers/confluentinc/confluent/latest/docs/resources/confluent_flink_compute_pool).

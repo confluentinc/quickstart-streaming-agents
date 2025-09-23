@@ -178,25 +178,25 @@ resource "confluent_connector" "mongodb_sink" {
   }
 
   config_nonsensitive = {
-    "connector.class"                          = "MongoDbAtlasSink"
+    "connector.class"                         = "MongoDbAtlasSink"
     "name"                                    = "mongodb-sink"
     "kafka.api.key"                           = data.terraform_remote_state.core.outputs.app_manager_kafka_api_key
     "topics"                                  = "documents_embed"
     "input.data.format"                       = "AVRO"
     "connection.host"                         = local.mongodb_host
     "connection.user"                         = var.mongodb_username
-    "database"                               = var.MONGODB_DATABASE
-    "collection"                             = var.MONGODB_COLLECTION
-    "tasks.max"                              = "1"
+    "database"                                = var.MONGODB_DATABASE
+    "collection"                              = var.MONGODB_COLLECTION
+    "tasks.max"                               = "1"
     "value.converter.schemas.enable"          = "false"
     "value.converter.decimal.format"          = "BASE64"
-    "max.num.retries"                        = "3"
-    "retries.defer.timeout"                  = "5000"
-    "delete.on.null.values"                  = "false"
-    "writemodel.strategy"                    = "DefaultWriteModelStrategy"
-    "max.batch.size"                         = "0"
-    "use.ordered.bulk.writes"                = "true"
-    "document.id.strategy"                   = "BsonOidStrategy"
+    "max.num.retries"                         = "3"
+    "retries.defer.timeout"                   = "5000"
+    "delete.on.null.values"                   = "false"
+    "writemodel.strategy"                     = "DefaultWriteModelStrategy"
+    "max.batch.size"                          = "0"
+    "use.ordered.bulk.writes"                 = "true"
+    "document.id.strategy"                    = "BsonOidStrategy"
     "document.id.strategy.overwrite.existing" = "false"
   }
 

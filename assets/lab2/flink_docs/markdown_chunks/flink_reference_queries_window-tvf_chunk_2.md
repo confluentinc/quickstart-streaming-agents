@@ -73,7 +73,7 @@ The following queries return all rows in the `orders` table in 10-minute tumblin
 
     SELECT * FROM TABLE(
        TUMBLE(TABLE `examples`.`marketplace`.`orders`, DESCRIPTOR($rowtime), INTERVAL '10' MINUTES))
-    
+
     -- or with the named params
     -- note: the DATA param must be the first
     SELECT * FROM TABLE(

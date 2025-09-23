@@ -32,11 +32,11 @@ Configure the SQL shell to connect to your CMF instance.
 This topic uses the Confluent CLI, but all functionality is also supported through the [REST APIs](../clients-api/rest.html#af-rest-api).
 
   1. Create Flink environment pointing to the default namespace.
-         
+
          confluent flink environment create test --kubernetes-namespace default
 
   2. Create a compute pool to run the SQL statement with.
-         
+
          {
            "apiVersion": "cmf.confluent.io/v1",
            "kind": "ComputePool",
@@ -82,7 +82,7 @@ You should see the following output and a prompt waiting for your statements.
 
     Welcome!
     To exit, press Ctrl-Q or type "exit".
-    
+
     [Ctrl-Q] Quit [Ctrl-S] Toggle Completions
     >
 
@@ -174,4 +174,3 @@ The Confluent CLI forwards the Flink webUI through CMF to your local machine. Op
 Once you are done, you should stop the `INSERT INTO` statement and tear down the Flink cluster. For this, cancel the forwarding of the webUI by pressing `CTRL-C`, run the following command, and confirm the deletion of the statement.
 
     confluent --environment test flink statement delete <stmt-name>
-

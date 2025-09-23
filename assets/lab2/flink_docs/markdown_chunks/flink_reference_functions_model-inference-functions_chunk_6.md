@@ -72,13 +72,13 @@ When you create an MCP server connection, specify the following options:
         'openai.system_prompt' = 'Select the best tools to complete the task',
         'mcp.connection' = 'claims_mcp_server'
       );
-    
+
     -- Create a table that contains the input prompts.
     CREATE TABLE claims_verified (
       id int,
       customer_id int
     );
-    
+
     -- Run the AI_TOOL_INVOKE function.
     SELECT
       id,

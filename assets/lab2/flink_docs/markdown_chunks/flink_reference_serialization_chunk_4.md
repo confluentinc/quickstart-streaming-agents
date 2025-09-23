@@ -30,7 +30,7 @@ This mapping is important for creating tables, because it defines the JSON Schem
   * JSON type title: –
 
   * Example:
-        
+
         {
           "type": "array",
           "items": {
@@ -51,7 +51,7 @@ This mapping is important for creating tables, because it defines the JSON Schem
   * JSON type title: –
 
   * Example:
-        
+
         {
           "type": "number",
           "connect.type": "int64"
@@ -68,7 +68,7 @@ This mapping is important for creating tables, because it defines the JSON Schem
   * JSON type title: –
 
   * Example:
-        
+
         {
           "type": "string",
           "flink.maxLength": 123,
@@ -86,7 +86,7 @@ This mapping is important for creating tables, because it defines the JSON Schem
   * JSON type title: –
 
   * Example:
-        
+
         {
           "type": "array",
           "items": {
@@ -107,7 +107,7 @@ This mapping is important for creating tables, because it defines the JSON Schem
   * JSON type title: –
 
   * Example:
-        
+
         {
           "type": "string",
           "minLength": 123,
@@ -137,7 +137,7 @@ This mapping is important for creating tables, because it defines the JSON Schem
   * JSON type title: –
 
   * Example:
-        
+
         {
           "type": "number",
           "connect.type": "float64"
@@ -152,7 +152,7 @@ This mapping is important for creating tables, because it defines the JSON Schem
   * JSON type title: –
 
   * Example:
-        
+
         {
           "type": "number",
           "connect.type": "float32"
@@ -167,7 +167,7 @@ This mapping is important for creating tables, because it defines the JSON Schem
   * JSON type title: –
 
   * Example:
-        
+
         {
           "type": "number",
           "connect.type": "int32"
@@ -182,7 +182,7 @@ This mapping is important for creating tables, because it defines the JSON Schem
   * JSON type title: –
 
   * Example:
-        
+
         {
           "type": "array",
           "connect.type": "map",
@@ -210,7 +210,7 @@ This mapping is important for creating tables, because it defines the JSON Schem
   * JSON type title: –
 
   * Example:
-        
+
         {
           "type":"object",
           "connect.type":"map",
@@ -232,7 +232,7 @@ This mapping is important for creating tables, because it defines the JSON Schem
   * JSON type title: The count (value) in the JSON schema must map to a Flink INT type. For MULTISET types, the count (value) in the JSON schema must map to a Flink INT type, which corresponds to `connect.type: int32` in the JSON Schema. Using `connect.type: int64` causes a validation error.
 
   * Example:
-        
+
         {
           "type": "array",
           "connect.type": "map",

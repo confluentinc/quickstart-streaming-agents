@@ -90,7 +90,7 @@ Run the following command to get details about the connection specified in the C
 
 Your output should resemble:
 
-Response from a request to read a connection 
+Response from a request to read a connection
 
     {
       "api_version": "sql/v1",

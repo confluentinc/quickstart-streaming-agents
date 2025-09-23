@@ -35,4 +35,3 @@ For physical isolation, the Environment specifies the target Kubernetes namespac
 ## Authorization¶
 
 For role-based access control (RBAC), the Flink environment is used as the scope to [control access](../../security/authorization/acls/overview.html#acls-authorization). You can grant individual users access to specific Environments to read/manage Flink applications.
-

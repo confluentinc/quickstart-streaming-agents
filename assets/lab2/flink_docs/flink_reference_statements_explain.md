@@ -12,7 +12,7 @@ Confluent Cloud for Apache Flink® enables viewing and analyzing the query plans
 ## Syntax¶
 
     EXPLAIN { <query_statement> | <insert_statement> | <statement_set> | CREATE TABLE ... AS SELECT ... }
-    
+
     <statement_set>:
     STATEMENT SET
     BEGIN
@@ -51,7 +51,7 @@ This example analyzes a query finding users who clicked but never placed an orde
 The output shows the physical plan and operator details:
 
     == Physical Plan ==
-    
+
     StreamSink [11]
       +- StreamCalc [10]
         +- StreamJoin [9]
@@ -63,35 +63,35 @@ The output shows the physical plan and operator details:
               +- StreamExchange [6]
                 +- StreamCalc [5]
                   +- StreamTableSourceScan [4]
-    
+
     == Physical Details ==
-    
+
     [1] StreamTableSourceScan
     Table: `examples`.`marketplace`.`clicks`
     Changelog mode: append
     State size: low
-    
+
     [4] StreamTableSourceScan
     Table: `examples`.`marketplace`.`orders`
     Changelog mode: append
     State size: low
-    
+
     [7] StreamGroupAggregate
     Changelog mode: retract
     Upsert key: (customer_id)
     State size: medium
-    
+
     [8] StreamExchange
     Changelog mode: retract
     Upsert key: (customer_id)
-    
+
     [9] StreamJoin
     Changelog mode: retract
     State size: medium
-    
+
     [10] StreamCalc
     Changelog mode: retract
-    
+
     [11] StreamSink
     Table: Foreground
     Changelog mode: retract
@@ -116,7 +116,7 @@ This example shows creating a new table from a query:
 The output includes sink information for the new table:
 
     == Physical Plan ==
-    
+
     StreamSink [11]
       +- StreamCalc [10]
         +- StreamJoin [9]
@@ -128,35 +128,35 @@ The output includes sink information for the new table:
               +- StreamExchange [6]
                 +- StreamCalc [5]
                   +- StreamTableSourceScan [4]
-    
+
     == Physical Details ==
-    
+
     [1] StreamTableSourceScan
     Table: `examples`.`marketplace`.`clicks`
     Changelog mode: append
     State size: low
-    
+
     [4] StreamTableSourceScan
     Table: `examples`.`marketplace`.`orders`
     Changelog mode: append
     State size: low
-    
+
     [7] StreamGroupAggregate
     Changelog mode: retract
     Upsert key: (customer_id)
     State size: medium
-    
+
     [8] StreamExchange
     Changelog mode: retract
     Upsert key: (customer_id)
-    
+
     [9] StreamJoin
     Changelog mode: retract
     State size: medium
-    
+
     [10] StreamCalc
     Changelog mode: retract
-    
+
     [11] StreamSink
     Table: `catalog`.`database`.`clicks_without_orders`
     Changelog mode: retract
@@ -175,17 +175,17 @@ This example shows inserting static values:
 The output shows a simple insertion plan:
 
     == Physical Plan ==
-    
+
     StreamSink [3]
       +- StreamCalc [2]
         +- StreamValues [1]
-    
+
     == Physical Details ==
-    
+
     [1] StreamValues
     Changelog mode: append
     State size: low
-    
+
     [3] StreamSink
     Table: `catalogs`.`database`.`orders`
     Changelog mode: append
@@ -204,27 +204,27 @@ This example demonstrates operation reuse across multiple inserts:
 The output shows table scan reuse:
 
     == Physical Plan ==
-    
+
     StreamSink [3]
       +- StreamCalc [2]
         +- StreamTableSourceScan [1]
-    
+
     StreamSink [5]
       +- StreamCalc [4]
         +- (reused) [1]
-    
+
     == Physical Details ==
-    
+
     [1] StreamTableSourceScan
     Table: `examples`.`marketplace`.`orders`
     Changelog mode: append
     State size: low
-    
+
     [3] StreamSink
     Table: `catalog`.`database`.`low_orders`
     Changelog mode: append
     State size: low
-    
+
     [5] StreamSink
     Table: `catalog`.`database`.`high_orders`
     Changelog mode: append
@@ -260,7 +260,7 @@ This example shows window functions and self-joins:
 The output shows the complex processing required for windowed aggregations:
 
     == Physical Plan ==
-    
+
     StreamSink [14]
       +- StreamCalc [13]
         +- StreamGroupAggregate [12]
@@ -276,62 +276,62 @@ The output shows the complex processing required for windowed aggregations:
                 :            +- StreamCalc [2]
                 :              +- StreamTableSourceScan [1]
                 +- (reused) [8]
-    
+
     == Physical Details ==
-    
+
     [1] StreamTableSourceScan
     Table: `examples`.`marketplace`.`customers`
     Primary key: (customer_id)
     Changelog mode: upsert
     Upsert key: (customer_id)
     State size: low
-    
+
     [2] StreamCalc
     Changelog mode: upsert
     Upsert key: (customer_id)
-    
+
     [3] StreamExchange
     Changelog mode: upsert
     Upsert key: (customer_id)
-    
+
     [4] StreamChangelogNormalize
     Changelog mode: retract
     Upsert key: (customer_id)
     State size: medium
-    
+
     [5] StreamCalc
     Changelog mode: retract
     Upsert key: (customer_id)
-    
+
     [6] StreamWindowTableFunction
     Changelog mode: retract
     State size: low
-    
+
     [7] StreamCalc
     Changelog mode: retract
-    
+
     [8] StreamExchange
     Changelog mode: retract
-    
+
     [9] StreamJoin
     Changelog mode: retract
     State size: medium
-    
+
     [10] StreamCalc
     Changelog mode: retract
-    
+
     [11] StreamExchange
     Changelog mode: retract
-    
+
     [12] StreamGroupAggregate
     Changelog mode: retract
     Upsert key: (window_start,city)
     State size: medium
-    
+
     [13] StreamCalc
     Changelog mode: retract
     Upsert key: (window_start,city)
-    
+
     [14] StreamSink
     Table: Foreground
     Changelog mode: retract
@@ -640,4 +640,3 @@ When working with sinks in upsert mode, it’s crucial to align your primary and
   * Whenever possible, configure the primary key to be identical to the upsert key.
   * Having different primary and upsert keys in upsert mode can lead to significant performance degradation.
   * If you must use different keys, carefully evaluate the performance impact and consider restructuring your query to align these keys.
-

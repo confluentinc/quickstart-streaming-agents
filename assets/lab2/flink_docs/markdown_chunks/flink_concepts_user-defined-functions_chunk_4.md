@@ -19,26 +19,26 @@ The following code example shows how to use data type hints.
     import org.apache.flink.table.annotation.InputGroup;
     import org.apache.flink.table.functions.ScalarFunction;
     import org.apache.flink.types.Row;
-    
+
     // user-defined function that has overloaded evaluation methods.
     public static class OverloadedFunction extends ScalarFunction {
-    
+
       // No hint required for type inference.
       public Long eval(long a, long b) {
         return a + b;
       }
-    
+
       // Define the precision and scale of a decimal.
       public @DataTypeHint("DECIMAL(12, 3)") BigDecimal eval(double a, double b) {
         return BigDecimal.valueOf(a + b);
       }
-    
+
       // Define a nested data type.
       @DataTypeHint("ROW<s STRING, t TIMESTAMP_LTZ(3)>")
       public Row eval(int i) {
         return Row.of(String.valueOf(i), Instant.ofEpochSecond(i));
       }
-    
+
       // Enable wildcard input and custom serialized output.
       @DataTypeHint(value = "RAW", bridgedTo = ByteBuffer.class)
       public ByteBuffer eval(@DataTypeHint(inputGroup = InputGroup.ANY) Object o) {
@@ -60,22 +60,22 @@ The following code example shows how to use function hints.
     import org.apache.flink.table.annotation.FunctionHint;
     import org.apache.flink.table.functions.TableFunction;
     import org.apache.flink.types.Row;
-    
+
     // User-defined function with overloaded evaluation methods
     // but globally defined output type.
     @FunctionHint(output = @DataTypeHint("ROW<s STRING, i INT>"))
     public static class OverloadedFunction extends ScalarFunction<Row> {
-    
+
       public void eval(int a, int b) {
         collect(Row.of("Sum", a + b));
       }
-    
+
       // Overloading arguments is still possible.
       public void eval() {
         collect(Row.of("Empty args", -1));
       }
     }
-    
+
     // Decouples the type inference from evaluation methods.
     // The type inference is entirely determined by the function hints.
     @FunctionHint(
@@ -90,9 +90,9 @@ The following code example shows how to use function hints.
       input = {},
       output = @DataTypeHint("BOOLEAN")
     )
-    
+
     public static class OverloadedFunction extends ScalarFunction<Object> {
-    
+
       // Ensure a method exists that the JVM can call.
       public void eval(Object... o) {
         if (o.length == 0) {
@@ -109,11 +109,11 @@ When you call a user-define function, you can use parameter names to specify the
 The following code examples demonstrate how to use `@ArgumentHint` in different scopes.
 
   1. Use the `@ArgumentHint` annotation on the parameters of the `eval` method of the function:
-         
+
          import com.sun.tracing.dtrace.ArgsAttributes;
          import org.apache.flink.table.annotation.ArgumentHint;
          import org.apache.flink.table.functions.ScalarFunction;
-         
+
          public static class NamedParameterClass extends ScalarFunction {
-         
+
              // Use the @ArgumentHint annotation to specify

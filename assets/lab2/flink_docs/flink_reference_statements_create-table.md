@@ -24,25 +24,25 @@ Confluent Cloud for Apache Flink® enables creating tables backed by Apache Kafk
       [DISTRIBUTED BY (distribution_column_name1, distribution_column_name2, ...) INTO n BUCKETS]
       WITH (key1=value1, key2=value2, ...)
       [ LIKE source_table [( <like_options> )] | AS select_query ]
-    
+
     <physical_column_definition>:
       column_name column_type [ <column_constraint> ] [COMMENT column_comment]
-    
+
     <metadata_column_definition>:
       column_name column_type METADATA [ FROM metadata_key ] [ VIRTUAL ]
-    
+
     <computed_column_definition>:
       column_name AS computed_column_expression [COMMENT column_comment]
-    
+
     <column_in_vector_db_provider>
       column_name column_type
-    
+
     <watermark_definition>:
       WATERMARK FOR rowtime_column_name AS watermark_strategy_expression
-    
+
     <table_constraint>:
       [CONSTRAINT constraint_name] PRIMARY KEY (column_name, ...) NOT ENFORCED
-    
+
     <like_options>:
     {
      { INCLUDING | EXCLUDING } { ALL | CONSTRAINTS | PARTITIONS } |
@@ -395,19 +395,19 @@ When you use event-time semantics, your tables must contain an event-time attrib
 Flink SQL provides these watermark strategies.
 
   * **Strictly ascending timestamps:** Emit a watermark of the maximum observed timestamp so far. Rows that have a timestamp larger than the max timestamp are not late.
-        
+
         WATERMARK FOR rowtime_column AS rowtime_column
 
   * **Ascending timestamps:** Emit a watermark of the maximum observed timestamp so far, minus _1_. Rows that have a timestamp larger than or equal to the max timestamp are not late.
-        
+
         WATERMARK FOR rowtime_column AS rowtime_column - INTERVAL '0.001' SECOND
 
   * **Bounded out-of-orderness timestamps:** Emit watermarks which are the maximum observed timestamp minus the specified delay.
-        
+
         WATERMARK FOR rowtime_column AS rowtime_column - INTERVAL 'string' timeUnit
 
 The following example shows a “5-seconds delayed” watermark strategy.
-        
+
         WATERMARK FOR rowtime_column AS rowtime_column - INTERVAL '5' SECOND
 
 Example
@@ -452,7 +452,7 @@ The following two code examples are equivalent.
         name STRING,
         age INT
     );
-    
+
     INSERT INTO my_ctas_table SELECT id, name, age FROM source_table WHERE mod(id, 10) = 0;
 
 Similar to CREATE TABLE, CTAS requires all options of the target table to be specified in the WITH clause. The syntax is `CREATE TABLE t WITH (…) AS SELECT …`, for example:
@@ -489,7 +489,7 @@ The following two code examples are equivalent.
         id BIGINT NOT NULL PRIMARY KEY NOT ENFORCED,
         name STRING
     ) DISTRIBUTED BY HASH(id) INTO 4 BUCKETS;
-    
+
     INSERT INTO my_ctas_table SELECT id, name FROM source_table;
 
 ## LIKE¶
@@ -551,14 +551,14 @@ You can change an existing table’s property values by using the [ALTER TABLE S
 
 You can set the following properties when you create a table.
 
-changelog.mode | error-handling.log.target | error-handling.mode  
----|---|---  
-kafka.cleanup-policy | kafka.max-message-size | kafka.retention.size  
-kafka.retention.time | key.fields-prefix | key.format  
-key.format.schema-context | scan.bounded.mode | scan.bounded.timestamp-millis  
-scan.startup.mode | value.fields-include | value.format  
-value.format.schema-context |  |   
-  
+changelog.mode | error-handling.log.target | error-handling.mode
+---|---|---
+kafka.cleanup-policy | kafka.max-message-size | kafka.retention.size
+kafka.retention.time | key.fields-prefix | key.format
+key.format.schema-context | scan.bounded.mode | scan.bounded.timestamp-millis
+scan.startup.mode | value.fields-include | value.format
+value.format.schema-context |  |
+
 ### changelog.mode¶
 
 Set the changelog mode of the connector. For more information on changelog modes, see [dynamic tables](../../concepts/dynamic-tables.html#flink-sql-dynamic-tables).
@@ -587,12 +587,12 @@ With a primary key declared, the changelog modes have these properties:
 
 To build indices, primary keys must be partitioned together.
 
-Encoding of changes | Default Partitioning without PK | Default Partitioning with PK | Custom Partitioning without PK | Custom Partitioning with PK  
----|---|---|---|---  
-Each value is an insertion (+I). | round robin | hash by PK | hash by specified column(s) | hash by subset of PK  
-A special `op` header represents the change (+I, -U, +U, -D). The header is omitted for insertions. Append queries encoding is the same for all modes. | hash by entire value | hash by PK | hash by specified column(s) | hash by subset of PK  
-If value is `null`, it represents a deletion (-D). Other values are +U and the engine will normalize the changelog internally. | unsupported, PK is mandatory | hash by PK | unsupported, PK is mandatory | unsupported  
-  
+Encoding of changes | Default Partitioning without PK | Default Partitioning with PK | Custom Partitioning without PK | Custom Partitioning with PK
+---|---|---|---|---
+Each value is an insertion (+I). | round robin | hash by PK | hash by specified column(s) | hash by subset of PK
+A special `op` header represents the change (+I, -U, +U, -D). The header is omitted for insertions. Append queries encoding is the same for all modes. | hash by entire value | hash by PK | hash by specified column(s) | hash by subset of PK
+If value is `null`, it represents a deletion (-D). Other values are +U and the engine will normalize the changelog internally. | unsupported, PK is mandatory | hash by PK | unsupported, PK is mandatory | unsupported
+
 #### Change type header¶
 
 Changes for an [updating table](../../concepts/dynamic-tables.html#flink-sql-dynamic-tables-updating-table) have the change type encoded in the Kafka record as a special `op` header that represents the change (+I, -U, +U, -D). The value of the `op` header, if present, represents the kind of change that a row can describe in a changelog:
@@ -903,7 +903,7 @@ Properties
   * Key and value formats are raw (binary format) with BYTES.
 
   * Following Kafka message semantics, both key and value support NULL as well, so the following code is valid:
-        
+
         INSERT INTO t_raw (key, val) SELECT CAST(NULL AS BYTES), CAST(NULL AS BYTES);
 
 ### No key and but record value in Schema Registry¶
@@ -945,7 +945,7 @@ Properties
   * The key format is raw (binary format) with BYTES.
 
   * Following Kafka message semantics, the key supports NULL as well, so the following code is valid:
-        
+
         INSERT INTO t_raw_key SELECT CAST(NULL AS BYTES), 12, 'Bob';
 
 ### Atomic key and record value in Schema Registry¶
@@ -1205,13 +1205,13 @@ Properties
 For the following value schema in Schema Registry:
 
     syntax = "proto3";
-    
+
     message Purchase {
        string item = 1;
        double amount = 2;
        string customer_id = 3;
     }
-    
+
     message Pageview {
        string url = 1;
        bool is_special = 2;
@@ -1238,14 +1238,14 @@ SHOW CREATE TABLE returns the following output:
 For the following value schema in Schema Registry:
 
     syntax = "proto3";
-    
+
     message Purchase {
        string item = 1;
        double amount = 2;
        string customer_id = 3;
        Pageview pageview = 4;
     }
-    
+
     message Pageview {
        string url = 1;
        bool is_special = 2;
@@ -1277,7 +1277,7 @@ SHOW CREATE TABLE returns the following output:
 For the following value schema in Schema Registry:
 
     syntax = "proto3";
-    
+
     message Purchase {
        string item = 1;
        double amount = 2;
@@ -1393,10 +1393,10 @@ Properties
   * The default `changelog.mode` is `retract`, which properly handles all CDC operations, including inserts, updates, and deletes.
 
   * You can manually override the changelog mode if necessary:
-        
+
         -- Change to upsert mode for primary key-based operations
         ALTER TABLE customer_changes SET ('changelog.mode' = 'upsert');
-        
+
         -- Change to append mode (processes only inserts and updates)
         ALTER TABLE customer_changes SET ('changelog.mode' = 'append');
 
@@ -1562,11 +1562,11 @@ Properties
   2. Create two Flink compute pools in different regions, for example, `eu-west-1` and `us-west-2`.
 
   3. In the first region, run the following statement.
-         
+
          CREATE TABLE t_shared_schema (key STRING, s STRING) DISTRIBUTED BY (key);
 
   4. In the second region, run the same statement.
-         
+
          CREATE TABLE t_shared_schema (key STRING, s STRING) DISTRIBUTED BY (key);
 
 Properties
@@ -1616,7 +1616,7 @@ Properties
 
     -- works because the query is non-updating
     INSERT INTO t_changelog_modes SELECT 1;
-    
+
     -- does not work because the query is updating, causing an error
     INSERT INTO t_changelog_modes SELECT COUNT(*) FROM (VALUES (1), (2), (3));
 
@@ -1634,7 +1634,7 @@ Going back to **append** mode is possible, but retractions (-U, -D) appear as in
 
     ALTER TABLE t_changelog_modes SET ('changelog.mode' = 'append');
     ALTER TABLE t_changelog_modes ADD headers MAP<BYTES, BYTES> METADATA VIRTUAL;
-    
+
     -- Shows what is serialized internally
     SELECT i, headers FROM t_changelog_modes;
 
@@ -1652,4 +1652,3 @@ Properties
 
     "d", "day", "h", "hour", "m", "min", "minute", "ms", "milli", "millisecond",
     "µs", "micro", "microsecond", "ns", "nano", "nanosecond"
-

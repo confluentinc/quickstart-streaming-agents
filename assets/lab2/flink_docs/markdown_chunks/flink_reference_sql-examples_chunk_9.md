@@ -12,19 +12,19 @@ The following statements may be helpful for debugging issues related to watermar
     -- example table
     CREATE TABLE t_watermark_debugging (k INT, s STRING)
       DISTRIBUTED BY (k) INTO 4 BUCKETS;
-    
+
     -- Each value lands in a separate Kafka partition (out of 4).
     -- Leave out values to see missing watermarks.
     INSERT INTO t_watermark_debugging
       VALUES (1, 'Bob'), (2, 'Alice'), (8, 'John'), (15, 'David');
-    
+
     -- If ROW_NUMBER doesn't show results, it's clearly a watermark issue.
     SELECT ROW_NUMBER() OVER (ORDER BY $rowtime ASC) AS `number`, *
       FROM t_watermark_debugging;
-    
+
     -- Add partition information as metadata column
     ALTER TABLE t_watermark_debugging ADD part INT METADATA FROM 'partition' VIRTUAL;
-    
+
     -- Use the CURRENT_WATERMARK() function to check which watermark is calculated
     SELECT
       *,
@@ -32,21 +32,21 @@ The following statements may be helpful for debugging issues related to watermar
       $rowtime AS `Row Timestamp`,
       CURRENT_WATERMARK($rowtime) AS `Operator Watermark`
     FROM t_watermark_debugging;
-    
+
     -- Visualize the highest timestamp per Kafka partition
     -- Due to the table declaration (with 4 buckets), this query should show 4 rows.
     -- If not, the missing partitions might be the cause for watermark issues.
     SELECT part AS `Partition`, MAX($rowtime) AS `Max Timestamp in Partition`
       FROM t_watermark_debugging
       GROUP BY part;
-    
+
     -- A workaround could be to not use the system watermark:
     ALTER TABLE t_watermark_debugging
       MODIFY WATERMARK FOR $rowtime AS $rowtime - INTERVAL '2' SECOND;
     -- Or for perfect input data:
     ALTER TABLE t_watermark_debugging
       MODIFY WATERMARK FOR $rowtime AS $rowtime - INTERVAL '0.001' SECOND;
-    
+
     -- Add "fresh" data while the above statements with
     -- ROW_NUMBER() or CURRENT_WATERMARK() are running.
     INSERT INTO t_watermark_debugging VALUES
@@ -74,27 +74,27 @@ Idle partitions often cause missing watermarks. Also, no data in a partition or 
     -- Create a topic with 4 partitions.
     CREATE TABLE t_watermark_idle (k INT, s STRING)
       DISTRIBUTED BY (k) INTO 4 BUCKETS;
-    
+
     -- Avoid the "not enough data" problem by using a custom watermark.
     -- The watermark strategy is still coarse-grained enough for this example.
     ALTER TABLE t_watermark_idle
       MODIFY WATERMARK FOR $rowtime AS $rowtime - INTERVAL '2' SECONDS;
-    
+
     -- Each value lands in a separate Kafka partition, and partition 1 is empty.
     INSERT INTO t_watermark_idle
       VALUES
         (1, 'Bob in partition 0'),
         (2, 'Alice in partition 3'),
         (8, 'John in partition 2');
-    
+
     -- Thread 1: Start a streaming job.
     SELECT ROW_NUMBER() OVER (ORDER BY $rowtime ASC) AS `number`, *
       FROM t_watermark_idle;
-    
+
     -- Thread 2: Insert some data immediately -> Thread 1 still without results.
     INSERT INTO t_watermark_idle
       VALUES (1, 'Another Bob in partition 0 shortly after');
-    
+
     -- Thread 2: Insert some data after 15s -> Thread 1 should show results.
     INSERT INTO t_watermark_idle
       VALUES (1, 'Another Bob in partition 0 after 15s')
@@ -112,7 +112,7 @@ In the following code, the `sql.tables.scan.idle-timeout` configuration override
     SET 'sql.tables.scan.idle-timeout' = '1s';
     SELECT ROW_NUMBER() OVER (ORDER BY $rowtime ASC) AS `number`, *
       FROM t_watermark_idle;
-    
+
     -- Thread 2: Insert some data immediately -> Thread 1 should show results.
     INSERT INTO t_watermark_idle
       VALUES (1, 'Another Bob in partition 0 shortly after');

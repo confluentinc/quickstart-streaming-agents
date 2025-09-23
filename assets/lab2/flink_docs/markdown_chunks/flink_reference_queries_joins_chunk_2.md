@@ -37,13 +37,13 @@ For example, suppose you have a table of orders, each with prices in different c
         price       DECIMAL(32,2),
         currency    STRING
     );
-    
+
     CREATE TABLE currency_rates (
         currency STRING,
         conversion_rate DECIMAL(32, 2),
         PRIMARY KEY(currency) NOT ENFORCED
     );
-    
+
     SELECT
          orders.order_id,
          orders.price,

@@ -30,13 +30,13 @@ The following example statements are syntactically valid Flink SQL input:
       gender STRING,
       regionid STRING
     );
-    
+
     -- Populate the table with mock users data.
     INSERT INTO users VALUES
       ('Thomas A. Anderson', 1677260724, 'male', 'Region_4'),
       ('Trinity', 1677260733, 'female', 'Region_4'),
       ('Morpheus', 1677260742, 'male', 'Region_8');
-    
+
     SELECT * FROM users;
 
 ## Keywords¶
@@ -165,4 +165,3 @@ Operators are evaluated using the following order of precedence:
 In an expression, when two operators have the same precedence level, they’re evaluated left-to-right, based on their position.
 
 You can enclose an expression in parentheses to force precedence or clarify precedence, for example, `(5 + 2) * 3`.
-

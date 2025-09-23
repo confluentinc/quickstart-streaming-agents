@@ -60,24 +60,24 @@ The following SELECT statements return the values indicated in the comment lines
 
     -- returns '{}'
     SELECT JSON_OBJECT();
-    
+
     -- returns '{"K1":"V1","K2":"V2"}'
     SELECT JSON_OBJECT('K1' VALUE 'V1', 'K2' VALUE 'V2');
-    
+
     -- Use an expression as a value.
     SELECT JSON_OBJECT('orderNo' VALUE orders.orderId);
-    
+
     -- ON NULL
     -- '{"K1":null}'
     SELECT JSON_OBJECT(KEY 'K1' VALUE CAST(NULL AS STRING) NULL ON NULL);
-    
+
     -- ON NULL
     -- '{}'
     SELECT JSON_OBJECT(KEY 'K1' VALUE CAST(NULL AS STRING) ABSENT ON NULL);
-    
+
     -- returns '{"K1":{"nested_json":{"value":42}}}'
     SELECT JSON_OBJECT('K1' VALUE JSON('{"nested_json": {"value": 42}}'));
-    
+
     -- returns '{"K1":{"K2":"V"}}'
     SELECT JSON_OBJECT(
       KEY 'K1'

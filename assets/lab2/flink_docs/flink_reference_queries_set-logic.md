@@ -22,7 +22,7 @@ The following examples use these tables to show how the different logical operat
     -- Create tables for the set logic operations.
     CREATE TABLE t1(chr CHAR);
     INSERT INTO t1 VALUES('c'), ('a'), ('b'), ('b'), ('c');
-    
+
     CREATE TABLE t2(chr CHAR);
     INSERT INTO t2 VALUES('d'), ('e'), ('a'), ('b'), ('b');
 
@@ -144,4 +144,3 @@ Your output should resemble:
     a
     b
     b
-

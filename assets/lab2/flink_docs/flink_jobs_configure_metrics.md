@@ -72,4 +72,3 @@ Accessing the Flink WebUI enables you to observe your application’s live metri
 The following image shows an example of viewing metrics in the Flink WebUI.
 
 [](../../../_images/cmf-metrics.png)
-

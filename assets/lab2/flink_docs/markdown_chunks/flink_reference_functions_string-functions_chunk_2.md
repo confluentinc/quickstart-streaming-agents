@@ -153,7 +153,7 @@ Examples
 
     -- returns "??hi"
     SELECT LPAD('hi', 4, '??');
-    
+
     -- returns "h"
     SELECT LPAD('hi', 1, '??');
 
@@ -202,7 +202,7 @@ Examples
 
     -- returns "xxxxxxxxx"
     SELECT OVERLAY('xxxxxtest' PLACING 'xxxx' FROM 6);
-    
+
     -- returns "xxxxxxxxxst"
     SELECT OVERLAY('xxxxxtest' PLACING 'xxxx' FROM 6 FOR 2);
 
@@ -243,6 +243,6 @@ Example
 
     -- returns 'confluent.io'
     SELECT PARSE_URL('http://confluent.io/path1/p.php?k1=v1&k2=v2#Ref1', 'HOST');
-    
+
     -- returns 'v1'
     SELECT PARSE_URL('http://confluent.io/path1/p.php?k1=v1&k2=v2#Ref1', 'QUERY', 'k1');

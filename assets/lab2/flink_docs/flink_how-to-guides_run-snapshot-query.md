@@ -72,11 +72,10 @@ The query runs and returns all of the messages that have been produced to the to
 You can set the snapshot mode in SQL by using the [SET](../reference/statements/set.html#flink-sql-set-statement-config-options) statement to assign the `sql.snapshot.mode` configuration option.
 
   1. In the cell, prepend the SELECT statement with the following SET statement:
-         
+
          SET 'sql.snapshot.mode' = 'now';
          SELECT * FROM `<your-env>`.`<your-cluster>`.`sample_data_users`;
 
   2. Click **Run**.
 
 The query runs and returns all of the messages that have been produced to the topic at the current point in time.
-

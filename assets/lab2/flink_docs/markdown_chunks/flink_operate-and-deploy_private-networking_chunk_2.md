@@ -84,7 +84,7 @@ One way to connect is to set up a [reverse proxy](../../networking/ccloud-consol
   4. Configure Routing Table.
 
   5. Set up DNS resolution: point to the Flink regional endpoints you use, as described in Step 6 of [Configure a proxy](../../networking/ccloud-console-access.html#proxied-access).
-         
+
          <Public IP Address of VM instance> <Flink-private-endpoint>
 
 `<Flink-private-endpoint>` will resemble `flink.<region>.<cloud>.private.confluent.cloud`, for example: `flink.us-east-2.aws.private.confluent.cloud`.

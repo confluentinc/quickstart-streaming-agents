@@ -26,10 +26,10 @@ The following statements show how to run the ML_EVALUATE function on various ver
 
     -- Model evaluation with all versions
     SELECT ML_EVALUATE(`my_remote_model$all`, label, f1, f2) FROM `eval_data`;
-    
+
     -- Model evaluation with default version
     SELECT ML_EVALUATE(`my_remote_model`, label, f1, f2) FROM `eval_data`;
-    
+
     -- Model evaluation with specific version 2
     SELECT ML_EVALUATE(`my_remote_model$2`, label, f1, f2) FROM `eval_data`;
 
@@ -49,8 +49,8 @@ The KEY_SEARCH_AGG function uses a combination of serialized table properties an
 
 The output of KEY_SEARCH_AGG is an array with all rows in the external table that have a matching key in the search column.
 
-<input_column> | Search result  
----|---  
+<input_column> | Search result
+---|---
 <input_column_key> | array[row1<column1, column2…>, row2<column1, column2…>, …]
 
 ## ML_FORECAST¶
@@ -116,7 +116,7 @@ The following example shows how to invoke an LLM to generate text completions.
         'endpoint' = 'https://api.openai.com/v1/chat/completions',
         'api-key' = '<api-key>'
       );
-    
+
     CREATE MODEL description_extractor
       INPUT (input STRING)
       OUTPUT (output_json STRING)
@@ -126,8 +126,8 @@ The following example shows how to invoke an LLM to generate text completions.
         'openai.system_prompt' = 'Extract json from input free text',
         'task' = 'text_generation'
       );
-    
+
     CREATE TABLE claims_with_structured_description(id INT, customer_id INT, output_json STRING);
-    
+
     INSERT INTO claims_with_structured_description
       SELECT id, customer_id, output_json FROM claims_submitted, LATERAL TABLE(AI_COMPLETE('description_extractor', description));

@@ -30,31 +30,31 @@ The Query Profiler helps you manage the complexities of stream processing applic
 
 The Query Profiler provides the following metrics for the tasks in your Flink statements.
 
-Metric | Definition  
----|---  
-Backpressure | Percentage of time a task is regulating data flow to match processing speed by reducing pending events.  
-Busyness | The percentage of time a task is actively processing data. If a task has multiple subtasks running in parallel, Query Profiler shows the highest busyness value seen among them. Note that idleness and busyness will not always add up to 100%.  
-Bytes in/min | Amount of data received by a task per minute.  
-Bytes out/min | Amount of data sent by a task per minute.  
-Idleness | The percentage of time a task is not actively processing data. If a task has multiple subtasks running in parallel, Query Profiler shows the highest idleness value seen among them. Note that idleness and busyness do not always add up to 100%.  
-Messages in/min | Number of events the task receives per minute.  
-Messages out/min | Number of events the task sends out per minute.  
-State size | Amount of data stored by the task during processing to track information across events.  
-Watermark | Timestamp Flink uses to track event time progress and handle out-of-order events.  
-  
+Metric | Definition
+---|---
+Backpressure | Percentage of time a task is regulating data flow to match processing speed by reducing pending events.
+Busyness | The percentage of time a task is actively processing data. If a task has multiple subtasks running in parallel, Query Profiler shows the highest busyness value seen among them. Note that idleness and busyness will not always add up to 100%.
+Bytes in/min | Amount of data received by a task per minute.
+Bytes out/min | Amount of data sent by a task per minute.
+Idleness | The percentage of time a task is not actively processing data. If a task has multiple subtasks running in parallel, Query Profiler shows the highest idleness value seen among them. Note that idleness and busyness do not always add up to 100%.
+Messages in/min | Number of events the task receives per minute.
+Messages out/min | Number of events the task sends out per minute.
+State size | Amount of data stored by the task during processing to track information across events.
+Watermark | Timestamp Flink uses to track event time progress and handle out-of-order events.
+
 The Query Profiler provides the following metrics for the operators in your Flink statements.
 
-Metric | Definition  
----|---  
-Messages in/min | Number of events the operator receives per minute.  
-Messages out/min | Number of events the operator sends out per minute.  
-State size | Amount of data stored by the operator during processing to track information across events.  
-Watermark | Timestamp Flink uses to track event time progress and handle out-of-order events.  
-  
+Metric | Definition
+---|---
+Messages in/min | Number of events the operator receives per minute.
+Messages out/min | Number of events the operator sends out per minute.
+State size | Amount of data stored by the operator during processing to track information across events.
+Watermark | Timestamp Flink uses to track event time progress and handle out-of-order events.
+
 The Query Profiler provides the following metrics for the Kafka partitions in your data source(s).
 
-Metric | Definition  
----|---  
-Active | Percentage of time the partition is active. An active partition processes events and creates watermarks to keep your statements running smoothly.  
-Blocked | Percentage of time the partition is blocked. A blocked partition is overwhelmed with data, causing delays in the watermark calculation.  
+Metric | Definition
+---|---
+Active | Percentage of time the partition is active. An active partition processes events and creates watermarks to keep your statements running smoothly.
+Blocked | Percentage of time the partition is blocked. A blocked partition is overwhelmed with data, causing delays in the watermark calculation.
 Idle | Percentage of time the partition is idle. An idle partition has not received any events for a certain time period and is not contributing to the watermark calculation.

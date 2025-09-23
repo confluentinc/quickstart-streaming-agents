@@ -60,4 +60,3 @@ The following code shows an example of configuring logging at the Environment le
       log4j-console.properties: |+
         rootLogger.level = DEBUG
         rootLogger.appenderRef.file.ref = LogFile
-

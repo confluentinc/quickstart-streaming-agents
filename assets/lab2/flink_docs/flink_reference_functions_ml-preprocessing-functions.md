@@ -9,12 +9,12 @@ scraped_date: 2025-09-05T13:50:29.990477
 
 The following built-in functions are available for ML preprocessing in Confluent Cloud for Apache Flink®. These functions help transform features into representations more suitable for downstream processors.
 
-ML_BUCKETIZE | ML_CHARACTER_TEXT_SPLITTER | ML_FILE_FORMAT_TEXT_SPLITTER  
----|---|---  
-ML_LABEL_ENCODER | ML_MAX_ABS_SCALER | ML_MIN_MAX_SCALER  
-ML_NGRAMS | ML_NORMALIZER | ML_ONE_HOT_ENCODER  
-ML_RECURSIVE_TEXT_SPLITTER | ML_ROBUST_SCALER | ML_STANDARD_SCALER  
-  
+ML_BUCKETIZE | ML_CHARACTER_TEXT_SPLITTER | ML_FILE_FORMAT_TEXT_SPLITTER
+---|---|---
+ML_LABEL_ENCODER | ML_MAX_ABS_SCALER | ML_MIN_MAX_SCALER
+ML_NGRAMS | ML_NORMALIZER | ML_ONE_HOT_ENCODER
+ML_RECURSIVE_TEXT_SPLITTER | ML_ROBUST_SCALER | ML_STANDARD_SCALER
+
 ## ML_BUCKETIZE¶
 
 Bucketizes numerical values into discrete bins based on split points.
@@ -43,7 +43,7 @@ Example
 
     -- returns 'bin_2'
     SELECT ML_BUCKETIZE(2, ARRAY[1, 4, 7]);
-    
+
     -- returns 'b2'
     SELECT ML_BUCKETIZE(2, ARRAY[1, 4, 7], ARRAY['b_null','b1','b2','b3','b4']);
 
@@ -109,7 +109,7 @@ Arguments
 
   * **formatName** : ENUM of the format names. Valid values are:
 
-Valid values for formatName 
+Valid values for formatName
     * `C`
     * `CPP`
     * `CSHARP`
@@ -169,7 +169,7 @@ Example
 
     -- returns 1
     SELECT ML_LABEL_ENCODER('abc', ARRAY['abc', 'def', 'efg', 'hikj']);
-    
+
     -- returns 0
     SELECT ML_LABEL_ENCODER('abc', ARRAY['abc', 'def', 'efg', 'hikj'], TRUE );
 
@@ -252,7 +252,7 @@ Example
 
     -- returns ['ab', 'cd', 'de', 'pwe']
     SELECT ML_NGRAMS(ARRAY['ab', 'cd', 'de', 'pwe'], 1, '#');
-    
+
     -- returns ['ab#cd', 'cd#de']
     SELECT ML_NGRAMS(ARRAY['ab','cd','de', NULL], 2, '#');
 
@@ -307,7 +307,7 @@ Example
 
     -- returns [1, 0, 0, 0]
     SELECT ML_ONE_HOT_ENCODER('abc', ARRAY['abc', 'def', 'efg', 'hikj']);
-    
+
     -- returns [0, 0, 0, 0, 1]
     SELECT ML_ONE_HOT_ENCODER('abcd', ARRAY['abc', 'def', 'efg', 'hik'], TRUE, 'KEEP' );
 
@@ -412,4 +412,3 @@ Example
   * [Numeric Functions](numeric-functions.html#flink-sql-numeric-functions)
   * [String Functions](string-functions.html#flink-sql-string-functions)
   * [Table API Functions](table-api-functions.html#flink-table-api-functions)
-

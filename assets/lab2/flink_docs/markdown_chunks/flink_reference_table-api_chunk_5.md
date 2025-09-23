@@ -25,13 +25,13 @@ JavaPython
           .watermark("$rowtime", $("$rowtime").minus(lit(5).seconds())) // Access $rowtime system column
           .build())
       .build();
-    
+
     env.createTable("t1", descriptor);
 
     from pyflink.table.confluent import ConfluentTableDescriptor
     from pyflink.table import Schema, DataTypes
     from pyflink.table.expressions import col, lit
-    
+
     descriptor = ConfluentTableDescriptor.for_managed() \
       .schema(
          Schema.new_builder()
@@ -40,7 +40,7 @@ JavaPython
            .watermark("$rowtime", col("$rowtime").minus(lit(5).seconds)) # Access $rowtime system column
            .build()) \
       .build()
-    
+
     env.createTable("t1", descriptor)
 
 ## Known limitations¶

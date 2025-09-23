@@ -22,31 +22,31 @@ Represents an array of elements with same subtype.
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-t[] | ✓ | ✓ | Default. Depends on the subtype.  
-java.util.List<t> | ✓ | ✓ |   
-subclass of java.util.List<t> | ✓ |  |   
-org.apache.flink.table.data.ArrayData | ✓ | ✓ | Internal data structure  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+t[] | ✓ | ✓ | Default. Depends on the subtype.
+java.util.List<t> | ✓ | ✓ |
+subclass of java.util.List<t> | ✓ |  |
+org.apache.flink.table.data.ArrayData | ✓ | ✓ | Internal data structure
+
 **Formats**
 
 The following table shows examples of the ARRAY type in different formats.
 
-JSON for data type | 
+JSON for data type |
 
     {"type":"ARRAY","nullable":true,"elementType":{"type":"INTEGER","nullable":true}}
 
----|---  
-CLI/UI format | 
+---|---
+CLI/UI format |
 
     ARRAY<INT>
 
-JSON for payload | 
+JSON for payload |
 
     ["1", "2", "3", null]
 
-CLI/UI format for payload | 
+CLI/UI format for payload |
 
     [1, 2, 3, NULL]
 
@@ -66,30 +66,30 @@ Represents an associative array that maps keys (including `NULL`) to values (inc
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-java.util.Map<kt, vt> | ✓ | ✓ | Default  
-subclass of java.util.Map<kt, vt> | ✓ |  |   
-org.apache.flink.table.data.MapData | ✓ | ✓ | Internal data structure  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+java.util.Map<kt, vt> | ✓ | ✓ | Default
+subclass of java.util.Map<kt, vt> | ✓ |  |
+org.apache.flink.table.data.MapData | ✓ | ✓ | Internal data structure
+
 **Formats**
 
 The following table shows examples of the MAP type in different formats.
 
-JSON for data type | 
+JSON for data type |
 
     {"type":"MAP","nullable":true,"keyType":{"type":"INTEGER","nullable":true},"valueType":{"type":"VARCHAR","nullable":true,"length":2147483647}}
 
----|---  
-CLI/UI format | 
+---|---
+CLI/UI format |
 
     MAP<STRING>
 
-JSON for payload | 
+JSON for payload |
 
     [["1", "a"], ["2", "b"], [null, "c"]]
 
-CLI/UI format for payload | 
+CLI/UI format for payload |
 
     {1=a, 2=b, NULL=c}
 
@@ -112,30 +112,30 @@ Represents a multiset (=bag).
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-java.util.Map<t, java.lang.Integer> | ✓ | ✓ | Default. Assigns each value to an integer multiplicity.  
-subclass of java.util.Map<t, java.lang.Integer> | ✓ |  |   
-org.apache.flink.table.data.MapData | ✓ | ✓ | Internal data structure  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+java.util.Map<t, java.lang.Integer> | ✓ | ✓ | Default. Assigns each value to an integer multiplicity.
+subclass of java.util.Map<t, java.lang.Integer> | ✓ |  |
+org.apache.flink.table.data.MapData | ✓ | ✓ | Internal data structure
+
 **Formats**
 
 The following table shows examples of the MULTISET type in different formats.
 
-JSON for data type | 
+JSON for data type |
 
     {"type":"MULTISET","nullable":true,"elementType":{"type":"INTEGER","nullable":true}}
 
----|---  
-CLI/UI format | 
+---|---
+CLI/UI format |
 
     MULTISET<INT>
 
-JSON for payload | 
+JSON for payload |
 
     [["a", "1"], ["b", "2"], [null, "1"]]
 
-CLI/UI format for payload | 
+CLI/UI format for payload |
 
     {a=1, b=2, NULL=1}
 
@@ -155,35 +155,35 @@ Represents a sequence of fields.
 
     ROW<name0 type0, name1 type1, ...>
     ROW<name0 type0 'description0', name1 type1 'description1', ...>
-    
+
     ROW(name0 type0, name1 type1, ...)
     ROW(name0 type0 'description0', name1 type1 'description1', ...)
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-org.apache.flink.types.Row | ✓ | ✓ | Default  
-org.apache.flink.table.data.RowData | ✓ | ✓ | Internal data structure  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+org.apache.flink.types.Row | ✓ | ✓ | Default
+org.apache.flink.table.data.RowData | ✓ | ✓ | Internal data structure
+
 **Formats**
 
 The following table shows examples of the ROW type in different formats.
 
-JSON for data type | 
+JSON for data type |
 
     {"type":"ROW","nullable":true,"fields":[{"name":"a","fieldType":{"type":"INTEGER","nullable":true}},{"name":"b","fieldType":{"type":"VARCHAR","nullable":true,"length":2147483647}}]}
 
----|---  
-CLI/UI format | 
+---|---
+CLI/UI format |
 
     MULTISET<INT>
 
-JSON for payload | 
+JSON for payload |
 
     [["a", "1"], ["b", "2"], [null, "1"]]
 
-CLI/UI format for payload | 
+CLI/UI format for payload |
 
     {a=1, b=2, NULL=1}
 

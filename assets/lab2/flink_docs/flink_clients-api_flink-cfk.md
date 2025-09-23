@@ -10,4 +10,3 @@ scraped_date: 2025-09-05T13:51:36.775286
 Users can declaratively create and manage Flink Environments and Flink Applications in Kubernetes via the FlinkApplication and FlinkEnvironment custom resources (CRs) provided by Confluent for Kubernetes (CFK).
 
 For more information on how to manage Flink on-premises with CFK, see [Manage Flink Applications Using Confluent for Kubernetes](https://docs.confluent.io/operator/current/co-manage-flink.html).
-

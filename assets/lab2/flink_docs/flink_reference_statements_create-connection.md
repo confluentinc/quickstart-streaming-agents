@@ -93,7 +93,7 @@ The maximum secret length is 4000 bytes, which is checked after the string is co
         'endpoint' = 'https://myworkspace.myregion.inference.ml.azure.com/test',
         'api_key' = '<your-api-key>'
       );
-    
+
     -- example AzureML connection with comment
     CREATE CONNECTION `my-azureml-connection`
       COMMENT 'Connection Comment'
@@ -102,7 +102,7 @@ The maximum secret length is 4000 bytes, which is checked after the string is co
         'endpoint' = 'https://myworkspace.myregion.inference.ml.azure.com/test',
         'api_key' = '<your-api-key>'
       );
-    
+
     -- example Couchbase connection with basic authorization
     CREATE CONNECTION `my-couchbase-connection`
       WITH (
@@ -111,7 +111,7 @@ The maximum secret length is 4000 bytes, which is checked after the string is co
         'username' = '<user-name>',
         'password' = '<password>'
       );
-    
+
     -- example Bedrock connection with AWS authentication
     CREATE CONNECTION `my-bedrock-connection`
       WITH (
@@ -132,7 +132,7 @@ The maximum secret length is 4000 bytes, which is checked after the string is co
         'username' = '<atlas-user-name>',
         'password' = '<atlas-password>'
       );
-    
+
     -- Use the MongoDB connection to create a MongoDB external table.
     CREATE TABLE mongodb_movies_full_text_search (
         title STRING,
@@ -154,7 +154,7 @@ The maximum secret length is 4000 bytes, which is checked after the string is co
         'endpoint' = 'jdbc:postgresql://my.example.com:5432/mydatabase',
         'username' = '<user-name>',
         'password' = '<password>');
-    
+
     -- Use the Confluent JDBC connection to create a table.
     CREATE TABLE jdbc_postgres (
         show_id STRING,
@@ -173,4 +173,3 @@ The maximum secret length is 4000 bytes, which is checked after the string is co
         'confluent-jdbc.connection' = 'jdbc-postgres-connection',
         'confluent-jdbc.table-name' = 'netflix_shows'
     );
-

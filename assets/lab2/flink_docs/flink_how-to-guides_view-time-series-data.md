@@ -62,4 +62,3 @@ As data continues to stream, the window in the lower pane moves to the left, whi
   6. Click [](../../_images/flink-workspace-time-series-download.png) to download the current visualization as a PNG file.
 
   7. Click the time-series toggle ([](../../_images/flink-workspace-time-series-toggle.png)) to close the visualizer.
-

@@ -44,15 +44,15 @@ For production Flink deployments, select the **Service account** option, and cli
 You can use the Confluent CLI to generate an API key for Flink access. For more information, see [confluent api-key create ](https://docs.confluent.io/confluent-cli/current/command-reference/api-key/confluent_api-key_create.html).
 
   1. Log in to Confluent Cloud:
-         
+
          confluent login
 
   2. To see the available regions for Flink, run the following command:
-         
+
          confluent flink region list
 
 Your output should resemble:
-         
+
          Current |           Name           | Cloud |    Region
          ----------+--------------------------+-------+---------------
                    | Frankfurt (eu-central-1) | aws   | eu-central-1
@@ -61,12 +61,12 @@ Your output should resemble:
                    | Ohio (us-east-2)         | aws   | us-east-2
 
   3. Run the following command to create an API key. Enure that the environment variables are set to your values.
-         
+
          # Example values for environment variables.
          export CLOUD_PROVIDER=aws
          export CLOUD_REGION=us-east-1
          export ENV_ID=env-a12b34
-         
+
          # Generate the API key and secret.
          confluent api-key create \
            --resource flink \
@@ -75,7 +75,7 @@ Your output should resemble:
            --environment ${ENV_ID}
 
 Your output should resemble:
-         
+
          It may take a couple of minutes for the API key to be ready.
          Save the API key and secret. The secret is not retrievable later.
          +------------+------------------------------------------------------------------+
@@ -93,7 +93,7 @@ To generate the Flink key, you send your Cloud API key and secret in the request
   1. Create a Cloud API key for the principal, which is either a service account or your user account. For more information, see [Add an API key](../../security/authenticate/workload-identities/service-accounts/api-keys/manage-api-keys.html#create-cloud-api-key).
 
   2. Assign the Cloud API key and secret to environment variables that you use in your REST API requests.
-         
+
          export CLOUD_API_KEY="<cloud-api-key>"
          export CLOUD_API_SECRET="<cloud-api-secret>"
          export PRINCIPAL_ID="<service-account-id>" # or "<user-account-id>"

@@ -10,7 +10,7 @@ prefix = ""
 MONGODB_CONNECTION_STRING = ""
 
 # MongoDB Database and Collection Settings
-MONGODB_DATABASE = "vector_search"
+MONGODB_DATABASE   = "vector_search"
 MONGODB_COLLECTION = "documents"
 MONGODB_INDEX_NAME = "vector_index"
 

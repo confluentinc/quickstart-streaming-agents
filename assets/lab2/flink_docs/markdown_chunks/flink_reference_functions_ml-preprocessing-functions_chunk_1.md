@@ -11,10 +11,10 @@ total_chunks: 4
 
 The following built-in functions are available for ML preprocessing in Confluent Cloud for Apache Flink®. These functions help transform features into representations more suitable for downstream processors.
 
-ML_BUCKETIZE | ML_CHARACTER_TEXT_SPLITTER | ML_FILE_FORMAT_TEXT_SPLITTER  
----|---|---  
-ML_LABEL_ENCODER | ML_MAX_ABS_SCALER | ML_MIN_MAX_SCALER  
-ML_NGRAMS | ML_NORMALIZER | ML_ONE_HOT_ENCODER  
+ML_BUCKETIZE | ML_CHARACTER_TEXT_SPLITTER | ML_FILE_FORMAT_TEXT_SPLITTER
+---|---|---
+ML_LABEL_ENCODER | ML_MAX_ABS_SCALER | ML_MIN_MAX_SCALER
+ML_NGRAMS | ML_NORMALIZER | ML_ONE_HOT_ENCODER
 ML_RECURSIVE_TEXT_SPLITTER | ML_ROBUST_SCALER | ML_STANDARD_SCALER
 
 ## ML_BUCKETIZE¶
@@ -45,7 +45,7 @@ Example
 
     -- returns 'bin_2'
     SELECT ML_BUCKETIZE(2, ARRAY[1, 4, 7]);
-    
+
     -- returns 'b2'
     SELECT ML_BUCKETIZE(2, ARRAY[1, 4, 7], ARRAY['b_null','b1','b2','b3','b4']);
 

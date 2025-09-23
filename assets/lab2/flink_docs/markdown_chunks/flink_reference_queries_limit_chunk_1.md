@@ -22,7 +22,7 @@ Usually, this clause is used in conjunction with ORDER BY to ensure that the res
 In the Flink SQL shell or in a Cloud Console workspace, run the following commands to see an example of the LIMIT clause. The following example selects the first 3 rows from a web page clicks table.
 
   1. Create a table for web page click events.
-         
+
          -- Create a table for web page click events.
          CREATE TABLE clicks (
            ip_address VARCHAR,
@@ -31,7 +31,7 @@ In the Flink SQL shell or in a Cloud Console workspace, run the following comman
          );
 
   2. Populate the table with mock clickstream data.
-         
+
          -- Populate the table with mock clickstream data.
          INSERT INTO clicks
          VALUES( '10.0.0.1',  'https://acme.com/index.html',     1692812175),
@@ -44,11 +44,11 @@ In the Flink SQL shell or in a Cloud Console workspace, run the following comman
 Press ENTER to return to the SQL shell. Because INSERT INTO VALUES is a point-in-time statement, it exits after it completes inserting records.
 
   3. View the rows in the `clicks` table and limit the result to 3 rows.
-         
+
          SELECT * FROM clicks LIMIT 3;
 
 Your output should resemble:
-         
+
          ip_address url                             click_ts_raw
          10.0.0.1   https://acme.com/index.html     1692812175
          10.0.0.12  https://apache.org/index.html   1692826575

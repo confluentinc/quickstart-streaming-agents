@@ -23,7 +23,7 @@ The Flink [configuration overview](https://nightlies.apache.org/flink/flink-docs
 To use the Flink dependencies that are provided as part of Confluent Platform for Apache Flink®, you need to add the Confluent Maven repository and change the Maven group ID and version for supported components in the POM file for your project.
 
   1. Add the Confluent Platform for Apache Flink Maven repository to the `pom.xml` file like shown in the following code:
-         
+
          <repositories>
            <repository>
              <id>cp-flink-releases</id>
@@ -40,7 +40,7 @@ To use the Flink dependencies that are provided as part of Confluent Platform fo
   2. Replace the Maven group IDs and versions.
 
 In the `dependency` section of the `pom.xml` file, change the group ID to `io.confluent.flink` and update the version for each supported component like the following code:
-         
+
          <dependency>
            <groupId>io.confluent.flink</groupId>
            <artifactId>flink-streaming-java</artifactId>

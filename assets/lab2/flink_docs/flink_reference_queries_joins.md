@@ -52,12 +52,12 @@ Only equi-joins are supported, i.e., joins that have at least one conjunctive co
     FROM orders
     LEFT JOIN Product
     ON orders.product_id = Product.id
-    
+
     SELECT *
     FROM orders
     RIGHT JOIN Product
     ON orders.product_id = Product.id
-    
+
     SELECT *
     FROM orders
     FULL OUTER JOIN Product
@@ -112,13 +112,13 @@ For example, suppose you have a table of orders, each with prices in different c
         price       DECIMAL(32,2),
         currency    STRING
     );
-    
+
     CREATE TABLE currency_rates (
         currency STRING,
         conversion_rate DECIMAL(32, 2),
         PRIMARY KEY(currency) NOT ENFORCED
     );
-    
+
     SELECT
          orders.order_id,
          orders.price,
@@ -142,4 +142,3 @@ Returns a new row for each element in the given array. Unnesting `WITH ORDINALIT
 
     SELECT order_id, tag
     FROM orders CROSS JOIN UNNEST(tags) AS t (tag)
-

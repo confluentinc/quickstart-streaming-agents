@@ -18,7 +18,7 @@ total_chunks: 8
   * JSON type title: The count (value) in the JSON schema must map to a Flink INT type. For MULTISET types, the count (value) in the JSON schema must map to a Flink INT type, which corresponds to `connect.type: int32` in the JSON Schema. Using `connect.type: int64` causes a validation error.
 
   * Example:
-        
+
         {
           "type": "object",
           "connect.type": "map",
@@ -45,7 +45,7 @@ total_chunks: 8
   * JSON type title: –
 
   * Example:
-        
+
         {
           "type": "number",
           "connect.type": "int16"
@@ -62,7 +62,7 @@ total_chunks: 8
   * JSON type title: `org.apache.kafka.connect.data.Time`
 
   * Example:
-        
+
         {
           "type":"number",
           "title":"org.apache.kafka.connect.data.Time",
@@ -83,7 +83,7 @@ total_chunks: 8
   * JSON type title: `org.apache.kafka.connect.data.Timestamp`
 
   * Example:
-        
+
         {
           "type":"number",
           "title":"org.apache.kafka.connect.data.Timestamp",
@@ -104,7 +104,7 @@ total_chunks: 8
   * JSON type title: `org.apache.kafka.connect.data.Timestamp`
 
   * Example:
-        
+
         {
           "type":"number",
           "title":"org.apache.kafka.connect.data.Timestamp",
@@ -122,7 +122,7 @@ total_chunks: 8
   * JSON type title: –
 
   * Example:
-        
+
         {
           "type": "number",
           "connect.type": "int8"
@@ -139,7 +139,7 @@ total_chunks: 8
   * JSON type title: –
 
   * Example:
-        
+
         {
           "type": "string",
           "flink.maxLength": 123,
@@ -156,7 +156,7 @@ total_chunks: 8
   * JSON type title: –
 
   * Example:
-        
+
         {
           "type": "string",
           "maxLength": 123
@@ -168,9 +168,9 @@ The following table shows the mapping of JSON types to Flink SQL types. It shows
 
 This mapping is important when consuming/reading records with a schema that was created outside of Flink. The mapping defines the Flink table’s schema [inferred](statements/show.html#flink-sql-show-inferred-tables) from JSON Schema.
 
-JSON type | Flink SQL type  
----|---  
-Combined | ROW  
-Enum | VARCHAR  
-Number(requiresInteger=true) | BIGINT  
+JSON type | Flink SQL type
+---|---
+Combined | ROW
+Enum | VARCHAR
+Number(requiresInteger=true) | BIGINT
 Number(requiresInteger=false) | DOUBLE

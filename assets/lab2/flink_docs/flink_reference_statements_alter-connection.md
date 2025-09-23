@@ -28,10 +28,9 @@ In addition, if syntax in the CREATE CONNECTION statement is incorrect, Confluen
 
     -- Update the API key for a connection.
     ALTER CONNECTION `conn-one` SET ('api-key' = '<new-api-key>');
-    
+
     -- Update the credentials for a connection.
     ALTER CONNECTION `my-couchbase-conn` SET (
       'username' = '<user-name>',
       'password' = '<new-password>'
     );
-

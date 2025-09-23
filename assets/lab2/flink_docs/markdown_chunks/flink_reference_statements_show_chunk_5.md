@@ -123,7 +123,7 @@ Example
 For an example AWS Bedrock model named “bedrock_embed”, the following statement might display the shown output.
 
     SHOW CREATE MODEL bedrock_embed;
-    
+
     -- Example SHOW CREATE MODEL output:
     CREATE MODEL `model-testing`.`virtual_topic_GCP`.`bedrock_embed`
     INPUT (`text` VARCHAR(2147483647))

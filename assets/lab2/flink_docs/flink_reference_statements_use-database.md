@@ -31,10 +31,10 @@ By itself, a `USE <database_name>` statement is a no-op. To see its effect, you 
 
     -- Set the current catalog (environment).
     USE CATALOG my_env;
-    
+
     -- Set the current database (Kafka cluster).
     USE cluster_0;
-    
+
     -- Submit a DDL statement.
     SELECT * FROM my_table;
 
@@ -53,11 +53,11 @@ Any USE statements within an editor cell take precedence over the settings in th
 In the Flink SQL shell, run the following commands to see an example of the `USE <database_name>` statement.
 
   1. View the existing databases.
-         
+
          SHOW DATABASES;
 
 Your output should resemble:
-         
+
          +---------------+-------------+
          | database name | database id |
          +---------------+-------------+
@@ -65,11 +65,11 @@ Your output should resemble:
          +---------------+-------------+
 
   2. Set the current database to `cluster_0`.
-         
+
          USE cluster_0;
 
 Your output should resemble:
-         
+
          +----------------------+-----------+
          |         Key          |   Value   |
          +----------------------+-----------+
@@ -77,14 +77,13 @@ Your output should resemble:
          +----------------------+-----------+
 
   3. Run the SHOW CURRENT DATABASE to check the database change.
-         
+
          SHOW CURRENT DATABASE;
 
 Your output should resemble:
-         
+
          +-----------------------+
          | current database name |
          +-----------------------+
          | cluster_0             |
          +-----------------------+
-

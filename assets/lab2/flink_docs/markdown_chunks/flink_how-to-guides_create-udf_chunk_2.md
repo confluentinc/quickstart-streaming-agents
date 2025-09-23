@@ -22,23 +22,23 @@ You can’t use your own Flink-related jars. If you package Flink core dependenc
 Also, this example shows how to capture all dependencies greedily, possibly including more than needed. As an alternative, you can optimize on artifact size by listing all dependencies and including their transitive dependencies.
 
 pom.xml
-         
+
          <?xml version="1.0" encoding="UTF-8"?>
          <project xmlns="http://maven.apache.org/POM/4.0.0"
                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
              <modelVersion>4.0.0</modelVersion>
-         
+
              <groupId>example</groupId>
              <artifactId>udf_example</artifactId>
              <version>1.0</version>
-         
+
              <properties>
                  <maven.compiler.source>11</maven.compiler.source>
                  <maven.compiler.target>11</maven.compiler.target>
                  <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
              </properties>
-         
+
              <dependencies>
                  <dependency>
                      <groupId>org.apache.flink</groupId>
@@ -46,11 +46,11 @@ pom.xml
                      <version>1.18.1</version>
                      <scope>provided</scope>
                  </dependency>
-         
+
                  <!-- Dependencies -->
-         
+
              </dependencies>
-         
+
              <build>
                  <sourceDirectory>./example</sourceDirectory>
                  <plugins>
@@ -93,27 +93,27 @@ pom.xml
          </project>
 
   2. Create a directory named “example”.
-         
+
          mkdir example
 
   3. In the `example` directory, create a file named `TShirtSizingIsSmaller.java`.
-         
+
          touch example/TShirtSizingIsSmaller.java
 
   4. Copy the following code into `TShirtSizingIsSmaller.java`.
-         
+
          package com.example.my;
-         
+
          import org.apache.flink.table.functions.ScalarFunction;
-         
+
          import java.util.Arrays;
          import java.util.List;
          import java.util.stream.IntStream;
-         
+
          /** TShirt sizing function for demo. */
          public class TShirtSizingIsSmaller extends ScalarFunction {
             public static final String NAME = "IS_SMALLER";
-         
+
             private static final List<Size> ORDERED_SIZES =
                      Arrays.asList(
                            new Size("X-Small",

@@ -21,4 +21,3 @@ Confluent Cloud for Apache Flink® enables you to do data transformations and ot
   * [Numeric Functions](numeric-functions.html#flink-sql-numeric-functions)
   * [String Functions](string-functions.html#flink-sql-string-functions)
   * [Table API Functions](table-api-functions.html#flink-table-api-functions)
-

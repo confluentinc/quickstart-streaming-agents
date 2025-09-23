@@ -148,13 +148,13 @@ Properties
 For the following value schema in Schema Registry:
 
     syntax = "proto3";
-    
+
     message Purchase {
        string item = 1;
        double amount = 2;
        string customer_id = 3;
     }
-    
+
     message Pageview {
        string url = 1;
        bool is_special = 2;
@@ -181,14 +181,14 @@ SHOW CREATE TABLE returns the following output:
 For the following value schema in Schema Registry:
 
     syntax = "proto3";
-    
+
     message Purchase {
        string item = 1;
        double amount = 2;
        string customer_id = 3;
        Pageview pageview = 4;
     }
-    
+
     message Pageview {
        string url = 1;
        bool is_special = 2;

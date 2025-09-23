@@ -54,12 +54,12 @@ Only equi-joins are supported, i.e., joins that have at least one conjunctive co
     FROM orders
     LEFT JOIN Product
     ON orders.product_id = Product.id
-    
+
     SELECT *
     FROM orders
     RIGHT JOIN Product
     ON orders.product_id = Product.id
-    
+
     SELECT *
     FROM orders
     FULL OUTER JOIN Product

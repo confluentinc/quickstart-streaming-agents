@@ -17,13 +17,13 @@ The autoscaling process is based on [parallelism](overview.html#flink-sql-stream
 
 The scaling status in the SQL workspace shows you how the statement resources are scaling. These are the possible scaling statuses.
 
-Scaling Status | Description  
----|---  
-Fine | The SQL statement has enough resources to run at the required parallelism.  
-Pending Scale Down | The SQL statement has more resources than required and will be scaled down.  
-Pending Scale Up | The SQL statement doesn’t have enough resources and will be scaled up.  
-Compute Pool Exhausted | There aren’t enough resources in the compute pool for the statement to run with the required parallelism.  
-  
+Scaling Status | Description
+---|---
+Fine | The SQL statement has enough resources to run at the required parallelism.
+Pending Scale Down | The SQL statement has more resources than required and will be scaled down.
+Pending Scale Up | The SQL statement doesn’t have enough resources and will be scaled up.
+Compute Pool Exhausted | There aren’t enough resources in the compute pool for the statement to run with the required parallelism.
+
 ### Compute Pool Exhausted¶
 
 The compute pool has run out of resources. SQL statements may run with a reduced parallelism, which could affect the overall performance of the statement, or a statement may not be able to run at all, because all resources in the compute pool are in use.
@@ -39,9 +39,8 @@ Messages Behind is another indicator of how the statement is performing. The ove
 
 A low or decreasing Messages Behind value indicates that Autopilot is doing its job successfully. The following table describes scenarios in which Autopilot is scaling resources correctly or where it may be struggling.
 
-Messages Behind and Scaling Status | Description  
----|---  
-Messages Behind is increasing Scaling status = “Pending Scale Up” | Autopilot has identified a need for scaling up and will increase the Statement resources. Once resources have been scaled up, the Messages Behind should start decreasing.  
-Messages Behind is increasing Scaling status = “Fine” | There is likely a problem. Reach out to Confluent Support. For more information, see [Get Help with Confluent Cloud for Apache Flink](../get-help.html#ccloud-flink-help).  
-Messages Behind is not increasing Compute Pool is Exhausted | The statement resources can keep up with throughput but Autopilot needs to assign more resources to improve performance capacity. You can either add more resources by increasing the CFU limit on the compute pool or stop some running statements to free up existing resources.  
-  
+Messages Behind and Scaling Status | Description
+---|---
+Messages Behind is increasing Scaling status = “Pending Scale Up” | Autopilot has identified a need for scaling up and will increase the Statement resources. Once resources have been scaled up, the Messages Behind should start decreasing.
+Messages Behind is increasing Scaling status = “Fine” | There is likely a problem. Reach out to Confluent Support. For more information, see [Get Help with Confluent Cloud for Apache Flink](../get-help.html#ccloud-flink-help).
+Messages Behind is not increasing Compute Pool is Exhausted | The statement resources can keep up with throughput but Autopilot needs to assign more resources to improve performance capacity. You can either add more resources by increasing the CFU limit on the compute pool or stop some running statements to free up existing resources.

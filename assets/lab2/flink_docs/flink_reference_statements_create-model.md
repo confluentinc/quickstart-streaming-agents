@@ -154,12 +154,12 @@ Only model options are versioned, which that means input/output format and comme
 The following code example shows the result of running CREATE MODEL twice with the same model name.
 
     CREATE MODEL `my-model` ...
-    
+
     -- Output
     `my-model` with version 1 created. Default version: 1
-    
+
     CREATE MODEL `my-model` ...
-    
+
     -- Output
     `my-model` with version 2 created. Default version: 1
 
@@ -175,7 +175,7 @@ The following code examples show how to use a specific version of a model in a q
 
     -- Use version 2 of the model.
     SELECT * FROM `my-table` LATERAL TABLE (ML_PREDICT('my-model$2', col1, col2));
-    
+
     -- Use the default version of the model.
     SELECT * FROM `my-table` LATERAL TABLE (ML_PREDICT('my-model', col1, col2));
 
@@ -183,7 +183,7 @@ Use the `<model_name>$<model_version>` syntax to delete a specific version of a 
 
     -- Delete a specific version of the model.
     DROP MODEL `<model-name>$<version>`;
-    
+
     -- Delete all versions and the model.
     DROP MODEL `<model-name>$all`;
 
@@ -199,9 +199,9 @@ Specify the details of your AI inference model by using the WITH clause.
 
 The following tables show the supported properties in the WITH clause.
 
-Model Provider | Property  
----|---  
-Common | 
+Model Provider | Property
+---|---
+Common |
 
   * {PROVIDER}.client_timeout
   * {PROVIDER}.connection
@@ -212,26 +212,26 @@ Common |
   * {PROVIDER}.PARAMS.*
   * {PROVIDER}.system_prompt
 
-OpenAI | 
+OpenAI |
 
   * openai.input_format
   * openai.model_version
 
-Azure OpenAI | 
+Azure OpenAI |
 
   * azureopenai.input_format
   * azureopenai.model_version
 
-Azure ML | 
+Azure ML |
 
   * azureml.input_format
   * azureml.deployment_name
 
-Google AI | 
+Google AI |
 
   * googleai.input_format
 
-Sagemaker | 
+Sagemaker |
 
   * sagemaker.custom_attributes
   * sagemaker.enable_explanations
@@ -243,7 +243,7 @@ Sagemaker |
   * sagemaker.target_model
   * sagemaker.target_variant
 
-Vertex AI | 
+Vertex AI |
 
   * vertexai.service_key
   * vertexai.input_format
@@ -485,24 +485,24 @@ This property is optional.
 
 The following input/output formats for text generation and LLM models are supported.
 
-AI-21-COMPLETE | AMAZON-TITAN-EMBED | AMAZON-TITAN-TEXT  
----|---|---  
-ANTHROPIC-COMPLETIONS | ANTHROPIC-MESSAGES | AZURE-EMBED  
-BEDROCK-LLAMA | COHERE-CHAT | COHERE-EMBED  
-COHERE-GENERATE | GEMINI-GENERATE | GEMINI-CHAT  
-MISTRAL-CHAT | MISTRAL-COMPLETIONS | OPENAI-CHAT  
-OPENAI-EMBED | VERTEX-EMBED |   
-  
+AI-21-COMPLETE | AMAZON-TITAN-EMBED | AMAZON-TITAN-TEXT
+---|---|---
+ANTHROPIC-COMPLETIONS | ANTHROPIC-MESSAGES | AZURE-EMBED
+BEDROCK-LLAMA | COHERE-CHAT | COHERE-EMBED
+COHERE-GENERATE | GEMINI-GENERATE | GEMINI-CHAT
+MISTRAL-CHAT | MISTRAL-COMPLETIONS | OPENAI-CHAT
+OPENAI-EMBED | VERTEX-EMBED |
+
 The following additional input/output formats are supported.
 
-AZUREML-PANDAS-DATAFRAME | AZUREML-TENSOR | BINARY  
----|---|---  
-CSV | JSON | JSON-ARRAY  
-JSON:wrapper | KSERVE-V1 | KSERVE-V2  
-MLFLOW-TENSOR | PANDAS-DATAFRAME | TEXT  
-TF-SERVING | TF-SERVING-COLUMN | TRITON  
-VERTEXAI-PYTORCH |  |   
-  
+AZUREML-PANDAS-DATAFRAME | AZUREML-TENSOR | BINARY
+---|---|---
+CSV | JSON | JSON-ARRAY
+JSON:wrapper | KSERVE-V1 | KSERVE-V2
+MLFLOW-TENSOR | PANDAS-DATAFRAME | TEXT
+TF-SERVING | TF-SERVING-COLUMN | TRITON
+VERTEXAI-PYTORCH |  |
+
 ### Parameters¶
 
 The text generation and LLM formats support some or all of the following parameters.
@@ -726,4 +726,3 @@ When possible, this format serializes data in the protocol’s mixed json+binary
 [Vertex AI’s format for PyTorch models](https://cloud.google.com/vertex-ai/docs/predictions/get-online-predictions#request-body-details). This format is the TF-SERVING format with an extra wrapper around the data.
 
 The output format defaults to TF-SERVING.
-

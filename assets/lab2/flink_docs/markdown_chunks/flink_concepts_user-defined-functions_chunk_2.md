@@ -31,10 +31,10 @@ The following code example shows how to implement a simple string splitting func
     import org.apache.flink.table.functions.TableFunction;
     import org.apache.flink.types.Row;
     import static org.apache.flink.table.api.Expressions.*;
-    
+
     @FunctionHint(output = @DataTypeHint("ROW<word STRING, length INT>"))
     public static class SplitFunction extends TableFunction<Row> {
-    
+
       public void eval(String str) {
         for (String s : str.split(" ")) {
           // use collect(...) to emit a row

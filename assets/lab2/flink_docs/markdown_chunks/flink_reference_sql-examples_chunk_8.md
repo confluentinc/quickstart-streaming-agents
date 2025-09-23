@@ -27,13 +27,13 @@ For tables with any type of data that need a different processing mode for handl
     ALTER TABLE customer_changes SET (
       'changelog.mode' = 'append'
     );
-    
+
     -- Change to retract mode
     -- Useful when changes to the same row are represented as paired operations
     ALTER TABLE customer_changes SET (
       'changelog.mode' = 'retract'
     );
-    
+
     -- Change upsert mode when working with primary keys
     -- Best when tracking state changes using a primary key (derived from Kafka message key)
     ALTER TABLE customer_changes SET (
@@ -44,16 +44,16 @@ For tables with any type of data that need a different processing mode for handl
 
     -- Create example topic
     CREATE TABLE t_headers (i INT);
-    
+
     -- For read-only (virtual)
     ALTER TABLE t_headers ADD headers MAP<BYTES, BYTES> METADATA VIRTUAL;
-    
+
     -- For read and write (persisted). Column becomes mandatory in INSERT INTO.
     ALTER TABLE t_headers MODIFY headers MAP<BYTES, BYTES> METADATA;
-    
+
     -- Use implicit casting (origin is always MAP<BYTES, BYTES>)
     ALTER TABLE t_headers MODIFY headers MAP<STRING, STRING> METADATA;
-    
+
     -- Insert and read
     INSERT INTO t_headers SELECT 42, MAP['k1', 'v1', 'k2', 'v2'];
     SELECT * FROM t_headers;
@@ -68,16 +68,16 @@ Properties
 You can get the headers of a Kafka record as a map of raw bytes by adding a `headers` virtual metadata column.
 
   1. Run the following statement to add the Kafka partition as a metadata column:
-         
+
          ALTER TABLE `orders` ADD (
            `headers` MAP<BYTES,BYTES> METADATA VIRTUAL);
 
   2. View the new schema.
-         
+
          DESCRIBE `orders`;
 
 Your output should resemble:
-         
+
          +-------------+-------------------+----------+-------------------------+
          | Column Name |     Data Type     | Nullable |         Extras          |
          +-------------+-------------------+----------+-------------------------+
@@ -93,16 +93,16 @@ Your output should resemble:
     -- Create example topic with 1 partition filled with values
     CREATE TABLE t_specific_offsets (i INT) DISTRIBUTED INTO 1 BUCKETS;
     INSERT INTO t_specific_offsets VALUES (1), (2), (3), (4), (5);
-    
+
     -- Returns 1, 2, 3, 4, 5
     SELECT * FROM t_specific_offsets;
-    
+
     -- Changes the scan range
     ALTER TABLE t_specific_offsets SET (
       'scan.startup.mode' = 'specific-offsets',
       'scan.startup.specific-offsets' = 'partition:0,offset:3'
     );
-    
+
     -- Returns 4, 5
     SELECT * FROM t_specific_offsets;
 

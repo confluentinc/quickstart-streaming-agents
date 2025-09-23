@@ -13,10 +13,10 @@ Confluent Cloud for Apache Flink® enables real-time inference and prediction wi
 
     -- Delete the default version. The min version becomes the new default.
     DROP MODEL [IF EXISTS] [[catalog_name].[database_name]].model_name
-    
+
     -- Delete the specified version.
     DROP MODEL [IF EXISTS] [[catalog_name].[database_name]].model_name[$version-id]
-    
+
     -- Delete all versions and the model.
     DROP MODEL [IF EXISTS] [[catalog_name].[database_name]].model_name[$all]
 
@@ -36,10 +36,9 @@ When the IF EXISTS clause is provided and the model or version doesn’t exist, 
 
     -- Delete the default version. The min version becomes the new default.
     DROP MODEL `<model-name>`;
-    
+
     -- Delete a specific version of the model.
     DROP MODEL `<model-name>$<version>`;
-    
+
     -- Delete all versions and the model.
     DROP MODEL `<model-name>$all`;
-

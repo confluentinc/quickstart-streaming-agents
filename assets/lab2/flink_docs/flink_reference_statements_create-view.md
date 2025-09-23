@@ -56,4 +56,3 @@ You can then use this view in queries as if it were a table:
     WHERE total_spent > 1000;
 
 This statement retrieves all customers with a total order value greater than 1000, leveraging the aggregation already computed in the `orders_by_customer` view.
-

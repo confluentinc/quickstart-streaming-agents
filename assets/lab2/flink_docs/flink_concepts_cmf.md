@@ -22,4 +22,3 @@ CMF sits next to other Confluent Platform components such as Confluent Server an
 Important
 
 **Do not manually modify FlinkDeployment resources** : CMF manages FlinkDeployment resources internally and you should not modify them manually. Manual modifications to FlinkDeployment resources can cause conflicts and unexpected behavior.
-

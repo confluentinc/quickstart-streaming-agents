@@ -34,7 +34,7 @@ Run a remote AI/ML model for tasks like predicting outcomes, generating text, an
 Syntax
 
     ML_PREDICT(`model_name[$version_id]`, column);
-    
+
     -- map settings are optional
     ML_PREDICT(`model_name[$version_id]`, column, map['async_enabled', [boolean], 'client_timeout', [int], 'max_parallelism', [int], 'retry_count', [int]]);
 
@@ -70,7 +70,7 @@ The following examples call the ML_PREDICT function with different configuration
 
     -- Specify the timeout.
     SELECT * FROM `db1`.`tb1`, LATERAL TABLE(ML_PREDICT('md1', key, map['client_timeout', 60 ]));
-    
+
     -- Specify all configuration parameters.
     SELECT * FROM `db1`.`tb1`, LATERAL TABLE(ML_PREDICT('md1', key, map['async_enabled', true, 'client_timeout', 60, 'max_parallelism', 20, 'retry_count', 5]));
 
@@ -184,14 +184,14 @@ Text generation models generate text based on a prompt. Text generation models r
 
 The following table shows example metrics for different task types.
 
-Task type | Example metrics  
----|---  
-Classification | {Accuracy=0.9999991465990892, Precision=0.9996998081063332, Recall=0.0013025368892873059, F1=0.0013025368892873059}  
-Clustering | {Mean Davies-Bouldin Index=0.9999991465990892}  
-Embedding | {Mean Cosine Similarity=0.9999991465990892, Mean Jaccard Similarity=0.9996998081063332, Mean Euclidean Distance=0.0013025368892873059}  
-Regression | {MAE=0.9999991465990892, MSE=0.9996998081063332, RMSE=0.0013025368892873059, MAPE=0.0013025368892873059, R²=0.0043025368892873059}  
-Text generation | {Mean BLEU=0.9999991465990892, Mean ROUGE=0.9996998081063332, Mean Semantic Similarity=0.0013025368892873059}  
-  
+Task type | Example metrics
+---|---
+Classification | {Accuracy=0.9999991465990892, Precision=0.9996998081063332, Recall=0.0013025368892873059, F1=0.0013025368892873059}
+Clustering | {Mean Davies-Bouldin Index=0.9999991465990892}
+Embedding | {Mean Cosine Similarity=0.9999991465990892, Mean Jaccard Similarity=0.9996998081063332, Mean Euclidean Distance=0.0013025368892873059}
+Regression | {MAE=0.9999991465990892, MSE=0.9996998081063332, RMSE=0.0013025368892873059, MAPE=0.0013025368892873059, R²=0.0043025368892873059}
+Text generation | {Mean BLEU=0.9999991465990892, Mean ROUGE=0.9996998081063332, Mean Semantic Similarity=0.0013025368892873059}
+
 ### Example¶
 
 After you have registered the AI model by using the [CREATE MODEL](../statements/create-model.html#flink-sql-create-model) statement, run the model by using the ML_EVALUATE function in a SQL query.
@@ -213,10 +213,10 @@ The following statements show how to run the ML_EVALUATE function on various ver
 
     -- Model evaluation with all versions
     SELECT ML_EVALUATE(`my_remote_model$all`, label, f1, f2) FROM `eval_data`;
-    
+
     -- Model evaluation with default version
     SELECT ML_EVALUATE(`my_remote_model`, label, f1, f2) FROM `eval_data`;
-    
+
     -- Model evaluation with specific version 2
     SELECT ML_EVALUATE(`my_remote_model$2`, label, f1, f2) FROM `eval_data`;
 
@@ -236,10 +236,10 @@ The KEY_SEARCH_AGG function uses a combination of serialized table properties an
 
 The output of KEY_SEARCH_AGG is an array with all rows in the external table that have a matching key in the search column.
 
-<input_column> | Search result  
----|---  
-<input_column_key> | array[row1<column1, column2…>, row2<column1, column2…>, …]  
-  
+<input_column> | Search result
+---|---
+<input_column_key> | array[row1<column1, column2…>, row2<column1, column2…>, …]
+
 ## ML_FORECAST¶
 
 Perform continuous forecasting on a table.
@@ -303,7 +303,7 @@ The following example shows how to invoke an LLM to generate text completions.
         'endpoint' = 'https://api.openai.com/v1/chat/completions',
         'api-key' = '<api-key>'
       );
-    
+
     CREATE MODEL description_extractor
       INPUT (input STRING)
       OUTPUT (output_json STRING)
@@ -313,9 +313,9 @@ The following example shows how to invoke an LLM to generate text completions.
         'openai.system_prompt' = 'Extract json from input free text',
         'task' = 'text_generation'
       );
-    
+
     CREATE TABLE claims_with_structured_description(id INT, customer_id INT, output_json STRING);
-    
+
     INSERT INTO claims_with_structured_description
       SELECT id, customer_id, output_json FROM claims_submitted, LATERAL TABLE(AI_COMPLETE('description_extractor', description));
 
@@ -344,7 +344,7 @@ The following example shows how to generate vector embeddings for text or other 
         'endpoint' = 'https://api.openai.com/v1/embeddings',
         'api-key' = '<api-key>'
       );
-    
+
       CREATE MODEL description_embedding
       INPUT (input STRING)
       OUTPUT (embeddings ARRAY<FLOAT>)
@@ -353,9 +353,9 @@ The following example shows how to generate vector embeddings for text or other 
         'openai.connection' = 'openai_embedding_connection',
         'task' = 'embedding'
       );
-    
+
       CREATE TABLE claims_embeddings(id INT, customer_id INT, embeddings ARRAY<FLOAT>);
-    
+
       INSERT INTO claims_embeddings
         SELECT id, customer_id, embeddings FROM claims_submitted, LATERAL TABLE(AI_EMBEDDING('description_embedding', description));
 
@@ -422,13 +422,13 @@ When you create an MCP server connection, specify the following options:
         'openai.system_prompt' = 'Select the best tools to complete the task',
         'mcp.connection' = 'claims_mcp_server'
       );
-    
+
     -- Create a table that contains the input prompts.
     CREATE TABLE claims_verified (
       id int,
       customer_id int
     );
-    
+
     -- Run the AI_TOOL_INVOKE function.
     SELECT
       id,
@@ -458,10 +458,10 @@ The TEXT_SEARCH_AGG function uses a combination of serialized table properties a
 
 The output of TEXT_SEARCH_AGG is an array with all rows in the external table that have matching text in the search column.
 
-<input_column> | Search result  
----|---  
-<input_column_text> | array[row1<column1, column2…>, row2<column1, column2…>, …]  
-  
+<input_column> | Search result
+---|---
+<input_column_text> | array[row1<column1, column2…>, row2<column1, column2…>, …]
+
 ## VECTOR_SEARCH_AGG¶
 
 Run a vector search over an external table.
@@ -484,9 +484,9 @@ The VECTOR_SEARCH_AGG function uses a combination of serialized table properties
 
 The output of VECTOR_SEARCH_AGG is an array with all rows in the external table that have a matching vector in the search column.
 
-<input_column> | Search result  
----|---  
-<input_column_vector> | array[row1<column1, column2…>, row2<column1, column2…>, …]  
+<input_column> | Search result
+---|---
+<input_column_vector> | array[row1<column1, column2…>, row2<column1, column2…>, …]
 Example
 
 After you have registered the AI inference model by using the [CREATE MODEL](../statements/create-model.html#flink-sql-create-model) statement, you can start running vector searches. The following example assumes a vector search endpoint as shown in [Elasticsearch Quick Start Guide](https://www.elastic.co/guide/en/elasticsearch/reference/current/getting-started.html) and an API key as shown in [Kibana API Keys](https://www.elastic.co/guide/en/kibana/current/api-keys.html).
@@ -499,7 +499,7 @@ Once your vector search is created, the following example shows these steps:
   4. Run the vector search.
 
   1. Run the following statement to create a connection resource named _elastic-connection_ that uses your AWS credentials.
-         
+
          CREATE CONNECTION elastic-connection
            WITH (
              'type' = 'elastic',
@@ -508,7 +508,7 @@ Once your vector search is created, the following example shows these steps:
            );
 
   2. Run the following statements to creates the tables and run the vector search.
-         
+
          -- Create the external table.
          CREATE TABLE elastic (
            vector array<FLOAT>,
@@ -518,13 +518,13 @@ Once your vector search is created, the following example shows these steps:
            'elastic.connection' = 'elastic-connection',
            'elastic.index' = 'vector-search-index'
          );
-         
+
          -- Create the embedding output table.
          CREATE TABLE embedding_output (text string, embedding array<float>);
-         
+
          -- Insert mock data.
          INSERT INTO embedding_output values ('hello world', ARRAY[1, 5, -20]);
-         
+
          -- Run the vector search.
          SELECT * FROM embedding_output, LATERAL TABLE(VECTOR_SEARCH_AGG('elastic', DESCRIPTOR(embedding), embedding, 3));
 
@@ -544,4 +544,3 @@ For more examples, see [Vector Search with Confluent Cloud for Apache Flink](../
   * [Numeric Functions](numeric-functions.html#flink-sql-numeric-functions)
   * [String Functions](string-functions.html#flink-sql-string-functions)
   * [Table API Functions](table-api-functions.html#flink-table-api-functions)
-

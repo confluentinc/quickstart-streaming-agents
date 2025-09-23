@@ -20,13 +20,13 @@ Throughout this topic, the following statement is used as a running example.
 
     SET 'sql.state-ttl' = '1h';
     SET 'client.statement-name' = 'orders-with-customers-v1-1';
-    
+
     CREATE FUNCTION to_minor_currency
     AS 'io.confluent.flink.demo.toMinorCurrency'
     USING JAR 'confluent-artifact://ccp-lzj320/ver-4y0qw7';
-    
+
     CREATE TABLE v_orders AS SELECT order.* FROM sales_lifecycle_events WHERE order != NULL;
-    
+
     CREATE TABLE orders_with_customers_v1
     PRIMARY KEY (v_orders.order_id)
     DISTRIBUTED INTO 10 BUCKETS
@@ -49,7 +49,7 @@ The `orders_with_customers_v1` table uses a user-defined function named `to_mino
 A statement has the following components:
 
   * an **immutable** query, for example:
-        
+
         SELECT
           v_orders.product,
           to_minor_currency(v_orders.price),
@@ -59,7 +59,7 @@ A statement has the following components:
         ON v_orders.customer_id = customers.id;
 
   * **immutable** statement properties, for example:
-        
+
         'sql.state-ttl' = '1h'
 
   * a **mutable** principal, that is, the user or service account under which this statement runs.
@@ -77,7 +77,7 @@ The table which the statement is writing to has these components:
   * An immutable name, for example: `orders_with_customers_v1`.
 
   * Mutable constraints, for example:
-        
+
         PRIMARY KEY (v_orders.order_id)
 
   * A mutable watermark definition.
@@ -211,14 +211,14 @@ you can use these offsets to specify the starting offsets to a new statement by 
 This strategy enables you to evolve statements arbitrarily with **exactly-once semantics** across the update, if and only if the statement is “stateless”, which mean that every output message is affected by a single input message. The following statements are common example of “stateless” statements:
 
   * Filters
-        
+
         INSERT INTO shipped_orders
         SELECT *
         FROM orders
         WHERE status = shipped;
 
   * Routers
-        
+
         EXECUTE STATEMENT SET
         BEGIN
           INSERT INTO shipped_orders SELECT * FROM orders WHERE status = 'shipped';
@@ -228,7 +228,7 @@ This strategy enables you to evolve statements arbitrarily with **exactly-once s
         END;
 
   * Per-row transformations, including UDFs and array expansions:
-        
+
         INSERT INTO ordered_products
         SELECT
            o.*,
@@ -252,4 +252,3 @@ Instead of creating a new results table, you can also replace the original `CREA
   2. Once the old statement is stopped, create the new statement, `orders-with-customers-v1-2`.
 
 This strategy can and often will be combined with limited reprocessing to a partial history. Specifically, in the case of an exactly-once upgrade of a stateless statement, it makes sense to continue publishing messages to the same topic, provided this was a compatible change.
-

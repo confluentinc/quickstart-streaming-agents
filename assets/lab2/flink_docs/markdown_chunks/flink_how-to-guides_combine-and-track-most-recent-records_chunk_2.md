@@ -15,7 +15,7 @@ Run the following statement to combine multiple streams while tracking the most 
 
     -- This query combines order and click data, tracking the latest values
     -- for each customer's interactions across both datasets
-    
+
     -- First, combine order data and clickstream data into a single structure
     -- Note: Fields not present in one source are filled with NULL
     WITH combined_data AS (

@@ -69,7 +69,7 @@ The following queries return all rows in the `orders` table in CUMULATE windows 
 
     SELECT * FROM TABLE(
         CUMULATE(TABLE `examples`.`marketplace`.`orders`, DESCRIPTOR($rowtime), INTERVAL '2' MINUTES, INTERVAL '10' MINUTES));
-    
+
     -- or with the named params
     -- note: the DATA param must be the first
     SELECT * FROM TABLE(

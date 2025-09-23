@@ -38,7 +38,7 @@ This differs from Avro and Protobuf, where you must define all fields in the rig
 The following example schemas show how sensor data might be represented in full JSON, partial JSON, Avro, and Protobuf formats.
 
 Full JSONPartial JSONAvroProtobuf
-         
+
          {
            "$schema": "http://json-schema.org/draft-07/schema#",
            "additionalProperties": false,
@@ -120,7 +120,7 @@ Full JSONPartial JSONAvroProtobuf
 
          syntax = "proto3";
          package example;
-         
+
          message DynamicEvent {
            string id = 1;
            optional int64 timestamp = 2;
@@ -141,4 +141,3 @@ This method works even if your events don’t include schema version information
 You can submit a partial schema only for JSON. Flink will process the defined fields and ignore the rest.
 
 With this approach, automatic schema evolution within the stream is not supported. If you want to evolve the schema, you must manually evolve the it and consider the impact as described in [Schema Evolution and Compatibility for Schema Registry on Confluent Cloud](../../sr/fundamentals/schema-evolution.html#schema-evolution-and-compatibility).
-

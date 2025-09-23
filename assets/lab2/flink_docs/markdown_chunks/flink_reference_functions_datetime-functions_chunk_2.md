@@ -13,36 +13,36 @@ total_chunks: 6
 
 The following table lists specifiers for time interval and time point units.
 
-Time interval unit | Time point unit  
----|---  
-`MILLENNIUM` |   
-`CENTURY` |   
-`DECADE` |   
-`YEAR` | `YEAR`  
-`YEAR TO MONTH` |   
-`QUARTER` | `QUARTER`  
-`MONTH` | `MONTH`  
-`WEEK` | `WEEK`  
-`DAY` | `DAY`  
-`DAY TO HOUR` |   
-`DAY TO MINUTE` |   
-`DAY TO SECOND` |   
-`HOUR` | `HOUR`  
-`HOUR TO MINUTE` |   
-`HOUR TO SECOND` |   
-`MINUTE` | `MINUTE`  
-`MINUTE TO SECOND` |   
-`SECOND` | `SECOND`  
-`MILLISECOND` | `MILLISECOND`  
-`MICROSECOND` | `MICROSECOND`  
-`NANOSECOND` |   
-`EPOCH` |   
-`DOY` |   
-`DOW` |   
-`EPOCH` |   
-`ISODOW` |   
-`ISOYEAR` | `SQL_TSI_YEAR` `SQL_TSI_QUARTER` `SQL_TSI_MONTH` `SQL_TSI_WEEK` `SQL_TSI_DAY` `SQL_TSI_HOUR` `SQL_TSI_MINUTE` `SQL_TSI_SECOND`  
-  
+Time interval unit | Time point unit
+---|---
+`MILLENNIUM` |
+`CENTURY` |
+`DECADE` |
+`YEAR` | `YEAR`
+`YEAR TO MONTH` |
+`QUARTER` | `QUARTER`
+`MONTH` | `MONTH`
+`WEEK` | `WEEK`
+`DAY` | `DAY`
+`DAY TO HOUR` |
+`DAY TO MINUTE` |
+`DAY TO SECOND` |
+`HOUR` | `HOUR`
+`HOUR TO MINUTE` |
+`HOUR TO SECOND` |
+`MINUTE` | `MINUTE`
+`MINUTE TO SECOND` |
+`SECOND` | `SECOND`
+`MILLISECOND` | `MILLISECOND`
+`MICROSECOND` | `MICROSECOND`
+`NANOSECOND` |
+`EPOCH` |
+`DOY` |
+`DOW` |
+`EPOCH` |
+`ISODOW` |
+`ISOYEAR` | `SQL_TSI_YEAR` `SQL_TSI_QUARTER` `SQL_TSI_MONTH` `SQL_TSI_WEEK` `SQL_TSI_DAY` `SQL_TSI_HOUR` `SQL_TSI_MINUTE` `SQL_TSI_SECOND`
+
 ### CEIL¶
 
 Rounds a time point up.

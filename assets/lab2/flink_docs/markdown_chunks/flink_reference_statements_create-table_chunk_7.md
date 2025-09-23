@@ -19,14 +19,14 @@ You can change an existing table’s property values by using the [ALTER TABLE S
 
 You can set the following properties when you create a table.
 
-changelog.mode | error-handling.log.target | error-handling.mode  
----|---|---  
-kafka.cleanup-policy | kafka.max-message-size | kafka.retention.size  
-kafka.retention.time | key.fields-prefix | key.format  
-key.format.schema-context | scan.bounded.mode | scan.bounded.timestamp-millis  
-scan.startup.mode | value.fields-include | value.format  
-value.format.schema-context |  |   
-  
+changelog.mode | error-handling.log.target | error-handling.mode
+---|---|---
+kafka.cleanup-policy | kafka.max-message-size | kafka.retention.size
+kafka.retention.time | key.fields-prefix | key.format
+key.format.schema-context | scan.bounded.mode | scan.bounded.timestamp-millis
+scan.startup.mode | value.fields-include | value.format
+value.format.schema-context |  |
+
 ### changelog.mode¶
 
 Set the changelog mode of the connector. For more information on changelog modes, see [dynamic tables](../../concepts/dynamic-tables.html#flink-sql-dynamic-tables).
@@ -55,12 +55,12 @@ With a primary key declared, the changelog modes have these properties:
 
 To build indices, primary keys must be partitioned together.
 
-Encoding of changes | Default Partitioning without PK | Default Partitioning with PK | Custom Partitioning without PK | Custom Partitioning with PK  
----|---|---|---|---  
-Each value is an insertion (+I). | round robin | hash by PK | hash by specified column(s) | hash by subset of PK  
-A special `op` header represents the change (+I, -U, +U, -D). The header is omitted for insertions. Append queries encoding is the same for all modes. | hash by entire value | hash by PK | hash by specified column(s) | hash by subset of PK  
-If value is `null`, it represents a deletion (-D). Other values are +U and the engine will normalize the changelog internally. | unsupported, PK is mandatory | hash by PK | unsupported, PK is mandatory | unsupported  
-  
+Encoding of changes | Default Partitioning without PK | Default Partitioning with PK | Custom Partitioning without PK | Custom Partitioning with PK
+---|---|---|---|---
+Each value is an insertion (+I). | round robin | hash by PK | hash by specified column(s) | hash by subset of PK
+A special `op` header represents the change (+I, -U, +U, -D). The header is omitted for insertions. Append queries encoding is the same for all modes. | hash by entire value | hash by PK | hash by specified column(s) | hash by subset of PK
+If value is `null`, it represents a deletion (-D). Other values are +U and the engine will normalize the changelog internally. | unsupported, PK is mandatory | hash by PK | unsupported, PK is mandatory | unsupported
+
 #### Change type header¶
 
 Changes for an [updating table](../../concepts/dynamic-tables.html#flink-sql-dynamic-tables-updating-table) have the change type encoded in the Kafka record as a special `op` header that represents the change (+I, -U, +U, -D). The value of the `op` header, if present, represents the kind of change that a row can describe in a changelog:

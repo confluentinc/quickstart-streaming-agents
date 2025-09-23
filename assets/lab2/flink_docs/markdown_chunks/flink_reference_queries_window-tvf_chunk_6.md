@@ -11,7 +11,7 @@ The following query returns all columns from the `orders` table within SESSION w
 
     SELECT * FROM TABLE(
       SESSION(TABLE `examples`.`marketplace`.`orders` PARTITION BY product_id, DESCRIPTOR($rowtime), INTERVAL '1' MINUTES));
-    
+
     -- or with the named params
     -- note: the DATA param must be the first
     SELECT * FROM TABLE(

@@ -70,4 +70,3 @@ You can use GitHub Actions and Terraform to deploy your Flink SQL statements to 
 ## Where can I get help or support?¶
 
 If you have questions or need support, you can use the in-product help in the Confluent Cloud Console, visit the [Flink documentation](overview.html#ccloud-flink), or reach out through the [established channels](get-help.html#ccloud-flink-help). You can also ask questions in the Confluent Community forums or contact Confluent Support if you have a support plan.
-

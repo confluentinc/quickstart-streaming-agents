@@ -58,6 +58,6 @@ Run the [confluent flink statement delete](https://docs.confluent.io/confluent-c
 
     # Request to stop a statement.
     confluent flink statement update ${STATEMENT_NAME} --stopped=true
-    
+
     # Request to resume a stopped statement.
     confluent flink statement update ${STATEMENT_NAME} --stopped=false

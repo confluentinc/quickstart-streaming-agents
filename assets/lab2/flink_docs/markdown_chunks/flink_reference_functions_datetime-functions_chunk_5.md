@@ -115,11 +115,11 @@ Examples
     -- convert 1000 epoch seconds
     -- returns 1970-01-01 00:16:40.000 as a TIMESTAMP_LTZ
     SELECT TO_TIMESTAMP_LTZ(1000, 0);
-    
+
     -- convert 1000 epoch milliseconds
     -- returns 1970-01-01 00:00:01.000 as a TIMESTAMP_LTZ
     SELECT TO_TIMESTAMP_LTZ(1000, 3);
-    
+
     -- convert timestamp string with custom format and timezone
     -- returns appropriate TIMESTAMP_LTZ based on the timezone
     SELECT TO_TIMESTAMP_LTZ('2023-05-04 12:00:00', 'yyyy-MM-dd HH:mm:ss', 'America/Los_Angeles');
@@ -149,7 +149,7 @@ Example
 
     -- returns 2000-01-01
     SELECT TIMESTAMPADD(DAY, 1, DATE '1999-12-31');
-    
+
     -- returns 2000-01-01 01:00:00
     SELECT TIMESTAMPADD(HOUR, 2, TIMESTAMP '1999-12-31 23:00:00');
 
@@ -178,7 +178,7 @@ Example
 
     -- returns -1
     SELECT TIMESTAMPDIFF(DAY, DATE '2000-01-01', DATE '1999-12-31');
-    
+
     -- returns -2
     SELECT TIMESTAMPDIFF(HOUR, TIMESTAMP '2000-01-01 01:00:00', TIMESTAMP '1999-12-31 23:00:00');
 

@@ -26,25 +26,25 @@ Confluent Cloud for Apache Flink® enables creating tables backed by Apache Kafk
       [DISTRIBUTED BY (distribution_column_name1, distribution_column_name2, ...) INTO n BUCKETS]
       WITH (key1=value1, key2=value2, ...)
       [ LIKE source_table [( <like_options> )] | AS select_query ]
-    
+
     <physical_column_definition>:
       column_name column_type [ <column_constraint> ] [COMMENT column_comment]
-    
+
     <metadata_column_definition>:
       column_name column_type METADATA [ FROM metadata_key ] [ VIRTUAL ]
-    
+
     <computed_column_definition>:
       column_name AS computed_column_expression [COMMENT column_comment]
-    
+
     <column_in_vector_db_provider>
       column_name column_type
-    
+
     <watermark_definition>:
       WATERMARK FOR rowtime_column_name AS watermark_strategy_expression
-    
+
     <table_constraint>:
       [CONSTRAINT constraint_name] PRIMARY KEY (column_name, ...) NOT ENFORCED
-    
+
     <like_options>:
     {
      { INCLUDING | EXCLUDING } { ALL | CONSTRAINTS | PARTITIONS } |

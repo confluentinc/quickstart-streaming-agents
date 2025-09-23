@@ -15,9 +15,9 @@ Specify the details of your AI inference model by using the WITH clause.
 
 The following tables show the supported properties in the WITH clause.
 
-Model Provider | Property  
----|---  
-Common | 
+Model Provider | Property
+---|---
+Common |
 
   * {PROVIDER}.client_timeout
   * {PROVIDER}.connection
@@ -28,26 +28,26 @@ Common |
   * {PROVIDER}.PARAMS.*
   * {PROVIDER}.system_prompt
 
-OpenAI | 
+OpenAI |
 
   * openai.input_format
   * openai.model_version
 
-Azure OpenAI | 
+Azure OpenAI |
 
   * azureopenai.input_format
   * azureopenai.model_version
 
-Azure ML | 
+Azure ML |
 
   * azureml.input_format
   * azureml.deployment_name
 
-Google AI | 
+Google AI |
 
   * googleai.input_format
 
-Sagemaker | 
+Sagemaker |
 
   * sagemaker.custom_attributes
   * sagemaker.enable_explanations
@@ -59,7 +59,7 @@ Sagemaker |
   * sagemaker.target_model
   * sagemaker.target_variant
 
-Vertex AI | 
+Vertex AI |
 
   * vertexai.service_key
   * vertexai.input_format

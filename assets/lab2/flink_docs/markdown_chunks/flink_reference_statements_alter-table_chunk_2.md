@@ -18,11 +18,11 @@ The following examples show frequently encountered scenarios with ALTER TABLE.
 Flink guarantees that rows are always emitted before the watermark is generated. The following statements ensure that for perfectly ordered events, meaning events without time-skew, a watermark can be equal to the timestamp or 1 ms less than the timestamp.
 
     CREATE TABLE t_perfect_watermark (i INT);
-    
+
     -- If multiple events can have the same timestamp.
     ALTER TABLE t_perfect_watermark
       MODIFY WATERMARK FOR $rowtime AS $rowtime - INTERVAL '0.001' SECOND;
-    
+
     -- If a single event can have the timestamp.
     ALTER TABLE t_perfect_watermark
       MODIFY WATERMARK FOR $rowtime AS $rowtime;
@@ -32,11 +32,11 @@ Flink guarantees that rows are always emitted before the watermark is generated.
 Remove the custom watermark strategy to restore the [default watermark strategy](create-table.html#flink-sql-watermark-clause).
 
   1. View the current table schema and metadata.
-         
+
          DESCRIBE `orders`;
 
 Your output should resemble:
-         
+
          +-------------+------------------------+----------+-------------------+
          | Column Name |       Data Type        | Nullable |      Extras       |
          +-------------+------------------------+----------+-------------------+
@@ -47,19 +47,19 @@ Your output should resemble:
          +-------------+------------------------+----------+-------------------+
 
   2. Remove the watermark strategy of the table.
-         
+
          ALTER TABLE `orders` DROP WATERMARK;
 
 Your output should resemble:
-         
+
          Statement phase is COMPLETED.
 
   3. Check the new table schema and metadata.
-         
+
          DESCRIBE `orders`;
 
 Your output should resemble:
-         
+
          +-------------+--------------+----------+-------------+
          | Column Name |  Data Type   | Nullable |   Extras    |
          +-------------+--------------+----------+-------------+

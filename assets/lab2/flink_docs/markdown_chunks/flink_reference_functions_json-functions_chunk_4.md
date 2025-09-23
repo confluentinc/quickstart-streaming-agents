@@ -45,19 +45,19 @@ The following SELECT statements return the values indicated in the comment lines
 
     -- returns "true"
     SELECT JSON_VALUE('{"a": true}', '$.a');
-    
+
     -- returns TRUE
     SELECT JSON_VALUE('{"a": true}', '$.a' RETURNING BOOLEAN);
-    
+
     -- returns "false"
     SELECT JSON_VALUE('{"a": true}', 'lax $.b' DEFAULT FALSE ON EMPTY);
-    
+
     -- returns "false"
     SELECT JSON_VALUE('{"a": true}', 'strict $.b' DEFAULT FALSE ON ERROR);
-    
+
     -- returns 0.998D
     SELECT JSON_VALUE('{"a.b": [0.998,0.996]}','$.["a.b"][0]' RETURNING DOUBLE);
-    
+
     -- returns "right"
     SELECT JSON_VALUE('{"contains blank": "right"}', 'strict $.[''contains blank'']' NULL ON EMPTY DEFAULT 'wrong' ON ERROR);
 

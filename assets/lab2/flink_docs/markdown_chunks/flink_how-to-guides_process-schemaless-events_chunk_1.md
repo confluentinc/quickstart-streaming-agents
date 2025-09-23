@@ -40,7 +40,7 @@ This differs from Avro and Protobuf, where you must define all fields in the rig
 The following example schemas show how sensor data might be represented in full JSON, partial JSON, Avro, and Protobuf formats.
 
 Full JSONPartial JSONAvroProtobuf
-         
+
          {
            "$schema": "http://json-schema.org/draft-07/schema#",
            "additionalProperties": false,
@@ -122,7 +122,7 @@ Full JSONPartial JSONAvroProtobuf
 
          syntax = "proto3";
          package example;
-         
+
          message DynamicEvent {
            string id = 1;
            optional int64 timestamp = 2;

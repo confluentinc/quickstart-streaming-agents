@@ -22,28 +22,28 @@ Represents a fixed-length binary string (=a sequence of bytes).
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-byte[] | ✓ | ✓ | Default  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+byte[] | ✓ | ✓ | Default
+
 **Formats**
 
 The following table shows examples of the BINARY type in different formats.
 
-JSON for data type | 
+JSON for data type |
 
     {"type":"BINARY","nullable":true,"length":1}
 
----|---  
-CLI/UI format | 
+---|---
+CLI/UI format |
 
     BINARY(3)
 
-JSON for payload | 
+JSON for payload |
 
     "x'7f0203'"
 
-CLI/UI format for payload | 
+CLI/UI format for payload |
 
     x'7f0203'
 
@@ -60,34 +60,34 @@ Represents a variable-length binary string (=a sequence of bytes).
 **Declaration**
 
     BYTES
-    
+
     VARBINARY
     VARBINARY(n)
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-byte[] | ✓ | ✓ | Default  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+byte[] | ✓ | ✓ | Default
+
 **Formats**
 
 The following table shows examples of the VARBINARY type in different formats.
 
-JSON for data type | 
+JSON for data type |
 
     {"type":"VARBINARY","nullable":true,"length":1}
 
----|---  
-CLI/UI format | 
+---|---
+CLI/UI format |
 
     VARBINARY(800)
 
-JSON for payload | 
+JSON for payload |
 
     "x'7f0203'"
 
-CLI/UI format for payload | 
+CLI/UI format for payload |
 
     x'7f0203'
 

@@ -11,14 +11,14 @@ Confluent Cloud for Apache Flink® enables listing catalogs, which map to Conflu
 
 Confluent Cloud for Apache Flink supports these SHOW statements.
 
-SHOW CATALOGS | SHOW CONNECTIONS  
----|---  
-SHOW CREATE MODEL | SHOW CURRENT CATALOG  
-SHOW CREATE TABLE | SHOW CURRENT DATABASE  
-SHOW DATABASES | SHOW JOBS  
-SHOW FUNCTIONS | SHOW MODELS  
-SHOW TABLES |   
-  
+SHOW CATALOGS | SHOW CONNECTIONS
+---|---
+SHOW CREATE MODEL | SHOW CURRENT CATALOG
+SHOW CREATE TABLE | SHOW CURRENT DATABASE
+SHOW DATABASES | SHOW JOBS
+SHOW FUNCTIONS | SHOW MODELS
+SHOW TABLES |
+
 ## SHOW CATALOGS¶
 
 Syntax
@@ -65,7 +65,7 @@ Description
 Example
 
     SHOW CONNECTIONS;
-    
+
     -- with name filter
     SHOW CONNECTIONS LIKE 'sql%';
 
@@ -285,7 +285,7 @@ Properties
   * Key and value formats are raw (binary format) with BYTES
 
   * Following Kafka message semantics, both key and value support NULL as well, so the following statement is supported:
-        
+
         INSERT INTO t_raw (key, val) SELECT CAST(NULL AS BYTES), CAST(NULL AS BYTES);
 
 #### No key and but record value in Schema Registry¶
@@ -327,7 +327,7 @@ Properties
   * Key format is raw (binary format) with BYTES
 
   * Following Kafka message semantics, key supports NULL as well. So this is possible: so the following statement is supported:
-        
+
         INSERT INTO t_raw_key SELECT CAST(NULL AS BYTES), 12, 'Bob';
 
 #### Atomic key and record value in Schema Registry¶
@@ -572,16 +572,16 @@ Properties
   * In this case, metadata columns and computed columns have precedence, so Flink removes the physical column from the schema.
 
   * Given that Flink advertises FULL_TRANSITIVE mode, queries still work, and the physical column is set to NULL in the payload:
-        
+
         INSERT INTO t_metadata_overlap
           SELECT CAST(NULL AS BYTES), 42, TO_TIMESTAMP_LTZ(0, 3);
-        
+
         SELECT * FROM t_metadata_overlap;
 
 Evolve the table by renaming metadata:
 
     ALTER TABLE t_metadata_overlap DROP `timestamp`;
-    
+
     ALTER TABLE t_metadata_overlap
       ADD message_timestamp TIMESTAMP_LTZ(3) METADATA FROM 'timestamp';
 
@@ -715,7 +715,7 @@ Example
 For an example AWS Bedrock model named “bedrock_embed”, the following statement might display the shown output.
 
     SHOW CREATE MODEL bedrock_embed;
-    
+
     -- Example SHOW CREATE MODEL output:
     CREATE MODEL `model-testing`.`virtual_topic_GCP`.`bedrock_embed`
     INPUT (`text` VARCHAR(2147483647))
@@ -726,4 +726,3 @@ For an example AWS Bedrock model named “bedrock_embed”, the following statem
       'PROVIDER' = 'bedrock',
       'TASK' = 'text_generation'
     );
-

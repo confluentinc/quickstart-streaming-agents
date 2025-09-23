@@ -187,16 +187,16 @@ Properties
   * In this case, metadata columns and computed columns have precedence, so Flink removes the physical column from the schema.
 
   * Given that Flink advertises FULL_TRANSITIVE mode, queries still work, and the physical column is set to NULL in the payload:
-        
+
         INSERT INTO t_metadata_overlap
           SELECT CAST(NULL AS BYTES), 42, TO_TIMESTAMP_LTZ(0, 3);
-        
+
         SELECT * FROM t_metadata_overlap;
 
 Evolve the table by renaming metadata:
 
     ALTER TABLE t_metadata_overlap DROP `timestamp`;
-    
+
     ALTER TABLE t_metadata_overlap
       ADD message_timestamp TIMESTAMP_LTZ(3) METADATA FROM 'timestamp';
 

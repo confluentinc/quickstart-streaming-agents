@@ -34,4 +34,3 @@ The Flink Kubernetes operator installs two custom roles: `flink-operator` and `f
 The standalone Kubernetes deployment mode is recommended when running untrusted code inside the Flink cluster, as there is no requirement for the Flink pod service account to have permissions to launch additional pods.
 
 When you install CMF, you create the roles to create and manage FlinkDeployment resources on Kubernetes.
-

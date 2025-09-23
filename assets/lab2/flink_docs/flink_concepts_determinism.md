@@ -79,7 +79,7 @@ Executing this query twice in a row generates a different `uuid` identifier for 
     | ed26fd46-960e-4228-aaf2-0aa... |  Bob | 2023-08-22 12:00:01 |      /home |
     | 1886afc7-dfc6-4b20-a881-b0e... | Mary | 2023-08-22 12:00:05 | /prod?id=1 |
     +--------------------------------+------+---------------------+------------+
-    
+
     -- second execution
     +--------------------------------+------+---------------------+------------+
     |                           uuid |  uid |               cTime |        url |
@@ -176,4 +176,3 @@ This means that in the update-by-row mode, all the update messages received by t
   3. CDC source carries metadata fields, like system columns, that don’t belong to the row entity itself
 
 Exceptions caused by cleaning internal state data based on TTL are discussed separately as a runtime fault-tolerant handling strategy. For more information, see [FLINK-24666](https://issues.apache.org/jira/browse/FLINK-24666).
-

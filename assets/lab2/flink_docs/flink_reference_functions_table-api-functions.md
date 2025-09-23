@@ -128,4 +128,3 @@ Confluent adds the following classes for more convenience:
   * ConfluentSettings.*
   * ConfluentTools.*
   * ConfluentTableDescriptor.*
-

@@ -36,7 +36,7 @@ The workspace enables filtering rows by interacting with these charts. For examp
   4. In the workspace, use the **Catalog** and **Database** dropdown controls to select the **examples** catalog and the **marketplace** database.
 
   5. Run the following statement to query the **orders** stream for all rows.
-         
+
          SELECT * FROM orders;
 
 Your output should resemble:
@@ -48,7 +48,7 @@ At the top of each column, a chart is displayed. The charts update as new rows s
 At the bottom of each column, aggregated values are displayed that summarize aspects of the data in the column, like the count of rows and the number of distinct values, or _cardinality_. For columns with numerical values, you can see statistics, like the average, minimum, and maximum values.
 
 The number of rows displayed is limited to 5000 or to the LIMIT value you specify in your query. For example, the following statement limits the query result to 50 rows.
-         
+
          SELECT * FROM orders LIMIT 50;
 
   6. At the bottom of the **price** column, change the dropdown control from **Count** to **Average**.
@@ -116,4 +116,3 @@ Click **x** in the filters to clear them.
 [](../../_images/flink-sparkline-time-series.png)
 
 If your data contains a datetime column then each numerical column, along with distribution, will have the option to show the average value over time. If the data is filtered then the unfiltered average value is also shown for context. You can hover over the chart for exact values.
-

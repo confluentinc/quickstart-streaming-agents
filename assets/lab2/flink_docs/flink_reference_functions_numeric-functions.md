@@ -9,26 +9,26 @@ scraped_date: 2025-09-05T13:48:31.663650
 
 Confluent Cloud for Apache Flink® provides these built-in numeric functions to use in SQL queries:
 
-Numeric | Trigonometry | Random number generators | Utility  
----|---|---|---  
-ABS | ACOS | RAND | HEX  
-BIN | ASIN | RAND(INT) | UUID  
-CEILING | ATAN | RAND_INTEGER(INT) | UNHEX  
-E | ATAN2 | RAND_INTEGER(INT1, INT2) |   
-EXP | COS |  |   
-FLOOR | COSH |  |   
-LN | COT |  |   
-LOG | DEGREES |  |   
-LOG10 | RADIANS |  |   
-LOG2 | SIN |  |   
-PERCENTILE | SINH |  |   
-PI | TAN |  |   
-POWER | TANH |  |   
-ROUND |  |  |   
-SIGN |  |  |   
-SQRT |  |  |   
-TRUNCATE |  |  |   
-  
+Numeric | Trigonometry | Random number generators | Utility
+---|---|---|---
+ABS | ACOS | RAND | HEX
+BIN | ASIN | RAND(INT) | UUID
+CEILING | ATAN | RAND_INTEGER(INT) | UNHEX
+E | ATAN2 | RAND_INTEGER(INT1, INT2) |
+EXP | COS |  |
+FLOOR | COSH |  |
+LN | COT |  |
+LOG | DEGREES |  |
+LOG10 | RADIANS |  |
+LOG2 | SIN |  |
+PERCENTILE | SINH |  |
+PI | TAN |  |
+POWER | TANH |  |
+ROUND |  |  |
+SIGN |  |  |
+SQRT |  |  |
+TRUNCATE |  |  |
+
 ## ABS¶
 
 Gets the absolute value of a number.
@@ -43,7 +43,7 @@ Examples
 
     -- returns 23
     SELECT ABS(-23);
-    
+
     -- returns 23
     SELECT ABS(23);
 
@@ -62,7 +62,7 @@ Examples
     -- returns 1.5707963267948966
     -- (approximately PI/2)
     SELECT ACOS(0);
-    
+
     -- returns 0.0
     SELECT ACOS(1);
 
@@ -80,7 +80,7 @@ Examples
 
     -- returns 0.0
     SELECT ASIN(0);
-    
+
     -- returns 1.5707963267948966
     -- (approximately PI/2)
     SELECT ASIN(1);
@@ -99,7 +99,7 @@ Examples
 
     -- returns 0.0
     SELECT ATAN(0);
-    
+
     -- returns 0.7853981633974483
     -- (approximately PI/4)
     SELECT ATAN2(1);
@@ -118,7 +118,7 @@ Examples
 
     -- returns 0.0
     SELECT ATAN2(0, 0);
-    
+
     -- returns 0.7853981633974483
     -- (approximately PI/4)
     SELECT ATAN2(1, 1);
@@ -137,7 +137,7 @@ Examples
 
     -- returns "100"
     SELECT BIN(4);
-    
+
     -- returns "1100"
     SELECT BIN(12);
 
@@ -159,7 +159,7 @@ Examples
 
     -- returns 24
     SELECT CEIL(23.55);
-    
+
     -- returns -23
     SELECT CEIL(-23.55);
 
@@ -177,7 +177,7 @@ Examples
 
     -- returns 1.0
     SELECT COS(0);
-    
+
     -- returns 6.123233995736766E-17
     -- (approximately 0)
     SELECT COS(PI()/2);
@@ -227,10 +227,10 @@ Examples
 
     -- returns 90.0
     SELECT DEGREES(PI()/2);
-    
+
     -- returns 180.0
     SELECT DEGREES(PI());
-    
+
     -- returns -45.0
     SELECT DEGREES(-PI()/4);
 
@@ -249,7 +249,7 @@ Examples
     -- returns 2.718281828459045
     -- which is the approximate value of e
     SELECT E();
-    
+
     -- returns 1.0
     SELECT LN(E());
 
@@ -268,10 +268,10 @@ Examples
     -- returns 2.718281828459045
     -- which is the approximate value of e
     SELECT EXP(1);
-    
+
     -- returns 7.38905609893065
     SELECT EXP(2);
-    
+
     -- returns 0.36787944117144233
     SELECT EXP(-1);
 
@@ -289,7 +289,7 @@ Examples
 
     -- returns 23
     SELECT FLOOR(23.55);
-    
+
     -- returns -24
     SELECT FLOOR(-23.55);
 
@@ -308,10 +308,10 @@ Examples
 
     -- returns "14"
     SELECT HEX(20);
-    
+
     --  returns "64"
     SELECT HEX(100);
-    
+
     -- returns "68656C6C6F2C776F726C64"
     SELECT HEX('hello,world');
 
@@ -332,7 +332,7 @@ Examples
 
     -- returns 1.0
     SELECT LN(E());
-    
+
     -- returns 0.0
     SELECT LN(1);
 
@@ -356,10 +356,10 @@ Examples
 
     -- returns 1.0
     SELECT LOG(10, 10);
-    
+
     -- returns 8.0
     SELECT LOG(2, 256);
-    
+
     -- returns 1.0
     SELECT LOG(E());
 
@@ -377,7 +377,7 @@ Examples
 
     -- returns 1.0
     SELECT LOG10(10);
-    
+
     -- returns 3.0
     SELECT LOG(1000);
 
@@ -395,7 +395,7 @@ Examples
 
     -- returns 1.0
     SELECT LOG2(2);
-    
+
     -- returns 10.0
     SELECT LOG2(1024);
 
@@ -425,13 +425,13 @@ Examples
 
     -- returns 6.0
     SELECT PERCENTILE(col, 0.3) FROM (VALUES (0), (10), (10)) AS col;
-    
+
     -- returns 6.0
     SELECT PERCENTILE(col, 0.3, freq) FROM ( VALUES (0, 1), (10, 2)) AS tab(col, freq);
-    
+
     -- returns [2.5,7.5]
     SELECT PERCENTILE(col, ARRAY(0.25, 0.75)) FROM (VALUES (0), (10)) AS col;
-    
+
     -- returns 50.0
     SELECT PERCENTILE(age, 0.5) FROM (VALUES 0, 50, 100) AS age;
 
@@ -450,7 +450,7 @@ Examples
     -- returns 3.141592653589793
     -- (approximately PI)
     SELECT PI();
-    
+
     -- returns -1.0
     SELECT COS(PI());
 
@@ -468,10 +468,10 @@ Examples
 
     -- returns 1000.0
     SELECT POWER(10, 3);
-    
+
     -- returns 256.0
     SELECT POWER(2, 8);
-    
+
     -- returns 1.0
     SELECT POWER(500, 0);
 
@@ -490,7 +490,7 @@ Examples
     -- returns 3.141592653589793
     -- (approximately PI)
     SELECT RADIANS(180);
-    
+
     -- returns 0.7853981633974483
     -- (approximately PI/4)
     SELECT RADIANS(45);
@@ -528,7 +528,7 @@ Examples
 
     -- returns 0.7321323355141605
     SELECT RAND(23);
-    
+
     -- returns 0.7275636800328681
     SELECT RAND(42);
 
@@ -546,7 +546,7 @@ Examples
 
     -- returns 20
     SELECT RAND_INTEGER(23);
-    
+
     -- returns 28
     SELECT RAND_INTEGER(42);
 
@@ -568,7 +568,7 @@ Examples
 
     -- returns 227
     SELECT RAND_INTEGER(23, 1000);
-    
+
     -- returns 1130
     SELECT RAND_INTEGER(42, 10000);
 
@@ -586,7 +586,7 @@ Examples
 
     -- returns 23.6
     SELECT ROUND(23.58, 1);
-    
+
     -- returns 3.1416
     SELECT ROUND(PI(), 4);
 
@@ -604,7 +604,7 @@ Examples
 
     -- returns -1.00
     SELECT SIGN(-23.55);
-    
+
     -- returns 1.000
     SELECT SIGN(606.808);
 
@@ -622,7 +622,7 @@ Examples
 
     -- returns 1.0
     SELECT SIN(PI()/2);
-    
+
     -- returns -1.0
     SELECT SIN(-PI()/2);
 
@@ -655,10 +655,10 @@ Examples
 
     -- returns 8.0
     SELECT SQRT(64);
-    
+
     -- returns 10.0
     SELECT SQRT(100);
-    
+
     -- returns 12.0
     SELECT SQRT(144);
 
@@ -676,7 +676,7 @@ Examples
 
     -- returns 0.0
     SELECT TAN(0);
-    
+
     -- returns 0.9999999999999999
     SELECT TAN(PI()/4);
 
@@ -694,7 +694,7 @@ Examples
 
     -- returns 0.0
     SELECT TANH(0);
-    
+
     -- returns 0.9999092042625951
     SELECT TANH(5);
 
@@ -720,10 +720,10 @@ Examples
 
     --  returns 42.32
     SELECT TRUNCATE(42.324, 2);
-    
+
     -- returns 42.0
     SELECT TRUNCATE(42.324);
-    
+
     -- returns 40
     SELECT TRUNCATE(42.324, -1);
 
@@ -749,7 +749,7 @@ Examples
 
     -- returns "Flink"
     SELECT DECODE(UNHEX('466C696E6B') , 'UTF-8');
-    
+
     -- returns NULL
     SELECT UNHEX('ZZ');
 
@@ -792,4 +792,3 @@ Examples
   * Numeric Functions
   * [String Functions](string-functions.html#flink-sql-string-functions)
   * [Table API Functions](table-api-functions.html#flink-table-api-functions)
-

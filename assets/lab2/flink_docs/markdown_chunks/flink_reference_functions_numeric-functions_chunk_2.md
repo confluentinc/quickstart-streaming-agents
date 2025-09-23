@@ -24,10 +24,10 @@ Examples
 
     -- returns "14"
     SELECT HEX(20);
-    
+
     --  returns "64"
     SELECT HEX(100);
-    
+
     -- returns "68656C6C6F2C776F726C64"
     SELECT HEX('hello,world');
 
@@ -48,7 +48,7 @@ Examples
 
     -- returns 1.0
     SELECT LN(E());
-    
+
     -- returns 0.0
     SELECT LN(1);
 
@@ -72,10 +72,10 @@ Examples
 
     -- returns 1.0
     SELECT LOG(10, 10);
-    
+
     -- returns 8.0
     SELECT LOG(2, 256);
-    
+
     -- returns 1.0
     SELECT LOG(E());
 
@@ -93,7 +93,7 @@ Examples
 
     -- returns 1.0
     SELECT LOG10(10);
-    
+
     -- returns 3.0
     SELECT LOG(1000);
 
@@ -111,7 +111,7 @@ Examples
 
     -- returns 1.0
     SELECT LOG2(2);
-    
+
     -- returns 10.0
     SELECT LOG2(1024);
 
@@ -141,13 +141,13 @@ Examples
 
     -- returns 6.0
     SELECT PERCENTILE(col, 0.3) FROM (VALUES (0), (10), (10)) AS col;
-    
+
     -- returns 6.0
     SELECT PERCENTILE(col, 0.3, freq) FROM ( VALUES (0, 1), (10, 2)) AS tab(col, freq);
-    
+
     -- returns [2.5,7.5]
     SELECT PERCENTILE(col, ARRAY(0.25, 0.75)) FROM (VALUES (0), (10)) AS col;
-    
+
     -- returns 50.0
     SELECT PERCENTILE(age, 0.5) FROM (VALUES 0, 50, 100) AS age;
 
@@ -166,7 +166,7 @@ Examples
     -- returns 3.141592653589793
     -- (approximately PI)
     SELECT PI();
-    
+
     -- returns -1.0
     SELECT COS(PI());
 
@@ -184,10 +184,10 @@ Examples
 
     -- returns 1000.0
     SELECT POWER(10, 3);
-    
+
     -- returns 256.0
     SELECT POWER(2, 8);
-    
+
     -- returns 1.0
     SELECT POWER(500, 0);
 
@@ -206,7 +206,7 @@ Examples
     -- returns 3.141592653589793
     -- (approximately PI)
     SELECT RADIANS(180);
-    
+
     -- returns 0.7853981633974483
     -- (approximately PI/4)
     SELECT RADIANS(45);
@@ -244,7 +244,7 @@ Examples
 
     -- returns 0.7321323355141605
     SELECT RAND(23);
-    
+
     -- returns 0.7275636800328681
     SELECT RAND(42);
 
@@ -262,6 +262,6 @@ Examples
 
     -- returns 20
     SELECT RAND_INTEGER(23);
-    
+
     -- returns 28
     SELECT RAND_INTEGER(42);

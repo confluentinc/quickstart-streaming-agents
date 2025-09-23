@@ -13,7 +13,7 @@ Confluent Cloud for Apache Flink® enables writing auxiliary statements to use i
 
     WITH <with_item_definition> [ , ... ]
     SELECT ... FROM ...;
-    
+
     <with_item_defintion>:
        with_item_name (column_name[, ...n]) AS ( <select_query> )
 
@@ -32,4 +32,3 @@ The following example defines a common table expression `orders_with_total` and 
     SELECT order_id, SUM(total)
     FROM orders_with_total
     GROUP BY order_id;
-

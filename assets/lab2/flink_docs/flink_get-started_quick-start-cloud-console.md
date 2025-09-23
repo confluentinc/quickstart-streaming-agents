@@ -57,20 +57,20 @@ The example statement is submitted, and information about the statement is displ
 After an initialization period, the query results display beneath the cell.
 
 Your output should resemble:
-         
+
          EXPR$0
          0
          1
          2
 
   2. Copy the following SQL and paste it into the cell. The statement runs the [CURRENT_TIMESTAMP](../reference/functions/datetime-functions.html#flink-sql-current-timestamp-function) function, which is one of many [built-in functions](../reference/functions/overview.html#flink-sql-functions-overview) provided by Confluent Cloud for Apache Flink.
-         
+
          SELECT CURRENT_TIMESTAMP;
 
   3. Click **Run**.
 
 The result from the statement is displayed beneath the cell. Your output should resemble:
-         
+
          CURRENT_TIMESTAMP
          2024-03-15 16:23:18.912
 
@@ -90,11 +90,11 @@ You can always use three-part identifiers for your tables, like `catalog.databas
   1. Set the default catalog and database by using the **Use catalog** and **Use database** dropdown menus in the top-right corner of the workspace. Select **examples** for the catalog, and **marketplace** for the database.
 
   1. Click [](../../_images/flink-add-code-editor.png) to create a new cell, and run the following statement to list all the tables in the **marketplace** database.
-         
+
          SHOW TABLES;
 
 Your output should resemble:
-         
+
          table name
          clicks
          customers
@@ -102,11 +102,11 @@ Your output should resemble:
          products
 
   2. Run the following statement to inspect the `orders` data stream.
-         
+
          SELECT * FROM orders;
 
 Your output should resemble:
-         
+
          order_id                             customer_id product_id price
          36d77b21-e68f-4123-b87a-cc19ac1f36ac 3137        1305       65.71
          7fd3cd2a-392b-4f8f-b953-0bfa1d331354 3063        1327       17.75
@@ -122,10 +122,9 @@ If you’ve created the workspace in a region where you already have Kafka clust
   1. Set the default catalog and database by using the **Use catalog** and **Use database** dropdown menus. You can find your catalogs and databases in the navigation menu on the left side of the workspace.
 
   2. Click [](../../_images/flink-add-code-editor.png) to create a new cell, and run the following statement to list all the tables in the database that you selected as the default.
-         
+
          SHOW TABLES;
 
   3. You can browse any of your tables by running a SELECT statement.
-         
-         SELECT * FROM <table_name>;
 
+         SELECT * FROM <table_name>;

@@ -26,4 +26,3 @@ Flink SQL has a rich set of native data types that you can use in SQL statements
 Some string combinations are reserved as keywords for future use.
 
   * [Flink SQL Reserved Keywords](keywords.html#flink-sql-keywords)
-

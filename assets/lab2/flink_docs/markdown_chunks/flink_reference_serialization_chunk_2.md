@@ -36,7 +36,7 @@ This mapping is important for creating tables, because it defines the Avro schem
   * Additional properties: –
 
   * Example:
-        
+
         {
           "type" : "array",
           "items" : "long"
@@ -58,7 +58,7 @@ This mapping is important for creating tables, because it defines the Avro schem
   * Additional properties: `flink.maxLength` (MAX_LENGTH if not set)
 
   * Example:
-        
+
         {
             "type" : "fixed",
             "name" : "row",
@@ -82,7 +82,7 @@ This mapping is important for creating tables, because it defines the Avro schem
   * Additional properties: `flink.maxLength` (MAX_LENGTH if not set)
 
   * Example:
-        
+
         {
           "type" : "string",
           "flink.maxLength" : 123,
@@ -99,7 +99,7 @@ This mapping is important for creating tables, because it defines the Avro schem
   * Additional properties: –
 
   * Example:
-        
+
         {
           "type" : "int",
           "logicalType" : "date"
@@ -114,7 +114,7 @@ This mapping is important for creating tables, because it defines the Avro schem
   * Additional properties: –
 
   * Example:
-        
+
         {
           "type" : "bytes",
           "logicalType" : "decimal",
@@ -152,7 +152,7 @@ This mapping is important for creating tables, because it defines the Avro schem
   * Additional properties: –
 
   * Example:
-        
+
         {
           "type" : "map",
           "values" : "boolean"
@@ -167,7 +167,7 @@ This mapping is important for creating tables, because it defines the Avro schem
   * Additional properties: array of `io.confluent.connect.avro.MapEntry(key, value)`
 
   * Example:
-        
+
         {
           "type" : "array",
           "items" : {
@@ -193,7 +193,7 @@ This mapping is important for creating tables, because it defines the Avro schem
   * Additional properties: `flink.type : multiset`
 
   * Example:
-        
+
         {
           "type" : "map",
           "values" : "int",
@@ -210,7 +210,7 @@ This mapping is important for creating tables, because it defines the Avro schem
   * Additional properties: array of `io.confluent.connect.avro.MapEntry(key, value)`, `flink.type : multiset`
 
   * Example:
-        
+
         {
           "type" : "array",
           "items" : {

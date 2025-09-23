@@ -19,21 +19,21 @@ The following section shows the endpoints that are available for connecting to F
 
 The following table shows how to get the endpoint value by using different Confluent interfaces.
 
-Interface | Location | Endpoint  
----|---|---  
-Cloud Console | Flink **Endpoints** page | Full FQDN shown for each network connection  
-Confluent CLI | 
+Interface | Location | Endpoint
+---|---|---
+Cloud Console | Flink **Endpoints** page | Full FQDN shown for each network connection
+Confluent CLI |
 
     confluent flink endpoint list
 
-| Full FQDN shown for each network connection  
-Network UI/API/CLI | 
+| Full FQDN shown for each network connection
+Network UI/API/CLI |
 
   * **Network management** details page in **Environment overview**
   * GET /network/
   * confluent network describe
 
-| 
+|
 
   1. Read the `endpoint_suffix` attribute, for example, `<service-identifier>-abc1de.us-east-1.aws.glb.confluent.cloud`
   2. Replace `<service-identifier>` with the relevant value, for example, `flink` for Flink or `flinkpls` for Language Service.
@@ -41,14 +41,14 @@ Network UI/API/CLI |
 
 The following table shows the endpoint patterns for different DNS and cluster type combinations.
 
-Networking | DNS | Cluster Type | Endpoints  
----|---|---|---  
-PrivateLink | Private | Enterprise (PrivateLink Attachment) | `flink.$region.$cloud.private.confluent.cloud` `flinkpls.$region.$cloud.private.confluent.cloud`  
-Dedicated | `flink.dom$id.$region.$cloud.private.confluent.cloud` `flinkpls.dom$id.$region.$cloud.private.confluent.cloud`  
-Public | Dedicated | `flink-$nid.$region.$cloud.glb.confluent.cloud` `flinkpls-$nid.$region.$cloud.glb.confluent.cloud`  
-VPC Peering / Transit Gateway w/ /16 CIDR | Public | Dedicated | `flink-$nid.$region.$cloud.confluent.cloud` `flinkpls-$nid.$region.$cloud.confluent.cloud`  
-VPC Peering / Transit Gateway w/ /27 CIDRs | Public | Dedicated | `flink-$nid.$region.$cloud.glb.confluent.cloud` `flinkpls-$nid.$region.$cloud.glb.confluent.cloud`  
-  
+Networking | DNS | Cluster Type | Endpoints
+---|---|---|---
+PrivateLink | Private | Enterprise (PrivateLink Attachment) | `flink.$region.$cloud.private.confluent.cloud` `flinkpls.$region.$cloud.private.confluent.cloud`
+Dedicated | `flink.dom$id.$region.$cloud.private.confluent.cloud` `flinkpls.dom$id.$region.$cloud.private.confluent.cloud`
+Public | Dedicated | `flink-$nid.$region.$cloud.glb.confluent.cloud` `flinkpls-$nid.$region.$cloud.glb.confluent.cloud`
+VPC Peering / Transit Gateway w/ /16 CIDR | Public | Dedicated | `flink-$nid.$region.$cloud.confluent.cloud` `flinkpls-$nid.$region.$cloud.confluent.cloud`
+VPC Peering / Transit Gateway w/ /27 CIDRs | Public | Dedicated | `flink-$nid.$region.$cloud.glb.confluent.cloud` `flinkpls-$nid.$region.$cloud.glb.confluent.cloud`
+
 ### Public endpoint¶
 
   * Source: Always present.

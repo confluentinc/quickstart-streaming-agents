@@ -21,29 +21,29 @@ Represents an 8-byte signed integer with values from _-9,223,372,036,854,775,808
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-java.lang.Long | ✓ | ✓ | Default  
-long | ✓ | (✓) | Output only if type is not nullable  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+java.lang.Long | ✓ | ✓ | Default
+long | ✓ | (✓) | Output only if type is not nullable
+
 **Formats**
 
 The following table shows examples of the BIGINT type in different formats.
 
-JSON for data type | 
+JSON for data type |
 
     {"type":"BIGINT","nullable":true}
 
----|---  
-CLI/UI format | 
+---|---
+CLI/UI format |
 
     BIGINT
 
-JSON for payload | 
+JSON for payload |
 
     "23"
 
-CLI/UI format for payload | 
+CLI/UI format for payload |
 
     23
 
@@ -56,40 +56,40 @@ Represents a decimal number with fixed precision and scale.
     DECIMAL
     DECIMAL(p)
     DECIMAL(p, s)
-    
+
     DEC
     DEC(p)
     DEC(p, s)
-    
+
     NUMERIC
     NUMERIC(p)
     NUMERIC(p, s)
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-java.math.BigDecimal | ✓ | ✓ | Default  
-org.apache.flink.table.data.DecimalData | ✓ | ✓ | Internal data structure  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+java.math.BigDecimal | ✓ | ✓ | Default
+org.apache.flink.table.data.DecimalData | ✓ | ✓ | Internal data structure
+
 **Formats**
 
 The following table shows examples of the DECIMAL type in different formats.
 
-JSON for data type | 
+JSON for data type |
 
     {"type":"DECIMAL","nullable":true,"precision":5,"scale":3}
 
----|---  
-CLI/UI format | 
+---|---
+CLI/UI format |
 
     DECIMAL(5, 3)
 
-JSON for payload | 
+JSON for payload |
 
     "12.123"
 
-CLI/UI format for payload | 
+CLI/UI format for payload |
 
     12.123
 
@@ -112,34 +112,34 @@ Represents a 4-byte signed integer with values from _-2,147,483,648_ to _2,147,4
 **Declaration**
 
     INT
-    
+
     INTEGER
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-java.lang.Integer | ✓ | ✓ | Default  
-long | ✓ | (✓) | Output only if type is not nullable  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+java.lang.Integer | ✓ | ✓ | Default
+long | ✓ | (✓) | Output only if type is not nullable
+
 **Formats**
 
 The following table shows examples of the INT type in different formats.
 
-JSON for data type | 
+JSON for data type |
 
     {"type":"INT","nullable":true}
 
----|---  
-CLI/UI format | 
+---|---
+CLI/UI format |
 
     INT
 
-JSON for payload | 
+JSON for payload |
 
     "23"
 
-CLI/UI format for payload | 
+CLI/UI format for payload |
 
     23
 
@@ -155,29 +155,29 @@ Represents a 2-byte signed integer with values from _-32,768_ to _32,767_.
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-java.lang.Short | ✓ | ✓ | Default  
-short | ✓ | (✓) | Output only if type is not nullable  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+java.lang.Short | ✓ | ✓ | Default
+short | ✓ | (✓) | Output only if type is not nullable
+
 **Formats**
 
 The following table shows examples of the SMALLINT type in different formats.
 
-JSON for data type | 
+JSON for data type |
 
     {"type":"SMALLINT","nullable":true}
 
----|---  
-CLI/UI format | 
+---|---
+CLI/UI format |
 
     SMALLINT
 
-JSON for payload | 
+JSON for payload |
 
     "23"
 
-CLI/UI format for payload | 
+CLI/UI format for payload |
 
     23
 
@@ -191,29 +191,29 @@ Represents a 1-byte signed integer with values from _-128_ to _127_.
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-java.lang.Byte | ✓ | ✓ | Default  
-byte | ✓ | (✓) | Output only if type is not nullable  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+java.lang.Byte | ✓ | ✓ | Default
+byte | ✓ | (✓) | Output only if type is not nullable
+
 **Formats**
 
 The following table shows examples of the TINYINT type in different formats.
 
-JSON for data type | 
+JSON for data type |
 
     {"type":"TINYINT","nullable":true}
 
----|---  
-CLI/UI format | 
+---|---
+CLI/UI format |
 
     TINYINT
 
-JSON for payload | 
+JSON for payload |
 
     "23"
 
-CLI/UI format for payload | 
+CLI/UI format for payload |
 
     23
 
@@ -226,34 +226,34 @@ Represents an 8-byte double precision floating point number.
 **Declaration**
 
     DOUBLE
-    
+
     DOUBLE PRECISION
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-java.lang.Double | ✓ | ✓ | Default  
-double | ✓ | (✓) | Output only if type is not nullable  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+java.lang.Double | ✓ | ✓ | Default
+double | ✓ | (✓) | Output only if type is not nullable
+
 **Formats**
 
 The following table shows examples of the DOUBLE type in different formats.
 
-JSON for data type | 
+JSON for data type |
 
     {"type":"DOUBLE","nullable":true}
 
----|---  
-CLI/UI format | 
+---|---
+CLI/UI format |
 
     DOUBLE
 
-JSON for payload | 
+JSON for payload |
 
     "1.1111112120000001E7"
 
-CLI/UI format for payload | 
+CLI/UI format for payload |
 
     1.1111112120000001E7
 
@@ -269,29 +269,29 @@ Represents a 4-byte single precision floating point number.
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-java.lang.Float | ✓ | ✓ | Default  
-float | ✓ | (✓) | Output only if type is not nullable  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+java.lang.Float | ✓ | ✓ | Default
+float | ✓ | (✓) | Output only if type is not nullable
+
 **Formats**
 
 The following table shows examples of the FLOAT type in different formats.
 
-JSON for data type | 
+JSON for data type |
 
     {"type":"FLOAT","nullable":true}
 
----|---  
-CLI/UI format | 
+---|---
+CLI/UI format |
 
     FLOAT
 
-JSON for payload | 
+JSON for payload |
 
     "1.1111112E7"
 
-CLI/UI format for payload | 
+CLI/UI format for payload |
 
     1.1111112E7
 

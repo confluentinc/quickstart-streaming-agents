@@ -26,11 +26,11 @@ This mapping is important for creating tables, because it defines the Protobuf s
   * Additional properties: `flink.wrapped`, which indicates that Flink wrappers are used to represent nullability, because Protobuf doesn’t support nullable repeated natively.
 
   * Example:
-        
+
         repeated int64 value = 1;
 
 Nullable array:
-        
+
         arrayNullableRepeatedWrapper arrayNullable = 1 [(confluent.field_meta) = {
           params: [
             {
@@ -43,13 +43,13 @@ Nullable array:
             }
           ]
         }];
-        
+
         message arrayNullableRepeatedWrapper {
           repeated int64 value = 1;
         }
 
 Nullable elements:
-        
+
         repeated elementNullableElementWrapper elementNullable = 2 [(confluent.field_meta) = {
           params: [
             {
@@ -62,7 +62,7 @@ Nullable elements:
             }
           ]
         }];
-        
+
         message elementNullableElementWrapper {
           optional int64 value = 1;
         }
@@ -76,7 +76,7 @@ Nullable elements:
   * Additional properties: –
 
   * Example:
-        
+
         optional int64 bigint = 8;
 
 #### BINARY¶
@@ -88,7 +88,7 @@ Nullable elements:
   * Additional properties: `flink.maxLength=flink.minLength`
 
   * Example:
-        
+
         optional bytes binary = 13 [(confluent.field_meta) = {
           params: [
             {
@@ -115,7 +115,7 @@ Nullable elements:
   * Additional properties: –
 
   * Example:
-        
+
         optional bool boolean = 2;
 
 #### CHAR¶
@@ -127,7 +127,7 @@ Nullable elements:
   * Additional properties: `flink.maxLength=flink.minLength`
 
   * Example:
-        
+
         optional string char = 11 [(confluent.field_meta) = {
           params: [
             {
@@ -154,7 +154,7 @@ Nullable elements:
   * Additional properties: –
 
   * Example:
-        
+
         optional .google.type.Date date = 17;
 
 #### DECIMAL¶
@@ -166,7 +166,7 @@ Nullable elements:
   * Additional properties: –
 
   * Example:
-        
+
         optional .confluent.type.Decimal decimal = 19 [(confluent.field_meta) = {
           params: [
             {
@@ -193,7 +193,7 @@ Nullable elements:
   * Additional properties: –
 
   * Example:
-        
+
         optional double double = 10;
 
 #### FLOAT¶
@@ -205,7 +205,7 @@ Nullable elements:
   * Additional properties: –
 
   * Example:
-        
+
         optional float float = 9;
 
 #### INT¶
@@ -217,7 +217,7 @@ Nullable elements:
   * Additional properties: –
 
   * Example:
-        
+
         optional int32 int = 7;
 
 #### MAP[K, V]¶
@@ -229,9 +229,9 @@ Nullable elements:
   * Additional properties: `flink.wrapped`, which indicates that Flink wrappers are used to represent nullability, because Protobuf doesn’t support nullable repeated natively. For examples, see the ARRAY type.
 
   * Example:
-        
+
         repeated MapEntry map = 20;
-        
+
         message MapEntry {
             optional string key = 1;
             optional int64 value = 2;
@@ -248,5 +248,5 @@ Nullable elements:
     * `flink.wrapped`, which indicates that Flink wrappers are used to represent nullability, because Protobuf doesn’t support nullable repeated natively. For examples, see the ARRAY type.
     * `flink.type=multiset`
   * Example:
-        
+
         repeated MultisetEntry multiset = 1 [(confluent.field_meta)

@@ -47,7 +47,7 @@ If column `a` of `T` is nullable, Flink sets it to NULL.
 In the Flink SQL shell or in a Cloud Console workspace, run the following commands to see an example of the INSERT INTO FROM SELECT statement.
 
   1. Create a table for web page click events.
-         
+
          -- Create a table for web page click events.
          CREATE TABLE clicks (
            ip_address VARCHAR,
@@ -56,7 +56,7 @@ In the Flink SQL shell or in a Cloud Console workspace, run the following comman
          );
 
   2. Populate the table with mock clickstream data.
-         
+
          -- Populate the table with mock clickstream data.
          INSERT INTO clicks
          VALUES( '10.0.0.1',  'https://acme.com/index.html',     1692812175),
@@ -69,7 +69,7 @@ In the Flink SQL shell or in a Cloud Console workspace, run the following comman
 Press ENTER to return to the SQL shell. Because INSERT INTO VALUES is a point-in-time statement, it exits after it completes inserting records.
 
   3. Create another table for filtered web page click events.
-         
+
          CREATE TABLE filtered_clicks (
            ip_address VARCHAR,
            url VARCHAR,
@@ -77,7 +77,7 @@ Press ENTER to return to the SQL shell. Because INSERT INTO VALUES is a point-in
          );
 
   4. Run the following statement to insert filtered rows into the `filtered_clicks` table. Only clicks that have an IP address of `10.0.0.1` are inserted.
-         
+
          INSERT INTO filtered_clicks(
            ip_address,
            url,
@@ -86,11 +86,11 @@ Press ENTER to return to the SQL shell. Because INSERT INTO VALUES is a point-in
          SELECT * FROM clicks WHERE ip_address = '10.0.0.1';
 
   5. View the rows in the `filtered_clicks` table.
-         
+
          SELECT * FROM filtered_clicks;
 
 Your output should resemble:
-         
+
          ip_address url                         click_timestamp
          10.0.0.1   https://acme.com/index.html 2023-08-23 10:36:15
          10.0.0.1   https://acme.com/index.html 2023-08-23 10:36:15
@@ -98,11 +98,11 @@ Your output should resemble:
 ### Fill a table without specifying all columns¶
 
     CREATE TABLE t_insert_gaps (c1 STRING, c2 STRING, c3 STRING, c4 STRING);
-    
+
     INSERT INTO t_insert_gaps (c3) SELECT 'Bob';
-    
+
     INSERT INTO t_insert_gaps (c3, c2) SELECT 'Bob', 'Alice';
-    
+
     SELECT * FROM t_insert_gaps;
 
 Properties
@@ -110,4 +110,3 @@ Properties
   * A column list is defined between the table name and the SELECT in the INSERT INTO statement, so the SELECT statement uses a reduced schema.
   * Columns `c1`, `c2`, are `c4` are filled with NULLs.
   * If one of the columns is declared NOT NULL, an error occurs.
-

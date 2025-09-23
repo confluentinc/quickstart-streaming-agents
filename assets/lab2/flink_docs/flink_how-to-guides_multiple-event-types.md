@@ -22,7 +22,7 @@ For example, consider a topic that combines purchase and pageview events.
   1. Schema for **purchase** events.
 
 AvroJSON SchemaProtobuf
-         
+
          {
             "type":"record",
             "namespace": "io.confluent.developer.avro",
@@ -53,9 +53,9 @@ AvroJSON SchemaProtobuf
          }
 
          syntax = "proto3";
-         
+
          package io.confluent.developer.proto;
-         
+
          message Purchase {
             string item = 1;
             double amount = 2;
@@ -65,7 +65,7 @@ AvroJSON SchemaProtobuf
   2. Schema for **pageview** events.
 
 AvroJSON SchemaProtobuf
-         
+
          {
             "type":"record",
             "namespace": "io.confluent.developer.avro",
@@ -96,9 +96,9 @@ AvroJSON SchemaProtobuf
          }
 
          syntax = "proto3";
-         
+
          package io.confluent.developer.proto;
-         
+
          message Pageview {
             string url = 1;
             bool is_special = 2;
@@ -108,7 +108,7 @@ AvroJSON SchemaProtobuf
   3. Combined schema that references both event types:
 
 AvroJSON SchemaProtobuf
-         
+
          [
             "io.confluent.developer.avro.Purchase",
             "io.confluent.developer.avro.Pageview"
@@ -125,12 +125,12 @@ AvroJSON SchemaProtobuf
          }
 
          syntax = "proto3";
-         
+
          package io.confluent.developer.proto;
-         
+
          import "purchase.proto";
          import "pageview.proto";
-         
+
          message CustomerEvent {
             oneof action {
                Purchase purchase = 1;
@@ -172,19 +172,19 @@ AvroJSON SchemaProtobuf
 
     -- Query purchase events
     SELECT Purchase.* FROM `customer-events` WHERE Purchase IS NOT NULL;
-    
+
     -- Query pageview events
     SELECT Pageview.* FROM `customer-events` WHERE Pageview IS NOT NULL;
 
     -- Query purchase events
     SELECT connect_union_field_0.* FROM `customer-events` WHERE connect_union_field_0 IS NOT NULL;
-    
+
     -- Query pageview events
     SELECT connect_union_field_1.* FROM `customer-events` WHERE connect_union_field_1 IS NOT NULL;
 
     -- Query purchase events
     SELECT action.purchase.* FROM `customer-events` WHERE action.purchase IS NOT NULL;
-    
+
     -- Query pageview events
     SELECT action.pageview.* FROM `customer-events` WHERE action.pageview IS NOT NULL;
 
@@ -256,19 +256,19 @@ AvroJSON SchemaProtobuf
     }
 
     syntax = "proto3";
-    
+
     package io.confluent.examples.proto;
-    
+
     message Order {
        string order_id = 1;
        double amount = 2;
     }
-    
+
     message Shipment {
        string tracking_id = 1;
        string status = 2;
     }
-    
+
     message AllTypes {
        oneof event_type {
           Order order = 1;
@@ -296,7 +296,7 @@ You can query specific event types:
 
     -- Query orders
     SELECT event_type.Order.* FROM `events` WHERE event_type.Order IS NOT NULL;
-    
+
     -- Query shipments
     SELECT event_type.Shipment.* FROM `events` WHERE event_type.Shipment IS NOT NULL;
 
@@ -310,7 +310,7 @@ You can query specific event types:
 
     -- Query orders
     SELECT connect_union_field_0.* FROM `events` WHERE connect_union_field_0 IS NOT NULL;
-    
+
     -- Query shipments
     SELECT connect_union_field_1.* FROM `events` WHERE connect_union_field_1 IS NOT NULL;
 
@@ -328,7 +328,7 @@ You can query specific event types:
 
     -- Query orders
     SELECT AllTypes.event_type.order.* FROM `events` WHERE AllTypes.event_type.order IS NOT NULL;
-    
+
     -- Query shipments
     SELECT AllTypes.event_type.shipment.* FROM `events` WHERE AllTypes.event_type.shipment IS NOT NULL;
 
@@ -362,4 +362,3 @@ Replace `avro-registry` with `json-registry` or `proto-registry` based on your s
   1. Use schema references with TopicNameStrategy when possible, as this provides the best balance of flexibility and manageability.
   2. If schema references aren’t suitable, use union types for a simpler schema management approach.
   3. Configure alternative subject name strategies only when working with existing systems that require them.
-

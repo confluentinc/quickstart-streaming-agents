@@ -13,13 +13,13 @@ Confluent Cloud for Apache Flink® enables viewing the schema of an Apache Kafka
 
     -- View table details.
     { DESCRIBE | DESC } [EXTENDED] [catalog_name.][db_name.]table_name
-    
+
     -- View model details.
     { DESCRIBE | DESC } MODEL [[catalogname].[database_name]].model_name
-    
+
     -- View function details.
     { DESCRIBE | DESC } FUNCTION [EXTENDED] [catalog_name.][db_name.]function_name
-    
+
     -- View connection details.
     { DESCRIBE | DESC } CONNECTION [catalog_name.][db_name.]connection_name
 
@@ -75,7 +75,7 @@ The DESCRIBE CONNECTION statement shows the following properties of a connection
 In the Flink SQL shell or in a Cloud Console workspace, run the following commands to see an example of the DESCRIBE statement.
 
   1. Create a table.
-         
+
          CREATE TABLE orders (
            `user` BIGINT NOT NULL,
            product STRING,
@@ -85,15 +85,15 @@ In the Flink SQL shell or in a Cloud Console workspace, run the following comman
          );
 
 Your output should resemble:
-         
+
          [INFO] Execute statement succeed.
 
   2. View the table’s schema.
-         
+
          DESCRIBE orders;
 
 Your output should resemble:
-         
+
          +-------------+--------------+----------+-------------------------+
          | Column Name |  Data Type   | Nullable |         Extras          |
          +-------------+--------------+----------+-------------------------+
@@ -104,11 +104,11 @@ Your output should resemble:
          +-------------+--------------+----------+-------------------------+
 
   3. View the table’s schema and system columns.
-         
+
          DESCRIBE EXTENDED orders;
 
 Your output should resemble:
-         
+
          +-------------+----------------------------+----------+-----------------------------------------------------+---------+
          | Column Name |         Data Type          | Nullable |                       Extras                        | Comment |
          +-------------+----------------------------+----------+-----------------------------------------------------+---------+
@@ -267,4 +267,3 @@ Your output should resemble:
     +-------------------------+-------------+-----------------------------------------------------------------------+---------+
     | azure-openai-connection | AZUREOPENAI | https://<your-project>.openai.azure.com/openai/deployments/matrix-... |         |
     +-------------------------+-------------+-----------------------------------------------------------------------+---------+
-

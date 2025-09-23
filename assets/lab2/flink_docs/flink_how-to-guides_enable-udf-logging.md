@@ -39,7 +39,7 @@ You need the following prerequisites to use Confluent Cloud for Apache Flink.
   * The OrganizationAdmin, EnvironmentAdmin, or FlinkAdmin role for creating compute pools, or the FlinkDeveloper role if you already have a compute pool. If you don’t have the appropriate role, reach out to your OrganizationAdmin or EnvironmentAdmin.
 
   * The Confluent CLI. To use the Flink SQL shell, update to the latest version of the Confluent CLI by running the following command:
-        
+
         confluent update --yes
 
 If you used homebrew to install the Confluent CLI, update the CLI by using the `brew upgrade` command, instead of `confluent update`.
@@ -78,13 +78,13 @@ Creating a UDF log requires the following inputs:
     export UDF_LOG_TOPIC_NAME="<udf-log-topic-name>" # example: "udf_log"
 
   1. Log in to Confluent Cloud.
-         
+
          confluent login --organization-id ${ORG_ID} --prompt
 
 The `--environment` option is an optional parameter. If not provided, the default environment is used.
 
   2. Run the following command to set up UDF logging for a region and environment by specifying a Kafka topic for logging. This command doesn’t create the Kafka topic. Instead, it enables logging per region and per environment to use the existing UDF_LOG_TOPIC_NAME topic as the log.
-         
+
          confluent custom-code-logging create \
            --cloud ${CLOUD_PROVIDER} \
            --region ${CLOUD_REGION} \
@@ -93,7 +93,7 @@ The `--environment` option is an optional parameter. If not provided, the defaul
            --environment ${ENV_ID}
 
 Your output should resemble:
-         
+
          +-------------+------------+
          | Id          | ccl-4l5klo |
          | Cloud       | aws        |
@@ -102,7 +102,7 @@ Your output should resemble:
          +-------------+------------+
 
 Note the identifier of the UDF log, which in the current example is `ccl-4l5klo`. For convenience, save it in an environment variable:
-         
+
          export UDF_LOG_ID="<udf-log-id>" # for example, ccl-4l5klo
 
 ## Step 2: Implement logging code¶
@@ -110,21 +110,21 @@ Note the identifier of the UDF log, which in the current example is `ccl-4l5klo`
 In your UDF project, import the `org.apache.logging.log4j.LogManager` and `org.apache.logging.log4j.Logger` namespaces. Get the `Logger` instance by calling the `LogManager.getLogger()` method.
 
     package your.package.namespace;
-    
+
     import org.apache.flink.table.functions.ScalarFunction;
     import org.apache.logging.log4j.LogManager;
     import org.apache.logging.log4j.Logger;
     import java.util.Date;
-    
+
     /* This class is a SumScalar function that logs messages at different levels */
     public class LogSumScalarFunction extends ScalarFunction {
-    
+
        private static final Logger LOGGER = LogManager.getLogger();
-    
+
        public int eval(int a, int b) {
          String value = String.format("SumScalar of %d and %d", a, b);
           Date now = new java.util.Date();
-    
+
           // You can choose the logging level for log messages.
           LOGGER.info(value + " info log messages by log4j logger --- " + now);
           LOGGER.error(value + " error log messages by log4j logger --- " + now);
@@ -158,11 +158,11 @@ Confluent CLIREST API
 To enable UDF logging, run the following commands.
 
   1. Log in to Confluent Cloud.
-         
+
          confluent login --organization-id ${ORG_ID} --prompt
 
   2. Run the following command to enable UDF logging.
-         
+
          confluent custom-code-logging create \
            --cloud ${CLOUD_PROVIDER} \
            --region ${CLOUD_REGION} \
@@ -171,7 +171,7 @@ To enable UDF logging, run the following commands.
            --environment ${ENV_ID}
 
   1. Run the following command to enable UDF logging.
-         
+
          cat << EOF | curl --silent -X POST
            -u ${CLOUD_API_KEY}:${CLOUD_API_SECRET} \
            -d @- https://api.confluent.cloud/ccl/v1/custom-code-loggings
@@ -201,15 +201,15 @@ Confluent CLIREST API
 To delete a logging configuration, run the following commands.
 
   1. Log in to Confluent Cloud.
-         
+
          confluent login --organization-id ${ORG_ID} --prompt
 
   2. Run the following command to delete the logging configuration specified by UDF_LOG_ID.
-         
+
          confluent custom-code-logging delete ${UDF_LOG_ID}
 
   1. Run the following command to delete the logging configuration specified by UDF_LOG_ID.
-         
+
          curl --silent -X DELETE \
            -u ${CLOUD_API_KEY}:${CLOUD_API_SECRET} \
            https://api.confluent.cloud/ccl/v1/custom-code-loggings/${UDF_LOG_ID}?environment=${ENV_ID}
@@ -223,11 +223,11 @@ Confluent CLIREST API
 To view the region and environment for a UDF log, run the following commands.
 
   1. Log in to Confluent Cloud.
-         
+
          confluent login --organization-id ${ORG_ID} --prompt
 
   2. Run the following command to view the region and environment of a UDF log.
-         
+
          confluent custom-code-logging describe ${UDF_LOG_ID}
 
 Your output should resemble:
@@ -240,7 +240,7 @@ Your output should resemble:
     +-------------+------------+
 
   1. Run the following command to view the region and environment of a UDF log.
-         
+
          curl --silent -X GET \
            -u ${CLOUD_API_KEY}:${CLOUD_API_SECRET} \
            https://api.confluent.cloud/ccl/v1/custom-code-loggings/${UDF_LOG_ID}?environment=${ENV_ID}
@@ -254,11 +254,11 @@ Confluent CLIREST API
 To list the active UDF logs, run the following commands.
 
   1. Log in to Confluent Cloud.
-         
+
          confluent login --organization-id ${ORG_ID} --prompt
 
   2. Run the following command to view the active UDF logs.
-         
+
          confluent custom-code-logging list
 
 Your output should resemble:
@@ -268,7 +268,7 @@ Your output should resemble:
       ccl-4l5klo | aws   | us-west-2 | env-xmzdkk
 
   1. Run the following command to view the active UDF logs.
-         
+
          curl --silent -X GET \
            -u ${CLOUD_API_KEY}:${CLOUD_API_SECRET} \
            https://api.confluent.cloud/ccl/v1/custom-code-loggings?environment=${ENV_ID}
@@ -293,15 +293,15 @@ Confluent CLIREST API
 To change the logging level for an active UDF log, run the following commands.
 
   1. Log in to Confluent Cloud.
-         
+
          confluent login --organization-id ${ORG_ID} --prompt
 
   2. Run the following command to change the logging level for an active UDF log.
-         
+
          confluent custom-code-logging update --log-level DEBUG
 
   1. Run the following command to change the logging level for an active UDF log.
-         
+
          curl --silent -X PATCH \
          -u ${CLOUD_API_KEY}:${CLOUD_API_SECRET} \
          https://api.confluent.cloud/ccl/v1/custom-code-loggings/${UDF_LOG_ID}?environment=${ENV_ID}
@@ -312,4 +312,3 @@ To change the logging level for an active UDF log, run the following commands.
               "log_level": "ERROR"
            }
          }'
-

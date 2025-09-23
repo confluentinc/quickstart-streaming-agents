@@ -107,7 +107,7 @@ For example, the following two queries are equivalent.
         ('supplier2', 'product4', 4))
     AS Products(supplier_id, product_id, rating)
     GROUP BY CUBE (supplier_id, rating, product_id)
-    
+
     SELECT supplier_id, rating, product_id, COUNT(*)
     FROM (VALUES
         ('supplier1', 'product1', 4),

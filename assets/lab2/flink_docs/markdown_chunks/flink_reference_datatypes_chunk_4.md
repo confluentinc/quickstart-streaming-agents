@@ -21,31 +21,31 @@ Represents a date consisting of `year-month-day` with values ranging from `0000-
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-java.time.LocalDate | ✓ | ✓ | Default  
-java.sql.Date | ✓ | ✓ |   
-java.lang.Integer | ✓ | ✓ | Describes the number of days since Unix epoch  
-int | ✓ | (✓) | Describes the number of days since Unix epoch. Output only if type is not nullable.  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+java.time.LocalDate | ✓ | ✓ | Default
+java.sql.Date | ✓ | ✓ |
+java.lang.Integer | ✓ | ✓ | Describes the number of days since Unix epoch
+int | ✓ | (✓) | Describes the number of days since Unix epoch. Output only if type is not nullable.
+
 **Formats**
 
 The following table shows examples of the DATE type in different formats.
 
-JSON for data type | 
+JSON for data type |
 
     {"type":"DATE","nullable":true}
 
----|---  
-CLI/UI format | 
+---|---
+CLI/UI format |
 
     DATE
 
-JSON for payload | 
+JSON for payload |
 
     "2023-04-06"
 
-CLI/UI format for payload | 
+CLI/UI format for payload |
 
     2023-04-06
 
@@ -72,30 +72,30 @@ Data type for a group of day-time interval types.
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-java.time.Duration | ✓ | ✓ | Default  
-java.lang.Long | ✓ | ✓ | Describes the number of milliseconds  
-long | ✓ | (✓) | Describes the number of milliseconds. Output only if type is not nullable.  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+java.time.Duration | ✓ | ✓ | Default
+java.lang.Long | ✓ | ✓ | Describes the number of milliseconds
+long | ✓ | (✓) | Describes the number of milliseconds. Output only if type is not nullable.
+
 **Formats**
 
 The following table shows examples of the INTERVAL DAY TO SECOND type in different formats.
 
-JSON for data type | 
+JSON for data type |
 
     {"type":"INTERVAL_DAY_TIME","nullable":true,"precision":1,"fractionalPrecision":3,"resolution":"DAY_TO_SECOND"}
 
----|---  
-CLI/UI format | 
+---|---
+CLI/UI format |
 
     INTERVAL DAY(1) TO SECOND(3)
 
-JSON for payload | 
+JSON for payload |
 
     "+2 07:33:20.000"
 
-CLI/UI format for payload | 
+CLI/UI format for payload |
 
     +2 07:33:20.000
 
@@ -159,30 +159,30 @@ Data type for a group of year-month interval types.
 
 **Bridging to JVM types**
 
-Java Type | Input | Output | Notes  
----|---|---|---  
-java.time.Period | ✓ | ✓ | Default. Ignores the `days` part.  
-java.lang.Integer | ✓ | ✓ | Describes the number of months.  
-int | ✓ | (✓) | Describes the number of months. Output only if type is not nullable.  
-  
+Java Type | Input | Output | Notes
+---|---|---|---
+java.time.Period | ✓ | ✓ | Default. Ignores the `days` part.
+java.lang.Integer | ✓ | ✓ | Describes the number of months.
+int | ✓ | (✓) | Describes the number of months. Output only if type is not nullable.
+
 **Formats**
 
 The following table shows examples of the INTERVAL YEAR TO MONTH type in different formats.
 
-JSON for data type | 
+JSON for data type |
 
     {"type":"INTERVAL_YEAR_MONTH","nullable":true,"precision":4,"resolution":"YEAR_TO_MONTH"}
 
----|---  
-CLI/UI format | 
+---|---
+CLI/UI format |
 
     INTERVAL YEAR(4) TO MONTH
 
-JSON for payload | 
+JSON for payload |
 
     "+2000-02"
 
-CLI/UI format for payload | 
+CLI/UI format for payload |
 
     +2000-02
 

@@ -28,11 +28,11 @@ Properties
   2. Create two Flink compute pools in different regions, for example, `eu-west-1` and `us-west-2`.
 
   3. In the first region, run the following statement.
-         
+
          CREATE TABLE t_shared_schema (key STRING, s STRING) DISTRIBUTED BY (key);
 
   4. In the second region, run the same statement.
-         
+
          CREATE TABLE t_shared_schema (key STRING, s STRING) DISTRIBUTED BY (key);
 
 Properties
@@ -82,7 +82,7 @@ Properties
 
     -- works because the query is non-updating
     INSERT INTO t_changelog_modes SELECT 1;
-    
+
     -- does not work because the query is updating, causing an error
     INSERT INTO t_changelog_modes SELECT COUNT(*) FROM (VALUES (1), (2), (3));
 
@@ -100,7 +100,7 @@ Going back to **append** mode is possible, but retractions (-U, -D) appear as in
 
     ALTER TABLE t_changelog_modes SET ('changelog.mode' = 'append');
     ALTER TABLE t_changelog_modes ADD headers MAP<BYTES, BYTES> METADATA VIRTUAL;
-    
+
     -- Shows what is serialized internally
     SELECT i, headers FROM t_changelog_modes;
 

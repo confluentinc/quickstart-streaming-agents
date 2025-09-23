@@ -11,14 +11,14 @@ total_chunks: 3
 
 Confluent Cloud for Apache Flink® provides these built-in functions to aggregate rows in Flink SQL queries:
 
-AVG | COLLECT | COUNT | CUME_DIST  
----|---|---|---  
-DENSE_RANK | FIRST_VALUE | LAG | LAST_VALUE  
-LEAD | LISTAGG | MAX | MIN  
-NTILE | PERCENT_RANK | RANK | ROW_NUMBER  
-STDDEV_POP | STDDEV_SAMP | SUM | VAR_POP  
-VAR_SAMP | VARIANCE |  |   
-  
+AVG | COLLECT | COUNT | CUME_DIST
+---|---|---|---
+DENSE_RANK | FIRST_VALUE | LAG | LAST_VALUE
+LEAD | LISTAGG | MAX | MIN
+NTILE | PERCENT_RANK | RANK | ROW_NUMBER
+STDDEV_POP | STDDEV_SAMP | SUM | VAR_POP
+VAR_SAMP | VARIANCE |  |
+
 The aggregate functions take an expression across all the rows as the input and return a single aggregated value as the result.
 
 ## AVG¶

@@ -76,7 +76,7 @@ class SetupUI:
 
 class PrerequisiteManager:
     """Manages checking and installation of required tools."""
-    
+
     TOOLS = {
         'git': {
             'check_cmd': ['git', '--version'],
@@ -99,11 +99,11 @@ class PrerequisiteManager:
             'windows_install': 'winget install --id Docker.DockerDesktop -e'
         }
     }
-    
+
     def __init__(self, ui: SetupUI):
         self.ui = ui
         self.system = platform.system().lower()
-    
+
     def check_tool(self, tool_name: str) -> bool:
         """Check if a tool is installed."""
         try:
@@ -116,7 +116,7 @@ class PrerequisiteManager:
             return True
         except (subprocess.CalledProcessError, FileNotFoundError):
             return False
-    
+
     def install_tool(self, tool_name: str) -> bool:
         """Install a tool based on the current platform."""
         if self.system == "darwin":
@@ -126,7 +126,7 @@ class PrerequisiteManager:
         else:
             self.ui.print_error(f"Unsupported platform for automatic installation: {self.system}")
             return False
-        
+
         self.ui.print_info(f"Installing {tool_name}...")
         try:
             subprocess.run(
@@ -141,24 +141,24 @@ class PrerequisiteManager:
         except subprocess.CalledProcessError as e:
             self.ui.print_error(f"Failed to install {tool_name}: {e}")
             return False
-    
+
     def check_and_install_prerequisites(self) -> bool:
         """Check all prerequisites and offer to install missing ones."""
         self.ui.print_header("Checking Prerequisites", "Verifying required tools are installed")
-        
+
         missing_tools = []
         for tool_name in self.TOOLS.keys():
             if not self.check_tool(tool_name):
                 missing_tools.append(tool_name)
             else:
                 self.ui.print_success(f"{tool_name} is installed")
-        
+
         if not missing_tools:
             self.ui.print_success("All prerequisites are installed!")
             return True
-        
+
         self.ui.print_warning(f"Missing tools: {', '.join(missing_tools)}")
-        
+
         if not self.ui.confirm("Would you like to install missing tools automatically?"):
             self.ui.print_error("Cannot proceed without required tools. Please install manually:")
             for tool in missing_tools:
@@ -167,29 +167,29 @@ class PrerequisiteManager:
                 elif self.system == "windows":
                     self.ui.print_info(f"  {tool}: {self.TOOLS[tool]['windows_install']}")
             return False
-        
+
         # Install missing tools
         failed_installs = []
         for tool in missing_tools:
             if not self.install_tool(tool):
                 failed_installs.append(tool)
-        
+
         if failed_installs:
             self.ui.print_error(f"Failed to install: {', '.join(failed_installs)}")
             return False
-        
+
         # Verify installations
         for tool in missing_tools:
             if not self.check_tool(tool):
                 self.ui.print_error(f"Installation verification failed for {tool}")
                 return False
-        
+
         self.ui.print_success("All prerequisites installed successfully!")
         return True
 
 class ConfigurationManager:
     """Manages configuration file creation and validation."""
-    
+
     # Only regions that support MongoDB Atlas M0 free tier
     CLOUD_REGIONS = {
         'aws': [
@@ -202,7 +202,7 @@ class ConfigurationManager:
             'northeurope', 'westeurope', 'eastasia', 'centralindia'
         ]
     }
-    
+
     def __init__(self, ui: SetupUI, terraform_dir: Path, root_dir: Path = None):
         self.ui = ui
         self.terraform_dir = terraform_dir
@@ -254,7 +254,7 @@ class ConfigurationManager:
 
                 return selection
             self.ui.print_error("Please select 1, 2, or 3")
-    
+
     def load_existing_config(self) -> Dict[str, str]:
         """Load existing configuration from tfvars and config files for selected cloud provider."""
         config = {}
@@ -329,11 +329,11 @@ class ConfigurationManager:
             pass
 
         return config
-    
+
     def is_placeholder_value(self, key: str, value: str) -> bool:
         """Simplified placeholder check."""
         return not value or value.startswith('your-') or value.startswith('<<')
-    
+
     def is_first_run(self) -> bool:
         """Check if this is the user's first run based on existing valid configs."""
         if not self.cloud_provider:
@@ -351,14 +351,14 @@ class ConfigurationManager:
                 return True  # Missing or placeholder values = first run
 
         return False  # All core fields have real values = not first run
-    
+
     def validate_config_value(self, key: str, value: str, config_context: Dict[str, str] = None) -> bool:
         """Validate a configuration value."""
         if not value or self.is_placeholder_value(key, value):
             return False
-        
+
         config_context = config_context or {}
-            
+
         if key == 'confluent_cloud_api_key':
             # Basic format check first
             if not (len(value) >= 10 and value.isalnum()):
@@ -373,7 +373,7 @@ class ConfigurationManager:
                     # Fall back to format validation if API test fails
                     return True
             return True
-            
+
         elif key == 'confluent_cloud_api_secret':
             # Basic format check first
             if not (len(value) >= 20 and not value.startswith('your-')):
@@ -388,7 +388,7 @@ class ConfigurationManager:
                     # Fall back to format validation if API test fails
                     return True
             return True
-            
+
         elif key == 'ZAPIER_SSE_ENDPOINT':
             return self.validate_zapier_url(value)
         elif key == 'cloud_provider':
@@ -398,23 +398,23 @@ class ConfigurationManager:
             return value in self.CLOUD_REGIONS.get(provider.lower(), [])
         elif key == 'prefix':
             return bool(re.match(r'^[a-zA-Z0-9\-_]+$', value))
-        
+
         return True
-    
+
     def get_config_status(self) -> Tuple[Dict[str, str], Dict[str, str]]:
         """Get current config with valid and invalid fields separated."""
         repaired_config = self.load_existing_config()
-        
+
         valid_config = {}
         invalid_config = {}
 
         # Core required fields - always needed
         required_fields = ['prefix', 'cloud_provider', 'cloud_region',
                           'confluent_cloud_api_key', 'confluent_cloud_api_secret']
-        
+
         # If this is first run, treat defaults as invalid (need confirmation)
         first_run = self.is_first_run()
-        
+
         for field in required_fields:
             value = repaired_config.get(field, '')
             # On first run, even default values need user confirmation
@@ -422,30 +422,30 @@ class ConfigurationManager:
                 valid_config[field] = value
             else:
                 invalid_config[field] = value
-        
+
         return valid_config, invalid_config
-    
+
     def detect_environment_credentials(self) -> Dict[str, str]:
         """Detect credentials from environment and CLI."""
         env_creds = {}
-        
+
         # Check environment variables
         env_key = os.getenv('CONFLUENT_CLOUD_API_KEY')
         env_secret = os.getenv('CONFLUENT_CLOUD_API_SECRET')
-        
+
         if env_key and env_secret:
             if self.validate_config_value('confluent_cloud_api_key', env_key):
                 env_creds['confluent_cloud_api_key'] = env_key
             if self.validate_config_value('confluent_cloud_api_secret', env_secret):
                 env_creds['confluent_cloud_api_secret'] = env_secret
-        
+
         # Check if Confluent CLI is logged in
         if self.check_confluent_login():
             env_creds['confluent_cli_logged_in'] = 'true'
-        
+
         return env_creds
-    
-    
+
+
     def save_config(self, config: Dict[str, str]):
         """Save non-sensitive configuration for future runs."""
         # Save all non-sensitive config, plus indicator that configuration was completed
@@ -547,7 +547,7 @@ cloud_region = "{config['cloud_region']}"
 
         except Exception:
             pass
-    
+
     def test_confluent_api_keys(self, api_key: str, api_secret: str) -> Tuple[bool, str]:
         """Test if Confluent API keys are valid and have proper scope."""
         try:
@@ -586,40 +586,40 @@ cloud_region = "{config['cloud_region']}"
             if 'requests' in str(e).lower():
                 return True, "API keys format looks valid (network validation failed)"
             return False, f"Error testing API keys: {str(e)}"
-    
+
     def validate_zapier_url(self, url: str) -> bool:
         """Validate Zapier SSE endpoint URL format and reject placeholders."""
         if not url:
             return False
-        
+
         # Reject known placeholder/sample URLs
         placeholder_patterns = [
             'test-key', 'test-api-key', '<<API-key>>', '<<long-API-key>>',
             'your-api-key', 'sample-key', 'placeholder'
         ]
-        
+
         for pattern in placeholder_patterns:
             if pattern in url.lower():
                 return False
-        
+
         # Check proper format
         pattern = r'^https://mcp\.zapier\.com/api/mcp/s/[a-zA-Z0-9\-_=]{20,}/sse$'
         return bool(re.match(pattern, url))
-    
+
     def prompt_for_configuration(self, non_interactive: bool = False) -> Dict[str, str]:
         """Interactive configuration prompting."""
         self.ui.print_header("Configuration Setup", "Please provide the following information")
-        
+
         existing_config = self.load_existing_config()
         config = {}
-        
+
         # In non-interactive mode, use existing config or defaults
         if non_interactive:
             self.ui.print_info("Using existing configuration for dry-run" if existing_config else "Using default configuration for dry-run")
             # Add required defaults for missing values
             defaults = {
                 'prefix': 'streaming-agents',
-                'cloud_provider': 'azure', 
+                'cloud_provider': 'azure',
                 'cloud_region': 'East US',
                 'confluent_cloud_api_key': 'test-key',
                 'confluent_cloud_api_secret': 'test-secret',
@@ -628,10 +628,10 @@ cloud_region = "{config['cloud_region']}"
             for key, default_value in defaults.items():
                 config[key] = existing_config.get(key, default_value)
             return config
-        
+
         # Prefix (using default without prompting)
         config['prefix'] = 'streaming-agents'
-        
+
         # Cloud provider
         default_provider = existing_config.get('cloud_provider', 'azure').lower()
         while True:
@@ -667,14 +667,14 @@ cloud_region = "{config['cloud_region']}"
                 break
 
             self.ui.print_error("Please select a valid region")
-        
+
         # Confluent credentials
         self.ui.print_info("Confluent Cloud credentials are required for deployment")
-        
+
         # Check environment variables first
         env_key = os.getenv('CONFLUENT_CLOUD_API_KEY')
         env_secret = os.getenv('CONFLUENT_CLOUD_API_SECRET')
-        
+
         if env_key and env_secret:
             self.ui.print_success("Found Confluent credentials in environment variables")
             config['confluent_cloud_api_key'] = env_key
@@ -702,7 +702,7 @@ cloud_region = "{config['cloud_region']}"
                 config['confluent_cloud_api_secret'] = self.ui.prompt("Confluent Cloud API Secret")
                 # Save credentials immediately after manual entry
                 self.save_credentials_to_tfvars(config)
-        
+
         # Zapier SSE endpoint
         default_zapier_url = existing_config.get('ZAPIER_SSE_ENDPOINT', '')
         while True:
@@ -713,9 +713,9 @@ cloud_region = "{config['cloud_region']}"
                 self.save_credentials_to_tfvars(config)
                 break
             self.ui.print_error("Invalid Zapier SSE endpoint format. Expected: https://mcp.zapier.com/api/mcp/s/<<API-key>>/sse")
-        
+
         return config
-    
+
     def check_confluent_login(self) -> bool:
         """Check if user is logged into Confluent CLI."""
         try:
@@ -727,15 +727,15 @@ cloud_region = "{config['cloud_region']}"
                 check=True
             )
             # Check if we got a proper environment listing (contains ID column and at least one environment)
-            return (len(result.stdout.strip()) > 0 and 
-                    "ID" in result.stdout and 
+            return (len(result.stdout.strip()) > 0 and
+                    "ID" in result.stdout and
                     "env-" in result.stdout)
         except subprocess.CalledProcessError:
             return False
         except FileNotFoundError:
             # Confluent CLI not installed
             return False
-    
+
     def get_confluent_environments(self) -> List[Dict[str, str]]:
         """Get list of available Confluent environments."""
         try:
@@ -769,28 +769,28 @@ cloud_region = "{config['cloud_region']}"
                 return environments
             except:
                 return []
-    
+
     def select_confluent_environment(self) -> Optional[str]:
         """Select Confluent environment to use for this project."""
         environments = self.get_confluent_environments()
-        
+
         if not environments:
             self.ui.print_error("No Confluent environments found. Please create one first.")
             return None
-        
+
         if len(environments) == 1:
             env = environments[0]
             env_name = env.get('name', env.get('id', 'Unknown'))
             self.ui.print_success(f"Using environment: {env_name}")
             return env.get('id')
-        
+
         # Multiple environments - let user choose
         self.ui.print_info("Multiple Confluent environments found:")
         for i, env in enumerate(environments, 1):
             env_name = env.get('name', env.get('id', 'Unknown'))
             env_id = env.get('id', '')
             print(f"  {i:2d}. {env_name} ({env_id})")
-        
+
         while True:
             choice = self.ui.prompt(f"Select environment (1-{len(environments)})", "1")
             try:
@@ -804,7 +804,7 @@ cloud_region = "{config['cloud_region']}"
                     self.ui.print_error(f"Please select a number between 1 and {len(environments)}")
             except ValueError:
                 self.ui.print_error("Please enter a valid number")
-    
+
     def generate_confluent_api_keys(self, prefix: str) -> Tuple[Optional[str], Optional[str]]:
         """Generate Confluent API keys using CLI."""
         try:
@@ -813,15 +813,15 @@ cloud_region = "{config['cloud_region']}"
             timestamp = str(int(time.time()))[-6:]  # Last 6 digits of timestamp
             sa_name = f"{prefix}-setup-sa-{timestamp}"
             self.ui.print_info(f"Creating service account: {sa_name}")
-            
+
             sa_result = subprocess.run(
-                ['confluent', 'iam', 'service-account', 'create', sa_name, 
+                ['confluent', 'iam', 'service-account', 'create', sa_name,
                  '--description', f'Service account for {prefix} streaming agents setup'],
                 capture_output=True,
                 text=True,
                 check=True
             )
-            
+
             # Extract service account ID from table format
             sa_id = None
             for line in sa_result.stdout.split('\n'):
@@ -832,22 +832,22 @@ cloud_region = "{config['cloud_region']}"
                     if len(parts) >= 2 and 'ID' in parts[0]:
                         sa_id = parts[1]
                         break
-            
+
             if not sa_id:
                 return None, None
-            
-            
+
+
             # Create API key
             self.ui.print_info("Creating API key with Cloud Resource Management scope")
-            
+
             key_result = subprocess.run(
-                ['confluent', 'api-key', 'create', '--service-account', sa_id, 
+                ['confluent', 'api-key', 'create', '--service-account', sa_id,
                  '--resource', 'cloud', '--description', f'{prefix} setup key'],
                 capture_output=True,
                 text=True,
                 check=True
             )
-            
+
             # Extract API key and secret
             api_key = api_secret = None
             lines = key_result.stdout.split('\n')
@@ -863,8 +863,8 @@ cloud_region = "{config['cloud_region']}"
                     parts = [p.strip() for p in line.split('|') if p.strip()]
                     if len(parts) >= 2 and 'API Secret' in parts[0]:
                         api_secret = parts[1]
-            
-            
+
+
             if api_key and api_secret:
                 # Assign Organization Admin role to the service account
                 try:
@@ -879,24 +879,24 @@ cloud_region = "{config['cloud_region']}"
                     self.ui.print_success("OrganizationAdmin role assigned successfully")
                 except subprocess.CalledProcessError as e:
                     self.ui.print_warning("Role assignment failed, but API keys were created successfully")
-                
+
                 return api_key, api_secret
-            
+
         except subprocess.CalledProcessError as e:
             self.ui.print_error(f"Command failed: {e}")
         except Exception as e:
             self.ui.print_error(f"Unexpected error: {e}")
-        
+
         return None, None
-    
+
 
 class TerraformManager:
     """Manages Terraform operations."""
-    
+
     def __init__(self, ui: SetupUI, terraform_dir: Path):
         self.ui = ui
         self.terraform_dir = terraform_dir
-    
+
     def run_terraform_command(self, args: List[str], show_output: bool = True, cloud_provider: str = None) -> Tuple[bool, str]:
         """Run a terraform command with proper error handling."""
         cmd = ['terraform'] + args
@@ -928,12 +928,12 @@ class TerraformManager:
                     universal_newlines=True,
                     env=env
                 )
-                
+
                 output_lines = []
                 for line in iter(process.stdout.readline, ''):
                     print(line.rstrip())
                     output_lines.append(line.rstrip())
-                
+
                 process.wait()
                 output = '\n'.join(output_lines)
                 success = process.returncode == 0
@@ -949,13 +949,13 @@ class TerraformManager:
                 )
                 output = result.stdout
                 success = True
-                
+
         except subprocess.CalledProcessError as e:
             output = e.stderr if hasattr(e, 'stderr') else str(e)
             success = False
-        
+
         return success, output
-    
+
     def enable_provider_file(self, cloud_provider: str):
         """Enable the appropriate provider file for the selected cloud provider and disable others."""
         cloud_provider = cloud_provider.lower()
@@ -992,7 +992,7 @@ class TerraformManager:
             self.ui.print_info(f"{cloud_provider} provider already enabled")
         else:
             self.ui.print_warning(f"Provider file not found: {provider_file}")
-    
+
     def initialize(self, cloud_provider: str = None) -> bool:
         """Initialize Terraform."""
         # Enable the appropriate provider file for the selected cloud provider
@@ -1009,7 +1009,7 @@ class TerraformManager:
             print(output)
 
         return success
-    
+
     def plan(self, cloud_provider: str = None) -> bool:
         """Run terraform plan."""
         self.ui.print_info("Running Terraform plan (dry-run validation)...")
@@ -1021,7 +1021,7 @@ class TerraformManager:
             self.ui.print_error("Terraform plan failed")
 
         return success
-    
+
     def apply(self, cloud_provider: str = None) -> bool:
         """Run terraform apply."""
         self.ui.print_info("Deploying infrastructure with Terraform...")
@@ -1036,7 +1036,7 @@ class TerraformManager:
 
 class StreamingAgentsSetup:
     """Main setup orchestrator."""
-    
+
     def __init__(self, args):
         self.args = args
         self.ui = SetupUI()
@@ -1273,32 +1273,32 @@ MONGODB_INDEX_NAME = "vector_index"
             self.ui.print_success(f"{lab_name} deployed successfully!")
 
         return True
-    
+
     def detect_setup_state(self) -> SetupState:
         """Intelligently detect the current setup state."""
         # Check prerequisites first
         for tool_name in self.prerequisites.TOOLS.keys():
             if not self.prerequisites.check_tool(tool_name):
                 return SetupState.PREREQUISITES_NEEDED
-        
+
         # Check if aws or azure directories exist
         aws_dir = self.root_dir / "aws"
         azure_dir = self.root_dir / "azure"
         if not (aws_dir.exists() or azure_dir.exists()):
             return SetupState.FRESH_START
-        
+
         # Check configuration status
         valid_config, invalid_config = self.config_manager.get_config_status()
-        
+
         if len(valid_config) == 0:
             return SetupState.CONFIGURATION_INCOMPLETE
         elif len(invalid_config) > 0:
             return SetupState.CONFIGURATION_INVALID
-        
+
         # Check if terraform is initialized
         if not (self.terraform_dir / '.terraform').exists():
             return SetupState.TERRAFORM_NOT_INITIALIZED
-        
+
         # Check if we have a terraform state (deployment completed)
         terraform_state = self.terraform_dir / 'terraform.tfstate'
         if terraform_state.exists():
@@ -1309,16 +1309,16 @@ MONGODB_INDEX_NAME = "vector_index"
                         return SetupState.COMPLETED
             except:
                 pass
-        
+
         # If we have valid config and terraform is initialized, we're ready for deployment
         return SetupState.DEPLOYMENT_READY
-    
-    
+
+
     def _check_confluent_login_status(self) -> bool:
         """Check Confluent login status and prompt for login if needed."""
         if not self.prerequisites.check_tool('confluent'):
             return False
-            
+
         logged_in = self.config_manager.check_confluent_login()
         if not logged_in:
             self.ui.print_warning("You are not logged in to Confluent Cloud")
@@ -1388,7 +1388,7 @@ MONGODB_INDEX_NAME = "vector_index"
                 check=True,
                 text=True
             )
-            
+
             # Verify login was successful
             if self.config_manager.check_confluent_login():
                 self.ui.print_success("Successfully logged in to Confluent Cloud!")
@@ -1396,14 +1396,14 @@ MONGODB_INDEX_NAME = "vector_index"
             else:
                 self.ui.print_warning("Login may have failed. You can try again later with: confluent login")
                 return False
-                
+
         except subprocess.CalledProcessError as e:
             self.ui.print_error(f"Login failed: {e}")
             return False
         except KeyboardInterrupt:
             self.ui.print_warning("Login cancelled by user")
             return False
-    
+
     def run(self) -> bool:
         """Main setup execution with intelligent state detection."""
         try:
@@ -1425,36 +1425,36 @@ MONGODB_INDEX_NAME = "vector_index"
 
             # Detect current setup state
             current_state = self.detect_setup_state()
-            
+
             # Handle each state appropriately
             if current_state == SetupState.PREREQUISITES_NEEDED:
                 return self.handle_prerequisites()
-            
+
             elif current_state == SetupState.CONFIGURATION_INCOMPLETE:
                 return self.handle_incomplete_config()
-            
+
             elif current_state == SetupState.CONFIGURATION_INVALID:
                 return self.handle_invalid_config()
-            
+
             elif current_state == SetupState.TERRAFORM_NOT_INITIALIZED:
                 return self.handle_terraform_setup()
-            
+
             elif current_state == SetupState.DEPLOYMENT_READY:
                 return self.handle_deployment()
-            
+
             elif current_state == SetupState.COMPLETED:
                 return self.handle_completed_setup()
-            
+
             else:  # FRESH_START or unknown state
                 return self.handle_fresh_start()
-            
+
         except KeyboardInterrupt:
             self.ui.print_warning("Setup interrupted by user")
             return False
         except Exception as e:
             self.ui.print_error(f"Setup failed with error: {e}")
             return False
-    
+
     def handle_reset(self) -> bool:
         """Handle reset flag."""
         # Get cloud provider selection first
@@ -1469,17 +1469,17 @@ MONGODB_INDEX_NAME = "vector_index"
         if config_file.exists():
             config_file.unlink()
             self.ui.print_info("Removed terraform/core/.setup_config.json")
-        
+
         # Backup and clear terraform.tfvars
         tfvars_file = self.terraform_dir / "terraform.tfvars"
         if tfvars_file.exists():
             backup_path = tfvars_file.with_suffix('.tfvars.reset-backup')
             shutil.copy2(tfvars_file, backup_path)
             self.ui.print_info(f"Backed up terraform.tfvars to {backup_path.name}")
-        
+
         self.ui.print_success("Reset completed. Run setup again to start fresh.")
         return True
-    
+
     def handle_dry_run(self) -> bool:
         """Handle dry-run mode."""
         # Get cloud provider selection first
@@ -1500,16 +1500,16 @@ MONGODB_INDEX_NAME = "vector_index"
             for field in invalid_config:
                 self.ui.print_error(f"  - {field}")
             return False
-    
+
     def handle_prerequisites(self) -> bool:
         """Handle missing prerequisites."""
         self.ui.print_info("⚡ Installing missing prerequisites...")
         if not self.prerequisites.check_and_install_prerequisites():
             return False
-        
+
         # After installing prerequisites, continue with next phase
         return self.run()
-    
+
     def handle_config_and_deploy(self, message: str, **config_args) -> bool:
         """Generic handler for configuration and deployment."""
         self.ui.print_info(message)
@@ -1547,7 +1547,7 @@ MONGODB_INDEX_NAME = "vector_index"
             existing_valid=valid_config,
             fix_invalid=invalid_config
         )
-    
+
     def handle_terraform_setup(self) -> bool:
         """Handle Terraform infrastructure deployment with existing credentials."""
         valid_config, _ = self.config_manager.get_config_status()
@@ -1579,7 +1579,7 @@ MONGODB_INDEX_NAME = "vector_index"
         self.ui.print_success("🎉 All deployments completed successfully!")
         self.show_next_steps()
         return True
-    
+
     def handle_deployment(self) -> bool:
         """Handle infrastructure deployment."""
         self.ui.print_info("🚀 Ready to deploy infrastructure!")
@@ -1596,51 +1596,51 @@ MONGODB_INDEX_NAME = "vector_index"
         else:
             self.ui.print_info("Deployment cancelled. Run the script again when ready.")
             return True
-    
+
     def handle_completed_setup(self) -> bool:
         """Handle already completed setup."""
         self.ui.print_success("🎉 Infrastructure is already deployed!")
-        
+
         if self.ui.confirm("Would you like to see the next steps?", default=True):
             self.show_next_steps()
-        
+
         if self.ui.confirm("Redeploy infrastructure?", default=False):
             return self.handle_deployment()
-        
+
         return True
-    
+
     def handle_fresh_start(self) -> bool:
         """Handle completely fresh setup."""
         if not self.prerequisites.check_and_install_prerequisites():
             return False
         return self.handle_config_and_deploy("🌟 Starting fresh setup...")
-    
+
     def show_configuration_status(self, valid_config: Dict[str, str], invalid_config: Dict[str, str]):
         """Simplified configuration status display."""
         if valid_config:
             self.ui.print_success(f"✅ {len(valid_config)} fields configured")
         if invalid_config:
             self.ui.print_warning(f"⚠️ {len(invalid_config)} fields need attention")
-    
+
     def show_final_config_menu(self, valid_config: Dict[str, str], invalid_config: Dict[str, str]) -> str:
         """Simplified configuration review."""
         self.show_configuration_status(valid_config, invalid_config)
         if self.ui.confirm("Continue with deployment?", default=True):
             return 'continue'
         return 'quit'
-    
+
     def smart_configuration_prompt(self, lab_selection: str = None, existing_valid: Dict[str, str] = None, fix_invalid: Dict[str, str] = None) -> Optional[Dict[str, str]]:
         """Smart configuration prompting with enhanced menu options."""
         existing_valid = existing_valid or {}
         fix_invalid = fix_invalid or {}
-        
+
         # Start with valid existing config
         config = existing_valid.copy()
 
         # Merge in environment credentials
         env_creds = self.config_manager.detect_environment_credentials()
         config.update(env_creds)
-        
+
         # Determine required fields based on lab selection
         core_fields = ['prefix', 'cloud_provider', 'cloud_region',
                       'confluent_cloud_api_key', 'confluent_cloud_api_secret']
@@ -1652,10 +1652,10 @@ MONGODB_INDEX_NAME = "vector_index"
             lab_fields.extend(['MONGODB_CONNECTION_STRING', 'mongodb_username', 'mongodb_password'])
 
         all_fields = core_fields + lab_fields
-        
+
         missing_fields = [f for f in all_fields if f not in existing_valid and f not in config]
         invalid_fields = list(fix_invalid.keys()) if fix_invalid else []
-        
+
         # If we have all fields valid, show the final review menu
         if not missing_fields and not invalid_fields:
             choice = self.show_final_config_menu(existing_valid, {})
@@ -1670,23 +1670,23 @@ MONGODB_INDEX_NAME = "vector_index"
                 choice = 'continue'
             else:
                 choice = 'quit'
-        
+
         if choice == 'quit':
             return None
         elif choice == 'reset':
             # Start completely fresh
             config = {}
-            fix_invalid = {'prefix': '', 'cloud_provider': '', 'cloud_region': '', 
-                          'confluent_cloud_api_key': '', 'confluent_cloud_api_secret': '', 
+            fix_invalid = {'prefix': '', 'cloud_provider': '', 'cloud_region': '',
+                          'confluent_cloud_api_key': '', 'confluent_cloud_api_secret': '',
                           'ZAPIER_SSE_ENDPOINT': ''}
         elif choice.startswith('edit_'):
             # Edit specific field
             field_num = int(choice.split('_')[1])
-            config_fields = ['prefix', 'cloud_provider', 'cloud_region', 
-                            'confluent_cloud_api_key', 'confluent_cloud_api_secret', 
+            config_fields = ['prefix', 'cloud_provider', 'cloud_region',
+                            'confluent_cloud_api_key', 'confluent_cloud_api_secret',
                             'ZAPIER_SSE_ENDPOINT']
             field_to_edit = config_fields[field_num - 1]
-            
+
             self.ui.print_header("Edit Configuration", f"Editing: {field_to_edit}")
             new_value = self.prompt_for_field(field_to_edit, config, lab_selection)
             if new_value:
@@ -1701,17 +1701,17 @@ MONGODB_INDEX_NAME = "vector_index"
                             self.ui.print_success(f"✅ {message}")
                         else:
                             self.ui.print_error(f"❌ {message}")
-                            
+
                 self.ui.print_success(f"Updated {field_to_edit}")
                 return config
             else:
                 self.ui.print_error("❌ Invalid value entered")
                 return None
-        
+
         # Continue mode: Handle each required field that needs attention
         required_fields = ['prefix', 'cloud_provider', 'cloud_region',
                           'confluent_cloud_api_key', 'confluent_cloud_api_secret'] + lab_fields
-        
+
         # Show what we're using if continue mode
         if choice == 'continue' and existing_valid:
             self.ui.print_header("Configuration", "Only missing or invalid values will be prompted")
@@ -1721,7 +1721,7 @@ MONGODB_INDEX_NAME = "vector_index"
                     self.ui.print_success(f"  {key}: {value}")
                 else:
                     self.ui.print_success(f"  {key}: ***configured***")
-        
+
         for field in required_fields:
             if field not in config or field in fix_invalid:
                 value = self.prompt_for_field(field, config, lab_selection)
@@ -1733,7 +1733,7 @@ MONGODB_INDEX_NAME = "vector_index"
                 # Set terraform directories when cloud_provider is determined
                 if field == 'cloud_provider':
                     self.set_terraform_dirs(value)
-        
+
         # Final validation of API keys if both are present
         api_key = config.get('confluent_cloud_api_key')
         api_secret = config.get('confluent_cloud_api_secret')
@@ -1749,7 +1749,7 @@ MONGODB_INDEX_NAME = "vector_index"
         self.config_manager.save_credentials_to_tfvars(config)
 
         return config
-    
+
     def prompt_for_field(self, field: str, config: Dict[str, str], lab_selection: str = None) -> str:
         """Prompt for a specific configuration field with existing value support."""
         existing_value = config.get(field, '')
@@ -1780,7 +1780,7 @@ MONGODB_INDEX_NAME = "vector_index"
                     self.config_manager.save_field_incrementally(field, value, lab_selection)
                     return value
                 self.ui.print_error("Please choose either 'aws' or 'azure'")
-        
+
         elif field == 'cloud_region':
             provider = config.get('cloud_provider', 'azure').lower()
             available_regions = self.config_manager.CLOUD_REGIONS[provider]
@@ -1817,7 +1817,7 @@ MONGODB_INDEX_NAME = "vector_index"
                     self.config_manager.save_field_incrementally(field, value, lab_selection)
                     return value
                 self.ui.print_error("Please select a valid region by exact name or number")
-        
+
         elif field == 'confluent_cloud_api_key':
             # Check if we have an existing valid API key
             if existing_value and self.config_manager.validate_config_value(field, existing_value, config):
@@ -1870,7 +1870,7 @@ MONGODB_INDEX_NAME = "vector_index"
                 else:
                     self.ui.print_error("❌ Maximum attempts reached. Setup cannot continue without API key.")
             return ""
-        
+
         elif field == 'confluent_cloud_api_secret':
             # If we already generated both keys, return the stored secret
             if 'confluent_cloud_api_secret' in config:
@@ -1902,7 +1902,7 @@ MONGODB_INDEX_NAME = "vector_index"
                 else:
                     self.ui.print_error("❌ Maximum attempts reached. Setup cannot continue without API secret.")
             return ""
-        
+
         elif field == 'ZAPIER_SSE_ENDPOINT':
             # Check if we have an existing valid Zapier URL
             if existing_value and self.config_manager.validate_zapier_url(existing_value):
@@ -2045,14 +2045,14 @@ MONGODB_INDEX_NAME = "vector_index"
             if value:
                 self.config_manager.save_field_incrementally(field, value, lab_selection)
             return value if value else ""
-        
+
         return ""
-    
+
     def show_next_steps(self):
         """Show next steps after successful deployment."""
         self.ui.print_info("Next steps:")
         self.ui.print_info("1. Set up Flink MCP connection (see mcp_commands.txt)")
-        self.ui.print_info("2. Generate sample data (cd terraform/data-gen && ./run.sh)")  
+        self.ui.print_info("2. Generate sample data (cd terraform/data-gen && ./run.sh)")
         self.ui.print_info("3. Proceed to Lab1: Price Matching Using Tool Calling")
 
 def main():
@@ -2063,23 +2063,23 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         add_help=False  # Custom help to hide advanced options
     )
-    
+
     # Primary help
     parser.add_argument(
         '-h', '--help',
         action='store_true',
         help='Show this help message'
     )
-    
+
     # Hidden advanced options (not shown in primary help)
     parser.add_argument('--resume', action='store_true', help=argparse.SUPPRESS)
-    parser.add_argument('--reset', action='store_true', help=argparse.SUPPRESS) 
+    parser.add_argument('--reset', action='store_true', help=argparse.SUPPRESS)
     parser.add_argument('--dry-run', action='store_true', help=argparse.SUPPRESS)
     parser.add_argument('--verbose', action='store_true', help=argparse.SUPPRESS)
     parser.add_argument('--advanced-help', action='store_true', help=argparse.SUPPRESS)
-    
+
     args = parser.parse_args()
-    
+
     # Handle help
     if args.help:
         print("🚀 Streaming Agents Quickstart Setup")
@@ -2092,7 +2092,7 @@ def main():
         print("  • Deploy infrastructure when ready")
         print("\nFor advanced options: python setup.py --advanced-help")
         return
-    
+
     if args.advanced_help:
         print("🚀 Streaming Agents Quickstart Setup - Advanced Options")
         print("\nBasic usage:")
@@ -2104,18 +2104,18 @@ def main():
         print("  --verbose                # Show detailed output and logs")
         print("\nNote: These options are rarely needed as the script auto-detects what to do.")
         return
-    
+
     # Create setup instance with defaults for missing args
     class Args:
         def __init__(self):
             self.resume = getattr(args, 'resume', False)
-            self.reset = getattr(args, 'reset', False) 
+            self.reset = getattr(args, 'reset', False)
             self.dry_run = getattr(args, 'dry_run', False)
             self.verbose = getattr(args, 'verbose', False)
-    
+
     setup = StreamingAgentsSetup(Args())
     success = setup.run()
-    
+
     sys.exit(0 if success else 1)
 
 if __name__ == "__main__":

@@ -40,4 +40,3 @@ You must be authorized to create, update, delete (`FlinkAdmin`) or use (`FlinkDe
 ## Move statements between compute pools¶
 
 You can move a statement from one compute pool to another. This can be useful if you’re close to maxing out the resources in one pool. To move a running statement, you must stop the statement, change its compute pool, then restart the statement.
-

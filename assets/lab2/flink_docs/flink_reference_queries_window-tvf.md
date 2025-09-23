@@ -125,7 +125,7 @@ The following queries return all rows in the `orders` table in 10-minute tumblin
 
     SELECT * FROM TABLE(
        TUMBLE(TABLE `examples`.`marketplace`.`orders`, DESCRIPTOR($rowtime), INTERVAL '10' MINUTES))
-    
+
     -- or with the named params
     -- note: the DATA param must be the first
     SELECT * FROM TABLE(
@@ -194,7 +194,7 @@ The following queries return all rows in the `orders` table in hopping windows w
 
     SELECT * FROM TABLE(
         HOP(TABLE `examples`.`marketplace`.`orders`, DESCRIPTOR($rowtime), INTERVAL '5' MINUTES, INTERVAL '10' MINUTES))
-    
+
     -- or with the named params
     -- note: the DATA param must be the first
     SELECT * FROM TABLE(
@@ -274,7 +274,7 @@ The following queries return all rows in the `orders` table in CUMULATE windows 
 
     SELECT * FROM TABLE(
         CUMULATE(TABLE `examples`.`marketplace`.`orders`, DESCRIPTOR($rowtime), INTERVAL '2' MINUTES, INTERVAL '10' MINUTES));
-    
+
     -- or with the named params
     -- note: the DATA param must be the first
     SELECT * FROM TABLE(
@@ -344,7 +344,7 @@ The following query returns all columns from the `orders` table within SESSION w
 
     SELECT * FROM TABLE(
       SESSION(TABLE `examples`.`marketplace`.`orders` PARTITION BY product_id, DESCRIPTOR($rowtime), INTERVAL '1' MINUTES));
-    
+
     -- or with the named params
     -- note: the DATA param must be the first
     SELECT * FROM TABLE(
@@ -412,7 +412,7 @@ The following SQL examples show how to use `offset` in a tumbling window.
 
     SELECT * FROM TABLE(
        TUMBLE(TABLE `examples`.`marketplace`.`orders`, DESCRIPTOR($rowtime), INTERVAL '10' MINUTES, INTERVAL '1' MINUTES));
-    
+
     -- or with the named params
     -- note: the DATA param must be the first
     SELECT * FROM TABLE(
@@ -457,4 +457,3 @@ The output resembles:
     2023-11-02 19:28:00 2023-11-02 19:38:00 7089.26
     2023-11-02 19:29:00 2023-11-02 19:39:00 7401.58
     2023-11-02 19:30:00 2023-11-02 19:40:00 7156.43
-

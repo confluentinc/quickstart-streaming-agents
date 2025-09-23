@@ -22,4 +22,3 @@ Dropping a connection deletes the corresponding credentials stored in the `Secre
 ## Example¶
 
     DROP CONNECTION `azure-openai-connection`;
-
