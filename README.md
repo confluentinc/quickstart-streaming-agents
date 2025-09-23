@@ -24,6 +24,7 @@ python setup.py
 ```
 
 The script will:
+
 - Install missing prerequisites (terraform, confluent CLI, etc.)
 - Configure cloud provider (AWS or Azure)
 - Generate Confluent Cloud API keys
@@ -37,9 +38,11 @@ Then generate sample data and start the labs!
 Choose your lab and follow the complete tutorial:
 
 ### [Lab1: Tool Calling Agent →](./LAB1-Walkthrough.md)
+
 Real-time price matching using web scraping and email notifications. Includes Zapier MCP server setup and step-by-step agent creation.
 
 ### [Lab2: Vector Search RAG →](./LAB2-Walkthrough.md)
+
 Document embedding, vector search, and AI-powered responses. Includes MongoDB Atlas setup and complete RAG pipeline implementation.
 
 ## Directory Structure
@@ -64,6 +67,7 @@ Each lab includes sample data and generation scripts:
 **Lab1**: Uses Flink SQL to create sample orders, customers, and products tables directly in the workspace
 
 **Lab2**:
+
 ```bash
 cd aws/lab2-vector-search   # or azure/lab2-vector-search
 python publish_documents.py
@@ -76,16 +80,19 @@ python publish_queries.py
 <summary>Manual terraform deployment steps</summary>
 
 ### Prerequisites
-- `terraform`, `confluent` CLI installed
+
+- `terraform`, `confluent` CLI installed (or use automated setup script)
 - Cloud provider CLI (`aws` or `az`) configured
 - Confluent Cloud account
 
 ### 1. Choose Cloud Provider
+
 ```bash
 cd aws/    # or cd azure/
 ```
 
 ### 2. Deploy Core Infrastructure
+
 ```bash
 cd core/
 # Configure terraform.tfvars with your credentials
@@ -94,6 +101,7 @@ terraform apply
 ```
 
 ### 3. Deploy Lab(s)
+
 ```bash
 cd ../lab1-tool-calling/  # or lab2-vector-search
 # Configure terraform.tfvars
@@ -101,9 +109,10 @@ terraform init
 terraform apply
 ```
 
-### Required terraform.tfvars variables:
+### Required terraform.tfvars variables
 
 **Core**:
+
 ```hcl
 prefix = "streaming-agents"
 cloud_provider = "aws"  # or "azure"
@@ -113,11 +122,13 @@ confluent_cloud_api_secret = "your-secret"
 ```
 
 **Lab1 additional**:
+
 ```hcl
 ZAPIER_SSE_ENDPOINT = "https://mcp.zapier.com/api/mcp/s/your-key/sse"
 ```
 
 **Lab2 additional**:
+
 ```hcl
 MONGODB_CONNECTION_STRING = "mongodb+srv://cluster0.abc.mongodb.net"
 mongodb_username = "confluent-user"
@@ -141,6 +152,7 @@ mongodb_password = "your-password"
 ## Cleanup
 
 Remove all resources:
+
 ```bash
 # From your chosen lab directory
 terraform destroy
