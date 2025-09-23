@@ -1,91 +1,70 @@
-# Lab 2: RAG Pipeline Using Vector Search
+# Lab2: Vector Search RAG Walkthrough
 
-In this lab, we'll create a Retrieval-Augmented Generation (RAG) pipeline using Confluent Cloud's Apache Flink vector search capabilities. The pipeline processes documents, creates embeddings, and enables semantic search to power intelligent responses through retrieval of relevant context.
-
-![Architecture Diagram](assets/arch.png)
-
-## Architecture Overview
-
-This lab implements a complete RAG pipeline with the following components:
-
-1. **Document Ingestion**: Raw documents are ingested into a Kafka topic
-2. **Text Chunking & Embedding**: Documents are split into chunks and converted to vector embeddings
-3. **Vector Storage**: Embeddings are stored in MongoDB for efficient similarity search
-4. **Query Processing**: User queries are embedded and used for vector search
-5. **Response Generation**: Retrieved context is used to generate intelligent responses
+In this lab, we'll create a Retrieval-Augmented Generation (RAG) pipeline using Confluent Cloud for Apache Flink's vector search capabilities. The pipeline processes documents, creates embeddings, and enables semantic search to power intelligent responses through retrieval of relevant context.
 
 ## Prerequisites
 
-- Core Terraform infrastructure deployed (from `/terraform/core/`)
-- MongoDB Atlas cluster (M0 - Free Tier) with vector search enabled
-- Either AWS or Azure cloud provider configured
+- Core infrastructure deployed on either AWS or Azure by running `setup.py` (see [main README](./README.md))
+- MongoDB free account with Atlas cluster (M0 - Free Tier) with vector search enabled
 
 ## MongoDB Atlas Setup
 
-### Required Credentials
+### Step 1: Create MongoDB Atlas Account and Cluster
 
-You'll need the following credentials from MongoDB Atlas:
+If running Lab2, set up a free MongoDB Atlas cluster:
 
-#### 1. Organization API Keys
-**Location**: Organization Settings → Access Manager → API Keys
-- **Public Key**: Organization-level API public key
-- **Private Key**: Organization-level API private key
-- **Permissions**: "Organization Project Creator" or "Organization Owner"
+#### 1. Create a **Project.**
 
-#### 2. Project Information
-**Location**: Project Settings → General
-- **Project ID**: 24-character hexadecimal string (e.g., `507f1f77bcf86cd799439011`)
+![Create Project](./assets/lab2/mongodb/01_create_project.png)
 
-#### 3. Database User Credentials
-**Location**: Database Access → Database Users → Add New Database User
-- **Username**: Project-specific database username (e.g., `confluent-user`)
-- **Password**: Project-specific database user password
-- **Database User Privileges**: "Read and write to any database"
+#### 2. Create a **Cluster.**
 
-#### 4. Cluster Information
-**Location**: Clusters → Your Cluster Name
-- **Cluster Name**: Your MongoDB cluster name (e.g., `Cluster0` for free tier)
-- **Connection String**: Standard connection string format
-- **Cluster Hostname**: Extract from connection string (e.g., `cluster0.abc123.mongodb.net`)
+![Create Cluster](./assets/lab2/mongodb/02_create_cluster.png)
 
-#### 5. Network Access
-**Location**: Network Access → IP Access List
-- Configure to allow Confluent Cloud IPs (or `0.0.0.0/0` for development)
+#### 3. Choose the **Free Tier (M0).** Then choose your **cloud provider** (AWS or Azure) and **region**. Make sure this is the same region that your Confluent Cloud deployment is in. Click **Create Cluster.**
 
-### Atlas CLI Commands (Optional)
-```bash
-# List organizations
-atlas orgs list
+![Choose Free Tier](./assets/lab2/mongodb/03_choose_free_tier_and_region.png)
 
-# List projects in organization
-atlas projects list
+#### 4. **Create a Database User.** **Write down the username and password** you choose, as they will be `mongodb_username` and `mongodb_password` that you will need to deploy Terraform later. Click **Create Database User** when you are done.
 
-# List clusters in project
-atlas clusters list
+   **Note:** the username and password you set up to access your database are the credentials you'll need to save for later, NOT the separate login you use for mongodb.com.
 
-# Get cluster connection strings
-atlas clusters connectionStrings describe <CLUSTER_NAME>
-```
+![Create Database User](./assets/lab2/mongodb/04_create_database_user.png)
 
-### Create Vector Search Index
-**Location**: MongoDB Atlas UI → Your Cluster → Search Tab → Create Index
+#### 5. Click **Choose a Connection method.** => Shell => Copy the URL shown in **step 2.** This is the `MONGODB_CONNECTION_URL` you will need later. Don't worry about the rest of the command - you only need the URL that looks like `mongodb+srv://cluster0.xhgx1kr.mongodb.net`.
 
-Use the JSON Editor with this configuration:
-```json
-{
-  "fields": [
-    {
-      "type": "vector",
-      "path": "embedding",
-      "numDimensions": 1536,
-      "similarity": "cosine"
-    }
-  ]
-}
-```
-- **Database**: `vector_search` (or your chosen database name)
-- **Collection**: `documents` (or your chosen collection name)
-- **Index Name**: `vector_index` (or your chosen index name)
+#### 6. Go to **Network Access** in left sidebar. Click green **Add IP Address** button on the right. Then simply click the **Allow Access From Anywhere** button, or manually enter `0.0.0.0/0`. Click **Confirm.**
+
+   **NOTE:** Important step! Confluent Cloud will not be able to connect to MongoDB without this rule.
+
+![Network Access](./assets/lab2/mongodb/05_network_access_allow_all.png)
+
+#### 7. Next, from **Clusters** page, choose "Atlas Search" then click **Add my own data.** Enter:
+   Database name: `vector_search`
+
+   Collection name: `documents`
+
+![Add Data Collection](./assets/lab2/mongodb/06_add_data_collection.png)
+
+#### 8. Next, click **Create Search Index.** Choose **Vector Search index, and name it `vector_search`.
+
+![Create Vector Index](./assets/lab2/mongodb/07_create_vector_search_index.png)
+
+#### 9. Scroll down to the bottom and choose **JSON Editor.** Enter the following:
+   ```json
+   {
+     "fields": [
+       {
+         "type": "vector",
+         "path": "embedding",
+         "numDimensions": 1536,
+         "similarity": "cosine"
+       }
+     ]
+   }
+   ```
+
+![JSON Config](./assets/lab2/mongodb/08_json_editor_config.png)
 
 ## Deployment
 
@@ -95,10 +74,10 @@ Navigate to your chosen cloud provider directory:
 
 ```bash
 # For AWS
-cd terraform/aws/lab2-vector-search
+cd aws/lab2-vector-search
 
 # For Azure
-cd terraform/azure/lab2-vector-search
+cd azure/lab2-vector-search
 ```
 
 Create or update `terraform.tfvars` with your MongoDB credentials:
@@ -149,7 +128,9 @@ confluent flink connection create mongodb-connection \
   --environment env-123456
 ```
 
-### Step 4: Create External Tables and Views
+## Building the RAG Pipeline
+
+### Step 1: Create External Tables and Views
 
 In the Confluent Cloud Flink SQL workspace, execute these commands:
 
@@ -290,6 +271,16 @@ SELECT * FROM search_results;
 SELECT query, response FROM search_results_response;
 ```
 
+## Data Generation
+
+Each lab includes sample data and generation scripts:
+
+```bash
+cd aws/lab2-vector-search   # or azure/lab2-vector-search
+python publish_documents.py
+python publish_queries.py
+```
+
 ## Verification and Monitoring
 
 ### Check MongoDB Sink Connector Status
@@ -377,16 +368,8 @@ db.documents.countDocuments();
 - Add document metadata for enhanced filtering and search
 - Scale to production with larger compute pools and MongoDB clusters
 
-## Cleanup
+## Navigation
 
-To tear down the lab infrastructure:
-
-```bash
-terraform destroy
-```
-
-This will remove all Confluent Cloud resources but preserve your MongoDB Atlas cluster.
-
-**Previous topic:** [Lab 1 - Tool Calling](LAB1.md)
-
-**Next topic:** [Clean-up](README.md#-cleanup)
+- **← Back to Overview**: [Main README](./README.md)
+- **← Previous Lab**: [Lab1: Tool Calling Agent](./LAB1-Walkthrough.md)
+- **🧹 Cleanup**: [Cleanup Instructions](./README.md#cleanup)
