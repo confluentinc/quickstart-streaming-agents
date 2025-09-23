@@ -11,8 +11,8 @@ Confluent Cloud for Apache Flink® enables evolving your statements over time as
 
 This topic describes these concepts:
 
-  * How you can evolve your statements and the tables they maintain over time.
-  * How statements behave when the schema of their source tables change.
+* How you can evolve your statements and the tables they maintain over time.
+* How statements behave when the schema of their source tables change.
 
 ## Example¶
 
@@ -48,7 +48,7 @@ The `orders_with_customers_v1` table uses a user-defined function named `to_mino
 
 A statement has the following components:
 
-  * an **immutable** query, for example:
+* an **immutable** query, for example:
 
         SELECT
           v_orders.product,
@@ -58,11 +58,11 @@ A statement has the following components:
         JOIN customers FOR SYSTEM TIME AS OF orders.$rowtime
         ON v_orders.customer_id = customers.id;
 
-  * **immutable** statement properties, for example:
+* **immutable** statement properties, for example:
 
         'sql.state-ttl' = '1h'
 
-  * a **mutable** principal, that is, the user or service account under which this statement runs.
+* a **mutable** principal, that is, the user or service account under which this statement runs.
 
 The principal and compute pool are mutable when stopping and resuming the statement. Note that stopping and resume the statement results in a temporarily higher materialization delay and latency.
 
@@ -74,17 +74,17 @@ If your use case requires a lower latency, reach out to Confluent Support or you
 
 The table which the statement is writing to has these components:
 
-  * An immutable name, for example: `orders_with_customers_v1`.
+* An immutable name, for example: `orders_with_customers_v1`.
 
-  * Mutable constraints, for example:
+* Mutable constraints, for example:
 
         PRIMARY KEY (v_orders.order_id)
 
-  * A mutable watermark definition.
+* A mutable watermark definition.
 
-  * a mutable column definition
+* a mutable column definition
 
-  * partially mutable table options
+* partially mutable table options
 
 The name of a table is immutable, because it maps one-to-one to the underlying topic, which you can’t rename.
 
@@ -98,15 +98,15 @@ The constraints are partially mutable by using the `ALTER TABLE ADD/DROP PRIMARY
 
 A statement almost always references other catalog objects such as tables and functions. In the current example, the `orders_with_customers_v1` table references these objects:
 
-  * A table named `customers`.
-  * A table named `v_orders`.
-  * A user-defined function named `to_minor_currency`.
+* A table named `customers`.
+* A table named `v_orders`.
+* A user-defined function named `to_minor_currency`.
 
 When a statement is created, it takes a snapshot of the configuration of all the catalog objects that it depends on. Changes, or the deletion of these objects from the catalog, are not propagated to existing statements, which means that:
 
-  * A change to the watermark strategy of a source table is not picked up by existing statements that reference the table.
-  * A change to a table option of a source table is not picked up by existing statements that reference the table.
-  * A change to the implementation of a user-defined functions is not picked up by existing statements that reference the function.
+* A change to the watermark strategy of a source table is not picked up by existing statements that reference the table.
+* A change to a table option of a source table is not picked up by existing statements that reference the table.
+* A change to the implementation of a user-defined functions is not picked up by existing statements that reference the function.
 
 If an underlying physical resource is deleted that statements require at runtime, like the topic, the statements transition into the FAILED, STOPPED, or RECOVERING state, depending on which resource was deleted.
 
@@ -116,9 +116,9 @@ When a statement is created, it must be bootstrapped from its source tables. For
 
 You have these options for handling changes to base schemas:
 
-  * Compatibility Mode FULL or FULL_TRANSITIVE
-  * BACKWARD_TRANSITIVE compatibility mode and upgrade consumers first
-  * Compatibility groups and migration rules
+* Compatibility Mode FULL or FULL_TRANSITIVE
+* BACKWARD_TRANSITIVE compatibility mode and upgrade consumers first
+* Compatibility groups and migration rules
 
 To maximize compatibility with Flink, you should use `FULL_TRANSITIVE` or `FULL` as the schema compatibility mode, which eases migrations. Note that in Confluent Cloud, the default compatibility mode is `BACKWARD`.
 
@@ -152,9 +152,9 @@ If you’re interested in to providing feedback about configuring statements to 
 
 As stated previously, the query in a statement is immutable. But you may encounter situations in which you want to change the logic of a long-running statement:
 
-  * You may have to fix a bug in your query. For example, you may have to handle an arithmetic error that occurs only when the statement has already existed for a long time by adding another branch in a `CASE` clause.
-  * You may want to evolve the logic of your statement.
-  * You want your statement to pick up configuration updates to any of the catalog objects that it references, like tables or functions.
+* You may have to fix a bug in your query. For example, you may have to handle an arithmetic error that occurs only when the statement has already existed for a long time by adding another branch in a `CASE` clause.
+* You may want to evolve the logic of your statement.
+* You want your statement to pick up configuration updates to any of the catalog objects that it references, like tables or functions.
 
 The general strategy for query evolution is to replace the existing statement and the corresponding tables it maintains with a new statement and new tables, as shown in the following steps:
 
@@ -165,9 +165,9 @@ The general strategy for query evolution is to replace the existing statement an
 
 This base strategy has these features:
 
-  * It works for any type of statement.
-  * It requires that all relevant input messages are retained in the source tables.
-  * It requires existing consumers to switch to different topics manually, and thereby reading the `…v2` table from earliest or any manually specified offset.
+* It works for any type of statement.
+* It requires that all relevant input messages are retained in the source tables.
+* It requires existing consumers to switch to different topics manually, and thereby reading the `…v2` table from earliest or any manually specified offset.
 
 You can adjust the base strategy in multiple ways, depending on your circumstances.
 
@@ -210,14 +210,14 @@ you can use these offsets to specify the starting offsets to a new statement by 
 
 This strategy enables you to evolve statements arbitrarily with **exactly-once semantics** across the update, if and only if the statement is “stateless”, which mean that every output message is affected by a single input message. The following statements are common example of “stateless” statements:
 
-  * Filters
+* Filters
 
         INSERT INTO shipped_orders
         SELECT *
         FROM orders
         WHERE status = shipped;
 
-  * Routers
+* Routers
 
         EXECUTE STATEMENT SET
         BEGIN
@@ -227,7 +227,7 @@ This strategy enables you to evolve statements arbitrarily with **exactly-once s
           INSERT INTO other_orders SELECT * FROM orders WHERE status NOT IN ('returned', 'shipped', 'cancelled')
         END;
 
-  * Per-row transformations, including UDFs and array expansions:
+* Per-row transformations, including UDFs and array expansions:
 
         INSERT INTO ordered_products
         SELECT
@@ -242,9 +242,9 @@ For more information, see [Carry-over Offsets](../operate-and-deploy/carry-over-
 
 Compared to the base strategy, the in-place upgrade strategy has these features:
 
-  * It works only for tables that have a primary key, so that the new statement updates all rows written by the old statement.
-  * It works only for compatible changes, both semantically and in terms of the schema.
-  * It doesn’t require consumers to switch manually to new topics, but it does require consumers to be able to handle out-of-order, late, bulk updates to all keys.
+* It works only for tables that have a primary key, so that the new statement updates all rows written by the old statement.
+* It works only for compatible changes, both semantically and in terms of the schema.
+* It doesn’t require consumers to switch manually to new topics, but it does require consumers to be able to handle out-of-order, late, bulk updates to all keys.
 
 Instead of creating a new results table, you can also replace the original `CREATE TABLE ... AS ...` statement with an INSERT INTO statement that produces updates into the same table as before. The upgrade procedure then looks like this:
 

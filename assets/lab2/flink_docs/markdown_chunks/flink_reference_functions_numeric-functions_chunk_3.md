@@ -214,8 +214,8 @@ Examples
 
 Related functions
 
-  * [DECODE](string-functions.html#flink-sql-decode-function)
-  * HEX
+* [DECODE](string-functions.html#flink-sql-decode-function)
+* HEX
 
 ## UUID¶
 

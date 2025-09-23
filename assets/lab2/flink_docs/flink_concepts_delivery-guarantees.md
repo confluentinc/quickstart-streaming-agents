@@ -11,13 +11,13 @@ Confluent Cloud for Apache Flink® provides exactly-once semantics end-to-end by
 
 To achieve this, Confluent Cloud for Apache Flink relies on Apache Flink®’s checkpointing mechanism and Kafka transactions. While checkpointing and fault tolerance falls into Confluent’s responsibility, it is important to understand the implications of how Flink reads from and writes to Kafka:
 
-  * Flink statements write to Kafka by using transactions. Transactions are committed periodically, approximately every minute.
-  * Flink by default only reads committed messages from Kafka. For more information, see [isolation.level](/platform/current/installation/configuration/consumer-configs.html#isolation-level).
+* Flink statements write to Kafka by using transactions. Transactions are committed periodically, approximately every minute.
+* Flink by default only reads committed messages from Kafka. For more information, see [isolation.level](/platform/current/installation/configuration/consumer-configs.html#isolation-level).
 
 This implies that depending on the delivery guarantees required by your use case, you can currently achieve different end-to-end latencies with Flink.
 
-  * **Exactly-Once** : If you require exactly-once, the latency is roughly one minute and is dominated by the interval at which Kafka transactions are committed. In this case, ensure that all consumers of the output topics of Flink statements use `isolation.level: read_committed` or set the [Flink table option](../reference/statements/create-table.html#flink-sql-create-table-with-kafka-consumer-isolation-level) `'kafka.consumer.isolation-level' = 'read-committed'`.
-  * **At-Least-Once** : If at-least-once is sufficient for your use case, you can read from the output topics with `isolation-level: read_uncommitted`, which is the default in Kafka, or set the [Flink table option](../reference/statements/create-table.html#flink-sql-create-table-with-kafka-consumer-isolation-level) `'kafka.consumer.isolation-level' = 'read-uncommitted'`. With this configuration, depending on the logic of your query, you can achieve an end-to-end latency below 100 ms, but you may see some output messages twice. This happens when Flink needs to abort a transaction that your consumer has already read. You won’t see incorrect results, but you may see the same correct result multiple times.
+* **Exactly-Once** : If you require exactly-once, the latency is roughly one minute and is dominated by the interval at which Kafka transactions are committed. In this case, ensure that all consumers of the output topics of Flink statements use `isolation.level: read_committed` or set the [Flink table option](../reference/statements/create-table.html#flink-sql-create-table-with-kafka-consumer-isolation-level) `'kafka.consumer.isolation-level' = 'read-committed'`.
+* **At-Least-Once** : If at-least-once is sufficient for your use case, you can read from the output topics with `isolation-level: read_uncommitted`, which is the default in Kafka, or set the [Flink table option](../reference/statements/create-table.html#flink-sql-create-table-with-kafka-consumer-isolation-level) `'kafka.consumer.isolation-level' = 'read-uncommitted'`. With this configuration, depending on the logic of your query, you can achieve an end-to-end latency below 100 ms, but you may see some output messages twice. This happens when Flink needs to abort a transaction that your consumer has already read. You won’t see incorrect results, but you may see the same correct result multiple times.
 
 Note
 

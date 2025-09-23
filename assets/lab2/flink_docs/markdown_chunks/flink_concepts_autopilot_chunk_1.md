@@ -32,8 +32,8 @@ The compute pool has run out of resources. SQL statements may run with a reduced
 
 There are two ways to resolve this situation:
 
-  * You can add more resources by increasing the [CFU limit](flink-billing.html#flink-sql-cfus) on the compute pool.
-  * You can stop some running statements to free up existing resources.
+* You can add more resources by increasing the [CFU limit](flink-billing.html#flink-sql-cfus) on the compute pool.
+* You can stop some running statements to free up existing resources.
 
 ## Messages Behind¶
 

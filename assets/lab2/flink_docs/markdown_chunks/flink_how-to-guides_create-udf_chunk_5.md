@@ -56,7 +56,7 @@ You can register a previously uploaded UDF by using the Confluent Terraform prov
 
 You can register a UDF by sending a POST request to the [Create Artifact endpoint](/cloud/current/api.html#tag/Flink-Artifacts-\(artifactv1\)/operation/createArtifactV1FlinkArtifact). For more information, see [Create a Flink artifact](../operate-and-deploy/flink-rest-api.html#flink-rest-api-create-artifact).
 
-  * In Cloud Console or the Confluent CLI, run the [CREATE FUNCTION](../reference/statements/create-function.html#flink-sql-create-function) statement to register your UDF in the current catalog and database. Substitute your UDF’s value for `<artifact-id>`.
+* In Cloud Console or the Confluent CLI, run the [CREATE FUNCTION](../reference/statements/create-function.html#flink-sql-create-function) statement to register your UDF in the current catalog and database. Substitute your UDF’s value for `<artifact-id>`.
 
         CREATE FUNCTION is_smaller
           AS 'com.example.my.TShirtSizingIsSmaller'

@@ -13,21 +13,21 @@ In this guide, you learn how to run a Flink SQL statement that combines multiple
 
 This topic shows the following steps:
 
-  * Step 1: Inspect the example source streams
-  * Step 2: Create a unified view with most recent records
+* Step 1: Inspect the example source streams
+* Step 2: Create a unified view with most recent records
 
 ## Prerequisites¶
 
-  * Access to Confluent Cloud.
-  * The OrganizationAdmin, EnvironmentAdmin, or FlinkAdmin role for creating compute pools, or the FlinkDeveloper role if you already have a compute pool. If you don’t have the appropriate role, contact your OrganizationAdmin or EnvironmentAdmin. For more information, see [Grant Role-Based Access in Confluent Cloud for Apache Flink](../operate-and-deploy/flink-rbac.html#flink-rbac).
-  * A provisioned Flink compute pool.
+* Access to Confluent Cloud.
+* The OrganizationAdmin, EnvironmentAdmin, or FlinkAdmin role for creating compute pools, or the FlinkDeveloper role if you already have a compute pool. If you don’t have the appropriate role, contact your OrganizationAdmin or EnvironmentAdmin. For more information, see [Grant Role-Based Access in Confluent Cloud for Apache Flink](../operate-and-deploy/flink-rbac.html#flink-rbac).
+* A provisioned Flink compute pool.
 
 ## Step 1: Inspect the example source streams¶
 
 In this step, you examine the read-only `orders` and `clicks` tables in the `examples.marketplace` database to identify:
 
-  * The common identifier field that links the streams
-  * The unique fields from each stream that you want to track
+* The common identifier field that links the streams
+* The unique fields from each stream that you want to track
 
   1. Log in to Confluent Cloud and navigate to your Flink workspace.
 
@@ -141,18 +141,18 @@ This pattern works by:
 
 You can adapt this pattern by:
 
-  * Adding more streams to the [UNION ALL](../reference/queries/set-logic.html#flink-sql-set-logic-union)
-  * Changing the common identifier field in the [PARTITION BY](../reference/queries/match_recognize.html#flink-sql-pattern-recognition-partitioning) clause
-  * Modifying the selected fields based on your needs
-  * Using a custom defined watermark strategy
+* Adding more streams to the [UNION ALL](../reference/queries/set-logic.html#flink-sql-set-logic-union)
+* Changing the common identifier field in the [PARTITION BY](../reference/queries/match_recognize.html#flink-sql-pattern-recognition-partitioning) clause
+* Modifying the selected fields based on your needs
+* Using a custom defined watermark strategy
 
 ## Key considerations¶
 
 When applying this pattern, consider:
 
-  * All streams must have a common identifier field
-  * Timestamp fields should be consistent across streams
-  * NULL handling may need adjustment based on your use case
+* All streams must have a common identifier field
+* Timestamp fields should be consistent across streams
+* NULL handling may need adjustment based on your use case
 
 ### Why UNION ALL vs. JOIN?¶
 
@@ -186,8 +186,8 @@ With a join, if a click record arrives late, Flink would need to match it agains
 
 The combination of `UNION ALL` with window functions produces an append-only output stream, where each record contains the complete latest state for a customer at the time of each event. When materializing these results, you can:
 
-  * Use an append-only table to maintain the history of how each customer’s state changed over time
-  * Use an upsert table to maintain only the current state for each customer
+* Use an append-only table to maintain the history of how each customer’s state changed over time
+* Use an upsert table to maintain only the current state for each customer
 
 For example, when new events arrive for customer 3099 (first an order, then a click):
 

@@ -32,9 +32,9 @@ The `ConfluentSettings` class provides configuration options from various source
 
 The following precedence order applies to configuration sources, from highest to lowest:
 
-  * CLI arguments or properties file
-  * Code
-  * Environment variables
+* CLI arguments or properties file
+* Code
+* Environment variables
 
 The following code example shows a `TableEnvironment` that’s configured by a combination of command-line arguments and code.
 

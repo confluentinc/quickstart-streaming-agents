@@ -11,9 +11,9 @@ In Confluent Cloud for Apache Flink®, a _statement_ represents a high-level res
 
 Each statement has a property that holds the SQL query that you entered. Based on the SQL query, the statement may be one of these kinds:
 
-  * A metadata operation, or [DDL statement](../reference/statements/overview.html#flink-sql-statements-overview)
-  * A _background statement_ , which writes data back to a table/topic while running in the background
-  * A _foreground statement_ , which writes data back to the UI or a client.
+* A metadata operation, or [DDL statement](../reference/statements/overview.html#flink-sql-statements-overview)
+* A _background statement_ , which writes data back to a table/topic while running in the background
+* A _foreground statement_ , which writes data back to the UI or a client.
 
 In all of these cases, the statement represents any SQL statement for [Data Definition Language (DDL)](../reference/statements/overview.html#flink-sql-statements-overview), [Data Manipulation Language (DML)](../reference/queries/overview.html#flink-sql-queries), and Data Query Language (DQL).
 
@@ -58,50 +58,50 @@ These are the supported lifecycle operations for a statement.
 
 Statements have a lifecycle that includes the following states:
 
-  * **Pending** : The statement has been submitted and Flink is preparing to start running the statement.
-  * **Running** : Flink is actively running the statement.
-  * **Completed** : The statement has completed all of its work.
-  * **Deleting** : The statement is being deleted.
-  * **Failed** : The statement has encountered an error and is no longer running.
-  * **Degraded** : The statement appears unhealthy, for example, no transactions have been committed for a long time, or the statement has frequently restarted recently.
-  * **Stopping** : The statement is about to be stopped.
-  * **Stopped** : The statement has been stopped and is no longer running.
+* **Pending** : The statement has been submitted and Flink is preparing to start running the statement.
+* **Running** : Flink is actively running the statement.
+* **Completed** : The statement has completed all of its work.
+* **Deleting** : The statement is being deleted.
+* **Failed** : The statement has encountered an error and is no longer running.
+* **Degraded** : The statement appears unhealthy, for example, no transactions have been committed for a long time, or the statement has frequently restarted recently.
+* **Stopping** : The statement is about to be stopped.
+* **Stopped** : The statement has been stopped and is no longer running.
 
 ### Submit a statement¶
 
-  * [SQL shell](../get-started/quick-start-shell.html#flink-sql-quick-start-shell)
-  * [Cloud Console](../get-started/quick-start-cloud-console.html#flink-sql-quick-start-run-sql-statement)
-  * [REST API statements endpoint](../operate-and-deploy/flink-rest-api.html#flink-rest-api-submit-statement)
+* [SQL shell](../get-started/quick-start-shell.html#flink-sql-quick-start-shell)
+* [Cloud Console](../get-started/quick-start-cloud-console.html#flink-sql-quick-start-run-sql-statement)
+* [REST API statements endpoint](../operate-and-deploy/flink-rest-api.html#flink-rest-api-submit-statement)
 
 ### List running statements¶
 
-  * [SQL shell SHOW JOBS statement](../get-started/quick-start-shell.html#flink-sql-quick-start-shell)
-  * [Confluent CLI](../reference/flink-sql-cli.html#flink-sql-confluent-cli-list-statements)
-  * [Cloud Console](../operate-and-deploy/monitor-statements.html#flink-sql-monitor-statements-with-cloud-console)
-  * [REST API statements endpoint](../operate-and-deploy/flink-rest-api.html#flink-rest-api-list-statements)
+* [SQL shell SHOW JOBS statement](../get-started/quick-start-shell.html#flink-sql-quick-start-shell)
+* [Confluent CLI](../reference/flink-sql-cli.html#flink-sql-confluent-cli-list-statements)
+* [Cloud Console](../operate-and-deploy/monitor-statements.html#flink-sql-monitor-statements-with-cloud-console)
+* [REST API statements endpoint](../operate-and-deploy/flink-rest-api.html#flink-rest-api-list-statements)
 
 ### Describe a statement¶
 
-  * [Confluent CLI](../reference/flink-sql-cli.html#flink-sql-confluent-cli-describe-statement)
-  * [Cloud Console](../operate-and-deploy/monitor-statements.html#flink-sql-monitor-statements-with-cloud-console)
-  * [REST API statement endpoint](../operate-and-deploy/flink-rest-api.html#flink-rest-api-get-statement)
+* [Confluent CLI](../reference/flink-sql-cli.html#flink-sql-confluent-cli-describe-statement)
+* [Cloud Console](../operate-and-deploy/monitor-statements.html#flink-sql-monitor-statements-with-cloud-console)
+* [REST API statement endpoint](../operate-and-deploy/flink-rest-api.html#flink-rest-api-get-statement)
 
 ### Delete a statement¶
 
-  * [Confluent CLI](../reference/flink-sql-cli.html#flink-sql-confluent-cli-delete-statement)
-  * [Cloud Console](../operate-and-deploy/monitor-statements.html#flink-sql-monitor-statements-with-cloud-console)
-  * [REST API DELETE request](../operate-and-deploy/flink-rest-api.html#flink-rest-api-delete-statement)
+* [Confluent CLI](../reference/flink-sql-cli.html#flink-sql-confluent-cli-delete-statement)
+* [Cloud Console](../operate-and-deploy/monitor-statements.html#flink-sql-monitor-statements-with-cloud-console)
+* [REST API DELETE request](../operate-and-deploy/flink-rest-api.html#flink-rest-api-delete-statement)
 
 ### List statement exceptions¶
 
-  * [Confluent CLI](../reference/flink-sql-cli.html#flink-sql-confluent-cli-list-exceptions)
-  * [Cloud Console](../operate-and-deploy/monitor-statements.html#flink-sql-monitor-statements-with-cloud-console)
+* [Confluent CLI](../reference/flink-sql-cli.html#flink-sql-confluent-cli-list-exceptions)
+* [Cloud Console](../operate-and-deploy/monitor-statements.html#flink-sql-monitor-statements-with-cloud-console)
 
 ### Stop and resume a statement¶
 
-  * [Confluent CLI](../reference/flink-sql-cli.html#flink-sql-confluent-cli-update-statement)
-  * [REST API UPDATE request](../operate-and-deploy/flink-rest-api.html#flink-rest-api-update-statement)
-  * [Cloud Console](../operate-and-deploy/monitor-statements.html#flink-sql-monitor-statements-with-cloud-console)
+* [Confluent CLI](../reference/flink-sql-cli.html#flink-sql-confluent-cli-update-statement)
+* [REST API UPDATE request](../operate-and-deploy/flink-rest-api.html#flink-rest-api-update-statement)
+* [Cloud Console](../operate-and-deploy/monitor-statements.html#flink-sql-monitor-statements-with-cloud-console)
 
 ## Queries in Flink¶
 
@@ -124,23 +124,23 @@ All queries are executed in streaming execution mode, whether the sources are bo
 
 Broadly speaking, the Flink SQL lifecycle is:
 
-  * Data is read into a Flink table from Kafka via the Flink connector for Kafka.
+* Data is read into a Flink table from Kafka via the Flink connector for Kafka.
 
-  * Data is processed using SQL statements.
+* Data is processed using SQL statements.
 
-  * Data is processed using Flink task managers (managed by Confluent and not exposed to users), which are part of the Flink runtime. Some data may be stored temporarily as state in Flink while it’s being processed
+* Data is processed using Flink task managers (managed by Confluent and not exposed to users), which are part of the Flink runtime. Some data may be stored temporarily as state in Flink while it’s being processed
 
-  * Data is returned to the user as a result-set.
+* Data is returned to the user as a result-set.
 
-    * The result-set may be bounded, in which case the query terminates.
-    * The result-set may be unbounded, in which case the query runs until canceled manually.
+  * The result-set may be bounded, in which case the query terminates.
+  * The result-set may be unbounded, in which case the query runs until canceled manually.
 
 OR
 
-  * Data is written back out to one or more tables.
+* Data is written back out to one or more tables.
 
-    * Data is stored in Kafka topics.
-    * Schema for the table is stored in Flink Metastore and synchronized out to Schema Registry.
+  * Data is stored in Kafka topics.
+  * Schema for the table is stored in Flink Metastore and synchronized out to Schema Registry.
 
 ## Flink SQL Data Definition Language (DDL) statements¶
 
@@ -154,44 +154,44 @@ These are the available DDL statements in Confluent Cloud for Flink SQL.
 
 ALTER
 
-  * [ALTER MODEL Statement in Confluent Cloud for Apache Flink](../reference/statements/alter-model.html#flink-sql-alter-model)
-  * [ALTER TABLE Statement in Confluent Cloud for Apache Flink](../reference/statements/alter-table.html#flink-sql-alter-table)
-  * [ALTER VIEW Statement in Confluent Cloud for Apache Flink](../reference/statements/alter-view.html#flink-sql-alter-view)
+* [ALTER MODEL Statement in Confluent Cloud for Apache Flink](../reference/statements/alter-model.html#flink-sql-alter-model)
+* [ALTER TABLE Statement in Confluent Cloud for Apache Flink](../reference/statements/alter-table.html#flink-sql-alter-table)
+* [ALTER VIEW Statement in Confluent Cloud for Apache Flink](../reference/statements/alter-view.html#flink-sql-alter-view)
 
 CREATE
 
-  * [CREATE FUNCTION Statement](../reference/statements/create-function.html#flink-sql-create-function)
-  * [CREATE MODEL Statement in Confluent Cloud for Apache Flink](../reference/statements/create-model.html#flink-sql-create-model)
-  * [CREATE TABLE Statement in Confluent Cloud for Apache Flink](../reference/statements/create-table.html#flink-sql-create-table)
-  * [CREATE VIEW Statement in Confluent Cloud for Apache Flink](../reference/statements/create-view.html#flink-sql-create-view)
+* [CREATE FUNCTION Statement](../reference/statements/create-function.html#flink-sql-create-function)
+* [CREATE MODEL Statement in Confluent Cloud for Apache Flink](../reference/statements/create-model.html#flink-sql-create-model)
+* [CREATE TABLE Statement in Confluent Cloud for Apache Flink](../reference/statements/create-table.html#flink-sql-create-table)
+* [CREATE VIEW Statement in Confluent Cloud for Apache Flink](../reference/statements/create-view.html#flink-sql-create-view)
 
 DESCRIBE
 
-  * [DESCRIBE Statement in Confluent Cloud for Apache Flink](../reference/statements/describe.html#flink-sql-describe)
+* [DESCRIBE Statement in Confluent Cloud for Apache Flink](../reference/statements/describe.html#flink-sql-describe)
 
 DROP
 
-  * [DROP MODEL Statement in Confluent Cloud for Apache Flink](../reference/statements/drop-model.html#flink-sql-drop-model)
-  * [DROP TABLE Statement in Confluent Cloud for Apache Flink](../reference/statements/drop-table.html#flink-sql-drop-table)
-  * [DROP VIEW Statement in Confluent Cloud for Apache Flink](../reference/statements/drop-view.html#flink-sql-drop-view)
+* [DROP MODEL Statement in Confluent Cloud for Apache Flink](../reference/statements/drop-model.html#flink-sql-drop-model)
+* [DROP TABLE Statement in Confluent Cloud for Apache Flink](../reference/statements/drop-table.html#flink-sql-drop-table)
+* [DROP VIEW Statement in Confluent Cloud for Apache Flink](../reference/statements/drop-view.html#flink-sql-drop-view)
 
 EXPLAIN
 
-  * [EXPLAIN Statement in Confluent Cloud for Apache Flink](../reference/statements/explain.html#flink-sql-explain)
+* [EXPLAIN Statement in Confluent Cloud for Apache Flink](../reference/statements/explain.html#flink-sql-explain)
 
 RESET
 
-  * [RESET Statement in Confluent Cloud for Apache Flink](../reference/statements/reset.html#flink-sql-reset-statement)
+* [RESET Statement in Confluent Cloud for Apache Flink](../reference/statements/reset.html#flink-sql-reset-statement)
 
 SET
 
-  * [SET Statement in Confluent Cloud for Apache Flink](../reference/statements/set.html#flink-sql-set-statement)
+* [SET Statement in Confluent Cloud for Apache Flink](../reference/statements/set.html#flink-sql-set-statement)
 
 SHOW
 
-  * [SHOW Statements in Confluent Cloud for Apache Flink](../reference/statements/show.html#flink-sql-show)
+* [SHOW Statements in Confluent Cloud for Apache Flink](../reference/statements/show.html#flink-sql-show)
 
 USE
 
-  * [USE CATALOG Statement in Confluent Cloud for Apache Flink](../reference/statements/use-catalog.html#flink-sql-use-catalog-statement)
-  * [USE <database_name> Statement in Confluent Cloud for Apache Flink](../reference/statements/use-database.html#flink-sql-use-database-statement)
+* [USE CATALOG Statement in Confluent Cloud for Apache Flink](../reference/statements/use-catalog.html#flink-sql-use-catalog-statement)
+* [USE <database_name> Statement in Confluent Cloud for Apache Flink](../reference/statements/use-database.html#flink-sql-use-database-statement)

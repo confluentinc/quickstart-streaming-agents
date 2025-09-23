@@ -15,13 +15,13 @@ total_chunks: 7
 
 For example, which window would a record be assigned to if it has a timestamp of `2021-06-30 00:00:00`, for a Tumble window with 10 MINUTE as size?
 
-  * If the `offset` is `-16 MINUTE`, the record assigns to window [`2021-06-29 23:44:00`, `2021-06-29 23:54:00`].
-  * If the `offset` is `-6 MINUTE`, the record assigns to window [`2021-06-29 23:54:00`, `2021-06-30 00:04:00`].
-  * If the `offset` is `-4 MINUTE`, the record assigns to window [`2021-06-29 23:56:00`, `2021-06-30 00:06:00`].
-  * If the `offset` is `0`, the record assigns to window [`2021-06-30 00:00:00`, `2021-06-30 00:10:00`].
-  * If the `offset` is `4 MINUTE`, the record assigns to window [`2021-06-30 00:04:00`, `2021-06-30 00:14:00`].
-  * If the `offset` is `6 MINUTE`, the record assigns to window [`2021-06-30 00:06:00`, `2021-06-30 00:16:00`].
-  * If the `offset` is `16 MINUTE`, the record assigns to window [`2021-06-30 00:16:00`, `2021-06-30 00:26:00`].
+* If the `offset` is `-16 MINUTE`, the record assigns to window [`2021-06-29 23:44:00`, `2021-06-29 23:54:00`].
+* If the `offset` is `-6 MINUTE`, the record assigns to window [`2021-06-29 23:54:00`, `2021-06-30 00:04:00`].
+* If the `offset` is `-4 MINUTE`, the record assigns to window [`2021-06-29 23:56:00`, `2021-06-30 00:06:00`].
+* If the `offset` is `0`, the record assigns to window [`2021-06-30 00:00:00`, `2021-06-30 00:10:00`].
+* If the `offset` is `4 MINUTE`, the record assigns to window [`2021-06-30 00:04:00`, `2021-06-30 00:14:00`].
+* If the `offset` is `6 MINUTE`, the record assigns to window [`2021-06-30 00:06:00`, `2021-06-30 00:16:00`].
+* If the `offset` is `16 MINUTE`, the record assigns to window [`2021-06-30 00:16:00`, `2021-06-30 00:26:00`].
 
 Note
 

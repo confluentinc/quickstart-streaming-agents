@@ -19,9 +19,9 @@ Description
     The AI_EMBEDDING function provides a straightforward interface, accepting a single string input and returning an array of floats as the embedding response. This functionality enables you to leverage large language models (LLMs) to generate embeddings for text efficiently.
 Configuration
 
-  * `model_name`: Name of the model entity to call to for embeddings [STRING].
-  * `input_text`: Input text to pass to the LLM for embeddings [STRING].
-  * `invocation_config[optional]`: Map to pass the configuration to manage function behavior, for example, `MAP['debug', true]`.
+* `model_name`: Name of the model entity to call to for embeddings [STRING].
+* `input_text`: Input text to pass to the LLM for embeddings [STRING].
+* `invocation_config[optional]`: Map to pass the configuration to manage function behavior, for example, `MAP['debug', true]`.
 
 Example
 

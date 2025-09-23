@@ -11,10 +11,10 @@ total_chunks: 4
 
 Confluent Cloud for Apache Flink® provides these built-in comparison functions to use in SQL queries:
 
-  * Equality operations
-  * Logical operations
-  * Comparison Functions
-  * Conversion functions
+* Equality operations
+* Logical operations
+* Comparison Functions
+* Conversion functions
 
 ## Equality operations¶
 

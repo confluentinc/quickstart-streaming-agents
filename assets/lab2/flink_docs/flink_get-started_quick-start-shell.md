@@ -9,23 +9,23 @@ scraped_date: 2025-09-05T13:45:35.660641
 
 This quick start walks you through the following steps to get you up and running with Confluent Cloud for Apache Flink®.
 
-  * Step 1: Log in to Confluent Cloud with the Confluent CLI
-  * Step 2: Start the Flink SQL shell
-  * Step 3: Submit a SQL statement
-  * Step 4: Create and populate a table
-  * Step 5: Query streaming data
+* Step 1: Log in to Confluent Cloud with the Confluent CLI
+* Step 2: Start the Flink SQL shell
+* Step 3: Submit a SQL statement
+* Step 4: Create and populate a table
+* Step 5: Query streaming data
 
 ## Prerequisites¶
 
 You need the following prerequisites to use Confluent Cloud for Apache Flink.
 
-  * Access to Confluent Cloud.
+* Access to Confluent Cloud.
 
-  * The organization ID, environment ID, and compute pool ID for your organization.
+* The organization ID, environment ID, and compute pool ID for your organization.
 
-  * The OrganizationAdmin, EnvironmentAdmin, or FlinkAdmin role for creating compute pools, or the FlinkDeveloper role if you already have a compute pool. If you don’t have the appropriate role, reach out to your OrganizationAdmin or EnvironmentAdmin.
+* The OrganizationAdmin, EnvironmentAdmin, or FlinkAdmin role for creating compute pools, or the FlinkDeveloper role if you already have a compute pool. If you don’t have the appropriate role, reach out to your OrganizationAdmin or EnvironmentAdmin.
 
-  * The Confluent CLI. To use the Flink SQL shell, update to the latest version of the Confluent CLI by running the following command:
+* The Confluent CLI. To use the Flink SQL shell, update to the latest version of the Confluent CLI by running the following command:
 
         confluent update --yes
 
@@ -144,8 +144,8 @@ Flink SQL enables using familiar SQL syntax to query streaming data. Confluent C
 
 In Flink SQL, catalog objects, like tables, are scoped by catalog and database.
 
-  * A _catalog_ is a collection of databases that share the same namespace.
-  * A _database_ is a collection of tables that share the same namespace.
+* A _catalog_ is a collection of databases that share the same namespace.
+* A _database_ is a collection of tables that share the same namespace.
 
 In Confluent Cloud, an environment is mapped to a Flink catalog, and a Kafka cluster is mapped to a Flink database.
 

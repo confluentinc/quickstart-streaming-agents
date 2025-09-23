@@ -72,7 +72,7 @@ Example
 
 Related function
 
-  * FROM_BASE64
+* FROM_BASE64
 
 ## TRANSLATE¶
 
@@ -84,9 +84,9 @@ Syntax
 
 Arguments
 
-  * `expr`: A source STRING expression.
-  * `from`: A STRING expression that specifies a set of characters to be replaced.
-  * `to`: A STRING expression that specifies a corresponding set of replacement characters.
+* `expr`: A source STRING expression.
+* `from`: A STRING expression that specifies a set of characters to be replaced.
+* `to`: A STRING expression that specifies a corresponding set of replacement characters.
 
 Returns
     A STRING that has the characters of `expr` replaced with the characters specified in the `to` string.
@@ -112,9 +112,9 @@ Examples:
 
 Related functions
 
-  * OVERLAY
-  * REGEXP_REPLACE
-  * REPLACE
+* OVERLAY
+* REGEXP_REPLACE
+* REPLACE
 
 ## TRIM¶
 
@@ -140,9 +140,9 @@ Examples
 
 Related functions
 
-  * BTRIM
-  * LTRIM
-  * RTRIM
+* BTRIM
+* LTRIM
+* RTRIM
 
 ## UPPER¶
 

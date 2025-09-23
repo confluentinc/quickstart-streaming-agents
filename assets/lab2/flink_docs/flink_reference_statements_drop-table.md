@@ -28,9 +28,9 @@ The DROP TABLE statement behavior varies depending on the table type.
 
 For tables backed by Kafka topics, which are created by using CREATE TABLE or inferred from existing topics:
 
-  * Deletes the underlying Kafka topic permanently
-  * When using TopicNameStrategy (default): \- Deletes all versions of the associated schemas from Schema Registry
-  * When using RecordNameStrategy or TopicRecordNameStrategy: \- Deletes the Kafka topic but preserves schemas in Schema Registry
+* Deletes the underlying Kafka topic permanently
+* When using TopicNameStrategy (default): \- Deletes all versions of the associated schemas from Schema Registry
+* When using RecordNameStrategy or TopicRecordNameStrategy: \- Deletes the Kafka topic but preserves schemas in Schema Registry
 
 ### External Tables¶
 
@@ -44,9 +44,9 @@ Confluent Cloud for Apache Flink enables [vector search](../../../ai/external-ta
 
 For external tables, like vector databases and lookup tables:
 
-  * Removes the table definition from Flink metadata
-  * Does not delete data from the external system
-  * Examples include vector search tables and federated search tables
+* Removes the table definition from Flink metadata
+* Does not delete data from the external system
+* Examples include vector search tables and federated search tables
 
 ## Permissions¶
 
@@ -54,11 +54,11 @@ To execute DROP TABLE, you need an [RBAC role](../../../security/access-control/
 
 ## Important considerations¶
 
-  * The DROP TABLE operation is not atomic. If either the Kafka topic deletion or schema deletion fails, the operation may partially complete.
-  * Dropping a table permanently deletes the Kafka topic data.
-  * Running statements that depend on a dropped table will transition to DEGRADED status.
-  * You should stop dependent statements before dropping a table.
-  * When using TopicNameStrategy, dropping a table deletes schemas, even if they are used by other topics.
+* The DROP TABLE operation is not atomic. If either the Kafka topic deletion or schema deletion fails, the operation may partially complete.
+* Dropping a table permanently deletes the Kafka topic data.
+* Running statements that depend on a dropped table will transition to DEGRADED status.
+* You should stop dependent statements before dropping a table.
+* When using TopicNameStrategy, dropping a table deletes schemas, even if they are used by other topics.
 
 ## Examples¶
 

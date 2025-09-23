@@ -19,9 +19,9 @@ To use Confluent Platform for Apache Flink, you must meet the following prerequi
 
 Confluent Platform for Apache Flink® is designed for Kubernetes. Therefore, you must have access to a Kubernetes cluster to deploy the Flink Kubernetes operator and individual Flink jobs:
 
-  * A Kubernetes cluster running a supported version. For a list of supported versions, see [Versions and Interoperability for Confluent Manager for Apache Flink](../installation/versions-interoperability.html#cmf-interop).
-  * [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) installed, initialized, with the context set. You also must have the `kubeconfig` file configured for your cluster.
-  * [Helm 3](https://helm.sh/docs/intro/install/) installed.
+* A Kubernetes cluster running a supported version. For a list of supported versions, see [Versions and Interoperability for Confluent Manager for Apache Flink](../installation/versions-interoperability.html#cmf-interop).
+* [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) installed, initialized, with the context set. You also must have the `kubeconfig` file configured for your cluster.
+* [Helm 3](https://helm.sh/docs/intro/install/) installed.
 
 To learn more about deploying Flink on Kubernetes, see [Kubernetes deployment](https://nightlies.apache.org/flink/flink-docs-master/docs/deployment/resource-providers/standalone/kubernetes/).
 
@@ -43,9 +43,9 @@ In production, Flink requires durable storage that is readable and writeable fro
 
 Examples of durable storage include:
 
-  * S3-compatible storage (S3, MinIO)
-  * Microsoft Azure Blob Storage
-  * Google Cloud Storage
+* S3-compatible storage (S3, MinIO)
+* Microsoft Azure Blob Storage
+* Google Cloud Storage
 
 For more information on configuring durable storage, see [Checkpoint Storage](https://nightlies.apache.org/flink/flink-docs-master/docs/ops/state/checkpoints/#checkpoint-storage) in the Flink documentation.
 

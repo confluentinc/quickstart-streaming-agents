@@ -177,8 +177,8 @@ For tables with any type of data that need a different processing mode for handl
 
 Properties
 
-  * The metadata key is `headers`. If you don’t want to name the column this way, use: `other_name MAP<BYTES, BYTES> METADATA FROM 'headers' VIRTUAL`.
-  * Keys of headers must be unique. Multi-key headers are not supported.
+* The metadata key is `headers`. If you don’t want to name the column this way, use: `other_name MAP<BYTES, BYTES> METADATA FROM 'headers' VIRTUAL`.
+* Keys of headers must be unique. Multi-key headers are not supported.
 
 ### Add headers as a metadata column¶
 
@@ -225,9 +225,9 @@ Your output should resemble:
 
 Properties
 
-  * `scan.startup.mode` and `scan.bounded.mode` control which range in the changelog (Kafka topic) to read.
-  * `scan.startup.specific-offsets` and `scan.bounded.specific-offsets` define offsets per partition.
-  * In the example, only 1 partition is used. For multiple partitions, use the following syntax:
+* `scan.startup.mode` and `scan.bounded.mode` control which range in the changelog (Kafka topic) to read.
+* `scan.startup.specific-offsets` and `scan.bounded.specific-offsets` define offsets per partition.
+* In the example, only 1 partition is used. For multiple partitions, use the following syntax:
 
     'scan.startup.specific-offsets' = 'partition:0,offset:3; partition:1,offset:42; partition:2,offset:0'
 
@@ -293,11 +293,11 @@ The system watermark strategy is smart and excludes idle Kafka partitions from t
 
 Typically, root causes are:
 
-  * Idle Kafka partitions
-  * No data in Kafka partitions
-  * Not enough data in Kafka partitions
-  * Watermark strategy is too conservative
-  * No fresh data after warm up with historical data for progressing the logical clock
+* Idle Kafka partitions
+* No data in Kafka partitions
+* Not enough data in Kafka partitions
+* Watermark strategy is too conservative
+* No fresh data after warm up with historical data for progressing the logical clock
 
 ### Handle idle partitions for missing watermarks¶
 
@@ -431,11 +431,11 @@ SHOW CREATE TABLE returns the following output:
 
 Properties
 
-  * Schema Registry says there is a timestamp physical column, but Flink says there is timestamp metadata column.
+* Schema Registry says there is a timestamp physical column, but Flink says there is timestamp metadata column.
 
-  * In this case, metadata columns and computed columns have precedence, and Confluent Cloud for Apache Flink removes the physical column from the schema.
+* In this case, metadata columns and computed columns have precedence, and Confluent Cloud for Apache Flink removes the physical column from the schema.
 
-  * Because Confluent Cloud for Apache Flink advertises [FULL_TRANSITIVE mode](../../../sr/fundamentals/schema-evolution.html#sr-compatibility-types), queries still work, and the physical column is set to NULL in the payload:
+* Because Confluent Cloud for Apache Flink advertises [FULL_TRANSITIVE mode](../../../sr/fundamentals/schema-evolution.html#sr-compatibility-types), queries still work, and the physical column is set to NULL in the payload:
 
         INSERT INTO t_metadata_overlap
           SELECT CAST(NULL AS BYTES), 42, TO_TIMESTAMP_LTZ(0, 3);
@@ -463,7 +463,7 @@ SHOW CREATE TABLE returns the following output:
 
 Properties
 
-  * Now, both physical and metadata columns appear and can be accessed for reading and writing.
+* Now, both physical and metadata columns appear and can be accessed for reading and writing.
 
 ### Enrich a column that has no Schema Registry information¶
 
@@ -496,9 +496,9 @@ SHOW CREATE TABLE returns the following output:
 
 Properties
 
-  * Schema Registry provides only information for the value part.
-  * Because the `key` part is not backed by Schema Registry, the `key.format` is `raw`.
-  * The default data type of `raw` is BYTES, but you can change this by using the ALTER TABLE statement.
+* Schema Registry provides only information for the value part.
+* Because the `key` part is not backed by Schema Registry, the `key.format` is `raw`.
+* The default data type of `raw` is BYTES, but you can change this by using the ALTER TABLE statement.
 
 Evolve the table by giving a raw format column a specific type:
 
@@ -520,9 +520,9 @@ SHOW CREATE TABLE returns the following output:
 
 Properties
 
-  * Only changes to simple, atomic types, like INT, BYTES, and STRING are supported, where the binary representation is clear.
-  * For more complex modifications, use Schema Registry.
-  * In multi-cluster scenarios, the ALTER TABLE statement must be executed for every cluster, because the data type for `key` is stored in the Flink regional metastore.
+* Only changes to simple, atomic types, like INT, BYTES, and STRING are supported, where the binary representation is clear.
+* For more complex modifications, use Schema Registry.
+* In multi-cluster scenarios, the ALTER TABLE statement must be executed for every cluster, because the data type for `key` is stored in the Flink regional metastore.
 
 ### Configure Schema Registry subject names¶
 
@@ -582,9 +582,9 @@ You can configure both key and value schema subject names in a single statement:
 
 Properties:
 
-  * Use semicolons (`;`) to separate multiple subject names
-  * Subject names must match exactly with the names registered in Schema Registry
-  * The format prefix (`avro-registry`, `json-registry`, or `proto-registry`) must match the schema format in Schema Registry
+* Use semicolons (`;`) to separate multiple subject names
+* Subject names must match exactly with the names registered in Schema Registry
+* The format prefix (`avro-registry`, `json-registry`, or `proto-registry`) must match the schema format in Schema Registry
 
 ### Reset a key value¶
 

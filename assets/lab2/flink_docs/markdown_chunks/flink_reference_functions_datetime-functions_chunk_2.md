@@ -60,7 +60,7 @@ Example
 
 Related function
 
-  * FLOOR
+* FLOOR
 
 ### CONVERT_TZ¶
 
@@ -93,8 +93,8 @@ Description
 
 The `CURRENT_DATE` function returns the current SQL date in the local time zone.
 
-  * In streaming mode, the current date is evaluated for each record.
-  * In batch mode, the current date is evaluated once when the query starts, and `CURRENT_DATE` returns the same result for every row.
+* In streaming mode, the current date is evaluated for each record.
+* In batch mode, the current date is evaluated once when the query starts, and `CURRENT_DATE` returns the same result for every row.
 
 Example
 
@@ -148,8 +148,8 @@ Description
 
 The `CURRENT_TIMESTAMP` function returns the current SQL timestamp in the local time zone. The return type is `TIMESTAMP_LTZ(3)`.
 
-  * In streaming mode, the current timestamp is evaluated for each record.
-  * In batch mode, the current timestamp is evaluated once when the query starts, and `CURRENT_TIMESTAMP` returns the same result for every row.
+* In streaming mode, the current timestamp is evaluated for each record.
+* In batch mode, the current timestamp is evaluated once when the query starts, and `CURRENT_TIMESTAMP` returns the same result for every row.
 
 The `CURRENT_TIMESTAMP` function is equivalent to NOW.
 
@@ -189,7 +189,7 @@ The following example shows how to filter out late data by using the `CURRENT_WA
 
 Related function
 
-  * SOURCE_WATERMARK
+* SOURCE_WATERMARK
 
 ### DATE_FORMAT¶
 

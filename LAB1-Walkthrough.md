@@ -14,21 +14,26 @@ In this lab, we'll use Confluent Cloud's Apache Flink tool calling feature to lo
 Create a Zapier MCP server for tool calling:
 
 ### 1. Create Zapier Account
+
 Sign up at [zapier.com](https://zapier.com/sign-up) and verify your email.
 
 ### 2. Create MCP Server
+
 Visit [mcp.zapier.com](https://mcp.zapier.com/mcp/servers), choose "Other" as MCP Client, and create your server.
 
 ![Create MCP Server](./assets/lab1/zapier/3.png)
 
 ### 3. Add Tools
+
 Add these tools to your MCP server:
+
 - **Webhooks by Zapier: GET** tool
 - **Gmail: Send Email** tool (authenticate via SSO)
 
 ![Add Tools](./assets/lab1/zapier/4.png)
 
 ### 4. Get SSE Endpoint URL
+
 Click "Connect", change transport to "SSE Endpoint", and copy the URL.
 
 ![SSE Endpoint](./assets/lab1/zapier/7.png)
@@ -66,7 +71,6 @@ In the Flink workspace, register the model and bind the tool to it in the Conflu
 > **Note:**
 > If you changed the `prefix`, retrieve the updated query from `mcp_commands.txt` in the Terraform directory.
 > The example below uses Azure OpenAI. If you are using Amazon Bedrock, use the corresponding query from `mcp_commands.txt`.
-
 
 ```sql
   CREATE MODEL `zapier_mcp_model`
@@ -156,7 +160,6 @@ WHERE ros.page_content IS NOT NULL
   AND ros.page_content <> '';
 ```
 
-
 In a new cell, check the output of `streaming_competitor_prices`
 
 ```sql
@@ -166,7 +169,6 @@ SELECT * FROM streaming_competitor_prices;
 ![Agent 2 Output Screenshot](./assets/lab1/agent2-flinkoutput.png)
 
 Notice the new field `extracted_price`. This will be used by the next Agent.
-
 
 ### Agent 3: Price Match Notification Agent
 

@@ -61,17 +61,17 @@ Confluent Cloud for Apache Flink supports the TUMBLE, HOP, SESSION, and CUMULATE
 
 Confluent Cloud for Apache Flink does not support the following statements and features.
 
-  * ANALYZE statements
-  * CALL statements
-  * CATALOG commands other than SHOW (No CREATE/DROP/ALTER)
-  * DATABASE command other than SHOW (No CREATE/DROP/ALTER)
-  * DELETE statements
-  * DROP CATALOG and DROP DATABASE
-  * JAR statements
-  * LOAD / UNLOAD statements
-  * TRUNCATE statements
-  * UPDATE statements
-  * Processing time operations, like `PROCTIME()`, `TUMBLE_PROCTIME`, `HOP_PROCTIME`, `SESSION_PROCTIME`, and `CUMULATE_PROCTIME`
+* ANALYZE statements
+* CALL statements
+* CATALOG commands other than SHOW (No CREATE/DROP/ALTER)
+* DATABASE command other than SHOW (No CREATE/DROP/ALTER)
+* DELETE statements
+* DROP CATALOG and DROP DATABASE
+* JAR statements
+* LOAD / UNLOAD statements
+* TRUNCATE statements
+* UPDATE statements
+* Processing time operations, like `PROCTIME()`, `TUMBLE_PROCTIME`, `HOP_PROCTIME`, `SESSION_PROCTIME`, and `CUMULATE_PROCTIME`
 
 ### Limited support for ALTER¶
 

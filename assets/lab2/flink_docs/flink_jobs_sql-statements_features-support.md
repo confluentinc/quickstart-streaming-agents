@@ -22,21 +22,21 @@ Kafka Cluster Integration:
 Table Schema Derivation:
     Table schemas are derived from the topic’s schema information provided by Schema Registry. All formats supported by Schema Registry (Avro, JSON, Protobuf) are also supported. Topics without schema information are exposed as tables with raw BYTE columns for the topic’s key and value records.
 Supported Statement Types:
-    Following are the supported statement types: * `LIST TABLES;` * `LIST DATABASES;` * `LIST CATALOGS;` * `SHOW CURRENT DATABASE;` * `SHOW CURRENT CATALOG;` * `DESCRIBE <table>;` * `SELECT ...;` (only append-only results are supported) * `INSERT INTO ...;` (only append-only results are supported)
+    Following are the supported statement types: *`LIST TABLES;`* `LIST DATABASES;` *`LIST CATALOGS;`* `SHOW CURRENT DATABASE;` *`SHOW CURRENT CATALOG;`* `DESCRIBE <table>;` *`SELECT ...;` (only append-only results are supported)* `INSERT INTO ...;` (only append-only results are supported)
 
 ## Limitations¶
 
 The following limitations exist in the current version:
 
-  * Table Inference: Tables are always exposed using the default inference mechanism. CMF does not support `ALTER TABLE` statements, preventing users from customizing how a topic is exposed as a table.
-  * Unsupported Table DDL: `CREATE TABLE`, `CREATE TABLE AS`, and `DROP TABLE` statements are not supported.
-  * Compacted Topics: Compacted Kafka topics are not exposed as tables. All tables have append-only semantics.
-  * Updating Results: `SELECT` and `INSERT INTO` statements with updating results are not supported.
-  * Statement Complexity: Very large statements might not be supported because there is a limit on the size of the query execution plan produced by the optimizer. Since the plan size depends on many factors and the plan is also compressed, it is not possible to give clear guidance for the supported size or complexity of SQL statements. If you run into error messages regarding plan size, try to decompose the complex statement into multiple smaller statements.
-  * Views: Views are not supported.
-  * EXPLAIN Statements: `EXPLAIN` statements are not supported.
-  * Functions: Only Flink SQL built-in functions are supported. User-defined functions are not supported.
-  * Custom Formats: Only Schema Registry supported formats are supported. CDC-specific formats or other custom formats are not supported.
-  * Custom Connectors: Custom connectors for tables backed by other storage systems are not supported.
-  * Custom Catalogs: Custom catalogs are not supported.
-  * Deployment modes: Only application-deployment mode is supported. Each statement runs on a dedicated Flink cluster with dedicated JobManager and TaskManager pods. Session-cluster deployment mode is not supported.
+* Table Inference: Tables are always exposed using the default inference mechanism. CMF does not support `ALTER TABLE` statements, preventing users from customizing how a topic is exposed as a table.
+* Unsupported Table DDL: `CREATE TABLE`, `CREATE TABLE AS`, and `DROP TABLE` statements are not supported.
+* Compacted Topics: Compacted Kafka topics are not exposed as tables. All tables have append-only semantics.
+* Updating Results: `SELECT` and `INSERT INTO` statements with updating results are not supported.
+* Statement Complexity: Very large statements might not be supported because there is a limit on the size of the query execution plan produced by the optimizer. Since the plan size depends on many factors and the plan is also compressed, it is not possible to give clear guidance for the supported size or complexity of SQL statements. If you run into error messages regarding plan size, try to decompose the complex statement into multiple smaller statements.
+* Views: Views are not supported.
+* EXPLAIN Statements: `EXPLAIN` statements are not supported.
+* Functions: Only Flink SQL built-in functions are supported. User-defined functions are not supported.
+* Custom Formats: Only Schema Registry supported formats are supported. CDC-specific formats or other custom formats are not supported.
+* Custom Connectors: Custom connectors for tables backed by other storage systems are not supported.
+* Custom Catalogs: Custom catalogs are not supported.
+* Deployment modes: Only application-deployment mode is supported. Each statement runs on a dedicated Flink cluster with dedicated JobManager and TaskManager pods. Session-cluster deployment mode is not supported.

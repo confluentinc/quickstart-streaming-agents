@@ -19,23 +19,23 @@ In Confluent Cloud for Apache Flink, batch mode is available by using snapshot q
 
 Batch processing in Flink operates on _bounded datasets_ , which are finite, static collections of data. This processing mode has the following key characteristics.
 
-  * It processes complete, finite datasets, like files or database snapshots.
-  * Batch jobs run to completion and then terminate.
-  * It is optimized for throughput, focusing on processing large volumes of data efficiently.
-  * Batch processing can sort, aggregate, and join across the entire dataset.
-  * The system can drop state as soon as it is no longer needed.
-  * Use cases: \- Historical data analysis \- ETL (Extract, Transform, Load) operations \- Report generation \- Data warehousing
+* It processes complete, finite datasets, like files or database snapshots.
+* Batch jobs run to completion and then terminate.
+* It is optimized for throughput, focusing on processing large volumes of data efficiently.
+* Batch processing can sort, aggregate, and join across the entire dataset.
+* The system can drop state as soon as it is no longer needed.
+* Use cases: \- Historical data analysis \- ETL (Extract, Transform, Load) operations \- Report generation \- Data warehousing
 
 ## Stream processing¶
 
 Stream processing in Flink handles _unbounded data streams_ , which have data that arrives continuously and might never end. This processing mode has the following key characteristics.
 
-  * It processes infinite, continuous data streams, such as Kafka topics or sensor feeds.
-  * Stream processing jobs run indefinitely, processing data as it arrives.
-  * It focuses on processing data with minimal delay for low latency.
-  * It produces incremental results as new data arrives.
-  * The system must retain state to handle late or out-of-order events.
-  * Use cases: \- Real-time analytics \- Fraud detection \- IoT data processing \- Live dashboards
+* It processes infinite, continuous data streams, such as Kafka topics or sensor feeds.
+* Stream processing jobs run indefinitely, processing data as it arrives.
+* It focuses on processing data with minimal delay for low latency.
+* It produces incremental results as new data arrives.
+* The system must retain state to handle late or out-of-order events.
+* Use cases: \- Real-time analytics \- Fraud detection \- IoT data processing \- Live dashboards
 
 ## Bounded and unbounded tables comparison¶
 
@@ -63,16 +63,16 @@ Fault Tolerance | Can restart from the beginning. | Requires checkpointing for f
 Query Semantics | All data is available at once, so global operations are possible. | Data arrives over time, so results are incremental.
 SQL/API Differences |
 
-  * **ORDER BY** : You can use any sort order.
-  * **Windowing** : Supports time-based windows on static data.
-  * **Deduplication** : Deduplication is global.
+* **ORDER BY** : You can use any sort order.
+* **Windowing** : Supports time-based windows on static data.
+* **Deduplication** : Deduplication is global.
 
 |
 
-  * **ORDER BY** : The primary sort must be on a time attribute.
-  * **Windowing** : Uses windows to scope aggregations over unbounded data.
-  * **Deduplication** : Deduplication is incremental and often uses windows.
-  * **Session Windows** : Supported.
+* **ORDER BY** : The primary sort must be on a time attribute.
+* **Windowing** : Uses windows to scope aggregations over unbounded data.
+* **Deduplication** : Deduplication is incremental and often uses windows.
+* **Session Windows** : Supported.
 
 ## Unified processing model¶
 
@@ -80,18 +80,18 @@ One important advantage of Flink is its _unified processing model_. This means t
 
 This unified approach enables you to:
 
-  * Build applications that process both historical and real-time data.
-  * Seamlessly transition between batch and streaming modes.
-  * Maintain consistent semantics across processing modes.
-  * Leverage the same tools and libraries for both paradigms.
+* Build applications that process both historical and real-time data.
+* Seamlessly transition between batch and streaming modes.
+* Maintain consistent semantics across processing modes.
+* Leverage the same tools and libraries for both paradigms.
 
 ## Time and watermarks¶
 
 Time and watermarks are important concepts in Flink that help you process data correctly.
 
-  * **Batch mode** : Time is fixed. All data is available, so event time and processing time are equivalent.
-  * **Streaming mode** : Time is dynamic. Streaming mode uses watermarks to track event time progress and handle out-of-order data.
-  * **Windowing** : In streaming, you use windows (tumbling, hopping, cumulative, session) to group data for aggregation. In batch, windows apply to static data.
+* **Batch mode** : Time is fixed. All data is available, so event time and processing time are equivalent.
+* **Streaming mode** : Time is dynamic. Streaming mode uses watermarks to track event time progress and handle out-of-order data.
+* **Windowing** : In streaming, you use windows (tumbling, hopping, cumulative, session) to group data for aggregation. In batch, windows apply to static data.
 
 For more information, see [Time and Watermarks](timely-stream-processing.html#flink-sql-timely-stream-processing).
 
@@ -99,8 +99,8 @@ For more information, see [Time and Watermarks](timely-stream-processing.html#fl
 
 Determinism is a key concept in Flink that helps you ensure that your queries always produce the same results.
 
-  * **Batch** : Re-running a batch job on the same data yields the same result, except for non-deterministic functions like [UUID()](../reference/functions/numeric-functions.html#flink-sql-uuid-function).
-  * **Streaming** : Results can vary due to timing, order of arrival, and late data. Determinism is harder to guarantee.
+* **Batch** : Re-running a batch job on the same data yields the same result, except for non-deterministic functions like [UUID()](../reference/functions/numeric-functions.html#flink-sql-uuid-function).
+* **Streaming** : Results can vary due to timing, order of arrival, and late data. Determinism is harder to guarantee.
 
 For more information, see [Determinism in Continuous Queries](determinism.html#flink-sql-determinism).
 
@@ -108,9 +108,9 @@ For more information, see [Determinism in Continuous Queries](determinism.html#f
 
 In Confluent Cloud for Apache Flink, batch mode is available by using snapshot queries.
 
-  * **Snapshot queries** : These are batch queries that automatically bound the input sources as of the current time.
-  * **Batch optimizations** : Batch mode enables optimizations like global sorting, blocking operators, and efficient joins. Snapshot queries benefit from these optimizations.
-  * **Resource usage** : Batch jobs, which are snapshot queries in Confluent Cloud for Apache Flink, release resources when finished. Streaming jobs hold resources as long as they run.
+* **Snapshot queries** : These are batch queries that automatically bound the input sources as of the current time.
+* **Batch optimizations** : Batch mode enables optimizations like global sorting, blocking operators, and efficient joins. Snapshot queries benefit from these optimizations.
+* **Resource usage** : Batch jobs, which are snapshot queries in Confluent Cloud for Apache Flink, release resources when finished. Streaming jobs hold resources as long as they run.
 
 For more information, see [Snapshot Queries](snapshot-queries.html#flink-sql-snapshot-queries).
 

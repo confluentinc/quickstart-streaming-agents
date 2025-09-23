@@ -48,37 +48,37 @@ To remove a connection from the current database, use the [DROP CONNECTION](drop
 
 Confluent Cloud for Apache Flink supports these authentication methods:
 
-  * **Basic:** `username` and `password`. The credentials are added to the HTTP request as a BASIC header.
-  * **Bearer:** `token`. The credentials are added to the HTTP request as a BEARER header.
-  * **OAuth:** `token-endpoint`, `client-id`, `client-secret`, and `scope`. The provided options are used to retrieve the OAuth token from the token endpoint and add the token to the HTTP request as a BEARER token.
+* **Basic:** `username` and `password`. The credentials are added to the HTTP request as a BASIC header.
+* **Bearer:** `token`. The credentials are added to the HTTP request as a BEARER header.
+* **OAuth:** `token-endpoint`, `client-id`, `client-secret`, and `scope`. The provided options are used to retrieve the OAuth token from the token endpoint and add the token to the HTTP request as a BEARER token.
 
 ### Connection types¶
 
 The following connection types are supported:
 
-  * azureml
-  * azureopenai
-  * bedrock
-  * confluent_jdbc
-  * couchbase
-  * elastic
-  * googleai
-  * mcp_server
-  * mongodb
-  * openai
-  * pinecone
-  * rest
-  * sagemaker
-  * vertexai
+* azureml
+* azureopenai
+* bedrock
+* confluent_jdbc
+* couchbase
+* elastic
+* googleai
+* mcp_server
+* mongodb
+* openai
+* pinecone
+* rest
+* sagemaker
+* vertexai
 
 ### Authorization¶
 
 Depending on the connection type, the following authorization methods are supported:
 
-  * **API key:** azureml, azureopenai, elastic, googleai, mcp_server, openai, pinecone
-  * **basic:** mongodb, couchbase, confluent_jdbc, or rest
-  * **bearer:** rest or mcp_server connections
-  * **oauth:** rest or mcp_server connections
+* **API key:** azureml, azureopenai, elastic, googleai, mcp_server, openai, pinecone
+* **basic:** mongodb, couchbase, confluent_jdbc, or rest
+* **bearer:** rest or mcp_server connections
+* **oauth:** rest or mcp_server connections
 
 Secrets are extracted to the secret store and aren’t displayed in subsequent [DESCRIBE CONNECTION](describe.html#flink-sql-describe) statements, the Flink SQL shell, or the Confluent Cloud Console.
 

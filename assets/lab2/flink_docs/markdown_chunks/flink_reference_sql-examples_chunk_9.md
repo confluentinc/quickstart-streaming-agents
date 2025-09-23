@@ -61,11 +61,11 @@ The system watermark strategy is smart and excludes idle Kafka partitions from t
 
 Typically, root causes are:
 
-  * Idle Kafka partitions
-  * No data in Kafka partitions
-  * Not enough data in Kafka partitions
-  * Watermark strategy is too conservative
-  * No fresh data after warm up with historical data for progressing the logical clock
+* Idle Kafka partitions
+* No data in Kafka partitions
+* Not enough data in Kafka partitions
+* Watermark strategy is too conservative
+* No fresh data after warm up with historical data for progressing the logical clock
 
 ### Handle idle partitions for missing watermarks¶
 

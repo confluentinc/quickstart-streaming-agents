@@ -1,0 +1,75 @@
+repos:
+  # Basic hooks for general code quality
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+        args: ['--maxkb=1024']  # Limit to 1MB
+      - id: check-merge-conflict
+      - id: detect-private-key
+      - id: check-json
+      - id: pretty-format-json
+        args: ['--autofix']
+
+  # Secret detection - CRITICAL for security
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+        exclude: ^(\.git/|\.venv/|__pycache__/)
+
+  # Python security scanning
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.5
+    hooks:
+      - id: bandit
+        args: ['-r', '.']
+        exclude: ^(tests/|\.venv/|__pycache__/)
+
+  # Terraform security and formatting
+  - repo: https://github.com/antonbabenko/pre-commit-terraform
+    rev: v1.83.5
+    hooks:
+      - id: terraform_fmt
+      - id: terraform_validate
+      - id: terraform_docs
+        args: ['--hook-config=--path-to-file=README.md']
+      - id: checkov
+        args: [
+          '--framework', 'terraform',
+          '--skip-check', 'CKV_AWS_20',  # S3 bucket public access block
+          '--skip-check', 'CKV_AWS_21',  # S3 bucket versioning
+          '--skip-check', 'CKV2_AWS_6'   # S3 bucket public access block
+        ]
+
+  # Python code formatting and quality
+  - repo: https://github.com/psf/black
+    rev: 23.9.1
+    hooks:
+      - id: black
+        language_version: python3
+
+  # Python import sorting
+  - repo: https://github.com/pycqa/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+        args: ["--profile", "black"]
+
+  # YAML linting
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.32.0
+    hooks:
+      - id: yamllint
+        args: ['-d', 'relaxed']
+
+  # Markdown linting
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.37.0
+    hooks:
+      - id: markdownlint
+        args: ['--fix']
+        exclude: ^(CHANGELOG\.md|\.github/)

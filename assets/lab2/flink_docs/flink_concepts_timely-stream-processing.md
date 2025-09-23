@@ -127,17 +127,17 @@ Windows can be _time driven_ , for example, “every 30 seconds”, or _data dri
 
 There are different types of windows, for example:
 
-  * **Tumbling windows:** no overlap
-  * **Sliding windows:** with overlap
-  * **Session windows:** punctuated by a gap of inactivity
+* **Tumbling windows:** no overlap
+* **Sliding windows:** with overlap
+* **Session windows:** punctuated by a gap of inactivity
 
 For more information, see:
 
-  * [Window Aggregation Queries in Confluent Cloud for Apache Flink](../reference/queries/window-aggregation.html#flink-sql-window-aggregation)
-  * [Window Deduplication Queries in Confluent Cloud for Apache Flink](../reference/queries/window-deduplication.html#flink-sql-window-deduplication)
-  * [Window Join Queries in Confluent Cloud for Apache Flink](../reference/queries/window-join.html#flink-sql-window-join)
-  * [Window Top-N Queries in Confluent Cloud for Apache Flink](../reference/queries/window-topn.html#flink-sql-window-top-n)
-  * [Windowing Table-Valued Functions (Windowing TVFs) in Confluent Cloud for Apache Flink](../reference/queries/window-tvf.html#flink-sql-window-tvfs)
+* [Window Aggregation Queries in Confluent Cloud for Apache Flink](../reference/queries/window-aggregation.html#flink-sql-window-aggregation)
+* [Window Deduplication Queries in Confluent Cloud for Apache Flink](../reference/queries/window-deduplication.html#flink-sql-window-deduplication)
+* [Window Join Queries in Confluent Cloud for Apache Flink](../reference/queries/window-join.html#flink-sql-window-join)
+* [Window Top-N Queries in Confluent Cloud for Apache Flink](../reference/queries/window-topn.html#flink-sql-window-top-n)
+* [Windowing Table-Valued Functions (Windowing TVFs) in Confluent Cloud for Apache Flink](../reference/queries/window-tvf.html#flink-sql-window-tvfs)
 
 ### Watermarks and windows¶
 
@@ -189,10 +189,10 @@ Watermark alignment enables you to pause reading from streams that are too far a
 
 Watermark alignment provides these benefits:
 
-  * Reduces memory buffering requirements
-  * Improves performance by preventing excessive data buffering
-  * Prevents operational problems like checkpointing failures
-  * Provides control over stream synchronization
+* Reduces memory buffering requirements
+* Improves performance by preventing excessive data buffering
+* Prevents operational problems like checkpointing failures
+* Provides control over stream synchronization
 
 In Confluent Cloud for Apache Flink, watermark alignment is enabled by default.
 
@@ -208,8 +208,8 @@ Decreasing the watermark alignment’s maximum allowed drift may be justified if
 
 Confluent Cloud for Apache Flink can process data based on different notions of time.
 
-  * **Event time** refers to stream processing based on timestamps that are attached to each row. The timestamps can encode when an event happened.
-  * **Processing time** refers to the machine’s system time that’s executing the operation. Processing time is also known as “epoch time”, for example, Java’s `System.currentTimeMillis()`. Processing time is not supported in Confluent Cloud for Apache Flink.
+* **Event time** refers to stream processing based on timestamps that are attached to each row. The timestamps can encode when an event happened.
+* **Processing time** refers to the machine’s system time that’s executing the operation. Processing time is also known as “epoch time”, for example, Java’s `System.currentTimeMillis()`. Processing time is not supported in Confluent Cloud for Apache Flink.
 
 Time attributes can be part of every table schema. They are defined when creating a table from a `CREATE TABLE` DDL statement.
 

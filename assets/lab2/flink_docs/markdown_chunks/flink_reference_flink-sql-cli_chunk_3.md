@@ -43,8 +43,8 @@ Run the [confluent flink statement exception list](https://docs.confluent.io/con
 
 Run the [confluent flink statement delete](https://docs.confluent.io/confluent-cli/current/command-reference/flink/statement/confluent_flink_statement_delete.html) command to delete an existing statement permanently.
 
-  * All of its resources, like checkpoints, are also deleted.
-  * Deleting a statement stops charges for its use.
+* All of its resources, like checkpoints, are also deleted.
+* Deleting a statement stops charges for its use.
 
     confluent flink statement delete ${STATEMENT_NAME}
 

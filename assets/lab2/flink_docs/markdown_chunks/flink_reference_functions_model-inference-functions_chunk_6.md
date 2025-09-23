@@ -25,10 +25,10 @@ This function supports only SSE-based MCP servers.
 
 The following models are supported:
 
-  * Anthropic
-  * AzureOpenAI
-  * Gemini
-  * OpenAI
+* Anthropic
+* AzureOpenAI
+* Gemini
+* OpenAI
 
 Note
 
@@ -38,11 +38,11 @@ A Preview feature is a Confluent Cloud component that is being introduced to gai
 
 Configuration
 
-  * `model_name`: Name of the model entity to call [STRING].
-  * `input_prompt`: Input prompt to pass to the LLM [STRING].
-  * `remote_udf_descriptor`: Map to pass UDF names as key and function description as value [MAP<String, String>]. A maximum of 3 UDFs can be passed.
-  * `mcp_tool_descriptor`: Map to pass MCP tool names as key and tool description as value [MAP<String, String>]. A maximum of 5 tools can be passed. This additional description is passed to the LLM as “Additional description”. If the MCP server already has a description, and if the server doesn’t have a description, `mcp_tool_descriptor` is added as the description. You can leave it empty, in which case no changes are made to the description provided by the server.
-  * `invocation_config[optional]`: Map to pass the config to manage function behavior, for example, `MAP['debug', true, 'on_error', 'continue']`.
+* `model_name`: Name of the model entity to call [STRING].
+* `input_prompt`: Input prompt to pass to the LLM [STRING].
+* `remote_udf_descriptor`: Map to pass UDF names as key and function description as value [MAP<String, String>]. A maximum of 3 UDFs can be passed.
+* `mcp_tool_descriptor`: Map to pass MCP tool names as key and tool description as value [MAP<String, String>]. A maximum of 5 tools can be passed. This additional description is passed to the LLM as “Additional description”. If the MCP server already has a description, and if the server doesn’t have a description, `mcp_tool_descriptor` is added as the description. You can leave it empty, in which case no changes are made to the description provided by the server.
+* `invocation_config[optional]`: Map to pass the config to manage function behavior, for example, `MAP['debug', true, 'on_error', 'continue']`.
 
 Example
 
@@ -50,15 +50,16 @@ The following example shows how to invoke a UDF and a registered external tool o
 
 When you create an MCP server connection, specify the following options:
 
-  * `endpoint`: Defines the base URL for all non-SSE communications with the MCP server, including other http calls and general data exchange.
-  * `sse_endpoint`: Specifies the explicit URL endpoint used to establish a Server-Sent Events (SSE) connection with the MCP server. If omitted, the client defaults to constructing the SSE endpoint by appending `/sse` to the domain specified in `endpoint`.
+* `endpoint`: Defines the base URL for all non-SSE communications with the MCP server, including other http calls and general data exchange.
+* `sse_endpoint`: Specifies the explicit URL endpoint used to establish a Server-Sent Events (SSE) connection with the MCP server. If omitted, the client defaults to constructing the SSE endpoint by appending `/sse` to the domain specified in `endpoint`.
 
-    # Create an MCP server connection.
+# Create an MCP server connection
+
     CREATE CONNECTION claims_mcp_server
       WITH (
         'type' = 'mcp_server',
-        'endpoint' = 'https://mcp.deepwiki.com',
-        'sse-endpoint' = 'https://mcp.deepwiki.com/sse',
+        'endpoint' = '<https://mcp.deepwiki.com>',
+        'sse-endpoint' = '<https://mcp.deepwiki.com/sse>',
         'api-key' = 'api_key'
       );
 

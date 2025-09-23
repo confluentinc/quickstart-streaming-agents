@@ -17,8 +17,8 @@ After CMF is installed and running, it will continuously watch Flink application
 
 A Flink application controls the physical deployment of the underlying Flink application:
 
-  * Running: A Flink application in the desired job state `running`, it is deployed according its specified configuration. When there are no errors, the Flink cluster associated with the Flink application consumes the configured amount of physical resources (such as CPU and memory).
-  * Suspended: A Flink application in `suspended` desired state is inactive. When there are no errors, the Flink cluster associated with the Flink application consumes no physical resources (such as CPU and memory). Depending on the configured `upgradeMode`, the state of a `suspended` Flink Flink application will be preserved and restored upon a transition back into `running` state.
+* Running: A Flink application in the desired job state `running`, it is deployed according its specified configuration. When there are no errors, the Flink cluster associated with the Flink application consumes the configured amount of physical resources (such as CPU and memory).
+* Suspended: A Flink application in `suspended` desired state is inactive. When there are no errors, the Flink cluster associated with the Flink application consumes no physical resources (such as CPU and memory). Depending on the configured `upgradeMode`, the state of a `suspended` Flink Flink application will be preserved and restored upon a transition back into `running` state.
 
 ## Relationship to Environment¶
 
@@ -104,6 +104,6 @@ You can use these tools to create and manage Flink applications.
 
 The [REST APIs](../../clients-api/rest.html#af-rest-api) to manage Flink application instances are declarative, which makes it easy to integrate with external tooling such as CI/CD systems, and they fully describe the desired configuration.
 
-  * [REST APIs for Confluent Manager for Apache Flink](../../clients-api/rest.html#af-rest-api)
-  * [Confluent CLI reference](/confluent-cli/current/command-reference/flink/index.html)
-  * [Confluent for Kubernetes](../../clients-api/flink-cfk.html#cmf-cfk)
+* [REST APIs for Confluent Manager for Apache Flink](../../clients-api/rest.html#af-rest-api)
+* [Confluent CLI reference](/confluent-cli/current/command-reference/flink/index.html)
+* [Confluent for Kubernetes](../../clients-api/flink-cfk.html#cmf-cfk)

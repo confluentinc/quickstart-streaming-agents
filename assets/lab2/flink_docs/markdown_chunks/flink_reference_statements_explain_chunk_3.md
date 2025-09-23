@@ -125,9 +125,9 @@ The physical plan shows how Flink executes your query. Each operation is numbere
 
 Changelog modes describe how operators handle data modifications:
 
-  * **Append:** The operator processes only insert operations. New rows are simply added.
-  * **Upsert:** The operator handles both inserts and updates. It uses an “upsert key” to identify rows. If a row with a given key exists already, the operator updates it; otherwise, it inserts a new row.
-  * **Retract:** The operator handles inserts, updates, and deletes. Updates are typically represented as a retraction (deletion) of the old row followed by an insertion of the new row. Deletes are represented as retractions.
+* **Append:** The operator processes only insert operations. New rows are simply added.
+* **Upsert:** The operator handles both inserts and updates. It uses an “upsert key” to identify rows. If a row with a given key exists already, the operator updates it; otherwise, it inserts a new row.
+* **Retract:** The operator handles inserts, updates, and deletes. Updates are typically represented as a retraction (deletion) of the old row followed by an insertion of the new row. Deletes are represented as retractions.
 
 Operators change changelog modes when different update patterns are needed, such as when moving from streaming reads to aggregations.
 
@@ -135,17 +135,17 @@ Operators change changelog modes when different update patterns are needed, such
 
 The physical details section shows how data moves between operators. Watch for:
 
-  * Exchange operators indicating data redistribution
-  * Changes in upsert keys showing where data must be reshuffled
-  * Operator reuse marked by “(reused)” references
+* Exchange operators indicating data redistribution
+* Changes in upsert keys showing where data must be reshuffled
+* Operator reuse marked by “(reused)” references
 
 ### State size¶
 
 Each operator in the physical plan includes a “State Size” property indicating its memory requirements during execution:
 
-  * LOW: Minimal state maintenance, typically efficient memory usage
-  * MEDIUM: Moderate state requirements, may need attention with high cardinality
-  * HIGH: Significant state maintenance that requires careful management
+* LOW: Minimal state maintenance, typically efficient memory usage
+* MEDIUM: Moderate state requirements, may need attention with high cardinality
+* HIGH: Significant state maintenance that requires careful management
 
 When operators show HIGH state size, you should configure a state TTL to prevent unbounded state growth. Without TTL configuration, these operators can accumulate unlimited state over time, potentially leading to resource exhaustion and the statement ending up in a `DEGRADED` state.
 

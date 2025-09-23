@@ -64,10 +64,10 @@ In the previous steps, you implemented a UDF with a simple scalar function. Conf
 
 The following steps show how to implement a simple UDTF, upload it to Confluent Cloud, and use it in a Flink SQL statement.
 
-  * Step 1: Build the uber jar
-  * Step 2: Upload the UDTF jar as a Flink artifact
-  * Step 3: Register the UDTF
-  * Step 4: Use the UDTF in a Flink SQL query
+* Step 1: Build the uber jar
+* Step 2: Upload the UDTF jar as a Flink artifact
+* Step 3: Register the UDTF
+* Step 4: Use the UDTF in a Flink SQL query
 
 ## Step 1: Build the uber jar¶
 

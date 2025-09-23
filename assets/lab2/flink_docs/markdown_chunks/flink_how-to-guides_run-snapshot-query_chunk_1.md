@@ -13,9 +13,9 @@ Confluent Cloud for Apache Flink® supports [snapshot queries](../concepts/snaps
 
 This guide shows how to run a snapshot query on a Flink table.
 
-  * Step 1: Create an example data stream
-  * Step 2: Run a snapshot query on the topic
-  * Step 3: Set the snapshot mode in SQL
+* Step 1: Create an example data stream
+* Step 2: Run a snapshot query on the topic
+* Step 3: Set the snapshot mode in SQL
 
 Note
 
@@ -27,9 +27,9 @@ Early Access Program features are intended for evaluation use in development and
 
 ## Prerequisites¶
 
-  * Access to Confluent Cloud.
-  * The OrganizationAdmin, EnvironmentAdmin, or FlinkAdmin role for creating compute pools, or the FlinkDeveloper role if you already have a compute pool. If you don’t have the appropriate role, contact your OrganizationAdmin or EnvironmentAdmin. For more information, see [Grant Role-Based Access in Confluent Cloud for Apache Flink](../operate-and-deploy/flink-rbac.html#flink-rbac).
-  * A provisioned Flink compute pool.
+* Access to Confluent Cloud.
+* The OrganizationAdmin, EnvironmentAdmin, or FlinkAdmin role for creating compute pools, or the FlinkDeveloper role if you already have a compute pool. If you don’t have the appropriate role, contact your OrganizationAdmin or EnvironmentAdmin. For more information, see [Grant Role-Based Access in Confluent Cloud for Apache Flink](../operate-and-deploy/flink-rbac.html#flink-rbac).
+* A provisioned Flink compute pool.
 
 ## Step 1: Create an example data stream¶
 

@@ -13,13 +13,13 @@ Get started using AI models with [Run an AI Model](../../../ai/ai-model-inferenc
 
 The following providers are supported:
 
-  * AWS Bedrock
-  * AWS Sagemaker
-  * Azure Machine Learning (Azure ML)
-  * Azure OpenAI
-  * Google AI
-  * OpenAI
-  * Vertex AI
+* AWS Bedrock
+* AWS Sagemaker
+* Azure Machine Learning (Azure ML)
+* Azure OpenAI
+* Google AI
+* OpenAI
+* Vertex AI
 
 ## Syntax¶
 
@@ -55,11 +55,11 @@ If you get a 429 error when you run a CREATE MODEL statement, the most likely ca
 
 Confluent Cloud for Apache Flink supports these types of analysis for AI model inference:
 
-  * **Classification:** Categorize input data into predefined classes or labels. This task is used in applications like spam detection, where emails are classified as “spam” or “not spam”, and image recognition.
-  * **Clustering:** Group a set of objects so that objects in the same group, called a “cluster”, are more similar to each other than to those in other groups. This task is a form of unsupervised learning, because it doesn’t rely on predefined categories. Applications include customer segmentation in marketing and gene sequence analysis in biology.
-  * **Embedding:** Transform high-dimensional data into lower-dimensional vectors while preserving the relative distances between data points. This is crucial for tasks like natural language processing (NLP), where words or sentences are converted into vectors, enabling models to understand semantic similarities. Embeddings are used in recommendation systems, search engines, and more.
-  * **Regression:** Regression models predict a continuous output variable based on one or more input features. This task is used in scenarios like predicting house prices based on features like size, location, and number of bedrooms, or forecasting stock prices. Regression analysis helps in understanding the relationships between variables and forecasting.
-  * **Text generation:** Generate human-like text based on input data. Applications include chatbots, content creation, and language translation.
+* **Classification:** Categorize input data into predefined classes or labels. This task is used in applications like spam detection, where emails are classified as “spam” or “not spam”, and image recognition.
+* **Clustering:** Group a set of objects so that objects in the same group, called a “cluster”, are more similar to each other than to those in other groups. This task is a form of unsupervised learning, because it doesn’t rely on predefined categories. Applications include customer segmentation in marketing and gene sequence analysis in biology.
+* **Embedding:** Transform high-dimensional data into lower-dimensional vectors while preserving the relative distances between data points. This is crucial for tasks like natural language processing (NLP), where words or sentences are converted into vectors, enabling models to understand semantic similarities. Embeddings are used in recommendation systems, search engines, and more.
+* **Regression:** Regression models predict a continuous output variable based on one or more input features. This task is used in scenarios like predicting house prices based on features like size, location, and number of bedrooms, or forecasting stock prices. Regression analysis helps in understanding the relationships between variables and forecasting.
+* **Text generation:** Generate human-like text based on input data. Applications include chatbots, content creation, and language translation.
 
 When you register an AI or ML model, you specify the task type by using the task property. `task` is a required property, but it applies only when using the [ML_EVALUATE](../functions/model-inference-functions.html#flink-sql-ml-evaluate-function) function.
 
@@ -203,50 +203,50 @@ Model Provider | Property
 ---|---
 Common |
 
-  * {PROVIDER}.client_timeout
-  * {PROVIDER}.connection
-  * {PROVIDER}.input_format
-  * {PROVIDER}.input_content_type
-  * {PROVIDER}.output_format
-  * {PROVIDER}.output_content_type
-  * {PROVIDER}.PARAMS.*
-  * {PROVIDER}.system_prompt
+* {PROVIDER}.client_timeout
+* {PROVIDER}.connection
+* {PROVIDER}.input_format
+* {PROVIDER}.input_content_type
+* {PROVIDER}.output_format
+* {PROVIDER}.output_content_type
+* {PROVIDER}.PARAMS.*
+* {PROVIDER}.system_prompt
 
 OpenAI |
 
-  * openai.input_format
-  * openai.model_version
+* openai.input_format
+* openai.model_version
 
 Azure OpenAI |
 
-  * azureopenai.input_format
-  * azureopenai.model_version
+* azureopenai.input_format
+* azureopenai.model_version
 
 Azure ML |
 
-  * azureml.input_format
-  * azureml.deployment_name
+* azureml.input_format
+* azureml.deployment_name
 
 Google AI |
 
-  * googleai.input_format
+* googleai.input_format
 
 Sagemaker |
 
-  * sagemaker.custom_attributes
-  * sagemaker.enable_explanations
-  * sagemaker.inference_component_name
-  * sagemaker.inference_id
-  * sagemaker.input_content_type
-  * sagemaker.output_content_type
-  * sagemaker.target_container_hostname
-  * sagemaker.target_model
-  * sagemaker.target_variant
+* sagemaker.custom_attributes
+* sagemaker.enable_explanations
+* sagemaker.inference_component_name
+* sagemaker.inference_id
+* sagemaker.input_content_type
+* sagemaker.output_content_type
+* sagemaker.target_container_hostname
+* sagemaker.target_model
+* sagemaker.target_variant
 
 Vertex AI |
 
-  * vertexai.service_key
-  * vertexai.input_format
+* vertexai.service_key
+* vertexai.input_format
 
 ### Connection resource¶
 
@@ -335,11 +335,11 @@ Specify the kind of analysis to perform.
 
 Supported values are:
 
-  * “classification”
-  * “clustering”
-  * “embedding”
-  * “regression”
-  * “text_generation”
+* “classification”
+* “clustering”
+* “embedding”
+* “regression”
+* “text_generation”
 
 This property is required, but it applies only when using the [ML_EVALUATE](../functions/model-inference-functions.html#flink-sql-ml-evaluate-function) function.
 

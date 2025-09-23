@@ -15,14 +15,14 @@ Apache Flink® SQL is based on [Apache Calcite](https://calcite.apache.org/), wh
 
 Flink SQL has a rich set of native data types that you can use in SQL statements and queries.
 
-  * [Data Types](datatypes.html#flink-sql-datatypes)
+* [Data Types](datatypes.html#flink-sql-datatypes)
 
 ## Serialize and deserialize data¶
 
-  * [Data Type Mappings](serialization.html#flink-sql-serialization)
+* [Data Type Mappings](serialization.html#flink-sql-serialization)
 
 ## Reserved keywords¶
 
 Some string combinations are reserved as keywords for future use.
 
-  * [Flink SQL Reserved Keywords](keywords.html#flink-sql-keywords)
+* [Flink SQL Reserved Keywords](keywords.html#flink-sql-keywords)

@@ -17,8 +17,8 @@ During the planning stage, the query validator rejects queries for invalid type 
 
 In Flink SQL, casting can be performed by using one of these two built-in functions:
 
-  * [CAST](functions/comparison-functions.html#flink-sql-cast-function): The regular cast function defined by the SQL standard. It can fail the job if the cast operation is fallible and the provided input is not valid. Type inference preserves the nullability of the input type.
-  * [TRY_CAST](functions/comparison-functions.html#flink-sql-try-cast-function): An extension to the regular cast function that returns `NULL` if the cast operation fails. Its return type is always nullable.
+* [CAST](functions/comparison-functions.html#flink-sql-cast-function): The regular cast function defined by the SQL standard. It can fail the job if the cast operation is fallible and the provided input is not valid. Type inference preserves the nullability of the input type.
+* [TRY_CAST](functions/comparison-functions.html#flink-sql-try-cast-function): An extension to the regular cast function that returns `NULL` if the cast operation fails. Its return type is always nullable.
 
 For example:
 

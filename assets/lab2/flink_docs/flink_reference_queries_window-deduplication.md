@@ -25,10 +25,10 @@ Note
 
 This query pattern must be followed exactly, otherwise, the optimizer won’t translate the query to Window Deduplication.
 
-  * `ROW_NUMBER()`: Assigns an unique, sequential number to each row, starting with one.
-  * `PARTITION BY window_start, window_end [, column_key1...]`: Specifies the partition columns which contain `window_start`, `window_end` and other partition keys.
-  * `ORDER BY time_attr [asc|desc]`: Specifies the ordering column, which must be a [time attribute](../../concepts/timely-stream-processing.html#flink-sql-time-attributes). Flink SQL supports the [event time attribute](../../concepts/timely-stream-processing.html#flink-sql-time-attributes-event-time). Processing time is not supported in Confluent Cloud for Apache Flink. Ordering by ASC means keeping the first row, ordering by DESC means keeping the last row.
-  * `WHERE (rownum = 1 | rownum <=1 | rownum < 2)`: The `rownum = 1 | rownum <=1 | rownum < 2` is required for the optimizer to recognize the query should be translated to Window Deduplication.
+* `ROW_NUMBER()`: Assigns an unique, sequential number to each row, starting with one.
+* `PARTITION BY window_start, window_end [, column_key1...]`: Specifies the partition columns which contain `window_start`, `window_end` and other partition keys.
+* `ORDER BY time_attr [asc|desc]`: Specifies the ordering column, which must be a [time attribute](../../concepts/timely-stream-processing.html#flink-sql-time-attributes). Flink SQL supports the [event time attribute](../../concepts/timely-stream-processing.html#flink-sql-time-attributes-event-time). Processing time is not supported in Confluent Cloud for Apache Flink. Ordering by ASC means keeping the first row, ordering by DESC means keeping the last row.
+* `WHERE (rownum = 1 | rownum <=1 | rownum < 2)`: The `rownum = 1 | rownum <=1 | rownum < 2` is required for the optimizer to recognize the query should be translated to Window Deduplication.
 
 ## Description¶
 

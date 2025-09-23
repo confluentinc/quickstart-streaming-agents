@@ -13,11 +13,11 @@ Confluent Cloud for Apache Flink® supports user-defined functions (UDFs), which
 
 You can implement user-defined functions in Java, and you can use third-party libraries within a UDF. Confluent Cloud for Apache Flink supports scalar functions (UDFs), which map scalar values to a new scalar value, and table functions (UDTFs), which map multiple scalar values to multiple output rows.
 
-  * **Create an example UDF:** [Create a User Defined Function](../how-to-guides/create-udf.html#flink-sql-create-udf)
-  * **Add logging to your UDFs:** [Enable Logging in a User Defined Function](../how-to-guides/enable-udf-logging.html#flink-sql-enable-udf-logging)
-  * **Availability:** UDF regional availability
-  * **Limitations:** UDF limitations
-  * **Example code:** [Flink UDF Java Examples](https://github.com/confluentinc/flink-udf-java-examples)
+* **Create an example UDF:** [Create a User Defined Function](../how-to-guides/create-udf.html#flink-sql-create-udf)
+* **Add logging to your UDFs:** [Enable Logging in a User Defined Function](../how-to-guides/enable-udf-logging.html#flink-sql-enable-udf-logging)
+* **Availability:** UDF regional availability
+* **Limitations:** UDF limitations
+* **Example code:** [Flink UDF Java Examples](https://github.com/confluentinc/flink-udf-java-examples)
 
 ## Artifacts¶
 
@@ -53,8 +53,8 @@ To upload artifacts, register functions, and invoke functions, you must have the
 
 Confluent supports the UDF infrastructure in Confluent Cloud only. It is your responsibility to troubleshoot custom UDF issues for functions you build or that are provided to you by others. The following provides additional details about shared support responsibilities.
 
-  * **Customer Managed** : You are responsible for function logic. Confluent does not provide any support for debugging services and features within UDFs.
-  * **Confluent Managed** : Confluent is responsible for managing the Flink services and custom compute platform, and provides support for these.
+* **Customer Managed** : You are responsible for function logic. Confluent does not provide any support for debugging services and features within UDFs.
+* **Confluent Managed** : Confluent is responsible for managing the Flink services and custom compute platform, and provides support for these.
 
 ## Scalar functions¶
 

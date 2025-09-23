@@ -17,12 +17,12 @@ If you’re currently using Confluent Cloud in a region that doesn’t yet suppo
 
 Choose one of the following quick starts to get started with Flink SQL on Confluent Cloud:
 
-  * [Flink SQL Quick Start with Confluent Cloud Console](quick-start-cloud-console.html#flink-sql-quick-start-cloud-console)
-  * [Flink SQL Shell Quick Start](quick-start-shell.html#flink-sql-quick-start-shell)
+* [Flink SQL Quick Start with Confluent Cloud Console](quick-start-cloud-console.html#flink-sql-quick-start-cloud-console)
+* [Flink SQL Shell Quick Start](quick-start-shell.html#flink-sql-quick-start-shell)
 
 Also, you can access Flink by using the [REST API](../operate-and-deploy/flink-rest-api.html#flink-rest-api) and the [Confluent Terraform Provider](../operate-and-deploy/deploy-flink-sql-statement.html#flink-deploy-sql-statement).
 
-  * [REST API-based data streams](https://github.com/confluentinc/demo-scene/tree/master/http-streaming)
-  * [Sample Project for Confluent Terraform Provider](https://registry.terraform.io/providers/confluentinc/confluent/latest/docs/guides/sample-project)
+* [REST API-based data streams](https://github.com/confluentinc/demo-scene/tree/master/http-streaming)
+* [Sample Project for Confluent Terraform Provider](https://registry.terraform.io/providers/confluentinc/confluent/latest/docs/guides/sample-project)
 
 If you get stuck, have a question, or want to provide feedback or feature requests, don’t hesitate to reach out. Check out [Get Help with Confluent Cloud for Apache Flink](../get-help.html#ccloud-flink-help) for our support channels.

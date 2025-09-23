@@ -166,8 +166,8 @@ The optional LIKE clause shows all tables with names that match `<sql_like_patte
 
 The syntax of the SQL pattern in a `LIKE` clause is the same as in the `MySQL` dialect.
 
-  * `%` matches any number of characters, including zero characters. Use the backslash character to escape the `%` character: `\%` matches one `%` character.
-  * `_` matches exactly one character. Use the backslash character to escape the `_` character: `\_` matches one `_` character.
+* `%` matches any number of characters, including zero characters. Use the backslash character to escape the `%` character: `\%` matches one `%` character.
+* `_` matches exactly one character. Use the backslash character to escape the `_` character: `\_` matches one `_` character.
 
 Example
 
@@ -282,9 +282,9 @@ SHOW CREATE TABLE returns:
 
 Properties
 
-  * Key and value formats are raw (binary format) with BYTES
+* Key and value formats are raw (binary format) with BYTES
 
-  * Following Kafka message semantics, both key and value support NULL as well, so the following statement is supported:
+* Following Kafka message semantics, both key and value support NULL as well, so the following statement is supported:
 
         INSERT INTO t_raw (key, val) SELECT CAST(NULL AS BYTES), CAST(NULL AS BYTES);
 
@@ -324,9 +324,9 @@ SHOW CREATE TABLE returns:
 
 Properties
 
-  * Key format is raw (binary format) with BYTES
+* Key format is raw (binary format) with BYTES
 
-  * Following Kafka message semantics, key supports NULL as well. So this is possible: so the following statement is supported:
+* Following Kafka message semantics, key supports NULL as well. So this is possible: so the following statement is supported:
 
         INSERT INTO t_raw_key SELECT CAST(NULL AS BYTES), 12, 'Bob';
 
@@ -368,8 +368,8 @@ SHOW CREATE TABLE returns:
 
 Properties
 
-  * Schema Registry defines column data type INT NOT NULL.
-  * The column name `key` is used as a default, because Schema Registry doesn’t provide a column name.
+* Schema Registry defines column data type INT NOT NULL.
+* The column name `key` is used as a default, because Schema Registry doesn’t provide a column name.
 
 #### Overlapping names in key/value, no key in Schema Registry¶
 
@@ -408,9 +408,9 @@ SHOW CREATE TABLE returns:
 
 Properties
 
-  * Schema Registry value defines columns INT NOT NULL and `key STRING`
-  * The column name `key BYTES` is used as a default if no key is in Schema Registry
-  * Because `key` would collide with value column, `key_` prefix is added
+* Schema Registry value defines columns INT NOT NULL and `key STRING`
+* The column name `key BYTES` is used as a default if no key is in Schema Registry
+* Because `key` would collide with value column, `key_` prefix is added
 
 #### Record key and record value in Schema Registry¶
 
@@ -458,8 +458,8 @@ SHOW CREATE TABLE returns:
 
 Properties
 
-  * Schema Registry defines columns for both key and value.
-  * The column names of key and value are disjoint sets and don’t overlap.
+* Schema Registry defines columns for both key and value.
+* The column names of key and value are disjoint sets and don’t overlap.
 
 #### Record key and record value with overlap in Schema Registry¶
 
@@ -511,9 +511,9 @@ SHOW CREATE TABLE returns:
 
 Properties
 
-  * Schema Registry defines columns for both key and value.
-  * The column names of key and value overlap on `uid`.
-  * `'value.fields-include' = 'all'` is set to exclude the key because it is fully contained in the value.
+* Schema Registry defines columns for both key and value.
+* The column names of key and value overlap on `uid`.
+* `'value.fields-include' = 'all'` is set to exclude the key because it is fully contained in the value.
 
 ### Inferred tables schema evolution¶
 
@@ -567,11 +567,11 @@ SHOW CREATE TABLE shows:
 
 Properties
 
-  * Schema Registry says there is a timestamp physical column, but Flink says there is timestamp metadata column.
+* Schema Registry says there is a timestamp physical column, but Flink says there is timestamp metadata column.
 
-  * In this case, metadata columns and computed columns have precedence, so Flink removes the physical column from the schema.
+* In this case, metadata columns and computed columns have precedence, so Flink removes the physical column from the schema.
 
-  * Given that Flink advertises FULL_TRANSITIVE mode, queries still work, and the physical column is set to NULL in the payload:
+* Given that Flink advertises FULL_TRANSITIVE mode, queries still work, and the physical column is set to NULL in the payload:
 
         INSERT INTO t_metadata_overlap
           SELECT CAST(NULL AS BYTES), 42, TO_TIMESTAMP_LTZ(0, 3);
@@ -599,7 +599,7 @@ SHOW CREATE TABLE shows:
 
 Properties
 
-  * Now, both physical and metadata column show up and can be accessed both for reading and writing.
+* Now, both physical and metadata column show up and can be accessed both for reading and writing.
 
 ## SHOW JOBS¶
 

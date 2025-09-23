@@ -11,12 +11,12 @@ total_chunks: 3
 
 Confluent Cloud for Apache Flink® provides an Examples catalog that has mock data streams you can use for experimenting with Flink SQL queries.
 
-  * The `examples` catalog is available in all environments.
-  * All example tables have `$rowtime` available as a system column. The `SOURCE_WATERMARK()` strategy for example tables is different than the `SOURCE_WATERMARK()` strategy Kafka-based tables. For the example tables, the `SOURCE_WATAERMARK()` corresponds to the maximum timestamp seen to this point.
-  * You can use example data in Flink workspaces, Flink shell, Terraform, and all other clients.
-  * Example data is read-only, so you can’t use INSERT INTO/ALTER/DROP/CREATE statements on these tables, the database, or the catalog.
-  * SHOW statements work for the database, catalog, and tables.
-  * SHOW CREATE TABLE works for the example tables.
+* The `examples` catalog is available in all environments.
+* All example tables have `$rowtime` available as a system column. The `SOURCE_WATERMARK()` strategy for example tables is different than the `SOURCE_WATERMARK()` strategy Kafka-based tables. For the example tables, the `SOURCE_WATAERMARK()` corresponds to the maximum timestamp seen to this point.
+* You can use example data in Flink workspaces, Flink shell, Terraform, and all other clients.
+* Example data is read-only, so you can’t use INSERT INTO/ALTER/DROP/CREATE statements on these tables, the database, or the catalog.
+* SHOW statements work for the database, catalog, and tables.
+* SHOW CREATE TABLE works for the example tables.
 
 ## Publish to a Kafka topic¶
 

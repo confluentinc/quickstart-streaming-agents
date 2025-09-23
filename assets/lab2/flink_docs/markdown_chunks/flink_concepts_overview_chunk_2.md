@@ -31,10 +31,10 @@ A table can be bounded by committed offsets in Kafka brokers of a specific consu
 
 #### Key characteristics of bounded mode¶
 
-  * **Finite data** : The table represents a static dataset, similar to a traditional table in a relational database or a file in a data lake. Once all records are read, there is no more data to process.
-  * **Batch processing** : Operations on bounded tables are executed in batch mode. This means Flink processes all the available data, computes the results, and then the job finishes. This is suitable for use cases like ETL, reporting, and historical analysis.
-  * **Optimized execution** : Since the system knows the data is finite, it can apply optimizations that are not possible with unbounded (streaming) data. For example, it can sort by any column, perform global aggregations, and use blocking operators.
-  * **No need for state retention** : Unlike streaming mode, where Flink must keep state around to handle late or out-of-order events, batch mode can drop state as soon as it is no longer needed, reducing resource usage.
+* **Finite data** : The table represents a static dataset, similar to a traditional table in a relational database or a file in a data lake. Once all records are read, there is no more data to process.
+* **Batch processing** : Operations on bounded tables are executed in batch mode. This means Flink processes all the available data, computes the results, and then the job finishes. This is suitable for use cases like ETL, reporting, and historical analysis.
+* **Optimized execution** : Since the system knows the data is finite, it can apply optimizations that are not possible with unbounded (streaming) data. For example, it can sort by any column, perform global aggregations, and use blocking operators.
+* **No need for state retention** : Unlike streaming mode, where Flink must keep state around to handle late or out-of-order events, batch mode can drop state as soon as it is no longer needed, reducing resource usage.
 
 The following table compares the characteristics of bounded and unbounded tables.
 
@@ -58,5 +58,5 @@ A parallel dataflow in Flink with condensed view (above) and parallelized view (
 
 Streams can transport data between two operators in a _one-to-one_ (or forwarding) pattern, or in a _redistributing_ pattern:
 
-  * **One-to-one** streams (for example between the Source and the map() operators in the figure above) preserve the partitioning and ordering of the elements. That means that subtask[1] of the map() operator will see the same elements in the same order as they were produced by subtask[1] of the Source operator.
-  * **Redistributing** streams (as between map() and keyBy/window above, as well as between keyBy/window and Sink) change the partitioning of streams. Each operator subtask sends data to different target subtasks, depending on the selected transformation. Examples are keyBy() (which re-partitions by hashing the key), broadcast(), or rebalance() (which re-partitions randomly). In a redistributing exchange the ordering among the elements is only preserved within each pair of sending
+* **One-to-one** streams (for example between the Source and the map() operators in the figure above) preserve the partitioning and ordering of the elements. That means that subtask[1] of the map() operator will see the same elements in the same order as they were produced by subtask[1] of the Source operator.
+* **Redistributing** streams (as between map() and keyBy/window above, as well as between keyBy/window and Sink) change the partitioning of streams. Each operator subtask sends data to different target subtasks, depending on the selected transformation. Examples are keyBy() (which re-partitions by hashing the key), broadcast(), or rebalance() (which re-partitions randomly). In a redistributing exchange the ordering among the elements is only preserved within each pair of sending

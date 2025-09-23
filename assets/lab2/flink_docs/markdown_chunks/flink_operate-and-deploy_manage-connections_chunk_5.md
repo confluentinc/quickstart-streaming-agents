@@ -8,7 +8,7 @@ total_chunks: 10
 ---
 
 "OPENAI",
-        "endpoint": "https://api.openai.com/v1/chat/completions",
+        "endpoint": "<https://api.openai.com/v1/chat/completions>",
         "auth_data": {
           "kind": "PlaintextProvider",
           "data": "string"

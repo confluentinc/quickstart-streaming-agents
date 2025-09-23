@@ -24,11 +24,11 @@ When converting to a Protobuf schema, Flink marks all NULLABLE fields as `option
 
 In Protobuf, expressing something as NULLABLE or NOT NULL is not straightforward.
 
-  * All non-MESSAGE types are NOT NULL. If not set explicitly, the default value is assigned.
+* All non-MESSAGE types are NOT NULL. If not set explicitly, the default value is assigned.
 
-  * Non-MESSAGE types marked with `optional` can be checked if they were set. If not set, Flink assumes NULL.
+* Non-MESSAGE types marked with `optional` can be checked if they were set. If not set, Flink assumes NULL.
 
-  * MESSAGE types are all NULLABLE, which means that all fields of MESSAGE type are optional, and there is no way to ensure on a format level they are NOT NULL. To store this information, Flink uses the `flink.notNull` property, for example:
+* MESSAGE types are all NULLABLE, which means that all fields of MESSAGE type are optional, and there is no way to ensure on a format level they are NOT NULL. To store this information, Flink uses the `flink.notNull` property, for example:
 
         message Row {
           .google.type.Date date = 1 [(confluent.field_meta) = {

@@ -25,8 +25,8 @@ The special character `$` denotes the root node in a JSON path. Paths can access
 
 Known Limitations:
 
-  * Not all features of Lax mode are currently supported. This is an upstream bug ([CALCITE-4717](https://issues.apache.org/jira/browse/CALCITE-4717)).
-  * Non-standard behavior is not guaranteed.
+* Not all features of Lax mode are currently supported. This is an upstream bug ([CALCITE-4717](https://issues.apache.org/jira/browse/CALCITE-4717)).
+* Non-standard behavior is not guaranteed.
 
 ## IS JSON¶
 

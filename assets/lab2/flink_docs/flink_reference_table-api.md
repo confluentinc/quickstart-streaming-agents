@@ -15,9 +15,9 @@ To use the Table API, you work with tables that change over time, a concept insp
 
 A table program has these characteristics:
 
-  * Runs in a regular `main()` method (Java)
-  * Uses Flink APIs
-  * Communicates with Confluent Cloud by using REST requests, for example, [Statements endpoint](/cloud/current/api.html#tag/Statements-\(sqlv1\)/operation/createSqlv1Statement).
+* Runs in a regular `main()` method (Java)
+* Uses Flink APIs
+* Communicates with Confluent Cloud by using REST requests, for example, [Statements endpoint](/cloud/current/api.html#tag/Statements-\(sqlv1\)/operation/createSqlv1Statement).
 
 For a list of Table API functions supported by Confluent Cloud for Apache Flink, see [Table API functions](functions/table-api-functions.html#flink-table-api-functions).
 
@@ -78,9 +78,9 @@ The `ConfluentSettings` class provides configuration options from various source
 
 The following precedence order applies to configuration sources, from highest to lowest:
 
-  * CLI arguments or properties file
-  * Code
-  * Environment variables
+* CLI arguments or properties file
+* Code
+* Environment variables
 
 The following code example shows a `TableEnvironment` that’s configured by a combination of command-line arguments and code.
 
@@ -377,24 +377,24 @@ The Table API plugin is in Open Preview stage.
 
 The following features are not supported.
 
-  * Temporary catalog objects (including tables, views, functions)
-  * Custom modules
-  * Custom catalogs
-  * User-defined functions (including system functions)
-  * Anonymous, inline objects (including functions, data types)
-  * CompiledPlan features are not supported
-  * Batch mode
-  * Restrictions from Confluent Cloud
-    * custom connectors/formats
-    * processing time operations
-    * structured data types
-    * many configuration options
-    * limited SQL syntax
-    * batch execution mode
+* Temporary catalog objects (including tables, views, functions)
+* Custom modules
+* Custom catalogs
+* User-defined functions (including system functions)
+* Anonymous, inline objects (including functions, data types)
+* CompiledPlan features are not supported
+* Batch mode
+* Restrictions from Confluent Cloud
+  * custom connectors/formats
+  * processing time operations
+  * structured data types
+  * many configuration options
+  * limited SQL syntax
+  * batch execution mode
 
 ### Issues in Apache Flink¶
 
-  * Both catalog and database must be set, or identifiers must be fully qualified. A mixture of setting a current catalog and using two-part identifiers can cause errors.
-  * String concatenation with `.plus` causes errors. Instead, use `Expressions.concat`.
-  * Selecting `.rowtime` in windows causes errors.
-  * Using `.limit()` can cause errors.
+* Both catalog and database must be set, or identifiers must be fully qualified. A mixture of setting a current catalog and using two-part identifiers can cause errors.
+* String concatenation with `.plus` causes errors. Instead, use `Expressions.concat`.
+* Selecting `.rowtime` in windows causes errors.
+* Using `.limit()` can cause errors.

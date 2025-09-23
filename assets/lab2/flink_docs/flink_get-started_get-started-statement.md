@@ -13,9 +13,9 @@ This guide provides steps using the Confluent CLI, but you can also use the [RES
 
 ## Prerequisites¶
 
-  * CMF installed. Follow step 1 of [Get Started with Applications in Confluent Manager for Apache Flink](get-started-application.html#cpf-get-started) to install the Flink Kubernetes operator.
-  * The latest version of the Confluent CLI installed. For more information, see [Install the Confluent CLI](/confluent-cli/current/install.html).
-  * Example tables configured. Run the following command to configure example tables that are immediately usable.
+* CMF installed. Follow step 1 of [Get Started with Applications in Confluent Manager for Apache Flink](get-started-application.html#cpf-get-started) to install the Flink Kubernetes operator.
+* The latest version of the Confluent CLI installed. For more information, see [Install the Confluent CLI](/confluent-cli/current/install.html).
+* Example tables configured. Run the following command to configure example tables that are immediately usable.
 
     helm upgrade --install cmf --version "~2.0.0" \
     confluentinc/confluent-manager-for-apache-flink \

@@ -25,13 +25,13 @@ If running Lab2, set up a free MongoDB Atlas cluster:
 
 ![Choose Free Tier](./assets/lab2/mongodb/03_choose_free_tier_and_region.png)
 
-#### 4. **Create a Database User.** **Write down the username and password** you choose, as they will be `mongodb_username` and `mongodb_password` that you will need to deploy Terraform later. Click **Create Database User** when you are done.
+#### 4. **Create a Database User.** **Write down the username and password** you choose, as they will be `mongodb_username` and `mongodb_password` that you will need to deploy Terraform later. Click **Create Database User** when you are done
 
    **Note:** the username and password you set up to access your database are the credentials you'll need to save for later, NOT the separate login you use for mongodb.com.
 
 ![Create Database User](./assets/lab2/mongodb/04_create_database_user.png)
 
-#### 5. Click **Choose a Connection method.** => Shell => Copy the URL shown in **step 2.** This is the `MONGODB_CONNECTION_URL` you will need later. Don't worry about the rest of the command - you only need the URL that looks like `mongodb+srv://cluster0.xhgx1kr.mongodb.net`.
+#### 5. Click **Choose a Connection method.** => Shell => Copy the URL shown in **step 2.** This is the `MONGODB_CONNECTION_URL` you will need later. Don't worry about the rest of the command - you only need the URL that looks like `mongodb+srv://cluster0.xhgx1kr.mongodb.net`
 
 #### 6. Go to **Network Access** in left sidebar. Click green **Add IP Address** button on the right. Then simply click the **Allow Access From Anywhere** button, or manually enter `0.0.0.0/0`. Click **Confirm.**
 
@@ -39,18 +39,20 @@ If running Lab2, set up a free MongoDB Atlas cluster:
 
 ![Network Access](./assets/lab2/mongodb/05_network_access_allow_all.png)
 
-#### 7. Next, from **Clusters** page, choose "Atlas Search" then click **Add my own data.** Enter:
+#### 7. Next, from **Clusters** page, choose "Atlas Search" then click **Add my own data.** Enter
+
    Database name: `vector_search`
 
    Collection name: `documents`
 
 ![Add Data Collection](./assets/lab2/mongodb/06_add_data_collection.png)
 
-#### 8. Next, click **Create Search Index.** Choose **Vector Search index, and name it `vector_search`.
+#### 8. Next, click **Create Search Index.** Choose **Vector Search index, and name it `vector_search`
 
 ![Create Vector Index](./assets/lab2/mongodb/07_create_vector_search_index.png)
 
-#### 9. Scroll down to the bottom and choose **JSON Editor.** Enter the following:
+#### 9. Scroll down to the bottom and choose **JSON Editor.** Enter the following
+
    ```json
    {
      "fields": [
@@ -108,6 +110,7 @@ terraform apply
 ```
 
 This will create:
+
 - ✅ Flink tables: `documents`, `documents_embed`, `queries`, `queries_embed`
 - ✅ MongoDB sink connector to stream embeddings to MongoDB Atlas
 - ✅ Setup commands file with manual steps
@@ -284,12 +287,14 @@ python publish_queries.py
 ## Verification and Monitoring
 
 ### Check MongoDB Sink Connector Status
+
 ```bash
 confluent connector list
 confluent connector describe <connector-id>
 ```
 
 ### Monitor Data Flow
+
 ```sql
 -- Check if documents are being processed
 SELECT COUNT(*) FROM documents;
@@ -304,7 +309,9 @@ SELECT COUNT(*) FROM documents_vectordb;
 ```
 
 ### View MongoDB Data
+
 In MongoDB Atlas or MongoDB Compass:
+
 ```javascript
 // Check if data is being written to MongoDB
 db.documents.find().limit(5);

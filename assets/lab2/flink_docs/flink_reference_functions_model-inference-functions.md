@@ -9,21 +9,21 @@ scraped_date: 2025-09-05T13:50:16.946411
 
 Confluent Cloud for Apache Flink® provides built-in functions for invoking remote AI/ML models in Flink SQL queries. These simplify developing and deploying AI applications by providing a unified platform for both data processing and AI/ML tasks.
 
-  * AI_COMPLETE: Generate text completions.
-  * AI_EMBEDDING: Create embeddings.
-  * AI_FORECAST: Forecast trends.
-  * AI_TOOL_INVOKE: Invoke model context protocol (MCP) tools.
-  * ML_DETECT_ANOMALIES: Detect anomalies in your data.
-  * ML_EVALUATE: Evaluate the performance of an AI/ML model.
-  * ML_PREDICT: Run a remote AI/ML model for tasks like predicting outcomes, generating text, and classification.
+* AI_COMPLETE: Generate text completions.
+* AI_EMBEDDING: Create embeddings.
+* AI_FORECAST: Forecast trends.
+* AI_TOOL_INVOKE: Invoke model context protocol (MCP) tools.
+* ML_DETECT_ANOMALIES: Detect anomalies in your data.
+* ML_EVALUATE: Evaluate the performance of an AI/ML model.
+* ML_PREDICT: Run a remote AI/ML model for tasks like predicting outcomes, generating text, and classification.
 
 ## Search Functions¶
 
 Confluent Cloud for Apache Flink also supports read-only external tables to enable search with federated query execution on external databases.
 
-  * KEY_SEARCH_AGG: Perform exact key lookups in external databases like JDBC, REST APIs, MongoDB, and Couchbase.
-  * TEXT_SEARCH_AGG: Execute full-text searches in external databases like MongoDB, Couchbase, and Elasticsearch.
-  * VECTOR_SEARCH_AGG: Run semantic similarity searches using vector embeddings in databases like MongoDB, Pinecone, Elasticsearch, and Couchbase.
+* KEY_SEARCH_AGG: Perform exact key lookups in external databases like JDBC, REST APIs, MongoDB, and Couchbase.
+* TEXT_SEARCH_AGG: Execute full-text searches in external databases like MongoDB, Couchbase, and Elasticsearch.
+* VECTOR_SEARCH_AGG: Run semantic similarity searches using vector embeddings in databases like MongoDB, Pinecone, Elasticsearch, and Couchbase.
 
 For machine-language preprocessing utilities, see [ML Preprocessing Functions](ml-preprocessing-functions.html#flink-sql-ml-preprocessing-functions).
 
@@ -52,11 +52,11 @@ Configuration
 
 You can control how calls to the remote model execute with these optional parameters.
 
-  * `async_enabled`: Calls to remote models are asynchronous and don’t block. The default is `true`.
-  * `client_timeout`: Time, in seconds, after which the request to the model endpoint times out. The default is 30 seconds.
-  * `debug`: Return a detailed stack trace in the API response. The default is `false`. Confluent Cloud for Apache Flink implements data masking for error messages to remove any secrets or customer input, but the stack trace may contain the prompt itself or some part of the response string.
-  * `retry_count`: Maximum number of times the remote model request is retried if the request to the model fails. The default is 3.
-  * `max_parallelism`: Maximum number of parallel requests that the function can make. Can be used only when `async_enabled` is `true`. The default is 10.
+* `async_enabled`: Calls to remote models are asynchronous and don’t block. The default is `true`.
+* `client_timeout`: Time, in seconds, after which the request to the model endpoint times out. The default is 30 seconds.
+* `debug`: Return a detailed stack trace in the API response. The default is `false`. Confluent Cloud for Apache Flink implements data masking for error messages to remove any secrets or customer input, but the stack trace may contain the prompt itself or some part of the response string.
+* `retry_count`: Maximum number of times the remote model request is retried if the request to the model fails. The default is 3.
+* `max_parallelism`: Maximum number of parallel requests that the function can make. Can be used only when `async_enabled` is `true`. The default is 10.
 
 Example
 
@@ -91,8 +91,8 @@ The ML_DETECT_ANOMALIES function uses an [ARIMA model](../../../ai/builtin-funct
 
 Your data must include:
 
-  * A timestamp column.
-  * A target column representing some quantity of interest at each timestamp.
+* A timestamp column.
+* A target column representing some quantity of interest at each timestamp.
 
 For more information, see [Detect Anomalies in Data](../../../ai/builtin-functions/detect-anomalies.html#flink-sql-detect-anomalies).
 
@@ -140,10 +140,10 @@ Classification models choose a group to place their inputs in and return one of 
 
 Classification models return these metrics:
 
-  * [Accuracy](https://en.wikipedia.org/wiki/Accuracy_and_precision): Total Fraction of correct predictions across all classes.
-  * [F1 Score](https://en.wikipedia.org/wiki/F1_score): Harmonic mean of precision and recall.
-  * [Precision](https://en.wikipedia.org/wiki/Precision_and_recall): (Class X Correctly Predicted) / (# of Class X Predicted)
-  * [Recall](https://en.wikipedia.org/wiki/Precision_and_recall): (Class X Correctly Predicted) / (# of actual Class X)
+* [Accuracy](https://en.wikipedia.org/wiki/Accuracy_and_precision): Total Fraction of correct predictions across all classes.
+* [F1 Score](https://en.wikipedia.org/wiki/F1_score): Harmonic mean of precision and recall.
+* [Precision](https://en.wikipedia.org/wiki/Precision_and_recall): (Class X Correctly Predicted) / (# of Class X Predicted)
+* [Recall](https://en.wikipedia.org/wiki/Precision_and_recall): (Class X Correctly Predicted) / (# of actual Class X)
 
 #### Clustering¶
 
@@ -151,17 +151,17 @@ Clustering models group the model examples into K groups. Metrics are a measure 
 
 Clustering models return these metrics:
 
-  * [Davies Bouldin Index](https://en.wikipedia.org/wiki/Davies%E2%80%93Bouldin_index): A measure of how separated clusters are and how compact they are.
-  * Intra-Cluster Variance (Mean Squared Distance): Average Squared distance of each training point to the centroid of the cluster it was assigned to.
-  * [Silhouette Score](https://en.wikipedia.org/wiki/Silhouette_\(clustering\)): Compares how similar each point is to its own cluster with how dissimilar it is to other clusters.
+* [Davies Bouldin Index](https://en.wikipedia.org/wiki/Davies%E2%80%93Bouldin_index): A measure of how separated clusters are and how compact they are.
+* Intra-Cluster Variance (Mean Squared Distance): Average Squared distance of each training point to the centroid of the cluster it was assigned to.
+* [Silhouette Score](https://en.wikipedia.org/wiki/Silhouette_\(clustering\)): Compares how similar each point is to its own cluster with how dissimilar it is to other clusters.
 
 #### Embedding¶
 
 Embedding models return these metrics:
 
-  * [Mean Cosine Similarity](https://en.wikipedia.org/wiki/Cosine_similarity): A measure of how similar two vectors are.
-  * [Mean Jaccard Similarity](https://en.wikipedia.org/wiki/Jaccard_index): A measure of how similar two sets are.
-  * [Mean Euclidean Distance](https://en.wikipedia.org/wiki/Euclidean_distance): A measure of how similar two vectors are.
+* [Mean Cosine Similarity](https://en.wikipedia.org/wiki/Cosine_similarity): A measure of how similar two vectors are.
+* [Mean Jaccard Similarity](https://en.wikipedia.org/wiki/Jaccard_index): A measure of how similar two sets are.
+* [Mean Euclidean Distance](https://en.wikipedia.org/wiki/Euclidean_distance): A measure of how similar two vectors are.
 
 #### Regression¶
 
@@ -169,16 +169,16 @@ Regression models predict a continuous output variable based on one or more inpu
 
 Regression models return these metrics:
 
-  * [Mean Absolute Error](https://en.wikipedia.org/wiki/Mean_absolute_error): The average of the absolute differences between the predicted and actual values.
-  * [Mean Squared Error](https://en.wikipedia.org/wiki/Mean_squared_error): The average of the squared differences between the predicted and actual values.
+* [Mean Absolute Error](https://en.wikipedia.org/wiki/Mean_absolute_error): The average of the absolute differences between the predicted and actual values.
+* [Mean Squared Error](https://en.wikipedia.org/wiki/Mean_squared_error): The average of the squared differences between the predicted and actual values.
 
 #### Text generation¶
 
 Text generation models generate text based on a prompt. Text generation models return these metrics:
 
-  * [Mean BLEU](https://en.wikipedia.org/wiki/BLEU): A measure of how similar two texts are.
-  * [Mean ROUGE](https://en.wikipedia.org/wiki/ROUGE_\(metric\)): A measure of how similar two texts are.
-  * [Mean Semantic Similarity](https://en.wikipedia.org/wiki/Semantic_similarity): A measure of how similar two texts are.
+* [Mean BLEU](https://en.wikipedia.org/wiki/BLEU): A measure of how similar two texts are.
+* [Mean ROUGE](https://en.wikipedia.org/wiki/ROUGE_\(metric\)): A measure of how similar two texts are.
+* [Mean Semantic Similarity](https://en.wikipedia.org/wiki/Semantic_similarity): A measure of how similar two texts are.
 
 #### Example metrics¶
 
@@ -257,8 +257,8 @@ The ML_FORECAST function uses an [ARIMA model](../../../ai/builtin-functions/for
 
 Your data must include:
 
-  * A timestamp column.
-  * A target column representing some quantity of interest at each timestamp.
+* A timestamp column.
+* A target column representing some quantity of interest at each timestamp.
 
 For more information, see [Forecast Data Trends](../../../ai/builtin-functions/forecast.html#flink-sql-forecast).
 
@@ -288,9 +288,9 @@ Description
     The AI_COMPLETE function provides a streamlined approach for generating text, taking a single string as input and returning a single string as output. This functionality enables you to leverage LLMs to produce text based on any given prompt.
 Configuration
 
-  * `model_name`: Name of the model entity to call to for prediction [STRING].
-  * `input_prompt`: Input prompt to pass to the LLM for prediction [STRING].
-  * `invocation_config[optional]`: Map to pass the configuration to manage function behavior, for example, `MAP['debug', true]`.
+* `model_name`: Name of the model entity to call to for prediction [STRING].
+* `input_prompt`: Input prompt to pass to the LLM for prediction [STRING].
+* `invocation_config[optional]`: Map to pass the configuration to manage function behavior, for example, `MAP['debug', true]`.
 
 Example
 
@@ -329,9 +329,9 @@ Description
     The AI_EMBEDDING function provides a straightforward interface, accepting a single string input and returning an array of floats as the embedding response. This functionality enables you to leverage large language models (LLMs) to generate embeddings for text efficiently.
 Configuration
 
-  * `model_name`: Name of the model entity to call to for embeddings [STRING].
-  * `input_text`: Input text to pass to the LLM for embeddings [STRING].
-  * `invocation_config[optional]`: Map to pass the configuration to manage function behavior, for example, `MAP['debug', true]`.
+* `model_name`: Name of the model entity to call to for embeddings [STRING].
+* `input_text`: Input text to pass to the LLM for embeddings [STRING].
+* `invocation_config[optional]`: Map to pass the configuration to manage function behavior, for example, `MAP['debug', true]`.
 
 Example
 
@@ -375,10 +375,10 @@ This function supports only SSE-based MCP servers.
 
 The following models are supported:
 
-  * Anthropic
-  * AzureOpenAI
-  * Gemini
-  * OpenAI
+* Anthropic
+* AzureOpenAI
+* Gemini
+* OpenAI
 
 Note
 
@@ -388,11 +388,11 @@ A Preview feature is a Confluent Cloud component that is being introduced to gai
 
 Configuration
 
-  * `model_name`: Name of the model entity to call [STRING].
-  * `input_prompt`: Input prompt to pass to the LLM [STRING].
-  * `remote_udf_descriptor`: Map to pass UDF names as key and function description as value [MAP<String, String>]. A maximum of 3 UDFs can be passed.
-  * `mcp_tool_descriptor`: Map to pass MCP tool names as key and tool description as value [MAP<String, String>]. A maximum of 5 tools can be passed. This additional description is passed to the LLM as “Additional description”. If the MCP server already has a description, and if the server doesn’t have a description, `mcp_tool_descriptor` is added as the description. You can leave it empty, in which case no changes are made to the description provided by the server.
-  * `invocation_config[optional]`: Map to pass the config to manage function behavior, for example, `MAP['debug', true, 'on_error', 'continue']`.
+* `model_name`: Name of the model entity to call [STRING].
+* `input_prompt`: Input prompt to pass to the LLM [STRING].
+* `remote_udf_descriptor`: Map to pass UDF names as key and function description as value [MAP<String, String>]. A maximum of 3 UDFs can be passed.
+* `mcp_tool_descriptor`: Map to pass MCP tool names as key and tool description as value [MAP<String, String>]. A maximum of 5 tools can be passed. This additional description is passed to the LLM as “Additional description”. If the MCP server already has a description, and if the server doesn’t have a description, `mcp_tool_descriptor` is added as the description. You can leave it empty, in which case no changes are made to the description provided by the server.
+* `invocation_config[optional]`: Map to pass the config to manage function behavior, for example, `MAP['debug', true, 'on_error', 'continue']`.
 
 Example
 
@@ -400,15 +400,16 @@ The following example shows how to invoke a UDF and a registered external tool o
 
 When you create an MCP server connection, specify the following options:
 
-  * `endpoint`: Defines the base URL for all non-SSE communications with the MCP server, including other http calls and general data exchange.
-  * `sse_endpoint`: Specifies the explicit URL endpoint used to establish a Server-Sent Events (SSE) connection with the MCP server. If omitted, the client defaults to constructing the SSE endpoint by appending `/sse` to the domain specified in `endpoint`.
+* `endpoint`: Defines the base URL for all non-SSE communications with the MCP server, including other http calls and general data exchange.
+* `sse_endpoint`: Specifies the explicit URL endpoint used to establish a Server-Sent Events (SSE) connection with the MCP server. If omitted, the client defaults to constructing the SSE endpoint by appending `/sse` to the domain specified in `endpoint`.
 
-    # Create an MCP server connection.
+# Create an MCP server connection
+
     CREATE CONNECTION claims_mcp_server
       WITH (
         'type' = 'mcp_server',
-        'endpoint' = 'https://mcp.deepwiki.com',
-        'sse-endpoint' = 'https://mcp.deepwiki.com/sse',
+        'endpoint' = '<https://mcp.deepwiki.com>',
+        'sse-endpoint' = '<https://mcp.deepwiki.com/sse>',
         'api-key' = 'api_key'
       );
 
@@ -532,15 +533,15 @@ For more examples, see [Vector Search with Confluent Cloud for Apache Flink](../
 
 ## Other built-in functions¶
 
-  * [Aggregate Functions](aggregate-functions.html#flink-sql-aggregate-functions)
-  * [Collection Functions](collection-functions.html#flink-sql-collection-functions)
-  * [Comparison Functions](comparison-functions.html#flink-sql-comparison-functions)
-  * [Conditional Functions](conditional-functions.html#flink-sql-conditional-functions)
-  * [Datetime Functions](datetime-functions.html#flink-sql-datetime-functions)
-  * [Hash Functions](hash-functions.html#flink-sql-hash-functions)
-  * [JSON Functions](json-functions.html#flink-sql-json-functions)
-  * [ML Preprocessing Functions](ml-preprocessing-functions.html#flink-sql-ml-preprocessing-functions)
-  * Model Inference Functions
-  * [Numeric Functions](numeric-functions.html#flink-sql-numeric-functions)
-  * [String Functions](string-functions.html#flink-sql-string-functions)
-  * [Table API Functions](table-api-functions.html#flink-table-api-functions)
+* [Aggregate Functions](aggregate-functions.html#flink-sql-aggregate-functions)
+* [Collection Functions](collection-functions.html#flink-sql-collection-functions)
+* [Comparison Functions](comparison-functions.html#flink-sql-comparison-functions)
+* [Conditional Functions](conditional-functions.html#flink-sql-conditional-functions)
+* [Datetime Functions](datetime-functions.html#flink-sql-datetime-functions)
+* [Hash Functions](hash-functions.html#flink-sql-hash-functions)
+* [JSON Functions](json-functions.html#flink-sql-json-functions)
+* [ML Preprocessing Functions](ml-preprocessing-functions.html#flink-sql-ml-preprocessing-functions)
+* Model Inference Functions
+* [Numeric Functions](numeric-functions.html#flink-sql-numeric-functions)
+* [String Functions](string-functions.html#flink-sql-string-functions)
+* [Table API Functions](table-api-functions.html#flink-table-api-functions)

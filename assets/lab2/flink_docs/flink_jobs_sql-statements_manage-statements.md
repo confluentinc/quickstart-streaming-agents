@@ -69,8 +69,8 @@ Like all Flink applications, SQL statements can fail. Failures are categorized i
 
 **Execution failures** :
 
-  * For statements that query metadata and are directly executed by CMF, failures are reported in the same manner as compilation failures.
-  * For `SELECT` and `INSERT INTO` statements that are executed on a Flink cluster, CMF stores the exceptions of the ten most recent execution failures. These can be retrieved from a dedicated REST endpoint or using a Confluent CLI command.
+* For statements that query metadata and are directly executed by CMF, failures are reported in the same manner as compilation failures.
+* For `SELECT` and `INSERT INTO` statements that are executed on a Flink cluster, CMF stores the exceptions of the ten most recent execution failures. These can be retrieved from a dedicated REST endpoint or using a Confluent CLI command.
 
 REST APIConfluent CLI
 

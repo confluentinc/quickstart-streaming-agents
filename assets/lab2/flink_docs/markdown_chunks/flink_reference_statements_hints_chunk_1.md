@@ -30,31 +30,31 @@ The dynamic options must be placed next to the table and not by any aliases, for
 
 Dynamic Table Options in Confluent Cloud for Apache Flink offer the following benefits:
 
-  * **Flexible configuration:** Specify table options on a per-statement basis, providing more flexibility than static options as stored in the table definition.
-  * **Query-specific adjustments:** Customize table behavior for individual queries without altering the permanent table definition.
+* **Flexible configuration:** Specify table options on a per-statement basis, providing more flexibility than static options as stored in the table definition.
+* **Query-specific adjustments:** Customize table behavior for individual queries without altering the permanent table definition.
 
 ## Examples¶
 
 Here are some examples of using dynamic table options in Confluent Cloud for Apache Flink:
 
-  * Override [scan startup mode](create-table.html#flink-sql-create-table-with-scan-startup-mode) for a table:
+* Override [scan startup mode](create-table.html#flink-sql-create-table-with-scan-startup-mode) for a table:
 
         SELECT id, name
         FROM table /*+ OPTIONS('scan.startup.mode'='earliest-offset') */;
 
-  * Set options for multiple tables in a [join](../queries/joins.html#flink-sql-joins):
+* Set options for multiple tables in a [join](../queries/joins.html#flink-sql-joins):
 
         SELECT *
         FROM table1 /*+ OPTIONS('scan.startup.mode'='earliest-offset') */ t1
         JOIN table2 /*+ OPTIONS('scan.startup.mode'='earliest-offset') */ t2
         ON t1.id = t2.id;
 
-  * Set the scan startup mode to use the latest offset:
+* Set the scan startup mode to use the latest offset:
 
         SELECT *
         FROM orders /*+ OPTIONS('scan.startup.mode'='latest-offset') */;
 
-  * Set the scan startup mode to use the specific offsets, for example, using the latest_offsets attribute from a previous statement:
+* Set the scan startup mode to use the specific offsets, for example, using the latest_offsets attribute from a previous statement:
 
         INSERT INTO customers_sink (customer_id, name, address, postcode, city, email)
             SELECT customer_id, name, address, postcode, city, email
@@ -87,19 +87,19 @@ The syntax for using State TTL hints is as follows:
 
 Here are some examples of using State TTL hints in Confluent Cloud for Apache Flink for social media analytics:
 
-  * Set State TTL for a Regular Join of posts and users:
+* Set State TTL for a Regular Join of posts and users:
 
         SELECT /*+ STATE_TTL('posts'='6h', 'users'='2d') */ *
         FROM posts
         JOIN users ON posts.user_id = users.id;
 
-  * Use table aliases with State TTL hints for analyzing engagement:
+* Use table aliases with State TTL hints for analyzing engagement:
 
         SELECT /*+ STATE_TTL('p'='4h', 'e'='12h') */ *
         FROM posts p
         JOIN engagement e ON p.post_id = e.post_id;
 
-  * Apply State TTL hints in a Group Aggregation for trending hashtags:
+* Apply State TTL hints in a Group Aggregation for trending hashtags:
 
         SELECT /*+ STATE_TTL('hashtags' = '1h') */
                hashtag, COUNT(*) AS usage_count
@@ -110,9 +110,9 @@ Here are some examples of using State TTL hints in Confluent Cloud for Apache Fl
 
 When using State TTL hints, keep the following in mind:
 
-  * You can use either the table name or table alias as the hint key.
-  * If you specify an alias for a table, you must use that alias in the STATE_TTL hint.
-  * For queries with multiple joins, the specified TTLs are applied in a bottom-up order.
-  * The STATE_TTL hint only affects the query block where it’s applied.
-  * If a hint key is duplicated, the last occurrence takes precedence.
-  * When multiple STATE_TTL hints are used with the same hint key, the first occurrence is applied.
+* You can use either the table name or table alias as the hint key.
+* If you specify an alias for a table, you must use that alias in the STATE_TTL hint.
+* For queries with multiple joins, the specified TTLs are applied in a bottom-up order.
+* The STATE_TTL hint only affects the query block where it’s applied.
+* If a hint key is duplicated, the last occurrence takes precedence.
+* When multiple STATE_TTL hints are used with the same hint key, the first occurrence is applied.

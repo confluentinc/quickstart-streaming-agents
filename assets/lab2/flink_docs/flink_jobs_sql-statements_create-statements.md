@@ -41,12 +41,12 @@ Following is a JSON document to create a Statement resource.
 
 The resource spec includes the following fields:
 
-  * **statement** : The SQL statement to execute.
-  * **computePoolName** : the name of the ComputePool on which the statement should be executed.
-  * **properties** : A map of properties that provide context for the compilation of the statement. Here the current CATALOG and DATABASE are configured. If not specified, the default catalog and database are used.
-  * **flinkConfiguration** : A map of Flink configuration parameters. Statement configuration is first merged with the Environment’s default configuration. This combined configuration is used for statement translation and passed to the Flink job that executes the Statement. Separately, the Flink configuration of the Statement’s ComputePool initializes the JobManager and TaskManager processes; an empty configuration is used if none is specified.
-  * **parallelism** : the Statement’s execution parallelism. If not specified, the statement is executed with parallelism = 1.
-  * **stopped** : This flag determines if the job is running or stopped. If omitted, the query defaults to stopped = false.
+* **statement** : The SQL statement to execute.
+* **computePoolName** : the name of the ComputePool on which the statement should be executed.
+* **properties** : A map of properties that provide context for the compilation of the statement. Here the current CATALOG and DATABASE are configured. If not specified, the default catalog and database are used.
+* **flinkConfiguration** : A map of Flink configuration parameters. Statement configuration is first merged with the Environment’s default configuration. This combined configuration is used for statement translation and passed to the Flink job that executes the Statement. Separately, the Flink configuration of the Statement’s ComputePool initializes the JobManager and TaskManager processes; an empty configuration is used if none is specified.
+* **parallelism** : the Statement’s execution parallelism. If not specified, the statement is executed with parallelism = 1.
+* **stopped** : This flag determines if the job is running or stopped. If omitted, the query defaults to stopped = false.
 
 ## Create statement request¶
 

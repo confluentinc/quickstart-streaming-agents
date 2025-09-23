@@ -7,7 +7,7 @@ scraped_date: 2025-09-05T13:47:20.069462
 
 # Confluent CLI commands with Confluent Cloud for Apache Flink¶
 
-Manage Flink SQL statements and compute pools in Confluent Cloud for Apache Flink® by using the [confluent flink ](https://docs.confluent.io/confluent-cli/current/command-reference/flink/index.html) commands in the Confluent CLI. To see the available commands, use the `--help` option.
+Manage Flink SQL statements and compute pools in Confluent Cloud for Apache Flink® by using the [confluent flink](https://docs.confluent.io/confluent-cli/current/command-reference/flink/index.html) commands in the Confluent CLI. To see the available commands, use the `--help` option.
 
     confluent flink statement --help
     confluent flink compute-pool --help
@@ -15,29 +15,29 @@ Manage Flink SQL statements and compute pools in Confluent Cloud for Apache Flin
 
 Use the Confluent CLI to manage these features:
 
-  * Statements
-  * Compute pools
-  * Regions
+* Statements
+* Compute pools
+* Regions
 
 For the complete CLI reference, see [confluent flink statement](https://docs.confluent.io/confluent-cli/current/command-reference/flink/index.html).
 
 In addition to the CLI, you can manage Flink statements and compute pools by using these Confluent tools:
 
-  * [Flink SQL REST API](../operate-and-deploy/flink-rest-api.html#flink-rest-api)
-  * [Cloud Console](../get-started/quick-start-cloud-console.html#flink-sql-quick-start-run-sql-statement)
-  * [SQL shell](../get-started/quick-start-shell.html#flink-sql-quick-start-shell)
-  * [Confluent Terraform Provider](https://registry.terraform.io/providers/confluentinc/confluent/latest/docs)
+* [Flink SQL REST API](../operate-and-deploy/flink-rest-api.html#flink-rest-api)
+* [Cloud Console](../get-started/quick-start-cloud-console.html#flink-sql-quick-start-run-sql-statement)
+* [SQL shell](../get-started/quick-start-shell.html#flink-sql-quick-start-shell)
+* [Confluent Terraform Provider](https://registry.terraform.io/providers/confluentinc/confluent/latest/docs)
 
 ## Manage statements¶
 
 Using the Confluent CLI, you can perform these actions:
 
-  * Submit a statement
-  * List statements
-  * Describe a statement
-  * List exceptions from a statement
-  * Delete a statement
-  * Update a statement
+* Submit a statement
+* List statements
+* Describe a statement
+* List exceptions from a statement
+* Delete a statement
+* Update a statement
 
 Managing Flink SQL statements may require the following inputs, depending on the command:
 
@@ -148,8 +148,8 @@ Run the [confluent flink statement exception list](https://docs.confluent.io/con
 
 Run the [confluent flink statement delete](https://docs.confluent.io/confluent-cli/current/command-reference/flink/statement/confluent_flink_statement_delete.html) command to delete an existing statement permanently.
 
-  * All of its resources, like checkpoints, are also deleted.
-  * Deleting a statement stops charges for its use.
+* All of its resources, like checkpoints, are also deleted.
+* Deleting a statement stops charges for its use.
 
     confluent flink statement delete ${STATEMENT_NAME}
 
@@ -171,13 +171,13 @@ Run the [confluent flink statement delete](https://docs.confluent.io/confluent-c
 
 Using the Confluent CLI, you can perform these actions:
 
-  * Create a compute pool
-  * Describe a compute pool
-  * List compute pools
-  * Update a compute pool
-  * Set the current compute pool
-  * Unset the current compute pool
-  * Delete a compute pool
+* Create a compute pool
+* Describe a compute pool
+* List compute pools
+* Update a compute pool
+* Set the current compute pool
+* Unset the current compute pool
+* Delete a compute pool
 
 You must be authorized to create, update, delete (`FlinkAdmin`) or use (`FlinkDeveloper`) a compute pool. For more information, see [Grant Role-Based Access in Confluent Cloud for Apache Flink](../operate-and-deploy/flink-rbac.html#flink-rbac).
 
@@ -355,8 +355,8 @@ Your output should resemble:
 
 Using the Confluent CLI, you can perform these actions:
 
-  * List available regions
-  * Set the current region
+* List available regions
+* Set the current region
 
 Managing Flink SQL regions may require the following inputs, depending on the command:
 

@@ -27,13 +27,13 @@ total_chunks: 8
 
 #### ROW¶
 
-  * Protobuf type: `MESSAGE`
+* Protobuf type: `MESSAGE`
 
-  * Message type: `fieldName`
+* Message type: `fieldName`
 
-  * Additional properties: –
+* Additional properties: –
 
-  * Example:
+* Example:
 
         meta_Row meta = 1;
 
@@ -44,13 +44,13 @@ total_chunks: 8
 
 #### SMALLINT¶
 
-  * Protobuf type: `INT32`
+* Protobuf type: `INT32`
 
-  * Message type: –
+* Message type: –
 
-  * Additional properties: MetaProto extension: `connect.type = int16`
+* Additional properties: MetaProto extension: `connect.type = int16`
 
-  * Example:
+* Example:
 
         optional int32 smallInt = 6 [(confluent.field_meta) = {
           doc: "smallInt comment",
@@ -68,15 +68,15 @@ total_chunks: 8
 
 #### TIMESTAMP¶
 
-  * Protobuf type: `MESSAGE`
+* Protobuf type: `MESSAGE`
 
-  * Message type: `google.protobuf.Timestamp`
+* Message type: `google.protobuf.Timestamp`
 
-  * Additional properties:
+* Additional properties:
 
-    * `flink.precision`
-    * `flink.type=timestamp`
-  * Example:
+  * `flink.precision`
+  * `flink.type=timestamp`
+* Example:
 
         optional .google.protobuf.Timestamp timestamp_ltz_3 = 16 [(confluent.field_meta) = {
           params: [
@@ -97,13 +97,13 @@ total_chunks: 8
 
 #### TIMESTAMP_LTZ¶
 
-  * Protobuf type: `MESSAGE`
+* Protobuf type: `MESSAGE`
 
-  * Message type: `google.protobuf.Timestamp`
+* Message type: `google.protobuf.Timestamp`
 
-  * Additional properties: `flink.precision`
+* Additional properties: `flink.precision`
 
-  * Example:
+* Example:
 
         optional .google.protobuf.Timestamp timestamp_ltz_3 = 15 [(confluent.field_meta) = {
           params: [
@@ -120,13 +120,13 @@ total_chunks: 8
 
 #### TIME_WITHOUT_TIME_ZONE¶
 
-  * Protobuf type: `MESSAGE`
+* Protobuf type: `MESSAGE`
 
-  * Message type: `google.type.TimeOfDay`
+* Message type: `google.type.TimeOfDay`
 
-  * Additional properties: –
+* Additional properties: –
 
-  * Example:
+* Example:
 
         optional .google.type.TimeOfDay time = 18 [(confluent.field_meta) = {
           params: [
@@ -143,13 +143,13 @@ total_chunks: 8
 
 #### TINYINT¶
 
-  * Protobuf type: `INT32`
+* Protobuf type: `INT32`
 
-  * Message type: –
+* Message type: –
 
-  * Additional properties: MetaProto extension: `connect.type = int8`
+* Additional properties: MetaProto extension: `connect.type = int8`
 
-  * Example:
+* Example:
 
         optional int32 tinyInt = 4 [(confluent.field_meta) = {
           doc: "tinyInt comment",
@@ -167,13 +167,13 @@ total_chunks: 8
 
 #### VARBINARY¶
 
-  * Protobuf type: `BYTES`
+* Protobuf type: `BYTES`
 
-  * Message type: –
+* Message type: –
 
-  * Additional properties: `flink.maxLength` (default = MAX_LENGTH)
+* Additional properties: `flink.maxLength` (default = MAX_LENGTH)
 
-  * Example:
+* Example:
 
         optional bytes varbinary = 14 [(confluent.field_meta) = {
           params: [
@@ -190,13 +190,13 @@ total_chunks: 8
 
 #### VARCHAR¶
 
-  * Protobuf type: `STRING`
+* Protobuf type: `STRING`
 
-  * Message type: –
+* Message type: –
 
-  * Additional properties: `flink.maxLength` (default = MAX_LENGTH)
+* Additional properties: `flink.maxLength` (default = MAX_LENGTH)
 
-  * Example:
+* Example:
 
         optional string varchar = 12 [(confluent.field_meta) = {
           params: [

@@ -107,31 +107,31 @@ Declare this type by using the above combinations, where `p1` is the number of d
 
 The type must be parameterized to one of these resolutions with up to nanosecond precision:
 
-  * Interval of days
-  * Interval of days to hours
-  * Interval of days to minutes
-  * Interval of days to seconds
-  * Interval of hours
-  * Interval of hours to minutes
-  * Interval of hours to seconds
-  * Interval of minutes
-  * Interval of minutes to seconds
-  * Interval of seconds
+* Interval of days
+* Interval of days to hours
+* Interval of days to minutes
+* Interval of days to seconds
+* Interval of hours
+* Interval of hours to minutes
+* Interval of hours to seconds
+* Interval of minutes
+* Interval of minutes to seconds
+* Interval of seconds
 
 An interval of day-time consists of `+days hours:months:seconds.fractional` with values ranging from `-999999 23:59:59.999999999` to `+999999 23:59:59.999999999`. The value representation is the same for all types of resolutions. For example, an interval of seconds of _70_ is always represented in an interval-of-days-to-seconds format (with default precisions): `+00 00:01:10.000000`.
 
 Formatting intervals are tricky, because they have different resolutions:
 
-  * DAY
-  * DAY_TO_HOUR
-  * DAY_TO_MINUTE
-  * DAY_TO_SECOND
-  * HOUR
-  * HOUR_TO_MINUTE
-  * HOUR_TO_SECOND
-  * MINUTE
-  * MINUTE_TO_SECOND
-  * SECOND
+* DAY
+* DAY_TO_HOUR
+* DAY_TO_MINUTE
+* DAY_TO_SECOND
+* HOUR
+* HOUR_TO_MINUTE
+* HOUR_TO_SECOND
+* MINUTE
+* MINUTE_TO_SECOND
+* SECOND
 
 Depending on the resolution, use:
 

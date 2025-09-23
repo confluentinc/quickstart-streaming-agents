@@ -13,9 +13,9 @@ WHERE action.pageview IS NOT NULL;
 
 Flink automatically handles union types across different schema formats. With this approach, all event types are defined within a single schema using the format’s native union type mechanism:
 
-  * Avro unions
-  * JSON Schema oneOf
-  * Protocol Buffer oneOf
+* Avro unions
+* JSON Schema oneOf
+* Protocol Buffer oneOf
 
 For example, consider a schema combining order and shipment events:
 

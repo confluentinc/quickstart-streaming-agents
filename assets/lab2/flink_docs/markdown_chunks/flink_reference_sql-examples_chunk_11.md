@@ -45,11 +45,11 @@ SHOW CREATE TABLE returns the following output:
 
 Properties
 
-  * Schema Registry says there is a timestamp physical column, but Flink says there is timestamp metadata column.
+* Schema Registry says there is a timestamp physical column, but Flink says there is timestamp metadata column.
 
-  * In this case, metadata columns and computed columns have precedence, and Confluent Cloud for Apache Flink removes the physical column from the schema.
+* In this case, metadata columns and computed columns have precedence, and Confluent Cloud for Apache Flink removes the physical column from the schema.
 
-  * Because Confluent Cloud for Apache Flink advertises [FULL_TRANSITIVE mode](../../sr/fundamentals/schema-evolution.html#sr-compatibility-types), queries still work, and the physical column is set to NULL in the payload:
+* Because Confluent Cloud for Apache Flink advertises [FULL_TRANSITIVE mode](../../sr/fundamentals/schema-evolution.html#sr-compatibility-types), queries still work, and the physical column is set to NULL in the payload:
 
         INSERT INTO t_metadata_overlap
           SELECT CAST(NULL AS BYTES), 42, TO_TIMESTAMP_LTZ(0, 3);
@@ -77,7 +77,7 @@ SHOW CREATE TABLE returns the following output:
 
 Properties
 
-  * Now, both physical and metadata columns appear and can be accessed for reading and writing.
+* Now, both physical and metadata columns appear and can be accessed for reading and writing.
 
 ### Enrich a column that has no Schema Registry information¶
 
@@ -110,9 +110,9 @@ SHOW CREATE TABLE returns the following output:
 
 Properties
 
-  * Schema Registry provides only information for the value part.
-  * Because the `key` part is not backed by Schema Registry, the `key.format` is `raw`.
-  * The default data type of `raw` is BYTES, but you can change this by using the ALTER TABLE statement.
+* Schema Registry provides only information for the value part.
+* Because the `key` part is not backed by Schema Registry, the `key.format` is `raw`.
+* The default data type of `raw` is BYTES, but you can change this by using the ALTER TABLE statement.
 
 Evolve the table by giving a raw format column a specific type:
 
@@ -134,9 +134,9 @@ SHOW CREATE TABLE returns the following output:
 
 Properties
 
-  * Only changes to simple, atomic types, like INT, BYTES, and STRING are supported, where the binary representation is clear.
-  * For more complex modifications, use Schema Registry.
-  * In multi-cluster scenarios, the ALTER TABLE statement must be executed for every cluster, because the data type for `key` is stored in the Flink regional metastore.
+* Only changes to simple, atomic types, like INT, BYTES, and STRING are supported, where the binary representation is clear.
+* For more complex modifications, use Schema Registry.
+* In multi-cluster scenarios, the ALTER TABLE statement must be executed for every cluster, because the data type for `key` is stored in the Flink regional metastore.
 
 ### Configure Schema Registry subject names¶
 

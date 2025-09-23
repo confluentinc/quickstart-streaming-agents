@@ -19,9 +19,9 @@ DROP VIEW removes a view from the catalog. If the view does not exist, an except
 
 The view name can be in these formats:
 
-  * `catalog_name.db_name.view_name`: The view with the given name is dropped from the catalog named “catalog_name” and the database named “db_name”.
-  * `db_name.view_name`: The view with the given name is dropped from the current catalog of the execution table environment and the database named “db_name”.
-  * `view_name`: The view with the given name is dropped from the current catalog and the current database of the execution table environment.
+* `catalog_name.db_name.view_name`: The view with the given name is dropped from the catalog named “catalog_name” and the database named “db_name”.
+* `db_name.view_name`: The view with the given name is dropped from the current catalog of the execution table environment and the database named “db_name”.
+* `view_name`: The view with the given name is dropped from the current catalog and the current database of the execution table environment.
 
 ## Examples¶
 

@@ -101,17 +101,17 @@ The `isDynamicFunction` method applies only to system functions.
 
 The following system functions are always non-deterministic, which means they are evaluated per-record during runtime, both in batch and streaming mode.
 
-  * CURRENT_ROW_TIMESTAMP
-  * RAND
-  * RAND_INTEGER
-  * UNIX_TIMESTAMP
-  * UUID
+* CURRENT_ROW_TIMESTAMP
+* RAND
+* RAND_INTEGER
+* UNIX_TIMESTAMP
+* UUID
 
 The following system temporal functions are dynamic and are pre-evaluated during planning (query-start) for batch mode and evaluated per-record for streaming mode.
 
-  * CURRENT_DATE
-  * CURRENT_TIME
-  * CURRENT_TIMESTAMP
-  * LOCALTIME
-  * LOCALTIMESTAMP
-  * NOW
+* CURRENT_DATE
+* CURRENT_TIME
+* CURRENT_TIMESTAMP
+* LOCALTIME
+* LOCALTIMESTAMP
+* NOW

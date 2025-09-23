@@ -37,8 +37,8 @@ Example
 
 Related functions
 
-  * HOUR
-  * SECOND
+* HOUR
+* SECOND
 
 ### MONTH¶
 
@@ -61,10 +61,10 @@ Example
 
 Related functions
 
-  * DAYOFMONTH
-  * DAYOFYEAR
-  * WEEK
-  * YEAR
+* DAYOFMONTH
+* DAYOFYEAR
+* WEEK
+* YEAR
 
 ### NOW¶
 
@@ -129,10 +129,10 @@ Example
 
 Related functions
 
-  * DAYOFMONTH
-  * DAYOFYEAR
-  * WEEK
-  * YEAR
+* DAYOFMONTH
+* DAYOFYEAR
+* WEEK
+* YEAR
 
 ### SECOND¶
 
@@ -155,8 +155,8 @@ Example
 
 Related functions
 
-  * HOUR
-  * MINUTE
+* HOUR
+* MINUTE
 
 ### SOURCE_WATERMARK¶
 

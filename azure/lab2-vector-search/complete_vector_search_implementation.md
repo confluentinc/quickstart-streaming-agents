@@ -1,6 +1,7 @@
 # Complete MongoDB Vector Search Implementation
 
 ## Overview
+
 This document contains the complete, tested implementation for MongoDB vector search with Confluent Flink SQL. All queries have been validated and corrected.
 
 ---
@@ -8,6 +9,7 @@ This document contains the complete, tested implementation for MongoDB vector se
 ## Step 1: Populate Embedding Tables
 
 ### Populate documents_embed (IMPROVED VERSION)
+
 ```sql
 -- 🔧 IMPROVED: Optimized chunking strategy for demo corpus
 -- - 5000 chars max for excellent context preservation
@@ -39,12 +41,14 @@ LATERAL TABLE(
 ```
 
 **Text Splitter Parameters Explained:**
+
 - `5000` - Max chunk size (characters) - excellent context preservation (~800-1200 tokens)
 - `200` - Overlap size - ensures continuity between chunks (4% overlap)
 - `'"^#{1,2}\\s"'` - Regex for # or ## headings only (not ###, ####, etc.)
 - `true, true, true, 'START'` - Enable regex, case-sensitive, trim whitespace, start mode
 
 ### Populate queries_embed
+
 ```sql
 INSERT INTO queries_embed
 SELECT
@@ -173,6 +177,7 @@ Please provide a comprehensive response that synthesizes information from the mo
 ## Corpus Size Estimation
 
 **Your Text Splitter Settings Analysis:**
+
 - **5000 characters per chunk** (~800-1200 tokens) - excellent context preservation
 - **Splits only on # or ## headings** + token ceiling
 - **200 character overlap** (4% overlap for continuity)
@@ -180,12 +185,14 @@ Please provide a comprehensive response that synthesizes information from the mo
 **Expected Embedding Count Estimation:**
 
 With 5000-character chunks:
+
 - **Small documents** (<5000 chars): 1 embedding each
 - **Medium documents** (5000-15000 chars): 2-4 embeddings each
 - **Large documents** (>15000 chars): Split at major headings + size limit
 - **Demo corpus estimate**: 500-1500 total embeddings (perfect for demo!)
 
 **Your settings are excellent for demo because:**
+
 - ✅ **5000 chars preserves excellent context** (much better than smaller chunks)
 - ✅ **Major heading splits** maintain logical boundaries
 - ✅ **200 char overlap** ensures continuity
@@ -193,6 +200,7 @@ With 5000-character chunks:
 - ✅ **Better performance** with larger, more meaningful chunks
 
 **MongoDB Performance Considerations:**
+
 - Ensure your MongoDB index can handle the expected volume
 - Consider `mongodb.numCandidates` setting (currently 500) based on corpus size
 - Monitor query performance as corpus grows

@@ -11,22 +11,22 @@ This guide shows how to use Confluent Cloud for Apache Flink® to transform a to
 
 This topic shows the following steps:
 
-  * Step 1: Create a streaming data source using Avro
-  * Step 2: Inspect the source data
-  * Step 3: Convert the serialization format to JSON
-  * Step 4: Delete the long-running statement
+* Step 1: Create a streaming data source using Avro
+* Step 2: Inspect the source data
+* Step 3: Convert the serialization format to JSON
+* Step 4: Delete the long-running statement
 
 ## Prerequisites¶
 
 You need the following prerequisites to use Confluent Cloud for Apache Flink.
 
-  * Access to Confluent Cloud.
+* Access to Confluent Cloud.
 
-  * The organization ID, environment ID, and compute pool ID for your organization.
+* The organization ID, environment ID, and compute pool ID for your organization.
 
-  * The OrganizationAdmin, EnvironmentAdmin, or FlinkAdmin role for creating compute pools, or the FlinkDeveloper role if you already have a compute pool. If you don’t have the appropriate role, reach out to your OrganizationAdmin or EnvironmentAdmin.
+* The OrganizationAdmin, EnvironmentAdmin, or FlinkAdmin role for creating compute pools, or the FlinkDeveloper role if you already have a compute pool. If you don’t have the appropriate role, reach out to your OrganizationAdmin or EnvironmentAdmin.
 
-  * The Confluent CLI. To use the Flink SQL shell, update to the latest version of the Confluent CLI by running the following command:
+* The Confluent CLI. To use the Flink SQL shell, update to the latest version of the Confluent CLI by running the following command:
 
         confluent update --yes
 
@@ -91,7 +91,7 @@ Selecting **AVRO** configures the connector to associate a schema with the `gami
 
   4. Click **Continue**.
 
-  * For **Connector sizing** , leave the slider at the default of **1** task and click **Continue**.
+* For **Connector sizing** , leave the slider at the default of **1** task and click **Continue**.
 
   1. In the **Connector name** box, Select the text and replace it with “gaming_player_activity_source_connector”.
 

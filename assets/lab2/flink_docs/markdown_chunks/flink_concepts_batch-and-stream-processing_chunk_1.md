@@ -21,23 +21,23 @@ In Confluent Cloud for Apache Flink, batch mode is available by using snapshot q
 
 Batch processing in Flink operates on _bounded datasets_ , which are finite, static collections of data. This processing mode has the following key characteristics.
 
-  * It processes complete, finite datasets, like files or database snapshots.
-  * Batch jobs run to completion and then terminate.
-  * It is optimized for throughput, focusing on processing large volumes of data efficiently.
-  * Batch processing can sort, aggregate, and join across the entire dataset.
-  * The system can drop state as soon as it is no longer needed.
-  * Use cases: \- Historical data analysis \- ETL (Extract, Transform, Load) operations \- Report generation \- Data warehousing
+* It processes complete, finite datasets, like files or database snapshots.
+* Batch jobs run to completion and then terminate.
+* It is optimized for throughput, focusing on processing large volumes of data efficiently.
+* Batch processing can sort, aggregate, and join across the entire dataset.
+* The system can drop state as soon as it is no longer needed.
+* Use cases: \- Historical data analysis \- ETL (Extract, Transform, Load) operations \- Report generation \- Data warehousing
 
 ## Stream processing¶
 
 Stream processing in Flink handles _unbounded data streams_ , which have data that arrives continuously and might never end. This processing mode has the following key characteristics.
 
-  * It processes infinite, continuous data streams, such as Kafka topics or sensor feeds.
-  * Stream processing jobs run indefinitely, processing data as it arrives.
-  * It focuses on processing data with minimal delay for low latency.
-  * It produces incremental results as new data arrives.
-  * The system must retain state to handle late or out-of-order events.
-  * Use cases: \- Real-time analytics \- Fraud detection \- IoT data processing \- Live dashboards
+* It processes infinite, continuous data streams, such as Kafka topics or sensor feeds.
+* Stream processing jobs run indefinitely, processing data as it arrives.
+* It focuses on processing data with minimal delay for low latency.
+* It produces incremental results as new data arrives.
+* The system must retain state to handle late or out-of-order events.
+* Use cases: \- Real-time analytics \- Fraud detection \- IoT data processing \- Live dashboards
 
 ## Bounded and unbounded tables comparison¶
 
@@ -65,16 +65,16 @@ Fault Tolerance | Can restart from the beginning. | Requires checkpointing for f
 Query Semantics | All data is available at once, so global operations are possible. | Data arrives over time, so results are incremental.
 SQL/API Differences |
 
-  * **ORDER BY** : You can use any sort order.
-  * **Windowing** : Supports time-based windows on static data.
-  * **Deduplication** : Deduplication is global.
+* **ORDER BY** : You can use any sort order.
+* **Windowing** : Supports time-based windows on static data.
+* **Deduplication** : Deduplication is global.
 
 |
 
-  * **ORDER BY** : The primary sort must be on a time attribute.
-  * **Windowing** : Uses windows to scope aggregations over unbounded data.
-  * **Deduplication** : Deduplication is incremental and often uses windows.
-  * **Session Windows** : Supported.
+* **ORDER BY** : The primary sort must be on a time attribute.
+* **Windowing** : Uses windows to scope aggregations over unbounded data.
+* **Deduplication** : Deduplication is incremental and often uses windows.
+* **Session Windows** : Supported.
 
 ## Unified processing model¶
 
@@ -82,7 +82,7 @@ One important advantage of Flink is its _unified processing model_. This means t
 
 This unified approach enables you to:
 
-  * Build applications that process both historical and real-time data.
-  * Seamlessly transition between batch and streaming modes.
-  * Maintain consistent semantics across processing modes.
-  * Leverage the same tools and libraries for both paradigms.
+* Build applications that process both historical and real-time data.
+* Seamlessly transition between batch and streaming modes.
+* Maintain consistent semantics across processing modes.
+* Leverage the same tools and libraries for both paradigms.

@@ -26,7 +26,7 @@ Example
 
 Related function
 
-  * TO_BASE64
+* TO_BASE64
 
 ## INITCAP¶
 
@@ -49,8 +49,8 @@ Example
 
 Related functions
 
-  * LOWER
-  * UPPER
+* LOWER
+* UPPER
 
 ## INSTR¶
 
@@ -73,7 +73,7 @@ Example
 
 Related function
 
-  * LOCATE
+* LOCATE
 
 ## LEFT¶
 
@@ -92,7 +92,7 @@ Example
 
 Related function
 
-  * RIGHT
+* RIGHT
 
 ## LOCATE¶
 
@@ -130,8 +130,8 @@ Example
 
 Related functions
 
-  * INITCAP
-  * UPPER
+* INITCAP
+* UPPER
 
 ## LPAD¶
 
@@ -180,9 +180,9 @@ Example
 
 Related functions
 
-  * BTRIM
-  * RTRIM
-  * TRIM
+* BTRIM
+* RTRIM
+* TRIM
 
 ## OVERLAY¶
 
@@ -208,9 +208,9 @@ Examples
 
 Related functions
 
-  * REGEXP_REPLACE
-  * REPLACE
-  * TRANSLATE
+* REGEXP_REPLACE
+* REPLACE
+* TRANSLATE
 
 ## PARSE_URL¶
 
@@ -230,14 +230,14 @@ Returns NULL if `string1` or `string2` is NULL.
 
 These are the valid values for `string2`:
 
-  * ‘AUTHORITY’
-  * ‘FILE’
-  * ‘HOST’
-  * ‘PATH’
-  * ‘PROTOCOL’
-  * ‘QUERY’
-  * ‘REF’
-  * ‘USERINFO’
+* ‘AUTHORITY’
+* ‘FILE’
+* ‘HOST’
+* ‘PATH’
+* ‘PROTOCOL’
+* ‘QUERY’
+* ‘REF’
+* ‘USERINFO’
 
 Example
 

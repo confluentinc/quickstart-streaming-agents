@@ -9,13 +9,13 @@ scraped_date: 2025-09-05T13:46:22.792974
 
 This topic answers the following questions about determinism in Confluent Cloud for Apache Flink®:
 
-  * What is determinism?
-  * Is all batch processing deterministic?
-    * Two examples of batch queries with non-deterministic results
-    * Non-determinism in batch processing
-  * Determinism in stream processing
-    * Non-determinism in streaming
-    * Non-deterministic update in streaming
+* What is determinism?
+* Is all batch processing deterministic?
+  * Two examples of batch queries with non-deterministic results
+  * Non-determinism in batch processing
+* Determinism in stream processing
+  * Non-determinism in streaming
+  * Non-deterministic update in streaming
 
 ## What is determinism?¶
 
@@ -110,8 +110,8 @@ The non-determinism in batch processing is caused mainly by the non-deterministi
 
 This difference is due to the fact that Flink SQL inherits the definition of functions from Apache Calcite, where there are two types of functions other than deterministic function: non-deterministic functions and dynamic functions.
 
-  * The non-deterministic functions are executed at runtime in clusters and evaluated per record.
-  * The dynamic functions determine the corresponding values only when the query plan is generated. They’re not executed at runtime, and different values are obtained at different times, but the same values are obtained during the same execution. Built-in dynamic functions are mainly temporal functions.
+* The non-deterministic functions are executed at runtime in clusters and evaluated per record.
+* The dynamic functions determine the corresponding values only when the query plan is generated. They’re not executed at runtime, and different values are obtained at different times, but the same values are obtained during the same execution. Built-in dynamic functions are mainly temporal functions.
 
 ## Determinism in stream processing¶
 
@@ -157,15 +157,15 @@ Flink implements a complete incremental update mechanism based on the [continuou
 
 What is a “non-deterministic Update” (NDU)? Update messages (the changelog) may contain these kinds of message types:
 
-  * Insert (I)
-  * Delete (D)
-  * Update_Before (UB)
-  * Update_After (UA)
+* Insert (I)
+* Delete (D)
+* Update_Before (UB)
+* Update_After (UA)
 
 In an insert-only changelog pipeline, there’s no NDU problem. When there is an update message containing at least one message D, UB, UA in addition to I, the update key of the message, which can be regarded as the primary key of the changelog, is deduced from the query.
 
-  * When the update key can be deduced, the operators in the pipeline maintain the internal state by the update key.
-  * When the update key can’t be deduced, it’s possible that the primary key isn’t defined in the CDC source table or sink table, or some operations can’t be deduced from the semantics of the query.
+* When the update key can be deduced, the operators in the pipeline maintain the internal state by the update key.
+* When the update key can’t be deduced, it’s possible that the primary key isn’t defined in the CDC source table or sink table, or some operations can’t be deduced from the semantics of the query.
 
 All operators maintaining internal state can only process update (D/UB/UA) messages through complete rows. Sink nodes work in retract mode when no primary key is defined, and delete operations are performed by complete rows.
 

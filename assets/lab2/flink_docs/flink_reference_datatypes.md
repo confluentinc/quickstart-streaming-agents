@@ -620,31 +620,31 @@ Declare this type by using the above combinations, where `p1` is the number of d
 
 The type must be parameterized to one of these resolutions with up to nanosecond precision:
 
-  * Interval of days
-  * Interval of days to hours
-  * Interval of days to minutes
-  * Interval of days to seconds
-  * Interval of hours
-  * Interval of hours to minutes
-  * Interval of hours to seconds
-  * Interval of minutes
-  * Interval of minutes to seconds
-  * Interval of seconds
+* Interval of days
+* Interval of days to hours
+* Interval of days to minutes
+* Interval of days to seconds
+* Interval of hours
+* Interval of hours to minutes
+* Interval of hours to seconds
+* Interval of minutes
+* Interval of minutes to seconds
+* Interval of seconds
 
 An interval of day-time consists of `+days hours:months:seconds.fractional` with values ranging from `-999999 23:59:59.999999999` to `+999999 23:59:59.999999999`. The value representation is the same for all types of resolutions. For example, an interval of seconds of _70_ is always represented in an interval-of-days-to-seconds format (with default precisions): `+00 00:01:10.000000`.
 
 Formatting intervals are tricky, because they have different resolutions:
 
-  * DAY
-  * DAY_TO_HOUR
-  * DAY_TO_MINUTE
-  * DAY_TO_SECOND
-  * HOUR
-  * HOUR_TO_MINUTE
-  * HOUR_TO_SECOND
-  * MINUTE
-  * MINUTE_TO_SECOND
-  * SECOND
+* DAY
+* DAY_TO_HOUR
+* DAY_TO_MINUTE
+* DAY_TO_SECOND
+* HOUR
+* HOUR_TO_MINUTE
+* HOUR_TO_SECOND
+* MINUTE
+* MINUTE_TO_SECOND
+* SECOND
 
 Depending on the resolution, use:
 
@@ -705,9 +705,9 @@ Declare this type by using the above combinations, where `p` is the number of di
 
 The type must be parameterized to one of these resolutions:
 
-  * Interval of years
-  * Interval of years to months
-  * Interval of months
+* Interval of years
+* Interval of years to months
+* Interval of months
 
 An interval of year-month consists of `+years-months` with values ranging from `-9999-11` to `+9999-11`.
 
@@ -715,9 +715,9 @@ The value representation is the same for all types of resolutions. For example, 
 
 Formatting intervals are tricky, because they have different resolutions:
 
-  * YEAR
-  * YEAR_TO_MONTH
-  * MONTH
+* YEAR
+* YEAR_TO_MONTH
+* MONTH
 
 Depending on the resolution, use:
 
@@ -903,16 +903,16 @@ Although TIMESTAMP and TIMESTAMP_LTZ are similarly named, they represent differe
 
 TIMESTAMP_LTZ
 
-  * TIMESTAMP_LTZ in SQL is similar to the `Instant` class in Java.
-  * TIMESTAMP_LTZ represents a _moment_ , or a specific point in the UTC timeline.
-  * TIMESTAMP_LTZ stores time as a UTC integer, which can be converted dynamically to every other timezone.
-  * When printing or casting TIMESTAMP_LTZ as a character string, the `sql.local-time-zone` setting is considered.
+* TIMESTAMP_LTZ in SQL is similar to the `Instant` class in Java.
+* TIMESTAMP_LTZ represents a _moment_ , or a specific point in the UTC timeline.
+* TIMESTAMP_LTZ stores time as a UTC integer, which can be converted dynamically to every other timezone.
+* When printing or casting TIMESTAMP_LTZ as a character string, the `sql.local-time-zone` setting is considered.
 
 TIMESTAMP
 
-  * TIMESTAMP in SQL is similar to `LocalDateTime` in Java.
-  * TIMESTAMP has no time zone or offset from UTC, so it can’t represent a moment.
-  * TIMESTAMP stores time as character string, not related to any timezone.
+* TIMESTAMP in SQL is similar to `LocalDateTime` in Java.
+* TIMESTAMP has no time zone or offset from UTC, so it can’t represent a moment.
+* TIMESTAMP stores time as character string, not related to any timezone.
 
 ### TIMESTAMP WITH TIME ZONE¶
 
@@ -1242,8 +1242,8 @@ During the planning stage, the query validator rejects queries for invalid type 
 
 In Flink SQL, casting can be performed by using one of these two built-in functions:
 
-  * [CAST](functions/comparison-functions.html#flink-sql-cast-function): The regular cast function defined by the SQL standard. It can fail the job if the cast operation is fallible and the provided input is not valid. Type inference preserves the nullability of the input type.
-  * [TRY_CAST](functions/comparison-functions.html#flink-sql-try-cast-function): An extension to the regular cast function that returns `NULL` if the cast operation fails. Its return type is always nullable.
+* [CAST](functions/comparison-functions.html#flink-sql-cast-function): The regular cast function defined by the SQL standard. It can fail the job if the cast operation is fallible and the provided input is not valid. Type inference preserves the nullability of the input type.
+* [TRY_CAST](functions/comparison-functions.html#flink-sql-try-cast-function): An extension to the regular cast function that returns `NULL` if the cast operation fails. Its return type is always nullable.
 
 For example:
 

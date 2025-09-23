@@ -42,7 +42,7 @@ Your output should resemble:
 
 List the compute pools in your environment by sending a GET request to the [Compute Pools endpoint](/cloud/current/api.html#tag/Compute-Pools-\(fcpmv2\)/operation/listFcpmV2ComputePools).
 
-  * This request uses your Cloud API key instead of the Flink API key.
+* This request uses your Cloud API key instead of the Flink API key.
 
 Listing the compute pools in your environment requires the following inputs:
 

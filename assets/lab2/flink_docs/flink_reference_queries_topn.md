@@ -25,11 +25,11 @@ Note
 
 This query pattern must be followed exactly, otherwise, the optimizer can’t translate the query.
 
-  * `ROW_NUMBER()`: Assigns an unique, sequential number to each row, starting with one, according to the ordering of rows within the partition. Currently, Flink supports only `ROW_NUMBER` as the over window function. In the future, Flink may support `RANK()` and `DENSE_RANK()`.
-  * `PARTITION BY column1[, column2...]`: Specifies the partition columns. Each partition has a Top-N result.
-  * `ORDER BY column1 [asc|desc][, column2 [asc|desc]...]`: Specifies the ordering columns. The ordering directions can be different on different columns.
-  * `WHERE rownum <= N`: The `rownum <= N` is required for Flink to recognize this query is a Top-N query. The `N` represents the number of smallest or largest records to retain.
-  * `[AND conditions]`: You can add other conditions in the WHERE clause, but the other conditions can only be combined with `rownum <= N` using the `AND` conjunction.
+* `ROW_NUMBER()`: Assigns an unique, sequential number to each row, starting with one, according to the ordering of rows within the partition. Currently, Flink supports only `ROW_NUMBER` as the over window function. In the future, Flink may support `RANK()` and `DENSE_RANK()`.
+* `PARTITION BY column1[, column2...]`: Specifies the partition columns. Each partition has a Top-N result.
+* `ORDER BY column1 [asc|desc][, column2 [asc|desc]...]`: Specifies the ordering columns. The ordering directions can be different on different columns.
+* `WHERE rownum <= N`: The `rownum <= N` is required for Flink to recognize this query is a Top-N query. The `N` represents the number of smallest or largest records to retain.
+* `[AND conditions]`: You can add other conditions in the WHERE clause, but the other conditions can only be combined with `rownum <= N` using the `AND` conjunction.
 
 ## Description¶
 

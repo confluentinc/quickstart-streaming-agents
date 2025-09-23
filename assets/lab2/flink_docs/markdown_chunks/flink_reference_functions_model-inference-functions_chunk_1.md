@@ -11,21 +11,21 @@ total_chunks: 8
 
 Confluent Cloud for Apache Flink® provides built-in functions for invoking remote AI/ML models in Flink SQL queries. These simplify developing and deploying AI applications by providing a unified platform for both data processing and AI/ML tasks.
 
-  * AI_COMPLETE: Generate text completions.
-  * AI_EMBEDDING: Create embeddings.
-  * AI_FORECAST: Forecast trends.
-  * AI_TOOL_INVOKE: Invoke model context protocol (MCP) tools.
-  * ML_DETECT_ANOMALIES: Detect anomalies in your data.
-  * ML_EVALUATE: Evaluate the performance of an AI/ML model.
-  * ML_PREDICT: Run a remote AI/ML model for tasks like predicting outcomes, generating text, and classification.
+* AI_COMPLETE: Generate text completions.
+* AI_EMBEDDING: Create embeddings.
+* AI_FORECAST: Forecast trends.
+* AI_TOOL_INVOKE: Invoke model context protocol (MCP) tools.
+* ML_DETECT_ANOMALIES: Detect anomalies in your data.
+* ML_EVALUATE: Evaluate the performance of an AI/ML model.
+* ML_PREDICT: Run a remote AI/ML model for tasks like predicting outcomes, generating text, and classification.
 
 ## Search Functions¶
 
 Confluent Cloud for Apache Flink also supports read-only external tables to enable search with federated query execution on external databases.
 
-  * KEY_SEARCH_AGG: Perform exact key lookups in external databases like JDBC, REST APIs, MongoDB, and Couchbase.
-  * TEXT_SEARCH_AGG: Execute full-text searches in external databases like MongoDB, Couchbase, and Elasticsearch.
-  * VECTOR_SEARCH_AGG: Run semantic similarity searches using vector embeddings in databases like MongoDB, Pinecone, Elasticsearch, and Couchbase.
+* KEY_SEARCH_AGG: Perform exact key lookups in external databases like JDBC, REST APIs, MongoDB, and Couchbase.
+* TEXT_SEARCH_AGG: Execute full-text searches in external databases like MongoDB, Couchbase, and Elasticsearch.
+* VECTOR_SEARCH_AGG: Run semantic similarity searches using vector embeddings in databases like MongoDB, Pinecone, Elasticsearch, and Couchbase.
 
 For machine-language preprocessing utilities, see [ML Preprocessing Functions](ml-preprocessing-functions.html#flink-sql-ml-preprocessing-functions).
 
@@ -54,11 +54,11 @@ Configuration
 
 You can control how calls to the remote model execute with these optional parameters.
 
-  * `async_enabled`: Calls to remote models are asynchronous and don’t block. The default is `true`.
-  * `client_timeout`: Time, in seconds, after which the request to the model endpoint times out. The default is 30 seconds.
-  * `debug`: Return a detailed stack trace in the API response. The default is `false`. Confluent Cloud for Apache Flink implements data masking for error messages to remove any secrets or customer input, but the stack trace may contain the prompt itself or some part of the response string.
-  * `retry_count`: Maximum number of times the remote model request is retried if the request to the model fails. The default is 3.
-  * `max_parallelism`: Maximum number of parallel requests that the function can make. Can be used only when `async_enabled` is `true`. The default is 10.
+* `async_enabled`: Calls to remote models are asynchronous and don’t block. The default is `true`.
+* `client_timeout`: Time, in seconds, after which the request to the model endpoint times out. The default is 30 seconds.
+* `debug`: Return a detailed stack trace in the API response. The default is `false`. Confluent Cloud for Apache Flink implements data masking for error messages to remove any secrets or customer input, but the stack trace may contain the prompt itself or some part of the response string.
+* `retry_count`: Maximum number of times the remote model request is retried if the request to the model fails. The default is 3.
+* `max_parallelism`: Maximum number of parallel requests that the function can make. Can be used only when `async_enabled` is `true`. The default is 10.
 
 Example
 

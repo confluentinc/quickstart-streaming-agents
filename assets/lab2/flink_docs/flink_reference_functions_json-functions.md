@@ -23,8 +23,8 @@ The special character `$` denotes the root node in a JSON path. Paths can access
 
 Known Limitations:
 
-  * Not all features of Lax mode are currently supported. This is an upstream bug ([CALCITE-4717](https://issues.apache.org/jira/browse/CALCITE-4717)).
-  * Non-standard behavior is not guaranteed.
+* Not all features of Lax mode are currently supported. This is an upstream bug ([CALCITE-4717](https://issues.apache.org/jira/browse/CALCITE-4717)).
+* Non-standard behavior is not guaranteed.
 
 ## IS JSON¶
 
@@ -384,10 +384,10 @@ Non-scalar values can’t be returned.
 
 By default, the value is returned as `STRING`. Use `RETURNING` to specify a different return type. The following return types are supported:
 
-  * `BOOLEAN`
-  * `DOUBLE`
-  * `INTEGER`
-  * `VARCHAR` / `STRING`
+* `BOOLEAN`
+* `DOUBLE`
+* `INTEGER`
+* `VARCHAR` / `STRING`
 
 For empty path expressions or errors, you can define a behavior to return NULL, raise an error, or return a defined default value instead. The default is `NULL ON EMPTY` or `NULL ON ERROR`, respectively. The default value may be a literal or an expression. If the default value itself raises an error, it falls through to the error behavior for `ON EMPTY` and raises an error for `ON ERROR`.
 
@@ -419,15 +419,15 @@ The following SELECT statements return the values indicated in the comment lines
 
 ## Other built-in functions¶
 
-  * [Aggregate Functions](aggregate-functions.html#flink-sql-aggregate-functions)
-  * [Collection Functions](collection-functions.html#flink-sql-collection-functions)
-  * [Comparison Functions](comparison-functions.html#flink-sql-comparison-functions)
-  * [Conditional Functions](conditional-functions.html#flink-sql-conditional-functions)
-  * [Datetime Functions](datetime-functions.html#flink-sql-datetime-functions)
-  * [Hash Functions](hash-functions.html#flink-sql-hash-functions)
-  * JSON Functions
-  * [ML Preprocessing Functions](ml-preprocessing-functions.html#flink-sql-ml-preprocessing-functions)
-  * [Model Inference Functions](model-inference-functions.html#flink-sql-model-inference-functions)
-  * [Numeric Functions](numeric-functions.html#flink-sql-numeric-functions)
-  * [String Functions](string-functions.html#flink-sql-string-functions)
-  * [Table API Functions](table-api-functions.html#flink-table-api-functions)
+* [Aggregate Functions](aggregate-functions.html#flink-sql-aggregate-functions)
+* [Collection Functions](collection-functions.html#flink-sql-collection-functions)
+* [Comparison Functions](comparison-functions.html#flink-sql-comparison-functions)
+* [Conditional Functions](conditional-functions.html#flink-sql-conditional-functions)
+* [Datetime Functions](datetime-functions.html#flink-sql-datetime-functions)
+* [Hash Functions](hash-functions.html#flink-sql-hash-functions)
+* JSON Functions
+* [ML Preprocessing Functions](ml-preprocessing-functions.html#flink-sql-ml-preprocessing-functions)
+* [Model Inference Functions](model-inference-functions.html#flink-sql-model-inference-functions)
+* [Numeric Functions](numeric-functions.html#flink-sql-numeric-functions)
+* [String Functions](string-functions.html#flink-sql-string-functions)
+* [Table API Functions](table-api-functions.html#flink-table-api-functions)

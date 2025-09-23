@@ -60,7 +60,7 @@ Your output should resemble:
 
 List the connections in your environment by sending a GET request to the [Connections endpoint](/cloud/current/api.html#tag/Connections-\(sqlv1\)/operation/listSqlv1Connections).
 
-  * This request uses your Cloud API key instead of the Flink API key.
+* This request uses your Cloud API key instead of the Flink API key.
 
 Listing the connections in your environment requires the following inputs:
 

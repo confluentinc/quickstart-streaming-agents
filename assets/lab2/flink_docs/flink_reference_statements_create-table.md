@@ -59,24 +59,24 @@ Trying to create a table with a name that exists in the catalog causes an except
 
 The table name can be in these formats:
 
-  * `catalog_name.db_name.table_name`: The table is registered with the catalog named “catalog_name” and the database named “db_name”.
-  * `db_name.table_name`: The table is registered into the current catalog of the execution table environment and the database named “db_name”.
-  * `table_name`: The table is registered into the current catalog and the database of the execution table environment.
+* `catalog_name.db_name.table_name`: The table is registered with the catalog named “catalog_name” and the database named “db_name”.
+* `db_name.table_name`: The table is registered into the current catalog of the execution table environment and the database named “db_name”.
+* `table_name`: The table is registered into the current catalog and the database of the execution table environment.
 
 A table registered with the CREATE TABLE statement can be used as both table source and table sink. Flink can’t determine whether the table is used as a source or a sink until it’s referenced in a [DML query](../queries/overview.html#flink-sql-queries).
 
 The following sections show the options and clauses that are available with the CREATE TABLE statement.
 
-  * Physical / Regular Columns
-  * Metadata columns
-  * Computed columns
-  * System columns
-  * Watermark clause
-  * PRIMARY KEY constraint
-  * DISTRIBUTED BY clause
-  * CREATE TABLE AS SELECT (CTAS)
-  * LIKE
-  * WITH options
+* Physical / Regular Columns
+* Metadata columns
+* Computed columns
+* System columns
+* Watermark clause
+* PRIMARY KEY constraint
+* DISTRIBUTED BY clause
+* CREATE TABLE AS SELECT (CTAS)
+* LIKE
+* WITH options
 
 ## Usage¶
 
@@ -127,15 +127,15 @@ The following SQL shows how to declare physical columns of various types in a ta
 
 You can access the following table metadata as metadata columns in a table definition.
 
-  * Available metadata
-  * leader-epoch
-  * offset
-  * partition
-  * raw-key
-  * raw-value
-  * timestamp
-  * timestamp-type
-  * topic
+* Available metadata
+* leader-epoch
+* offset
+* partition
+* raw-key
+* raw-value
+* timestamp
+* timestamp-type
+* topic
 
 Use the METADATA keyword to declare a metadata column.
 
@@ -160,50 +160,50 @@ The following CREATE TABLE statement shows the syntax for exposing metadata fiel
 
 #### headers¶
 
-  * Type: MAP NOT NULL
-  * Access: readable/writable
+* Type: MAP NOT NULL
+* Access: readable/writable
 
 Headers of the Kafka record as a map of raw bytes.
 
 #### leader-epoch¶
 
-  * Type: INT NULL
-  * Access: readable
+* Type: INT NULL
+* Access: readable
 
 Leader epoch of the Kafka record, if available.
 
 #### offset¶
 
-  * Type: BIGINT NOT NULL
-  * Access: readable
+* Type: BIGINT NOT NULL
+* Access: readable
 
 Offset of the Kafka record in the partition.
 
 #### partition¶
 
-  * Type: INT NOT NULL
-  * Access: readable
+* Type: INT NOT NULL
+* Access: readable
 
 Partition ID of the Kafka record.
 
 #### raw-key¶
 
-  * Type: BYTES NOT NULL
-  * Access: readable
+* Type: BYTES NOT NULL
+* Access: readable
 
 The unique identifier or key of the Kafka record as raw bytes. The type may vary based on the serializer used, for example, STRING for `StringSerializer`.
 
 #### raw-value¶
 
-  * Type: BYTES NOT NULL
-  * Access: readable
+* Type: BYTES NOT NULL
+* Access: readable
 
 The actual message content or payload of the Kafka record as raw bytes. Contains the main data being transmitted. The type may vary based on the serializer used, for example, STRING for `StringSerializer`.
 
 #### timestamp¶
 
-  * Type: TIMESTAMP_LTZ(3) NOT NULL
-  * Access: readable/writable
+* Type: TIMESTAMP_LTZ(3) NOT NULL
+* Access: readable/writable
 
 Timestamp of the Kafka record.
 
@@ -211,21 +211,21 @@ With `timestamp`, you can pass [event time](../../concepts/timely-stream-process
 
 #### timestamp-type¶
 
-  * Type: STRING NOT NULL
-  * Access: readable
+* Type: STRING NOT NULL
+* Access: readable
 
 Timestamp type of the Kafka record.
 
 Valid values are:
 
-  * “NoTimestampType”
-  * “CreateTime” (also set when writing metadata)
-  * “LogAppendTime”
+* “NoTimestampType”
+* “CreateTime” (also set when writing metadata)
+* “LogAppendTime”
 
 #### topic¶
 
-  * Type: STRING NOT NULL
-  * Access: readable
+* Type: STRING NOT NULL
+* Access: readable
 
 Topic name of the Kafka record.
 
@@ -315,16 +315,16 @@ Kafka partitions map 1:1 to SQL buckets. The `n` BUCKETS are used for the number
 
 If `n` is not defined, the default is 6.
 
-  * The number of buckets is fixed.
-  * A bucket is identifiable regardless of partition.
-  * Bucketing is good in long-term storage for reading across partitions based on a large key space, for example, `user_id`.
-  * Also, bucketing is good for short-term storage for load balancing.
+* The number of buckets is fixed.
+* A bucket is identifiable regardless of partition.
+* Bucketing is good in long-term storage for reading across partitions based on a large key space, for example, `user_id`.
+* Also, bucketing is good for short-term storage for load balancing.
 
 Every mode comes with a default distribution, so DISTRIBUTED BY is required only by power users. In most cases, a simple `CREATE TABLE t (schema);` is sufficient.
 
-  * For upsert mode, the bucket key must be equal to primary key.
-  * For append/retract mode, the bucket key can be a subset of the primary key.
-  * The bucket key can be undefined, which corresponds to a “connector defined” distribution: round robin for append, and hash-by-row for retract.
+* For upsert mode, the bucket key must be equal to primary key.
+* For append/retract mode, the bucket key can be a subset of the primary key.
+* The bucket key can be undefined, which corresponds to a “connector defined” distribution: round robin for append, and hash-by-row for retract.
 
 Custom distributions are possible, but currently only custom hash distributions are supported.
 
@@ -386,23 +386,23 @@ The watermark generation expression is evaluated by Flink SQL for every record. 
 
 No new watermark is emitted if any of the following conditions apply.
 
-  * The current watermark is null.
-  * The current watermark is identical to the previous watermark.
-  * The value of the returned watermark is smaller than the value of the last emitted watermark.
+* The current watermark is null.
+* The current watermark is identical to the previous watermark.
+* The value of the returned watermark is smaller than the value of the last emitted watermark.
 
 When you use event-time semantics, your tables must contain an event-time attribute and watermarking strategy.
 
 Flink SQL provides these watermark strategies.
 
-  * **Strictly ascending timestamps:** Emit a watermark of the maximum observed timestamp so far. Rows that have a timestamp larger than the max timestamp are not late.
+* **Strictly ascending timestamps:** Emit a watermark of the maximum observed timestamp so far. Rows that have a timestamp larger than the max timestamp are not late.
 
         WATERMARK FOR rowtime_column AS rowtime_column
 
-  * **Ascending timestamps:** Emit a watermark of the maximum observed timestamp so far, minus _1_. Rows that have a timestamp larger than or equal to the max timestamp are not late.
+* **Ascending timestamps:** Emit a watermark of the maximum observed timestamp so far, minus _1_. Rows that have a timestamp larger than or equal to the max timestamp are not late.
 
         WATERMARK FOR rowtime_column AS rowtime_column - INTERVAL '0.001' SECOND
 
-  * **Bounded out-of-orderness timestamps:** Emit watermarks which are the maximum observed timestamp minus the specified delay.
+* **Bounded out-of-orderness timestamps:** Emit watermarks which are the maximum observed timestamp minus the specified delay.
 
         WATERMARK FOR rowtime_column AS rowtime_column - INTERVAL 'string' timeUnit
 
@@ -437,8 +437,8 @@ Tables can also be created and populated by the results of a query in one create
 
 The CTAS statement consists of two parts:
 
-  * The SELECT part can be any SELECT query supported by Flink SQL.
-  * The CREATE part takes the resulting schema from the SELECT part and creates the target table.
+* The SELECT part can be any SELECT query supported by Flink SQL.
+* The CREATE part takes the resulting schema from the SELECT part and creates the target table.
 
 The following two code examples are equivalent.
 
@@ -498,18 +498,18 @@ The CREATE TABLE LIKE clause enables creating a new table with the same schema a
 
 Use the LIKE options to control the merging logic of table features. You can control the merging behavior of:
 
-  * CONSTRAINTS - Constraints such as primary key. and unique keys.
-  * GENERATED - Computed columns.
-  * METADATA - Metadata columns.
-  * OPTIONS - Table options.
-  * PARTITIONS - Partition options.
-  * WATERMARKS - Watermark strategies.
+* CONSTRAINTS - Constraints such as primary key. and unique keys.
+* GENERATED - Computed columns.
+* METADATA - Metadata columns.
+* OPTIONS - Table options.
+* PARTITIONS - Partition options.
+* WATERMARKS - Watermark strategies.
 
 with three different merging strategies:
 
-  * INCLUDING - Includes the feature of the source table and fails on duplicate entries, for example, if an option with the same key exists in both tables.
-  * EXCLUDING - Does not include the given feature of the source table.
-  * OVERWRITING - Includes the feature of the source table, overwrites duplicate entries of the source table with properties of the new table. For example, if an option with the same key exists in both tables, the option from the current statement is used.
+* INCLUDING - Includes the feature of the source table and fails on duplicate entries, for example, if an option with the same key exists in both tables.
+* EXCLUDING - Does not include the given feature of the source table.
+* OVERWRITING - Includes the feature of the source table, overwrites duplicate entries of the source table with properties of the new table. For example, if an option with the same key exists in both tables, the option from the current statement is used.
 
 Additionally, you can use the INCLUDING/EXCLUDING ALL option to specify what should be the strategy if no specific strategy is defined. For example, if you use EXCLUDING ALL INCLUDING WATERMARKS, only the watermarks are included from the source table.
 
@@ -567,23 +567,23 @@ Set the changelog mode of the connector. For more information on changelog modes
 
 These are the changelog modes for an inferred table:
 
-  * `append` (if uncompacted and not a Debezium envelope)
-  * `upsert` (if compacted)
-  * `retract` (if a Debezium envelope is detected and uncompacted)
+* `append` (if uncompacted and not a Debezium envelope)
+* `upsert` (if compacted)
+* `retract` (if a Debezium envelope is detected and uncompacted)
 
 These are the changelog modes for a manually created table:
 
-  * `append`
-  * `retract`
-  * `upsert`
+* `append`
+* `retract`
+* `upsert`
 
 #### Primary key interaction¶
 
 With a primary key declared, the changelog modes have these properties:
 
-  * `append` means that every row can be treated as an independent fact.
-  * `retract` means that the combination of `+U` and `-U` are related and must be partitioned together.
-  * `upsert` means that all rows with same primary key are related and must be partitioned together
+* `append` means that every row can be treated as an independent fact.
+* `retract` means that the combination of `+U` and `-U` are related and must be partitioned together.
+* `upsert` means that all rows with same primary key are related and must be partitioned together
 
 To build indices, primary keys must be partitioned together.
 
@@ -597,10 +597,10 @@ If value is `null`, it represents a deletion (-D). Other values are +U and the e
 
 Changes for an [updating table](../../concepts/dynamic-tables.html#flink-sql-dynamic-tables-updating-table) have the change type encoded in the Kafka record as a special `op` header that represents the change (+I, -U, +U, -D). The value of the `op` header, if present, represents the kind of change that a row can describe in a changelog:
 
-  * `0`: represents INSERT (+I), an insertion operation.
-  * `1`: represents UPDATE_BEFORE (-U), an update operation with the previous content of the updated row.
-  * `2`: represents UPDATE_AFTER (+U), an update operation with new content for the updated row.
-  * `3`: represents DELETE (-D), a deletion operation.
+* `0`: represents INSERT (+I), an insertion operation.
+* `1`: represents UPDATE_BEFORE (-U), an update operation with the previous content of the updated row.
+* `2`: represents UPDATE_AFTER (+U), an update operation with new content for the updated row.
+* `3`: represents DELETE (-D), a deletion operation.
 
 The default is `0`.
 
@@ -608,8 +608,8 @@ For more information, see [Changelog entries](../../concepts/dynamic-tables.html
 
 ### error-handling.log.target¶
 
-  * Type: string
-  * Default: `error_log`
+* Type: string
+* Default: `error_log`
 
     'error-handling.log.target' = '<dlq_table_name>'
 
@@ -617,14 +617,14 @@ Specify the destination Dead Letter Queue (DLQ) table for error logs when error-
 
 If `error-handling.log.target` isn’t set, the default is `error_log`. If the DLQ table doesn’t exist and can’t be created, the job fails.
 
-  * The principal running the CREATE TABLE or ALTER TABLE statement must have permissions to create the DLQ topic and schema. If permissions are missing, the statement fails.
-  * If a principal runs a SELECT or any other query, it needs permissions to write into the defined DLQ table. If permissions are missing, the statement fails.
-  * For more information, see [Grant Role-Based Access in Confluent Cloud for Apache Flink](../../operate-and-deploy/flink-rbac.html#flink-rbac).
+* The principal running the CREATE TABLE or ALTER TABLE statement must have permissions to create the DLQ topic and schema. If permissions are missing, the statement fails.
+* If a principal runs a SELECT or any other query, it needs permissions to write into the defined DLQ table. If permissions are missing, the statement fails.
+* For more information, see [Grant Role-Based Access in Confluent Cloud for Apache Flink](../../operate-and-deploy/flink-rbac.html#flink-rbac).
 
 ### error-handling.mode¶
 
-  * Type: enum
-  * Default: `fail`
+* Type: enum
+* Default: `fail`
 
     'error-handling.mode' = [fail | ignore | log]
 
@@ -632,47 +632,47 @@ Control how Flink handles deserialization errors for a table.
 
 The following values are supported.
 
-  * `fail`: The statement fails on error (default).
-  * `ignore`: The error is skipped and processing continues.
-  * `log`: The error is logged to a Dead Letter Queue (DLQ) table and processing continues.
+* `fail`: The statement fails on error (default).
+* `ignore`: The error is skipped and processing continues.
+* `log`: The error is logged to a Dead Letter Queue (DLQ) table and processing continues.
 
 When a statement reads from the table, for example, `SELECT * FROM my_table`, and a deserialization error occurs, as with a _poison pill_ , Flink handles the error based on the `error-handling.mode` setting.
 
-  * `fail`: Flink fails the statement.
-  * `ignore`: Flink ignores the error and continues processing with the next row.
-  * `log`: Flink sends the poison pill to the DLQ table and continues processing with the next row.
+* `fail`: Flink fails the statement.
+* `ignore`: Flink ignores the error and continues processing with the next row.
+* `log`: Flink sends the poison pill to the DLQ table and continues processing with the next row.
 
 All Flink tables receive the `error-handling.mode` setting. If you don’t specify a value, the default is `fail`. You can override the setting for an existing table by using the [ALTER TABLE](alter-table.html#flink-sql-alter-table) statement. Only table-level overrides are supported. Per-statement overrides are not supported.
 
 The following limitations apply:
 
-  * Only deserialization errors at the source are supported.
-  * Errors outside the source, for example, in windowed aggregations, are not handled.
+* Only deserialization errors at the source are supported.
+* Errors outside the source, for example, in windowed aggregations, are not handled.
 
 ### kafka.cleanup-policy¶
 
-  * Type: enum
-  * Default: `delete`
+* Type: enum
+* Default: `delete`
 
     'kafka.cleanup-policy' = [delete | compact | delete-compact]
 
 Set the default cleanup policy for Kafka topic log segments beyond the retention window. Translates to the Kafka `log.cleanup.policy` property. For more information, see [Log Compaction](/kafka/design/log_compaction.html).
 
-  * `compact`: topic log is compacted periodically in the background by the log cleaner.
-  * `delete`: old log segments are discarded when their retention time or size limit is reached.
-  * `delete-compact`: compact the log and follow the retention time or size limit settings.
+* `compact`: topic log is compacted periodically in the background by the log cleaner.
+* `delete`: old log segments are discarded when their retention time or size limit is reached.
+* `delete-compact`: compact the log and follow the retention time or size limit settings.
 
 ### kafka.consumer.isolation-level¶
 
-  * Type: enum
-  * Default: `read-committed`
+* Type: enum
+* Default: `read-committed`
 
     'kafka.consumer.isolation-level' = [read-committed | read-uncommitted]
 
 Controls which transactional messages to read:
 
-  * `read-committed`: Only return messages from committed transactions. Any transactional messages from aborted or in-progress transactions are filtered out.
-  * `read-uncommitted`: Return all messages, including those from transactional messages that were aborted or are still in progress.
+* `read-committed`: Only return messages from committed transactions. Any transactional messages from aborted or in-progress transactions are filtered out.
+* `read-uncommitted`: Return all messages, including those from transactional messages that were aborted or are still in progress.
 
 For more information, see [delivery guarantees and latency](../../concepts/delivery-guarantees.html#flink-sql-delivery-guarantees-latency).
 
@@ -686,8 +686,8 @@ The default is _2097164_ bytes.
 
 ### kafka.producer.compression.type¶
 
-  * Type: enum
-  * Default: `none`
+* Type: enum
+* Default: `none`
 
     'kafka.producer.compression.type' = [none | gzip | snappy | lz4 | zstd]
 
@@ -695,8 +695,8 @@ Translates to the Kafka `compression.type` property.
 
 ### kafka.retention.size¶
 
-  * Type: Integer
-  * Default: _0_
+* Type: Integer
+* Default: _0_
 
     'kafka.retention.size' = MemorySize
 
@@ -704,8 +704,8 @@ Translates to the Kafka `log.retention.bytes` property.
 
 ### kafka.retention.time¶
 
-  * Type: Duration
-  * Default: `7 days`
+* Type: Duration
+* Default: `7 days`
 
     'kafka.retention.time' = '<duration>'
 
@@ -713,8 +713,8 @@ Translates to the Kafka `log.retention.ms` property.
 
 ### key.fields-prefix¶
 
-  * Type: String
-  * Default: “”
+* Type: String
+* Default: “”
 
 Specify a custom prefix for all fields of the key format.
 
@@ -732,8 +732,8 @@ The prefix for an inferred table is `key_`, for non-atomic Schema Registry types
 
 ### key.format¶
 
-  * Type: String
-  * Default: “avro-registry”
+* Type: String
+* Default: “avro-registry”
 
 Specify the serialization format of the table’s key fields.
 
@@ -741,16 +741,16 @@ Specify the serialization format of the table’s key fields.
 
 These are the key formats for an inferred table:
 
-  * `raw` (if no Schema Registry entry)
-  * `avro-registry` (for AVRO Schema Registry entry)
-  * `json-registry` (for JSON Schema Registry entry)
-  * `proto-registry` (for Protobuf Schema Registry entry)
+* `raw` (if no Schema Registry entry)
+* `avro-registry` (for AVRO Schema Registry entry)
+* `json-registry` (for JSON Schema Registry entry)
+* `proto-registry` (for Protobuf Schema Registry entry)
 
 These are the key formats for a manually created table:
 
-  * `avro-registry` (for Avro Schema Registry entry)
-  * `json-registry` (for JSON Schema Registry entry)
-  * `proto-registry` (for Protobuf Schema Registry entry)
+* `avro-registry` (for Avro Schema Registry entry)
+* `json-registry` (for JSON Schema Registry entry)
+* `proto-registry` (for Protobuf Schema Registry entry)
 
 If no format is specified, Avro Schema Registry is used by default. This applies only if a primary or distribution key is defined.
 
@@ -758,8 +758,8 @@ The Schema Registry subject compatibility mode must be FULL or FULL_TRANSITIVE. 
 
 ### key.format.schema-context¶
 
-  * Type: String
-  * Default: (none)
+* Type: String
+* Default: (none)
 
 Specify the Confluent Schema Registry Schema Context for the key format.
 
@@ -769,8 +769,8 @@ Similar to value.format.schema-context, this option enables you to specify a sch
 
 ### scan.bounded.mode¶
 
-  * Type: Enum
-  * Default: `unbounded`
+* Type: Enum
+* Default: `unbounded`
 
 Specify the bounded mode for the Kafka consumer.
 
@@ -778,9 +778,9 @@ Specify the bounded mode for the Kafka consumer.
 
 The following list shows the valid bounded mode values.
 
-  * `latest-offset`: bounded by latest offsets. This is evaluated at the start of consumption from a given partition.
-  * `timestamp`: bounded by a user-supplied timestamp.
-  * `unbounded`: table is unbounded.
+* `latest-offset`: bounded by latest offsets. This is evaluated at the start of consumption from a given partition.
+* `timestamp`: bounded by a user-supplied timestamp.
+* `unbounded`: table is unbounded.
 
 If `scan.bounded.mode` isn’t set, the default is an unbounded table. For more information, see [Bounded and unbounded tables](../../concepts/overview.html#flink-sql-stream-processing-concepts-bounded-and-unbounded-tables).
 
@@ -788,8 +788,8 @@ If `timestamp` is specified, the scan.bounded.timestamp-millis config option is 
 
 ### scan.bounded.timestamp-millis¶
 
-  * Type: Long
-  * Default: (none)
+* Type: Long
+* Default: (none)
 
 End at the specified epoch timestamp (milliseconds) when the `timestamp` bounded mode is set in the scan.bounded.mode property.
 
@@ -798,8 +798,8 @@ End at the specified epoch timestamp (milliseconds) when the `timestamp` bounded
 
 ### scan.startup.mode¶
 
-  * Type: Enum
-  * Default: `earliest-offset`
+* Type: Enum
+* Default: `earliest-offset`
 
 The startup mode for Kafka consumers.
 
@@ -807,9 +807,9 @@ The startup mode for Kafka consumers.
 
 The following list shows the valid startup mode values.
 
-  * `earliest-offset`: start from the earliest offset possible.
-  * `latest-offset`: start from the latest offset.
-  * `timestamp`: start from the user-supplied timestamp for each partition.
+* `earliest-offset`: start from the earliest offset possible.
+* `latest-offset`: start from the latest offset.
+* `timestamp`: start from the user-supplied timestamp for each partition.
 
 The default is `earliest-offset`. This differs from the default in Apache Flink, which is `group-offsets`.
 
@@ -817,8 +817,8 @@ If `timestamp` is specified, the scan.startup.timestamp-millis config option is 
 
 ### scan.startup.timestamp-millis¶
 
-  * Type: Long
-  * Default: (none)
+* Type: Long
+* Default: (none)
 
 Start from the specified Unix epoch timestamp (milliseconds) when the `timestamp` mode is set in the scan.startup.mode property.
 
@@ -827,8 +827,8 @@ Start from the specified Unix epoch timestamp (milliseconds) when the `timestamp
 
 ### value.fields-include¶
 
-  * Type: Enum
-  * Default: `except-key`
+* Type: Enum
+* Default: `except-key`
 
 Specify a strategy for handling key columns in the data type of the value format.
 
@@ -838,8 +838,8 @@ If `all` is specified, all physical columns of the table schema are included in 
 
 ### value.format¶
 
-  * Type: String
-  * Default: “avro-registry”
+* Type: String
+* Default: “avro-registry”
 
 Specify the format for serializing and deserializing the value part of Kafka messages.
 
@@ -847,26 +847,26 @@ Specify the format for serializing and deserializing the value part of Kafka mes
 
 These are the value formats for an inferred table:
 
-  * `raw` (if no Schema Registry entry)
-  * `avro-registry` (for Avro Schema Registry entry)
-  * `json-registry` (for JSON Schema Registry entry)
-  * `proto-registry` (for Protobuf Schema Registry entry)
-  * `avro-debezium-registry` (for Avro Debezium Schema Registry entry)
-  * `json-debezium-registry` (for JSON Debezium Schema Registry entry)
-  * `proto-debezium-registry` (for Protobuf Debezium Schema Registry entry)
+* `raw` (if no Schema Registry entry)
+* `avro-registry` (for Avro Schema Registry entry)
+* `json-registry` (for JSON Schema Registry entry)
+* `proto-registry` (for Protobuf Schema Registry entry)
+* `avro-debezium-registry` (for Avro Debezium Schema Registry entry)
+* `json-debezium-registry` (for JSON Debezium Schema Registry entry)
+* `proto-debezium-registry` (for Protobuf Debezium Schema Registry entry)
 
 These are the value formats for a manually created table:
 
-  * `avro-registry` (for Avro Schema Registry entry)
-  * `json-registry` (for JSON Schema Registry entry)
-  * `proto-registry` (for Protobuf Schema Registry entry)
+* `avro-registry` (for Avro Schema Registry entry)
+* `json-registry` (for JSON Schema Registry entry)
+* `proto-registry` (for Protobuf Schema Registry entry)
 
 If no format is specified, Avro Schema Registry is used by default.
 
 ### value.format.schema-context¶
 
-  * Type: String
-  * Default: (none)
+* Type: String
+* Default: (none)
 
 Specify the Confluent Schema Registry Schema Context for the value format.
 
@@ -900,9 +900,9 @@ For an inferred table with no registered key or value schemas, SHOW CREATE TABLE
 
 Properties
 
-  * Key and value formats are raw (binary format) with BYTES.
+* Key and value formats are raw (binary format) with BYTES.
 
-  * Following Kafka message semantics, both key and value support NULL as well, so the following code is valid:
+* Following Kafka message semantics, both key and value support NULL as well, so the following code is valid:
 
         INSERT INTO t_raw (key, val) SELECT CAST(NULL AS BYTES), CAST(NULL AS BYTES);
 
@@ -942,9 +942,9 @@ SHOW CREATE TABLE returns the following output:
 
 Properties
 
-  * The key format is raw (binary format) with BYTES.
+* The key format is raw (binary format) with BYTES.
 
-  * Following Kafka message semantics, the key supports NULL as well, so the following code is valid:
+* Following Kafka message semantics, the key supports NULL as well, so the following code is valid:
 
         INSERT INTO t_raw_key SELECT CAST(NULL AS BYTES), 12, 'Bob';
 
@@ -988,8 +988,8 @@ SHOW CREATE TABLE returns the following output:
 
 Properties
 
-  * Schema Registry defines the column data type as INT NOT NULL.
-  * The column name, `key`, is used as the default, because Schema Registry doesn’t provide a column name.
+* Schema Registry defines the column data type as INT NOT NULL.
+* The column name, `key`, is used as the default, because Schema Registry doesn’t provide a column name.
 
 ### Overlapping names in key/value, no key in Schema Registry¶
 
@@ -1028,9 +1028,9 @@ SHOW CREATE TABLE returns the following output:
 
 Properties
 
-  * The Schema Registry value schema defines columns `i INT NOT NULL` and `key STRING`.
-  * The column name `key BYTES` is used as the default if no key is in Schema Registry.
-  * Because `key` would collide with value schema column, the `key_` prefix is added.
+* The Schema Registry value schema defines columns `i INT NOT NULL` and `key STRING`.
+* The column name `key BYTES` is used as the default if no key is in Schema Registry.
+* Because `key` would collide with value schema column, the `key_` prefix is added.
 
 ### Record key and record value in Schema Registry¶
 
@@ -1080,8 +1080,8 @@ SHOW CREATE TABLE returns the following output:
 
 Properties
 
-  * Schema Registry defines columns for both key and value.
-  * The column names of key and value are disjoint sets and don’t overlap.
+* Schema Registry defines columns for both key and value.
+* The column names of key and value are disjoint sets and don’t overlap.
 
 ### Record key and record value with overlap in Schema Registry¶
 
@@ -1135,10 +1135,10 @@ SHOW CREATE TABLE returns the following output:
 
 Properties
 
-  * Schema Registry defines columns for both key and value.
-  * The column names of key and value overlap on `uid`.
-  * `'value.fields-include' = 'all'` is set to exclude the key, because it is fully contained in the value.
-  * Detecting that key is fully contained in the value requires that _both field name and data type match completely, including nullability_ , and _all fields of the key_ are included in the value.
+* Schema Registry defines columns for both key and value.
+* The column names of key and value overlap on `uid`.
+* `'value.fields-include' = 'all'` is set to exclude the key, because it is fully contained in the value.
+* Detecting that key is fully contained in the value requires that _both field name and data type match completely, including nullability_ , and _all fields of the key_ are included in the value.
 
 ### Union types in Schema Registry¶
 
@@ -1196,9 +1196,9 @@ SHOW CREATE TABLE returns the following output:
 
 Properties
 
-  * NULL and NOT NULL are inferred depending on whether a union contains NULL.
-  * Elements of a union are always NULL, because they need to be set to NULL when a different element is set.
-  * If a record defines a `namespace`, the field is prefixed with it, for example, `org.myorg.avro.User`.
+* NULL and NOT NULL are inferred depending on whether a union contains NULL.
+* Elements of a union are always NULL, because they need to be set to NULL when a different element is set.
+* If a record defines a `namespace`, the field is prefixed with it, for example, `org.myorg.avro.User`.
 
 ### Multi-message protobuf schema in Schema Registry¶
 
@@ -1381,18 +1381,18 @@ SHOW CREATE TABLE returns the following output:
 
 Properties
 
-  * Flink detects the Debezium format automatically, based on the schema structure with `after`, `before`, and `op` fields.
+* Flink detects the Debezium format automatically, based on the schema structure with `after`, `before`, and `op` fields.
 
-  * The table schema is inferred from the `after` schema, exposing only the actual data fields.
+* The table schema is inferred from the `after` schema, exposing only the actual data fields.
 
-  * **Automatic Debezium Envelope Detection** : For schemas created after May 19, 2025 at 09:00 UTC, Flink automatically detects Debezium envelopes and sets appropriate defaults:
+* **Automatic Debezium Envelope Detection** : For schemas created after May 19, 2025 at 09:00 UTC, Flink automatically detects Debezium envelopes and sets appropriate defaults:
 
-    * `value.format` defaults to `*-debezium-registry` (instead of `*-registry`)
-    * `changelog.mode` defaults to `retract` (instead of `append`)
-    * Exception: If Kafka `cleanup.policy` is `compact`, `changelog.mode` is set to `upsert`
-  * The default `changelog.mode` is `retract`, which properly handles all CDC operations, including inserts, updates, and deletes.
+  * `value.format` defaults to `*-debezium-registry` (instead of `*-registry`)
+  * `changelog.mode` defaults to `retract` (instead of `append`)
+  * Exception: If Kafka `cleanup.policy` is `compact`, `changelog.mode` is set to `upsert`
+* The default `changelog.mode` is `retract`, which properly handles all CDC operations, including inserts, updates, and deletes.
 
-  * You can manually override the changelog mode if necessary:
+* You can manually override the changelog mode if necessary:
 
         -- Change to upsert mode for primary key-based operations
         ALTER TABLE customer_changes SET ('changelog.mode' = 'upsert');
@@ -1410,11 +1410,11 @@ The following examples show how to create Flink tables for frequently encountere
 
 Properties
 
-  * Append changelog mode.
-  * No Schema Registry key.
-  * Round robin distribution.
-  * 6 Kafka partitions.
-  * The `$rowtime` column and system watermark are added implicitly.
+* Append changelog mode.
+* No Schema Registry key.
+* Round robin distribution.
+* 6 Kafka partitions.
+* The `$rowtime` column and system watermark are added implicitly.
 
 ### Table with a primary key¶
 
@@ -1424,14 +1424,14 @@ Syntax
 
 Properties
 
-  * Upsert changelog mode.
-  * The primary key defines an implicit DISTRIBUTED BY(k).
-  * `k` is the Schema Registry key.
-  * Hash distribution on `k`.
-  * The table has 6 Kafka partitions.
-  * `k` is declared as being unique, meaning no duplicate rows.
-  * `k` must not contain NULLs, so an implicit NOT NULL is added.
-  * The `$rowtime` column and system watermark are added implicitly.
+* Upsert changelog mode.
+* The primary key defines an implicit DISTRIBUTED BY(k).
+* `k` is the Schema Registry key.
+* Hash distribution on `k`.
+* The table has 6 Kafka partitions.
+* `k` is declared as being unique, meaning no duplicate rows.
+* `k` must not contain NULLs, so an implicit NOT NULL is added.
+* The `$rowtime` column and system watermark are added implicitly.
 
 ### Table with a primary key in append mode¶
 
@@ -1443,13 +1443,13 @@ Syntax
 
 Properties
 
-  * Append changelog mode.
-  * `k` is the Schema Registry key.
-  * Hash distribution on `k`.
-  * The table has 4 Kafka partitions.
-  * `k` is declared as being unique, meaning no duplicate rows.
-  * `k` must not contain NULLs, meaning implicit NOT NULL.
-  * The `$rowtime` column and system watermark are added implicitly.
+* Append changelog mode.
+* `k` is the Schema Registry key.
+* Hash distribution on `k`.
+* The table has 4 Kafka partitions.
+* `k` is declared as being unique, meaning no duplicate rows.
+* `k` must not contain NULLs, meaning implicit NOT NULL.
+* The `$rowtime` column and system watermark are added implicitly.
 
 ### Table with hash distribution¶
 
@@ -1459,11 +1459,11 @@ Syntax
 
 Properties
 
-  * Append changelog mode.
-  * `k` is the Schema Registry key.
-  * Hash distribution on `k`.
-  * The table has 4 Kafka partitions.
-  * The `$rowtime` column and system watermark are added implicitly.
+* Append changelog mode.
+* `k` is the Schema Registry key.
+* Hash distribution on `k`.
+* The table has 4 Kafka partitions.
+* The `$rowtime` column and system watermark are added implicitly.
 
 ### Complex table with all concepts combined¶
 
@@ -1476,15 +1476,15 @@ Syntax
 
 Properties
 
-  * Append changelog mode.
-  * `k1` is the Schema Registry key.
-  * Hash distribution on `k1`.
-  * `k2` is treated as a value column and is stored in the value part of Schema Registry.
-  * The table has 4 Kafka partitions.
-  * `k1` and `k2` are declared as being unique, meaning no duplicates.
-  * `k` and `k2` must not contain NULLs, meaning implicit NOT NULL.
-  * The `$rowtime` column and system watermark are added implicitly.
-  * An additional comment is added.
+* Append changelog mode.
+* `k1` is the Schema Registry key.
+* Hash distribution on `k1`.
+* `k2` is treated as a value column and is stored in the value part of Schema Registry.
+* The table has 4 Kafka partitions.
+* `k1` and `k2` are declared as being unique, meaning no duplicates.
+* `k` and `k2` must not contain NULLs, meaning implicit NOT NULL.
+* The `$rowtime` column and system watermark are added implicitly.
+* An additional comment is added.
 
 ### Table with overlapping names in key/value of Schema Registry but disjoint data¶
 
@@ -1496,12 +1496,12 @@ Syntax
 
 Properties
 
-  * Append changelog mode.
-  * Hash distribution on `from_key_k`.
-  * The key prefix `from_key_` is defined and is stripped before storing the schema in Schema Registry.
-    * Therefore, `k` is the Schema Registry key of type INT.
-    * Also, `k` is the Schema Registry value of type STRING.
-  * Both key and value store disjoint data, so they can have different data types
+* Append changelog mode.
+* Hash distribution on `from_key_k`.
+* The key prefix `from_key_` is defined and is stripped before storing the schema in Schema Registry.
+  * Therefore, `k` is the Schema Registry key of type INT.
+  * Also, `k` is the Schema Registry value of type STRING.
+* Both key and value store disjoint data, so they can have different data types
 
 ### Create with overlapping names in key/value of Schema Registry but joint data¶
 
@@ -1513,13 +1513,13 @@ Syntax
 
 Properties
 
-  * Append changelog mode.
-  * Hash distribution on `k`.
-  * By default, the key is never included in the value in Schema Registry.
-  * By setting `'value.fields-include' = 'all'`, the value contains the full table schema
-    * Therefore, `k` is the Schema Registry key.
-    * Also, `k, v` is the Schema Registry value.
-  * The payload of `k` is stored twice in the Kafka message, because key and value store joint data and they have the same data type for `k`.
+* Append changelog mode.
+* Hash distribution on `k`.
+* By default, the key is never included in the value in Schema Registry.
+* By setting `'value.fields-include' = 'all'`, the value contains the full table schema
+  * Therefore, `k` is the Schema Registry key.
+  * Also, `k, v` is the Schema Registry value.
+* The payload of `k` is stored twice in the Kafka message, because key and value store joint data and they have the same data type for `k`.
 
 ### Table with metadata columns for writing a Kafka message timestamp¶
 
@@ -1530,8 +1530,8 @@ Syntax
 
 Properties
 
-  * Adds the `ts` metadata column, which isn’t part of Schema Registry but instead is a pure Flink concept.
-  * In contrast with `$rowtime`, which is declared as a METADATA VIRTUAL column, `ts` is selected in a SELECT * statement and is writable.
+* Adds the `ts` metadata column, which isn’t part of Schema Registry but instead is a pure Flink concept.
+* In contrast with `$rowtime`, which is declared as a METADATA VIRTUAL column, `ts` is selected in a SELECT * statement and is writable.
 
 The following examples show how to fill Kafka messages with an [instant](../datatypes.html#flink-sql-timestamp-comparison-timestamp-ltz).
 
@@ -1551,9 +1551,9 @@ Syntax
 
 Properties
 
-  * Schema Registry is filled with a value subject containing `i`.
-  * The key columns are determined by the DISTRIBUTED BY clause.
-  * By default, Avro in Schema Registry would be used for the key, but the WITH clause overrides this to the `raw` format.
+* Schema Registry is filled with a value subject containing `i`.
+* The key columns are determined by the DISTRIBUTED BY clause.
+* By default, Avro in Schema Registry would be used for the key, but the WITH clause overrides this to the `raw` format.
 
 ### Tables with cross-region schema sharing¶
 
@@ -1571,9 +1571,9 @@ Properties
 
 Properties
 
-  * Schema Registry is shared across regions.
-  * The SQL metastore, Flink compute pools, and Kafka clusters are regional.
-  * Both tables in either region share the Schema Registry subjects `t_shared_schema-key` and `t_shared_schema-value`.
+* Schema Registry is shared across regions.
+* The SQL metastore, Flink compute pools, and Kafka clusters are regional.
+* Both tables in either region share the Schema Registry subjects `t_shared_schema-key` and `t_shared_schema-value`.
 
 ### Create with different changelog modes¶
 
@@ -1581,29 +1581,29 @@ There are three ways of storing events in a table’s log, this is, in the under
 
 append
 
-  * Every insertion event is an **immutable fact**.
-  * Every event is **insert-only**.
-  * Events can be distributed in a round-robin fashion across workers/shards because they are **unrelated**.
+* Every insertion event is an **immutable fact**.
+* Every event is **insert-only**.
+* Events can be distributed in a round-robin fashion across workers/shards because they are **unrelated**.
 
 upsert
 
-  * Events are **related** using a primary key.
-  * Every event is either an **upsert or delete** event for a primary key.
-  * Events for the same primary key should land at the same worker/shard.
+* Events are **related** using a primary key.
+* Every event is either an **upsert or delete** event for a primary key.
+* Events for the same primary key should land at the same worker/shard.
 
 retract
 
-  * Every upsert event is a **fact that can be “undone”**.
+* Every upsert event is a **fact that can be “undone”**.
 
-  * This means that every event is either an insertion or its retraction.
+* This means that every event is either an insertion or its retraction.
 
-  * So, **two events are related by all columns**. In other words, the entire row is the key.
+* So, **two events are related by all columns**. In other words, the entire row is the key.
 
 For example, `+I['Bob', 42]` is related to `-D['Bob', 42]` and `+U['Alice', 13]` is related to `-U['Alice', 13]`.
 
-  * The **retract** mode is intermediate between the **append** and **upsert** modes.
-  * The **append** and **upsert** modes are natural to existing Kafka consumers and producers.
-  * Kafka compaction is a kind of **upsert**.
+* The **retract** mode is intermediate between the **append** and **upsert** modes.
+* The **append** and **upsert** modes are natural to existing Kafka consumers and producers.
+* Kafka compaction is a kind of **upsert**.
 
 Start with a table created by the following statement.
 
@@ -1611,8 +1611,8 @@ Start with a table created by the following statement.
 
 Properties
 
-  * Confluent Cloud for Apache Flink always derives an appropriate changelog mode for the preceding declaration.
-  * If there is no primary key, **append** is the safest option, because it prevents users from pushing updates into a topic accidentally, and it has the best support of downstream consumers.
+* Confluent Cloud for Apache Flink always derives an appropriate changelog mode for the preceding declaration.
+* If there is no primary key, **append** is the safest option, because it prevents users from pushing updates into a topic accidentally, and it has the best support of downstream consumers.
 
     -- works because the query is non-updating
     INSERT INTO t_changelog_modes SELECT 1;
@@ -1626,9 +1626,9 @@ If you need updates, and if downstream consumers support it, for example, when t
 
 Properties
 
-  * The table starts accepting retractions during INSERT INTO.
-  * Already existing records in the Kafka topic are treated as insertions.
-  * Newly added records receive a changeflag (+I, +U, -U, -D) in the Kafka message header.
+* The table starts accepting retractions during INSERT INTO.
+* Already existing records in the Kafka topic are treated as insertions.
+* Newly added records receive a changeflag (+I, +U, -U, -D) in the Kafka message header.
 
 Going back to **append** mode is possible, but retractions (-U, -D) appear as insertions, and the Kafka header metadata column reveals the changeflag.
 
@@ -1644,11 +1644,11 @@ Going back to **append** mode is possible, but retractions (-U, -D) appear as in
 
 Properties
 
-  * By default, the retention time is 7 days, as in all other APIs.
-  * Flink doesn’t support `-1` for durations, so `0` means infinite retention time.
-  * Durations in Flink support `2 day` or `2 d` syntax, so it doesn’t need to be in milliseconds.
-  * If no unit is specified, the unit is milliseconds.
-  * The following units are supported:
+* By default, the retention time is 7 days, as in all other APIs.
+* Flink doesn’t support `-1` for durations, so `0` means infinite retention time.
+* Durations in Flink support `2 day` or `2 d` syntax, so it doesn’t need to be in milliseconds.
+* If no unit is specified, the unit is milliseconds.
+* The following units are supported:
 
     "d", "day", "h", "hour", "m", "min", "minute", "ms", "milli", "millisecond",
     "µs", "micro", "microsecond", "ns", "nano", "nanosecond"

@@ -26,13 +26,13 @@ These are the available DML statements in Confluent Cloud for Flink SQL.
 
 You need the following prerequisites to use Confluent Cloud for Apache Flink.
 
-  * Access to Confluent Cloud.
+* Access to Confluent Cloud.
 
-  * The organization ID, environment ID, and compute pool ID for your organization.
+* The organization ID, environment ID, and compute pool ID for your organization.
 
-  * The OrganizationAdmin, EnvironmentAdmin, or FlinkAdmin role for creating compute pools, or the FlinkDeveloper role if you already have a compute pool. If you don’t have the appropriate role, reach out to your OrganizationAdmin or EnvironmentAdmin.
+* The OrganizationAdmin, EnvironmentAdmin, or FlinkAdmin role for creating compute pools, or the FlinkDeveloper role if you already have a compute pool. If you don’t have the appropriate role, reach out to your OrganizationAdmin or EnvironmentAdmin.
 
-  * The Confluent CLI. To use the Flink SQL shell, update to the latest version of the Confluent CLI by running the following command:
+* The Confluent CLI. To use the Flink SQL shell, update to the latest version of the Confluent CLI by running the following command:
 
         confluent update --yes
 
@@ -44,7 +44,7 @@ For more information, see [Confluent CLI](https://docs.confluent.io/confluent-cl
 
 You can run queries and statements either in a Confluent Cloud Console workspace or in the Flink SQL shell.
 
-  * To run queries in the Confluent Cloud Console, follow these steps.
+* To run queries in the Confluent Cloud Console, follow these steps.
 
     1. Log in to the Confluent Cloud Console.
 
@@ -58,7 +58,7 @@ You can run queries and statements either in a Confluent Cloud Console workspace
 
 The workspace opens with a cell for editing SQL statements.
 
-  * To run queries in the Flink SQL shell, run the following command:
+* To run queries in the Flink SQL shell, run the following command:
 
         confluent flink shell --compute-pool <compute-pool-id> --environment <env-id>
 

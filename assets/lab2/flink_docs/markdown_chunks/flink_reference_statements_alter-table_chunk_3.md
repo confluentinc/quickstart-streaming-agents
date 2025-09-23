@@ -8,9 +8,9 @@ total_chunks: 7
 ---
 
 Treats each record as an INSERT operation with no relationship between records
-    -- * retract: Handles paired operations (INSERT/UPDATE/DELETE) where changes to the same row
+    -- *retract: Handles paired operations (INSERT/UPDATE/DELETE) where changes to the same row
     --            are represented as a retraction of the old value followed by an addition of the new value
-    -- * upsert: Groups all operations for the primary key (derived from the Kafka message key),
+    --* upsert: Groups all operations for the primary key (derived from the Kafka message key),
     --           with each operation effectively merging with or replacing previous state
     --           (INSERT creates, UPDATE modifies, DELETE removes)
     ALTER TABLE customer_data_proto SET (
@@ -60,8 +60,8 @@ For tables with any type of data that need a different processing mode for handl
 
 Properties
 
-  * The metadata key is `headers`. If you don’t want to name the column this way, use: `other_name MAP<BYTES, BYTES> METADATA FROM 'headers' VIRTUAL`.
-  * Keys of headers must be unique. Multi-key headers are not supported.
+* The metadata key is `headers`. If you don’t want to name the column this way, use: `other_name MAP<BYTES, BYTES> METADATA FROM 'headers' VIRTUAL`.
+* Keys of headers must be unique. Multi-key headers are not supported.
 
 ### Add headers as a metadata column¶
 
@@ -108,9 +108,9 @@ Your output should resemble:
 
 Properties
 
-  * `scan.startup.mode` and `scan.bounded.mode` control which range in the changelog (Kafka topic) to read.
-  * `scan.startup.specific-offsets` and `scan.bounded.specific-offsets` define offsets per partition.
-  * In the example, only 1 partition is used. For multiple partitions, use the following syntax:
+* `scan.startup.mode` and `scan.bounded.mode` control which range in the changelog (Kafka topic) to read.
+* `scan.startup.specific-offsets` and `scan.bounded.specific-offsets` define offsets per partition.
+* In the example, only 1 partition is used. For multiple partitions, use the following syntax:
 
     'scan.startup.specific-offsets' = 'partition:0,offset:3; partition:1,offset:42; partition:2,offset:0'
 

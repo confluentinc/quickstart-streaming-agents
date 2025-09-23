@@ -26,7 +26,6 @@ In the Flink workspace, register the model and bind the tool to it in the Conflu
 > If you changed the `prefix`, retrieve the updated query from `mcp_commands.txt` in the Terraform directory.
 > The example below uses Azure OpenAI. If you are using Amazon Bedrock, use the corresponding query from `mcp_commands.txt`.
 
-
 ```sql
   CREATE MODEL `zapier_mcp_model`
   INPUT (prompt STRING)
@@ -115,7 +114,6 @@ WHERE ros.page_content IS NOT NULL
   AND ros.page_content <> '';
 ```
 
-
 In a new cell, check the output of `streaming_competitor_prices`
 
 ```sql
@@ -125,7 +123,6 @@ SELECT * FROM streaming_competitor_prices;
 ![Agent 2 Output Screenshot](../assets/lab1/agent2-flinkoutput.png)
 
 Notice the new field `extracted_price`. This will be used by the next Agent.
-
 
 ### Agent 3: Price Match Notification Agent
 

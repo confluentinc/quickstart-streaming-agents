@@ -23,9 +23,9 @@ If you specify IF NOT EXISTS, nothing happens if the view exists already.
 
 The view name can be in these formats:
 
-  * `catalog_name.db_name.view_name`: The view is registered with the catalog named “catalog_name” and the database named “db_name”.
-  * `db_name.view_name`: The view is registered into the current catalog of the execution table environment and the database named “db_name”.
-  * `view_name`: The view is registered into the current catalog and the database of the execution table environment.
+* `catalog_name.db_name.view_name`: The view is registered with the catalog named “catalog_name” and the database named “db_name”.
+* `db_name.view_name`: The view is registered into the current catalog of the execution table environment and the database named “db_name”.
+* `view_name`: The view is registered into the current catalog and the database of the execution table environment.
 
 A view created with the CREATE VIEW statement acts as a virtual table that refers to the result of the specified statement expression. The statement expression can be any valid SELECT statement supported by Flink SQL.
 
@@ -33,10 +33,10 @@ A view created with the CREATE VIEW statement acts as a virtual table that refer
 
 Views in Flink are similar to tables in that they can be referenced in SQL queries just like regular tables. But there are some key differences:
 
-  * Views are read-only and can’t be used as sinks in INSERT statements. Tables support both read and write operations.
-  * Views don’t have a physical representation and are computed on-the-fly when referenced in a statement.
-  * Creating a view results in creating a special Kafka topic. This Flink resource only reserves the name and doesn’t store data. Creating a table results in creating a regular Kafka topic that stores data and corresponding key and value schemas in Confluent Schema Registry.
-  * Views are lightweight and store only the statement expression.
+* Views are read-only and can’t be used as sinks in INSERT statements. Tables support both read and write operations.
+* Views don’t have a physical representation and are computed on-the-fly when referenced in a statement.
+* Creating a view results in creating a special Kafka topic. This Flink resource only reserves the name and doesn’t store data. Creating a table results in creating a regular Kafka topic that stores data and corresponding key and value schemas in Confluent Schema Registry.
+* Views are lightweight and store only the statement expression.
 
 Despite these differences, views and tables share the same namespace in Flink. This means a view can’t have the same fully qualified name as an existing table in the same catalog and database.
 

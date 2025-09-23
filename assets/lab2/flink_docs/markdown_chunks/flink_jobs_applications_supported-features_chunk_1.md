@@ -17,39 +17,39 @@ For requirement and compatibility details, see [Confluent Platform for Apache Fl
 
 The following core components are supported with Confluent Platform for Apache Flink:
 
-  * Runtime
-  * REST API
-  * Web UI
-  * Flink CLI
+* Runtime
+* REST API
+* Web UI
+* Flink CLI
 
 ## State backends¶
 
 The following state backends are supported with Confluent Platform for Apache Flink:
 
-  * [RocksDB](https://github.com/facebook/rocksdb/wiki) \- recommended as the default state backend.
-  * Memory - recommended for small state.
+* [RocksDB](https://github.com/facebook/rocksdb/wiki) \- recommended as the default state backend.
+* Memory - recommended for small state.
 
 ## FileSystem implementations¶
 
 The following `FileSystem` implementations are supported with Confluent Platform for Apache Flink:
 
-  * AWS S3 - includes Presto and Hadoop variants
-  * Azure blob storage
-  * Google Cloud cloud storage
+* AWS S3 - includes Presto and Hadoop variants
+* Azure blob storage
+* Google Cloud cloud storage
 
 ## Data formats¶
 
 The following data formats are supported with Confluent Platform for Apache Flink:
 
-  * Avro
-  * Avro (CSR)
-  * CSV
-  * ORC
-  * Parquet
-  * Protobuf
-  * JSON
-  * Debezium JSON
-  * Debezium Avro
+* Avro
+* Avro (CSR)
+* CSV
+* ORC
+* Parquet
+* Protobuf
+* JSON
+* Debezium JSON
+* Debezium Avro
 
 ## Flink APIs, libraries and metadata catalogs¶
 
@@ -68,8 +68,8 @@ DataSet API | No | Deprecated in Apache Flink and not supported in Confluent Pla
 
 In addition:
 
-  * Libraries: Complex Event Processing (CEP) is the only library supported with Confluent Platform for Apache Flink, for use with SQL. PyFlink, Flink ML, Stateful Functions and Queryable State are not supported.
-  * Catalogs: `GenericInMemoryCatalog` and `JdbcCatalog` are supported with Confluent Platform for Apache Flink. Hive not currently supported.
+* Libraries: Complex Event Processing (CEP) is the only library supported with Confluent Platform for Apache Flink, for use with SQL. PyFlink, Flink ML, Stateful Functions and Queryable State are not supported.
+* Catalogs: `GenericInMemoryCatalog` and `JdbcCatalog` are supported with Confluent Platform for Apache Flink. Hive not currently supported.
 
 Note that Confluent only offers support for the APIs, libraries and components of Flink listed on this page. Code implemented by the customer (“customer code”), also when embedded into Flink, will not be supported. This also includes other open source code part of open-source Apache Flink or other open source projects. For example using an open source Flink connector not supported by Confluent, will be considered customer code.
 
@@ -91,13 +91,13 @@ additional connectors are currently supported.
 
 Note the following about deploying Flink jobs with Confluent Platform for Apache Flink:
 
-  * Confluent Platform for Apache Flink supports Application Mode only.
-  * Confluent Platform for Apache Flink supports high-availability deployment via Kubernetes. The default mode to deploy with Kubernetes is native. This is the only Confluent-supported deployment solution for Confluent Platform for Apache Flink.
-  * ZooKeeper is not supported.
-  * The following metrics reporters are supported with Confluent Platform for Apache Flink:
-    * Datadog
-    * Prometheus
-    * InfluxDB
-    * JMX
-    * Statsd
-    * Graphite
+* Confluent Platform for Apache Flink supports Application Mode only.
+* Confluent Platform for Apache Flink supports high-availability deployment via Kubernetes. The default mode to deploy with Kubernetes is native. This is the only Confluent-supported deployment solution for Confluent Platform for Apache Flink.
+* ZooKeeper is not supported.
+* The following metrics reporters are supported with Confluent Platform for Apache Flink:
+  * Datadog
+  * Prometheus
+  * InfluxDB
+  * JMX
+  * Statsd
+  * Graphite

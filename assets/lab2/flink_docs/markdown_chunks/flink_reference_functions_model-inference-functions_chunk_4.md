@@ -70,8 +70,8 @@ The ML_FORECAST function uses an [ARIMA model](../../../ai/builtin-functions/for
 
 Your data must include:
 
-  * A timestamp column.
-  * A target column representing some quantity of interest at each timestamp.
+* A timestamp column.
+* A target column representing some quantity of interest at each timestamp.
 
 For more information, see [Forecast Data Trends](../../../ai/builtin-functions/forecast.html#flink-sql-forecast).
 
@@ -101,9 +101,9 @@ Description
     The AI_COMPLETE function provides a streamlined approach for generating text, taking a single string as input and returning a single string as output. This functionality enables you to leverage LLMs to produce text based on any given prompt.
 Configuration
 
-  * `model_name`: Name of the model entity to call to for prediction [STRING].
-  * `input_prompt`: Input prompt to pass to the LLM for prediction [STRING].
-  * `invocation_config[optional]`: Map to pass the configuration to manage function behavior, for example, `MAP['debug', true]`.
+* `model_name`: Name of the model entity to call to for prediction [STRING].
+* `input_prompt`: Input prompt to pass to the LLM for prediction [STRING].
+* `invocation_config[optional]`: Map to pass the configuration to manage function behavior, for example, `MAP['debug', true]`.
 
 Example
 

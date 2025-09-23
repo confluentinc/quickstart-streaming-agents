@@ -53,7 +53,7 @@ Your output should resemble:
 
 Delete a connection in your environment by sending a DELETE request to the [Connections endpoint](/cloud/current/api.html#tag/Connections-\(sqlv1\)/operation/deleteSqlv1Connection).
 
-  * This request uses your Cloud API key instead of the Flink API key.
+* This request uses your Cloud API key instead of the Flink API key.
 
 Deleting a connection requires the following inputs:
 

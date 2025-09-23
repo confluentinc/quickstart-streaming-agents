@@ -61,7 +61,7 @@ Your output should resemble:
 
 Update a compute pool in your environment by sending a PATCH request to the [Compute Pools endpoint](/cloud/current/api.html#tag/Compute-Pools-\(fcpmv2\)/operation/updateFcpmV2ComputePool).
 
-  * This request uses your Cloud API key instead of the Flink API key.
+* This request uses your Cloud API key instead of the Flink API key.
 
 Updating a compute pool requires the following inputs:
 

@@ -13,9 +13,9 @@ clusters when using private connectivity.
 
 The following section shows the endpoints that are available for connecting to Flink. While the public endpoint is always present, others may require some effort to be created.
 
-  * Public endpoint
-  * PrivateLink Attachment
-  * Private connectivity through Confluent Cloud network
+* Public endpoint
+* PrivateLink Attachment
+* Private connectivity through Confluent Cloud network
 
 The following table shows how to get the endpoint value by using different Confluent interfaces.
 
@@ -29,9 +29,9 @@ Confluent CLI |
 | Full FQDN shown for each network connection
 Network UI/API/CLI |
 
-  * **Network management** details page in **Environment overview**
-  * GET /network/
-  * confluent network describe
+* **Network management** details page in **Environment overview**
+* GET /network/
+* confluent network describe
 
 |
 
@@ -51,26 +51,26 @@ VPC Peering / Transit Gateway w/ /27 CIDRs | Public | Dedicated | `flink-$nid.$r
 
 ### Public endpoint¶
 
-  * Source: Always present.
-  * Considerations: Can’t access Kafka private data.
-  * Kafka data access and scope: Can access public cluster data (read/write) in cloud region for this organization.
-  * Access to Flink statement and workspace: Configurable with IP Filtering.
-  * Endpoints: `flink.<region>.<cloud>.confluent.cloud`, for example: `flink.us-east-2.aws.confluent.cloud`.
+* Source: Always present.
+* Considerations: Can’t access Kafka private data.
+* Kafka data access and scope: Can access public cluster data (read/write) in cloud region for this organization.
+* Access to Flink statement and workspace: Configurable with IP Filtering.
+* Endpoints: `flink.<region>.<cloud>.confluent.cloud`, for example: `flink.us-east-2.aws.confluent.cloud`.
 
 ### PrivateLink Attachment¶
 
-  * Source: Must [create a Private Link Attachment](../../networking/aws-platt.html#privatelinkattachment-create) for the environment/region.
-  * Considerations: A single VPC can’t have private link connections to multiple Confluent Cloud environments. Available on AWS and Azure.
-  * Can access private cluster data (read/write) in Enterprise, Dedicated or Freight clusters for the cloud region for the organization of the endpoint. Can access public cluster data (read only).
-  * Access all Flink resources in the same environment and region of the endpoint
-  * Endpoints: `flink.<region>.<cloud>.private.confluent.cloud`, for example: `flink.us-east-2.aws.private.confluent.cloud`
+* Source: Must [create a Private Link Attachment](../../networking/aws-platt.html#privatelinkattachment-create) for the environment/region.
+* Considerations: A single VPC can’t have private link connections to multiple Confluent Cloud environments. Available on AWS and Azure.
+* Can access private cluster data (read/write) in Enterprise, Dedicated or Freight clusters for the cloud region for the organization of the endpoint. Can access public cluster data (read only).
+* Access all Flink resources in the same environment and region of the endpoint
+* Endpoints: `flink.<region>.<cloud>.private.confluent.cloud`, for example: `flink.us-east-2.aws.private.confluent.cloud`
 
 ### Private connectivity through Confluent Cloud network¶
 
-  * Source: Created with Kafka Dedicated clusters.
-  * Considerations: Easiest way to use Flink when the network is created already for Dedicated clusters. Available on AWS for all types of Confluent Cloud network, and Azure for any Confluent Cloud network with Private Links.
-  * Can access private cluster data (read/write) in Enterprise, Dedicated or Freight clusters for the organization of the region. Can access public cluster data (read only).
-  * Access all Flink resources in the same environment and region of the endpoint
+* Source: Created with Kafka Dedicated clusters.
+* Considerations: Easiest way to use Flink when the network is created already for Dedicated clusters. Available on AWS for all types of Confluent Cloud network, and Azure for any Confluent Cloud network with Private Links.
+* Can access private cluster data (read/write) in Enterprise, Dedicated or Freight clusters for the organization of the region. Can access public cluster data (read only).
+* Access all Flink resources in the same environment and region of the endpoint
 
 To find the endpoints from the Cloud Console or Confluent CLI, see Available endpoints for an environment and region.
 
@@ -92,6 +92,6 @@ By default, public networking is used, which won’t work if IP Filtering is set
 
 You can set defaults for each cloud region in an environment. For this, use the Flink **Endpoints** page.
 
-  * The default is per-user.
-  * When a default is set, it is used for all pages that access Flink, for example, the statement list, workspace list, and workspaces.
-  * If no default is set, the public endpoint is used.
+* The default is per-user.
+* When a default is set, it is used for all pages that access Flink, for example, the statement list, workspace list, and workspaces.
+* If no default is set, the public endpoint is used.

@@ -22,13 +22,13 @@ total_chunks: 8
 
 #### SMALLINT¶
 
-  * Avro type: `int`
+* Avro type: `int`
 
-  * Avro logical type: –
+* Avro logical type: –
 
-  * Additional properties: `connect.type=int16`
+* Additional properties: `connect.type=int16`
 
-  * Example:
+* Example:
 
         {
           "type" : "int",
@@ -37,13 +37,13 @@ total_chunks: 8
 
 #### STRING / VARCHAR¶
 
-  * Avro type: `string`
+* Avro type: `string`
 
-  * Avro logical type: –
+* Avro logical type: –
 
-  * Additional properties: `flink.maxLength = flink.minLength` (MAX_LENGTH if not set)
+* Additional properties: `flink.maxLength = flink.minLength` (MAX_LENGTH if not set)
 
-  * Example:
+* Example:
 
         {
           "type" : "string",
@@ -53,13 +53,13 @@ total_chunks: 8
 
 #### TIME¶
 
-  * Avro type: `int`
+* Avro type: `int`
 
-  * Avro logical type: `time-millis`
+* Avro logical type: `time-millis`
 
-  * Additional properties: `flink.precision` (default: 3, max supported: 3)
+* Additional properties: `flink.precision` (default: 3, max supported: 3)
 
-  * Example:
+* Example:
 
         {
           "type" : "int",
@@ -70,13 +70,13 @@ total_chunks: 8
 
 #### TIMESTAMP¶
 
-  * Avro type: `long`
+* Avro type: `long`
 
-  * Avro logical type: `local-timestamp-millis` / `local-timestamp-micros`
+* Avro logical type: `local-timestamp-millis` / `local-timestamp-micros`
 
-  * Additional properties: `flink.precision` (default: 3/6, max supported: 3/9)
+* Additional properties: `flink.precision` (default: 3/6, max supported: 3/9)
 
-  * Example:
+* Example:
 
         {
           "type" : "long",
@@ -87,13 +87,13 @@ total_chunks: 8
 
 #### TIMESTAMP_LTZ¶
 
-  * Avro type: `long`
+* Avro type: `long`
 
-  * Avro logical type: `timestamp-millis` / `timestamp-micros`
+* Avro logical type: `timestamp-millis` / `timestamp-micros`
 
-  * Additional properties: `flink.precision` (default: 3/6, max supported: 3/9)
+* Additional properties: `flink.precision` (default: 3/6, max supported: 3/9)
 
-  * Example:
+* Example:
 
         {
           "type" : "long",
@@ -104,13 +104,13 @@ total_chunks: 8
 
 #### TINYINT¶
 
-  * Avro type: `int`
+* Avro type: `int`
 
-  * Avro logical type: –
+* Avro logical type: –
 
-  * Additional properties: `connect.type=int8`
+* Additional properties: `connect.type=int8`
 
-  * Example:
+* Example:
 
         {
           "type" : "int",
@@ -119,13 +119,13 @@ total_chunks: 8
 
 #### VARBINARY¶
 
-  * Avro type: `bytes`
+* Avro type: `bytes`
 
-  * Avro logical type: –
+* Avro logical type: –
 
-  * Additional properties: `flink.maxLength` (MAX_LENGTH if not set)
+* Additional properties: `flink.maxLength` (MAX_LENGTH if not set)
 
-  * Example:
+* Example:
 
         {
             "type" : "bytes",

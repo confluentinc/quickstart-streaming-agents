@@ -163,11 +163,11 @@ The following BNF-grammar describes the superset of supported SQL features.
 
 Flink uses a lexical policy for identifier (table, attribute, function names) that’s similar to Java.
 
-  * The case of identifiers is preserved whether or not they are quoted.
+* The case of identifiers is preserved whether or not they are quoted.
 
-  * After which, identifiers are matched case-sensitively.
+* After which, identifiers are matched case-sensitively.
 
-  * Unlike Java, back-ticks enable identifiers to contain non-alphanumeric characters, for example:
+* Unlike Java, back-ticks enable identifiers to contain non-alphanumeric characters, for example:
 
         SELECT a AS `my field` FROM t;
 

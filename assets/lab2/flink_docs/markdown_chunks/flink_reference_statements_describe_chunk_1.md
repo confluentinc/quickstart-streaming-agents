@@ -29,43 +29,43 @@ Confluent Cloud for Apache Flink® enables viewing the schema of an Apache Kafka
 
 The DESCRIBE statement shows the following properties of a table:
 
-  * Columns and their data type, including nullability constraints
-  * Primary keys
-  * Bucket keys, i.e., keys of distribution
-  * Implicit NOT NULL for primary key columns
-  * Custom [watermark](../../../_glossary.html#term-watermark)
+* Columns and their data type, including nullability constraints
+* Primary keys
+* Bucket keys, i.e., keys of distribution
+* Implicit NOT NULL for primary key columns
+* Custom [watermark](../../../_glossary.html#term-watermark)
 
 The DESCRIBE EXTENDED statement shows all of the properties from the DESCRIBE statement and also shows system columns, like `$rowtime`, including the system watermark.
 
 The DESCRIBE MODEL statement shows the following properties of an AI model:
 
-  * Input format
-  * Output format
-  * Model version
-  * isDefault version (yes or no)
+* Input format
+* Output format
+* Model version
+* isDefault version (yes or no)
 
 The DESCRIBE FUNCTION statement shows the following properties of a function:
 
-  * System function (yes or no)
-  * Temporary (yes or no)
-  * Class name
-  * Function language
-  * Plugin ID
-  * Version ID
-  * Argument types
-  * Return type
+* System function (yes or no)
+* Temporary (yes or no)
+* Class name
+* Function language
+* Plugin ID
+* Version ID
+* Argument types
+* Return type
 
 The DESCRIBE FUNCTION EXTENDED statement shows all of the properties from the DESCRIBE FUNCTION statement and also shows the following properties:
 
-  * Kind i.e. SCALAR, TABLE, or AGGREGATE
-  * Requirements e.g an aggregate function that can only be applied in an OVER window
-  * Deterministic (yes or no)
-  * Constant folding (yes or no)
-  * Signature
+* Kind i.e. SCALAR, TABLE, or AGGREGATE
+* Requirements e.g an aggregate function that can only be applied in an OVER window
+* Deterministic (yes or no)
+* Constant folding (yes or no)
+* Signature
 
 The DESCRIBE CONNECTION statement shows the following properties of a connection:
 
-  * Name
-  * Type
-  * Endpoint
-  * Comment
+* Name
+* Type
+* Endpoint
+* Comment

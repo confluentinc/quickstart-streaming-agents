@@ -59,8 +59,8 @@ To make it possible to use any character in an identifier, you can enclose it in
 
 If you want to use one of the keyword strings as an identifier, enclose them with backticks, for example:
 
-  * ``value``
-  * ``count``
+* ``value``
+* ``count``
 
 When you use backticked identifiers, Flink SQL captures the case exactly, and any future references to the identifier are case-sensitive. For example, if you declare the following table:
 

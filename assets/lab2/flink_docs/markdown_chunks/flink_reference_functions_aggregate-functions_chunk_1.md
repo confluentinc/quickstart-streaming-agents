@@ -98,7 +98,7 @@ Unlike the RANK function, `DENSE_RANK` doesn’t produce gaps in the ranking seq
 
 Related function
 
-  * RANK
+* RANK
 
 ## FIRST_VALUE¶
 
@@ -116,7 +116,7 @@ Example
 
 Related function
 
-  * LAST_VALUE
+* LAST_VALUE
 
 ## LAG¶
 
@@ -145,7 +145,7 @@ For the full code example, see [Compare Current and Previous Values in a Data St
 
 Related function
 
-  * LEAD
+* LEAD
 
 ## LAST_VALUE¶
 
@@ -163,7 +163,7 @@ Example
 
 Related function
 
-  * FIRST_VALUE
+* FIRST_VALUE
 
 ## LEAD¶
 
@@ -179,7 +179,7 @@ The default value of `offset` is _1_ , and the default value of the `default` ar
 
 Related function
 
-  * LAG
+* LAG
 
 ## LISTAGG¶
 

@@ -9,12 +9,12 @@ scraped_date: 2025-09-05T13:47:15.567086
 
 Confluent Cloud for Apache Flink® provides an Examples catalog that has mock data streams you can use for experimenting with Flink SQL queries.
 
-  * The `examples` catalog is available in all environments.
-  * All example tables have `$rowtime` available as a system column. The `SOURCE_WATERMARK()` strategy for example tables is different than the `SOURCE_WATERMARK()` strategy Kafka-based tables. For the example tables, the `SOURCE_WATAERMARK()` corresponds to the maximum timestamp seen to this point.
-  * You can use example data in Flink workspaces, Flink shell, Terraform, and all other clients.
-  * Example data is read-only, so you can’t use INSERT INTO/ALTER/DROP/CREATE statements on these tables, the database, or the catalog.
-  * SHOW statements work for the database, catalog, and tables.
-  * SHOW CREATE TABLE works for the example tables.
+* The `examples` catalog is available in all environments.
+* All example tables have `$rowtime` available as a system column. The `SOURCE_WATERMARK()` strategy for example tables is different than the `SOURCE_WATERMARK()` strategy Kafka-based tables. For the example tables, the `SOURCE_WATAERMARK()` corresponds to the maximum timestamp seen to this point.
+* You can use example data in Flink workspaces, Flink shell, Terraform, and all other clients.
+* Example data is read-only, so you can’t use INSERT INTO/ALTER/DROP/CREATE statements on these tables, the database, or the catalog.
+* SHOW statements work for the database, catalog, and tables.
+* SHOW CREATE TABLE works for the example tables.
 
 ## Publish to a Kafka topic¶
 
@@ -72,10 +72,10 @@ The INSERT INTO statement runs continuously until you stop it manually. Free res
 
 The `marketplace` database provides streams that simulate commerce-related data. The `marketplace` database has these tables:
 
-  * clicks: simulates a stream of user clicks on a web page.
-  * customers: simulates a stream of customers who order products.
-  * orders: simulates a stream of orders.
-  * products: simulates a stream of products that a customer has ordered.
+* clicks: simulates a stream of user clicks on a web page.
+* customers: simulates a stream of customers who order products.
+* orders: simulates a stream of orders.
+* products: simulates a stream of products that a customer has ordered.
 
 ### clicks table¶
 
@@ -121,9 +121,9 @@ The `customers` table has the following schema:
       PRIMARY KEY (customer_id) NOT ENFORCED
      );
 
-  * The `name` field is assigned by the [datafaker Name class](https://javadoc.io/static/net.datafaker/datafaker/2.1.0/net.datafaker/net/datafaker/providers/base/Name.html)
-  * The address fields are assigned by the [datafaker Address class](https://javadoc.io/static/net.datafaker/datafaker/2.1.0/net.datafaker/net/datafaker/providers/base/Address.html).
-  * The `email` field is assigned by the [datafaker Internet class](https://javadoc.io/doc/net.datafaker/datafaker/latest/net.datafaker/net/datafaker/providers/base/Internet.html).
+* The `name` field is assigned by the [datafaker Name class](https://javadoc.io/static/net.datafaker/datafaker/2.1.0/net.datafaker/net/datafaker/providers/base/Name.html)
+* The address fields are assigned by the [datafaker Address class](https://javadoc.io/static/net.datafaker/datafaker/2.1.0/net.datafaker/net/datafaker/providers/base/Address.html).
+* The `email` field is assigned by the [datafaker Internet class](https://javadoc.io/doc/net.datafaker/datafaker/latest/net.datafaker/net/datafaker/providers/base/Internet.html).
 
 Run the following statement to inspect the `customers` data stream:
 

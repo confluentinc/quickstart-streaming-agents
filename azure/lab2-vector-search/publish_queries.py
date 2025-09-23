@@ -7,20 +7,20 @@ Usage:
 2. Run from this directory: ../../../.venv/bin/python publish_queries.py "your query here"
 """
 
-import os
-import sys
 import json
 import logging
+import os
 import subprocess
+import sys
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any, Dict
+
 from confluent_kafka import avro
 from confluent_kafka.avro import AvroProducer
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -28,20 +28,26 @@ logger = logging.getLogger(__name__)
 class QueryPublisher:
     """Simple publisher for queries to Kafka using Avro format."""
 
-    def __init__(self, kafka_config: Dict[str, Any], schema_registry_config: Dict[str, Any]):
+    def __init__(
+        self, kafka_config: Dict[str, Any], schema_registry_config: Dict[str, Any]
+    ):
         """Initialize the publisher with Kafka and Schema Registry configuration."""
         self.kafka_config = kafka_config
         self.schema_registry_config = schema_registry_config
 
         # Define Avro schema for queries (simple string value)
-        self.value_schema = avro.loads(json.dumps({
-            "type": "record",
-            "name": "queries_value",
-            "namespace": "org.apache.flink.avro.generated.record",
-            "fields": [
-                {"name": "query", "type": ["null", "string"], "default": None}
-            ]
-        }))
+        self.value_schema = avro.loads(
+            json.dumps(
+                {
+                    "type": "record",
+                    "name": "queries_value",
+                    "namespace": "org.apache.flink.avro.generated.record",
+                    "fields": [
+                        {"name": "query", "type": ["null", "string"], "default": None}
+                    ],
+                }
+            )
+        )
 
         self.key_schema = avro.loads('"string"')
         self.producer = None
@@ -53,7 +59,9 @@ class QueryPublisher:
                 self.kafka_config,
                 default_key_schema=self.key_schema,
                 default_value_schema=self.value_schema,
-                schema_registry=avro.CachedSchemaRegistryClient(self.schema_registry_config)
+                schema_registry=avro.CachedSchemaRegistryClient(
+                    self.schema_registry_config
+                ),
             )
             logger.info("Avro producer initialized successfully")
         except Exception as e:
@@ -72,14 +80,11 @@ class QueryPublisher:
             # Use query hash or timestamp as key
             import hashlib
             import time
+
             key = hashlib.md5(f"{query}_{time.time()}".encode()).hexdigest()
 
             # Produce message
-            self.producer.produce(
-                topic=topic,
-                value=value,
-                key=key
-            )
+            self.producer.produce(topic=topic, value=value, key=key)
 
             # Flush immediately
             self.producer.flush(timeout=10)
@@ -97,24 +102,28 @@ class QueryPublisher:
             self.producer.flush()
 
 
-def create_kafka_config(bootstrap_servers: str, api_key: str, api_secret: str) -> Dict[str, Any]:
+def create_kafka_config(
+    bootstrap_servers: str, api_key: str, api_secret: str
+) -> Dict[str, Any]:
     """Create Kafka client configuration."""
     return {
-        'bootstrap.servers': bootstrap_servers,
-        'security.protocol': 'SASL_SSL',
-        'sasl.mechanisms': 'PLAIN',
-        'sasl.username': api_key,
-        'sasl.password': api_secret,
-        'client.id': 'queries-publisher'
+        "bootstrap.servers": bootstrap_servers,
+        "security.protocol": "SASL_SSL",
+        "sasl.mechanisms": "PLAIN",
+        "sasl.username": api_key,
+        "sasl.password": api_secret,
+        "client.id": "queries-publisher",
     }
 
 
-def create_schema_registry_config(schema_registry_url: str, api_key: str, api_secret: str) -> Dict[str, Any]:
+def create_schema_registry_config(
+    schema_registry_url: str, api_key: str, api_secret: str
+) -> Dict[str, Any]:
     """Create Schema Registry client configuration."""
     return {
-        'url': schema_registry_url,
-        'basic.auth.credentials.source': 'USER_INFO',
-        'basic.auth.user.info': f'{api_key}:{api_secret}'
+        "url": schema_registry_url,
+        "basic.auth.credentials.source": "USER_INFO",
+        "basic.auth.user.info": f"{api_key}:{api_secret}",
     }
 
 
@@ -130,11 +139,11 @@ def get_credentials():
     def run_terraform_output(state_path: Path) -> dict:
         """Run terraform output and return the results as a dictionary."""
         try:
-            cmd = ['terraform', 'output', '-json', f'-state={state_path}']
+            cmd = ["terraform", "output", "-json", f"-state={state_path}"]
             result = subprocess.run(cmd, capture_output=True, text=True, check=True)
             outputs = json.loads(result.stdout)
             # Extract values from terraform output format
-            return {key: value['value'] for key, value in outputs.items()}
+            return {key: value["value"] for key, value in outputs.items()}
         except subprocess.CalledProcessError as e:
             logger.error(f"Terraform output failed: {e.stderr}")
             raise
@@ -155,18 +164,24 @@ def get_credentials():
     try:
         credentials = {
             # Kafka connection details
-            'bootstrap_servers': core_outputs['confluent_kafka_cluster_bootstrap_endpoint'],
-            'kafka_api_key': core_outputs['app_manager_kafka_api_key'],
-            'kafka_api_secret': core_outputs['app_manager_kafka_api_secret'],
-
+            "bootstrap_servers": core_outputs[
+                "confluent_kafka_cluster_bootstrap_endpoint"
+            ],
+            "kafka_api_key": core_outputs["app_manager_kafka_api_key"],
+            "kafka_api_secret": core_outputs["app_manager_kafka_api_secret"],
             # Schema Registry details
-            'schema_registry_url': core_outputs['confluent_schema_registry_rest_endpoint'],
-            'schema_registry_api_key': core_outputs['app_manager_schema_registry_api_key'],
-            'schema_registry_api_secret': core_outputs['app_manager_schema_registry_api_secret'],
-
+            "schema_registry_url": core_outputs[
+                "confluent_schema_registry_rest_endpoint"
+            ],
+            "schema_registry_api_key": core_outputs[
+                "app_manager_schema_registry_api_key"
+            ],
+            "schema_registry_api_secret": core_outputs[
+                "app_manager_schema_registry_api_secret"
+            ],
             # Topic configuration
-            'environment_name': core_outputs['confluent_environment_display_name'],
-            'cluster_name': core_outputs['confluent_kafka_cluster_display_name'],
+            "environment_name": core_outputs["confluent_environment_display_name"],
+            "cluster_name": core_outputs["confluent_kafka_cluster_display_name"],
         }
 
         logger.info("Successfully extracted all required credentials")
@@ -194,18 +209,18 @@ def main():
 
         # Get configuration from credentials
         kafka_config = create_kafka_config(
-            credentials['bootstrap_servers'],
-            credentials['kafka_api_key'],
-            credentials['kafka_api_secret']
+            credentials["bootstrap_servers"],
+            credentials["kafka_api_key"],
+            credentials["kafka_api_secret"],
         )
 
         schema_registry_config = create_schema_registry_config(
-            credentials['schema_registry_url'],
-            credentials['schema_registry_api_key'],
-            credentials['schema_registry_api_secret']
+            credentials["schema_registry_url"],
+            credentials["schema_registry_api_key"],
+            credentials["schema_registry_api_secret"],
         )
 
-        topic = 'queries'
+        topic = "queries"
 
     except Exception as e:
         logger.error(f"Failed to get credentials: {e}")
@@ -232,5 +247,5 @@ def main():
         publisher.close()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

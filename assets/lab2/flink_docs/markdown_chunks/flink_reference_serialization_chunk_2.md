@@ -13,13 +13,13 @@ JSON Schema * Protobuf schema
 
 ### Known limitations¶
 
-  * Avro enums have limited support. Flink supports reading and writing enums but treats them as a STRING type. From Flink’s perspective, enums are not distinguishable from the STRING type. You can’t create an Avro schema from Flink that has an enum field.
-  * Flink doesn’t support reading Avro `time-micros` as a TIME type. Flink supports TIME with precision up to `3`. `time-micros` is read and written as BIGINT.
-  * Field names must match Avro criteria. Avro expects field names to start with `[A-Za-z_]` and subsequently contain only `[A-Za-z0-9_]`.
-  * These Flink types are not supported:
-    * INTERVAL_DAY_TIME
-    * INTERVAL_YEAR_MONTH
-    * TIMESTAMP_WITH_TIMEZONE
+* Avro enums have limited support. Flink supports reading and writing enums but treats them as a STRING type. From Flink’s perspective, enums are not distinguishable from the STRING type. You can’t create an Avro schema from Flink that has an enum field.
+* Flink doesn’t support reading Avro `time-micros` as a TIME type. Flink supports TIME with precision up to `3`. `time-micros` is read and written as BIGINT.
+* Field names must match Avro criteria. Avro expects field names to start with `[A-Za-z_]` and subsequently contain only `[A-Za-z0-9_]`.
+* These Flink types are not supported:
+  * INTERVAL_DAY_TIME
+  * INTERVAL_YEAR_MONTH
+  * TIMESTAMP_WITH_TIMEZONE
 
 ### Flink SQL types to Avro types¶
 
@@ -29,13 +29,13 @@ This mapping is important for creating tables, because it defines the Avro schem
 
 #### ARRAY¶
 
-  * Avro type: `array`
+* Avro type: `array`
 
-  * Avro logical type: –
+* Avro logical type: –
 
-  * Additional properties: –
+* Additional properties: –
 
-  * Example:
+* Example:
 
         {
           "type" : "array",
@@ -44,20 +44,20 @@ This mapping is important for creating tables, because it defines the Avro schem
 
 #### BIGINT¶
 
-  * Avro type: `long`
-  * Avro logical type: –
-  * Additional properties: –
-  * Example: `long`
+* Avro type: `long`
+* Avro logical type: –
+* Additional properties: –
+* Example: `long`
 
 #### BINARY¶
 
-  * Avro type: `fixed`
+* Avro type: `fixed`
 
-  * Avro logical type: –
+* Avro logical type: –
 
-  * Additional properties: `flink.maxLength` (MAX_LENGTH if not set)
+* Additional properties: `flink.maxLength` (MAX_LENGTH if not set)
 
-  * Example:
+* Example:
 
         {
             "type" : "fixed",
@@ -68,20 +68,20 @@ This mapping is important for creating tables, because it defines the Avro schem
 
 #### BOOLEAN¶
 
-  * Avro type: `boolean`
-  * Avro logical type: –
-  * Additional properties: –
-  * Example: `boolean`
+* Avro type: `boolean`
+* Avro logical type: –
+* Additional properties: –
+* Example: `boolean`
 
 #### CHAR¶
 
-  * Avro type: `string`
+* Avro type: `string`
 
-  * Avro logical type: –
+* Avro logical type: –
 
-  * Additional properties: `flink.maxLength` (MAX_LENGTH if not set)
+* Additional properties: `flink.maxLength` (MAX_LENGTH if not set)
 
-  * Example:
+* Example:
 
         {
           "type" : "string",
@@ -92,13 +92,13 @@ This mapping is important for creating tables, because it defines the Avro schem
 
 #### DATE¶
 
-  * Avro type: `int`
+* Avro type: `int`
 
-  * Avro logical type: `date`
+* Avro logical type: `date`
 
-  * Additional properties: –
+* Additional properties: –
 
-  * Example:
+* Example:
 
         {
           "type" : "int",
@@ -107,13 +107,13 @@ This mapping is important for creating tables, because it defines the Avro schem
 
 #### DECIMAL¶
 
-  * Avro type: `bytes`
+* Avro type: `bytes`
 
-  * Avro logical type: `decimal`
+* Avro logical type: `decimal`
 
-  * Additional properties: –
+* Additional properties: –
 
-  * Example:
+* Example:
 
         {
           "type" : "bytes",
@@ -124,34 +124,34 @@ This mapping is important for creating tables, because it defines the Avro schem
 
 #### DOUBLE¶
 
-  * Avro type: `double`
-  * Avro logical type: –
-  * Additional properties: –
-  * Example: `double`
+* Avro type: `double`
+* Avro logical type: –
+* Additional properties: –
+* Example: `double`
 
 #### FLOAT¶
 
-  * Avro type: `float`
-  * Avro logical type: –
-  * Additional properties: –
-  * Example: `float`
+* Avro type: `float`
+* Avro logical type: –
+* Additional properties: –
+* Example: `float`
 
 #### INT¶
 
-  * Avro type: `int`
-  * Avro logical type: –
-  * Additional properties: –
-  * Example: `int`
+* Avro type: `int`
+* Avro logical type: –
+* Additional properties: –
+* Example: `int`
 
 #### MAP (character key)¶
 
-  * Avro type: `map`
+* Avro type: `map`
 
-  * Avro logical type: –
+* Avro logical type: –
 
-  * Additional properties: –
+* Additional properties: –
 
-  * Example:
+* Example:
 
         {
           "type" : "map",
@@ -160,13 +160,13 @@ This mapping is important for creating tables, because it defines the Avro schem
 
 #### MAP (non-character key)¶
 
-  * Avro type: `array`
+* Avro type: `array`
 
-  * Avro logical type: –
+* Avro logical type: –
 
-  * Additional properties: array of `io.confluent.connect.avro.MapEntry(key, value)`
+* Additional properties: array of `io.confluent.connect.avro.MapEntry(key, value)`
 
-  * Example:
+* Example:
 
         {
           "type" : "array",
@@ -186,13 +186,13 @@ This mapping is important for creating tables, because it defines the Avro schem
 
 #### MULTISET (character element)¶
 
-  * Avro type: `map`
+* Avro type: `map`
 
-  * Avro logical type: –
+* Avro logical type: –
 
-  * Additional properties: `flink.type : multiset`
+* Additional properties: `flink.type : multiset`
 
-  * Example:
+* Example:
 
         {
           "type" : "map",
@@ -203,13 +203,13 @@ This mapping is important for creating tables, because it defines the Avro schem
 
 #### MULTISET (non-character key)¶
 
-  * Avro type: `array`
+* Avro type: `array`
 
-  * Avro logical type: –
+* Avro logical type: –
 
-  * Additional properties: array of `io.confluent.connect.avro.MapEntry(key, value)`, `flink.type : multiset`
+* Additional properties: array of `io.confluent.connect.avro.MapEntry(key, value)`, `flink.type : multiset`
 
-  * Example:
+* Example:
 
         {
           "type" : "array",
@@ -231,12 +231,12 @@ This mapping is important for creating tables, because it defines the Avro schem
 
 #### ROW¶
 
-  * Avro type: `record`
+* Avro type: `record`
 
-  * Avro logical type: –
+* Avro logical type: –
 
-  * Additional properties: `connect.type=int16`
+* Additional properties: `connect.type=int16`
 
-  * Name: `org.apache.flink.avro.generated.record`
+* Name: `org.apache.flink.avro.generated.record`
 
-  * Nested records name: `org.apache.flink.avro.generated.record_$fieldName`
+* Nested records name: `org.apache.flink.avro.generated.record_$fieldName`

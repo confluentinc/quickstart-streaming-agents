@@ -1,11 +1,13 @@
 # Lab2 Vector Search - Complete SQL Statements
 
 ## Overview
+
 This document contains all the corrected and optimized SQL statements for implementing the complete RAG pipeline in Lab2. These statements should be executed in order after Terraform deployment.
 
 ---
 
 ## Prerequisites
+
 - Terraform has been applied successfully
 - MongoDB connection is established
 - LLM models (`llm_embedding_model` and `llm_textgen_model`) are available from core infrastructure
@@ -15,6 +17,7 @@ This document contains all the corrected and optimized SQL statements for implem
 ## Step 1: Populate Embedding Tables
 
 ### 1.1 Populate documents_embed with Optimized Chunking
+
 ```sql
 -- IMPROVED: Optimized chunking strategy for better embeddings
 -- - 5000 chars max for excellent context preservation (~800-1200 tokens)
@@ -46,12 +49,14 @@ LATERAL TABLE(
 ```
 
 **Text Splitter Parameters Explained:**
+
 - `5000` - Max chunk size (characters) for excellent context preservation
 - `200` - Overlap size ensuring continuity between chunks (4% overlap)
 - `'"^#{1,2}\\s"'` - Regex pattern matching # or ## headings only
 - `true, true, true, 'START'` - Enable regex, case-sensitive, trim whitespace, start mode
 
 ### 1.2 Populate queries_embed
+
 ```sql
 -- Embed all incoming queries for vector search
 INSERT INTO queries_embed
@@ -89,6 +94,7 @@ CREATE TABLE documents_vectordb (
 ## Step 3: Create Vector Search Results Table
 
 ### Option A: Fixed Column Structure (Recommended)
+
 ```sql
 -- Creates search_results table with fixed columns for top 3 results
 -- Includes similarity scores for analysis
@@ -116,6 +122,7 @@ LATERAL TABLE(VECTOR_SEARCH_AGG(
 ## Step 4: Create RAG Response Table
 
 ### 4.1 Generic RAG Response
+
 ```sql
 -- Generic RAG response table with configurable prompt
 -- Includes all search results and similarity scores
@@ -168,6 +175,7 @@ RESPONSE:'
 ```
 
 ### Execution Order
+
 Execute these statements in the following order:
 
 1. **Step 1.1**: Populate `documents_embed` (streams to MongoDB automatically)
@@ -183,6 +191,7 @@ Execute these statements in the following order:
 After creating all tables, test the pipeline with these queries:
 
 ### Insert Sample Queries
+
 ```sql
 -- Insert test queries to verify the pipeline
 INSERT INTO queries VALUES ('How do I create a Flink table?');
@@ -191,6 +200,7 @@ INSERT INTO queries VALUES ('How do I join two streams in Flink SQL?');
 ```
 
 ### Verify Results
+
 ```sql
 -- Check embedding population
 SELECT COUNT(*) as total_chunks FROM documents_embed;
@@ -215,13 +225,15 @@ SELECT query, LEFT(response, 200) as response_preview FROM search_results_respon
 
 ## Troubleshooting
 
-### Common Issues:
+### Common Issues
+
 1. **MongoDB Connection Timeout**: Verify MongoDB connection parameters and network access
 2. **Vector Search Errors**: Ensure MongoDB vector index exists and matches the embedding dimensions
 3. **LLM Model Errors**: Verify LLM models are properly deployed and accessible
 4. **Resource Limits**: Monitor Flink compute pool CFU usage for large document sets
 
-### Verification Steps:
+### Verification Steps
+
 1. Check MongoDB sink connector status: `SHOW CONNECTORS;`
 2. Verify document count in MongoDB matches Kafka topic
 3. Test vector search with simple queries first

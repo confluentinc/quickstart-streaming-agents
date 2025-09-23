@@ -96,7 +96,7 @@ Unlike the RANK function, `DENSE_RANK` doesn’t produce gaps in the ranking seq
 
 Related function
 
-  * RANK
+* RANK
 
 ## FIRST_VALUE¶
 
@@ -114,7 +114,7 @@ Example
 
 Related function
 
-  * LAST_VALUE
+* LAST_VALUE
 
 ## LAG¶
 
@@ -143,7 +143,7 @@ For the full code example, see [Compare Current and Previous Values in a Data St
 
 Related function
 
-  * LEAD
+* LEAD
 
 ## LAST_VALUE¶
 
@@ -161,7 +161,7 @@ Example
 
 Related function
 
-  * FIRST_VALUE
+* FIRST_VALUE
 
 ## LEAD¶
 
@@ -177,7 +177,7 @@ The default value of `offset` is _1_ , and the default value of the `default` ar
 
 Related function
 
-  * LAG
+* LAG
 
 ## LISTAGG¶
 
@@ -232,7 +232,7 @@ For the full code example, see [Aggregate a Stream in a Tumbling Window](../../h
 
 Related function
 
-  * MIN
+* MIN
 
 ## MIN¶
 
@@ -267,7 +267,7 @@ For the full code example, see [Aggregate a Stream in a Tumbling Window](../../h
 
 Related function
 
-  * MAX
+* MAX
 
 ## NTILE¶
 
@@ -315,8 +315,8 @@ The values produce gaps in the sequence.
 
 Related functions
 
-  * DENSE_RANK
-  * ROW_NUMBER
+* DENSE_RANK
+* ROW_NUMBER
 
 ## ROW_NUMBER¶
 
@@ -332,8 +332,8 @@ The `ROW_NUMBER` and `RANK` functions are similar. `ROW_NUMBER` numbers all rows
 
 Related functions
 
-  * RANK
-  * DENSE_RANK
+* RANK
+* DENSE_RANK
 
 ## STDDEV_POP¶
 
@@ -355,7 +355,7 @@ Example
 
 Related function
 
-  * STDDEV_SAMP
+* STDDEV_SAMP
 
 ## STDDEV_SAMP¶
 
@@ -377,7 +377,7 @@ Example
 
 Related function
 
-  * STDDEV_POP
+* STDDEV_POP
 
 ## SUM¶
 
@@ -428,7 +428,7 @@ Example
 
 Related function
 
-  * VAR_SAMP
+* VAR_SAMP
 
 ## VAR_SAMP¶
 
@@ -452,8 +452,8 @@ Example
 
 Related functions
 
-  * STDDEV_POP
-  * VARIANCE
+* STDDEV_POP
+* VARIANCE
 
 ## VARIANCE¶
 
@@ -466,15 +466,15 @@ Description
 
 ## Other built-in functions¶
 
-  * Aggregate Functions
-  * [Collection Functions](collection-functions.html#flink-sql-collection-functions)
-  * [Comparison Functions](comparison-functions.html#flink-sql-comparison-functions)
-  * [Conditional Functions](conditional-functions.html#flink-sql-conditional-functions)
-  * [Datetime Functions](datetime-functions.html#flink-sql-datetime-functions)
-  * [Hash Functions](hash-functions.html#flink-sql-hash-functions)
-  * [JSON Functions](json-functions.html#flink-sql-json-functions)
-  * [ML Preprocessing Functions](ml-preprocessing-functions.html#flink-sql-ml-preprocessing-functions)
-  * [Model Inference Functions](model-inference-functions.html#flink-sql-model-inference-functions)
-  * [Numeric Functions](numeric-functions.html#flink-sql-numeric-functions)
-  * [String Functions](string-functions.html#flink-sql-string-functions)
-  * [Table API Functions](table-api-functions.html#flink-table-api-functions)
+* Aggregate Functions
+* [Collection Functions](collection-functions.html#flink-sql-collection-functions)
+* [Comparison Functions](comparison-functions.html#flink-sql-comparison-functions)
+* [Conditional Functions](conditional-functions.html#flink-sql-conditional-functions)
+* [Datetime Functions](datetime-functions.html#flink-sql-datetime-functions)
+* [Hash Functions](hash-functions.html#flink-sql-hash-functions)
+* [JSON Functions](json-functions.html#flink-sql-json-functions)
+* [ML Preprocessing Functions](ml-preprocessing-functions.html#flink-sql-ml-preprocessing-functions)
+* [Model Inference Functions](model-inference-functions.html#flink-sql-model-inference-functions)
+* [Numeric Functions](numeric-functions.html#flink-sql-numeric-functions)
+* [String Functions](string-functions.html#flink-sql-string-functions)
+* [Table API Functions](table-api-functions.html#flink-table-api-functions)

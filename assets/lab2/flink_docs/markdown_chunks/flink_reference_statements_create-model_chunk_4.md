@@ -19,50 +19,50 @@ Model Provider | Property
 ---|---
 Common |
 
-  * {PROVIDER}.client_timeout
-  * {PROVIDER}.connection
-  * {PROVIDER}.input_format
-  * {PROVIDER}.input_content_type
-  * {PROVIDER}.output_format
-  * {PROVIDER}.output_content_type
-  * {PROVIDER}.PARAMS.*
-  * {PROVIDER}.system_prompt
+* {PROVIDER}.client_timeout
+* {PROVIDER}.connection
+* {PROVIDER}.input_format
+* {PROVIDER}.input_content_type
+* {PROVIDER}.output_format
+* {PROVIDER}.output_content_type
+* {PROVIDER}.PARAMS.*
+* {PROVIDER}.system_prompt
 
 OpenAI |
 
-  * openai.input_format
-  * openai.model_version
+* openai.input_format
+* openai.model_version
 
 Azure OpenAI |
 
-  * azureopenai.input_format
-  * azureopenai.model_version
+* azureopenai.input_format
+* azureopenai.model_version
 
 Azure ML |
 
-  * azureml.input_format
-  * azureml.deployment_name
+* azureml.input_format
+* azureml.deployment_name
 
 Google AI |
 
-  * googleai.input_format
+* googleai.input_format
 
 Sagemaker |
 
-  * sagemaker.custom_attributes
-  * sagemaker.enable_explanations
-  * sagemaker.inference_component_name
-  * sagemaker.inference_id
-  * sagemaker.input_content_type
-  * sagemaker.output_content_type
-  * sagemaker.target_container_hostname
-  * sagemaker.target_model
-  * sagemaker.target_variant
+* sagemaker.custom_attributes
+* sagemaker.enable_explanations
+* sagemaker.inference_component_name
+* sagemaker.inference_id
+* sagemaker.input_content_type
+* sagemaker.output_content_type
+* sagemaker.target_container_hostname
+* sagemaker.target_model
+* sagemaker.target_variant
 
 Vertex AI |
 
-  * vertexai.service_key
-  * vertexai.input_format
+* vertexai.service_key
+* vertexai.input_format
 
 ### Connection resource¶
 
@@ -151,11 +151,11 @@ Specify the kind of analysis to perform.
 
 Supported values are:
 
-  * “classification”
-  * “clustering”
-  * “embedding”
-  * “regression”
-  * “text_generation”
+* “classification”
+* “clustering”
+* “embedding”
+* “regression”
+* “text_generation”
 
 This property is required, but it applies only when using the [ML_EVALUATE](../functions/model-inference-functions.html#flink-sql-ml-evaluate-function) function.
 

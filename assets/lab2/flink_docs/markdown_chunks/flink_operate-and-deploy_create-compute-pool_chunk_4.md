@@ -53,7 +53,7 @@ Your output should resemble:
 
 Get the details about a compute pool in your environment by sending a GET request to the [Compute Pools endpoint](/cloud/current/api.html#tag/Compute-Pools-\(fcpmv2\)/operation/getFcpmV2ComputePool).
 
-  * This request uses your Cloud API key instead of the Flink API key.
+* This request uses your Cloud API key instead of the Flink API key.
 
 Getting details about a compute pool requires the following inputs:
 

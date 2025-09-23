@@ -15,12 +15,12 @@ For a list of cloud service providers and regions that support UDFs, see [UDF re
 
 The following steps show how to implement a simple [user-defined scalar function](../concepts/user-defined-functions.html#flink-sql-udfs-scalar-functions), upload it to Confluent Cloud, and use it in a Flink SQL statement.
 
-  * Step 1: Build the uber jar
-  * Step 2: Upload the jar as a Flink artifact
-  * Step 3: Register the UDF
-  * Step 4: Use the UDF in a Flink SQL query
-  * Step 5: Implement UDF logging (optional)
-  * Step 6: Delete the UDF
+* Step 1: Build the uber jar
+* Step 2: Upload the jar as a Flink artifact
+* Step 3: Register the UDF
+* Step 4: Use the UDF in a Flink SQL query
+* Step 5: Implement UDF logging (optional)
+* Step 6: Delete the UDF
 
 After you build and run the scalar function, try building a table function.
 
@@ -30,13 +30,13 @@ For more code examples, see [Flink UDF Java Examples](https://github.com/conflue
 
 You need the following prerequisites to use Confluent Cloud for Apache Flink.
 
-  * Access to Confluent Cloud.
+* Access to Confluent Cloud.
 
-  * The organization ID, environment ID, and compute pool ID for your organization.
+* The organization ID, environment ID, and compute pool ID for your organization.
 
-  * The OrganizationAdmin, EnvironmentAdmin, or FlinkAdmin role for creating compute pools, or the FlinkDeveloper role if you already have a compute pool. If you don’t have the appropriate role, reach out to your OrganizationAdmin or EnvironmentAdmin.
+* The OrganizationAdmin, EnvironmentAdmin, or FlinkAdmin role for creating compute pools, or the FlinkDeveloper role if you already have a compute pool. If you don’t have the appropriate role, reach out to your OrganizationAdmin or EnvironmentAdmin.
 
-  * The Confluent CLI. To use the Flink SQL shell, update to the latest version of the Confluent CLI by running the following command:
+* The Confluent CLI. To use the Flink SQL shell, update to the latest version of the Confluent CLI by running the following command:
 
         confluent update --yes
 
@@ -44,15 +44,15 @@ If you used homebrew to install the Confluent CLI, update the CLI by using the `
 
 For more information, see [Confluent CLI](https://docs.confluent.io/confluent-cli/current/overview.html).
 
-  * A provisioned Flink compute pool in Confluent Cloud.
+* A provisioned Flink compute pool in Confluent Cloud.
 
-  * Apache Maven software project management tool (see [Installing Apache Maven](https://maven.apache.org/install.html))
+* Apache Maven software project management tool (see [Installing Apache Maven](https://maven.apache.org/install.html))
 
-  * Java 11 to Java 17
+* Java 11 to Java 17
 
-  * Sufficient permissions to upload and invoke UDFs in Confluent Cloud. For more information, see [Flink RBAC](../operate-and-deploy/flink-rbac.html#flink-rbac).
+* Sufficient permissions to upload and invoke UDFs in Confluent Cloud. For more information, see [Flink RBAC](../operate-and-deploy/flink-rbac.html#flink-rbac).
 
-  * If using the Table API only, Flink versions 1.18.x and 1.19.x of `flink-table-api-java` are supported.
+* If using the Table API only, Flink versions 1.18.x and 1.19.x of `flink-table-api-java` are supported.
 
 ## Step 1: Build the uber jar¶
 
@@ -345,7 +345,7 @@ You can register a previously uploaded UDF by using the Confluent Terraform prov
 
 You can register a UDF by sending a POST request to the [Create Artifact endpoint](/cloud/current/api.html#tag/Flink-Artifacts-\(artifactv1\)/operation/createArtifactV1FlinkArtifact). For more information, see [Create a Flink artifact](../operate-and-deploy/flink-rest-api.html#flink-rest-api-create-artifact).
 
-  * In Cloud Console or the Confluent CLI, run the [CREATE FUNCTION](../reference/statements/create-function.html#flink-sql-create-function) statement to register your UDF in the current catalog and database. Substitute your UDF’s value for `<artifact-id>`.
+* In Cloud Console or the Confluent CLI, run the [CREATE FUNCTION](../reference/statements/create-function.html#flink-sql-create-function) statement to register your UDF in the current catalog and database. Substitute your UDF’s value for `<artifact-id>`.
 
         CREATE FUNCTION is_smaller
           AS 'com.example.my.TShirtSizingIsSmaller'
@@ -471,10 +471,10 @@ In the previous steps, you implemented a UDF with a simple scalar function. Conf
 
 The following steps show how to implement a simple UDTF, upload it to Confluent Cloud, and use it in a Flink SQL statement.
 
-  * Step 1: Build the uber jar
-  * Step 2: Upload the UDTF jar as a Flink artifact
-  * Step 3: Register the UDTF
-  * Step 4: Use the UDTF in a Flink SQL query
+* Step 1: Build the uber jar
+* Step 2: Upload the UDTF jar as a Flink artifact
+* Step 3: Register the UDTF
+* Step 4: Use the UDTF in a Flink SQL query
 
 ## Step 1: Build the uber jar¶
 

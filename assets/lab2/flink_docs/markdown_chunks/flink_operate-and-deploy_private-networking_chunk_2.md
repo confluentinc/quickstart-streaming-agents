@@ -15,9 +15,9 @@ Private networking with [PrivateLink Attachment](../concepts/flink-private-netwo
 
 ### Prerequisites¶
 
-  * Access to Confluent Cloud.
-  * The [OrganizationAdmin](../../security/access-control/rbac/predefined-rbac-roles.html#organizationadmin-role), [EnvironmentAdmin](../../security/access-control/rbac/predefined-rbac-roles.html#environmentadmin-role), or [NetworkAdmin](../../security/access-control/rbac/predefined-rbac-roles.html#networkadmin-role) role to enable Flink private networking for an environment.
-  * A VPC in AWS, a VNet in Azure, or a VPC in Google Cloud.
+* Access to Confluent Cloud.
+* The [OrganizationAdmin](../../security/access-control/rbac/predefined-rbac-roles.html#organizationadmin-role), [EnvironmentAdmin](../../security/access-control/rbac/predefined-rbac-roles.html#environmentadmin-role), or [NetworkAdmin](../../security/access-control/rbac/predefined-rbac-roles.html#networkadmin-role) role to enable Flink private networking for an environment.
+* A VPC in AWS, a VNet in Azure, or a VPC in Google Cloud.
 
 ### Overview¶
 

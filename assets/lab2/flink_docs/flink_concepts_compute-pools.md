@@ -15,8 +15,8 @@ A compute pool is provisioned in a specific region. The statements using a compu
 
 Compute pools fulfill two roles:
 
-  * **Workload Isolation** : Statements in different compute pools are isolated from each other.
-  * **Budgeting** : Statements within a compute pool can’t use more than the configured maximum number of [CFUs](flink-billing.html#flink-sql-cfus).
+* **Workload Isolation** : Statements in different compute pools are isolated from each other.
+* **Budgeting** : Statements within a compute pool can’t use more than the configured maximum number of [CFUs](flink-billing.html#flink-sql-cfus).
 
 ## Compute pools and isolation¶
 
@@ -28,10 +28,10 @@ To avoid situations in which statements with different latency and availability 
 
 You can use these Confluent tools to create and manage compute pools.
 
-  * [Cloud Console](../operate-and-deploy/create-compute-pool.html#flink-sql-manage-compute-pool)
-  * [Confluent CLI](../reference/flink-sql-cli.html#flink-sql-confluent-cli)
-  * [REST API](../operate-and-deploy/flink-rest-api.html#flink-rest-api)
-  * [Confluent Terraform Provider](https://registry.terraform.io/providers/confluentinc/confluent/latest/docs/resources/confluent_flink_compute_pool)
+* [Cloud Console](../operate-and-deploy/create-compute-pool.html#flink-sql-manage-compute-pool)
+* [Confluent CLI](../reference/flink-sql-cli.html#flink-sql-confluent-cli)
+* [REST API](../operate-and-deploy/flink-rest-api.html#flink-rest-api)
+* [Confluent Terraform Provider](https://registry.terraform.io/providers/confluentinc/confluent/latest/docs/resources/confluent_flink_compute_pool)
 
 ## Authorization¶
 

@@ -61,4 +61,4 @@ When your API key and secret are generated, save them in environment variables f
     export FLINK_API_KEY="<flink-api-key>"
     export FLINK_API_SECRET="<flink-api-secret>"
 
-You can manage the API key by using the Confluent CLI commands. For more information, see [confluent api-key ](https://docs.confluent.io/confluent-cli/current/command-reference/api-key/index.html). Also, you can use the [REST API](https://docs.confluent.io/cloud/current/api.html#tag/API-Keys-\(iamv2\)) and Cloud Console.
+You can manage the API key by using the Confluent CLI commands. For more information, see [confluent api-key](https://docs.confluent.io/confluent-cli/current/command-reference/api-key/index.html). Also, you can use the [REST API](https://docs.confluent.io/cloud/current/api.html#tag/API-Keys-\(iamv2\)) and Cloud Console.

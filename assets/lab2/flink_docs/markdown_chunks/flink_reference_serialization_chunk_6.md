@@ -19,13 +19,13 @@ This mapping is important for creating tables, because it defines the Protobuf s
 
 #### ARRAY[T]¶
 
-  * Protobuf type: `repeated T`
+* Protobuf type: `repeated T`
 
-  * Message type: –
+* Message type: –
 
-  * Additional properties: `flink.wrapped`, which indicates that Flink wrappers are used to represent nullability, because Protobuf doesn’t support nullable repeated natively.
+* Additional properties: `flink.wrapped`, which indicates that Flink wrappers are used to represent nullability, because Protobuf doesn’t support nullable repeated natively.
 
-  * Example:
+* Example:
 
         repeated int64 value = 1;
 
@@ -69,25 +69,25 @@ Nullable elements:
 
 #### BIGINT¶
 
-  * Protobuf type: `INT64`
+* Protobuf type: `INT64`
 
-  * Message type: –
+* Message type: –
 
-  * Additional properties: –
+* Additional properties: –
 
-  * Example:
+* Example:
 
         optional int64 bigint = 8;
 
 #### BINARY¶
 
-  * Protobuf type: `BYTES`
+* Protobuf type: `BYTES`
 
-  * Message type: –
+* Message type: –
 
-  * Additional properties: `flink.maxLength=flink.minLength`
+* Additional properties: `flink.maxLength=flink.minLength`
 
-  * Example:
+* Example:
 
         optional bytes binary = 13 [(confluent.field_meta) = {
           params: [
@@ -108,25 +108,25 @@ Nullable elements:
 
 #### BOOLEAN¶
 
-  * Protobuf type: `BOOL`
+* Protobuf type: `BOOL`
 
-  * Message type: –
+* Message type: –
 
-  * Additional properties: –
+* Additional properties: –
 
-  * Example:
+* Example:
 
         optional bool boolean = 2;
 
 #### CHAR¶
 
-  * Protobuf type: `STRING`
+* Protobuf type: `STRING`
 
-  * Message type: –
+* Message type: –
 
-  * Additional properties: `flink.maxLength=flink.minLength`
+* Additional properties: `flink.maxLength=flink.minLength`
 
-  * Example:
+* Example:
 
         optional string char = 11 [(confluent.field_meta) = {
           params: [
@@ -147,25 +147,25 @@ Nullable elements:
 
 #### DATE¶
 
-  * Protobuf type: `MESSAGE`
+* Protobuf type: `MESSAGE`
 
-  * Message type: `google.type.Date`
+* Message type: `google.type.Date`
 
-  * Additional properties: –
+* Additional properties: –
 
-  * Example:
+* Example:
 
         optional .google.type.Date date = 17;
 
 #### DECIMAL¶
 
-  * Protobuf type: `MESSAGE`
+* Protobuf type: `MESSAGE`
 
-  * Message type: `confluent.type.Decimal`
+* Message type: `confluent.type.Decimal`
 
-  * Additional properties: –
+* Additional properties: –
 
-  * Example:
+* Example:
 
         optional .confluent.type.Decimal decimal = 19 [(confluent.field_meta) = {
           params: [
@@ -186,49 +186,49 @@ Nullable elements:
 
 #### DOUBLE¶
 
-  * Protobuf type: `DOUBLE`
+* Protobuf type: `DOUBLE`
 
-  * Message type: –
+* Message type: –
 
-  * Additional properties: –
+* Additional properties: –
 
-  * Example:
+* Example:
 
         optional double double = 10;
 
 #### FLOAT¶
 
-  * Protobuf type: `FLOAT`
+* Protobuf type: `FLOAT`
 
-  * Message type: –
+* Message type: –
 
-  * Additional properties: –
+* Additional properties: –
 
-  * Example:
+* Example:
 
         optional float float = 9;
 
 #### INT¶
 
-  * Protobuf type: `INT32`
+* Protobuf type: `INT32`
 
-  * Message type: –
+* Message type: –
 
-  * Additional properties: –
+* Additional properties: –
 
-  * Example:
+* Example:
 
         optional int32 int = 7;
 
 #### MAP[K, V]¶
 
-  * Protobuf type: `repeated MESSAGE`
+* Protobuf type: `repeated MESSAGE`
 
-  * Message type: `XXEntry(K key, V value)`
+* Message type: `XXEntry(K key, V value)`
 
-  * Additional properties: `flink.wrapped`, which indicates that Flink wrappers are used to represent nullability, because Protobuf doesn’t support nullable repeated natively. For examples, see the ARRAY type.
+* Additional properties: `flink.wrapped`, which indicates that Flink wrappers are used to represent nullability, because Protobuf doesn’t support nullable repeated natively. For examples, see the ARRAY type.
 
-  * Example:
+* Example:
 
         repeated MapEntry map = 20;
 
@@ -239,14 +239,14 @@ Nullable elements:
 
 #### MULTISET[V]¶
 
-  * Protobuf type: `repeated MESSAGE`
+* Protobuf type: `repeated MESSAGE`
 
-  * Message type: `XXEntry(V key, int32 value)`
+* Message type: `XXEntry(V key, int32 value)`
 
-  * Additional properties:
+* Additional properties:
 
-    * `flink.wrapped`, which indicates that Flink wrappers are used to represent nullability, because Protobuf doesn’t support nullable repeated natively. For examples, see the ARRAY type.
-    * `flink.type=multiset`
-  * Example:
+  * `flink.wrapped`, which indicates that Flink wrappers are used to represent nullability, because Protobuf doesn’t support nullable repeated natively. For examples, see the ARRAY type.
+  * `flink.type=multiset`
+* Example:
 
         repeated MultisetEntry multiset = 1 [(confluent.field_meta)

@@ -25,19 +25,19 @@ Comments, questions, and suggestions related to the Table API are encouraged and
 
 ## Prerequisites¶
 
-  * Access to Confluent Cloud
-  * A [compute pool](../operate-and-deploy/create-compute-pool.html#flink-sql-manage-compute-pool) in Confluent Cloud
-  * A Apache Kafka® [cluster](../../clusters/create-cluster.html#cloud-create-cluster), if you want to run examples that store data in Kafka
-  * Java version 11 or later
-  * Maven (see [Installing Apache Maven](https://maven.apache.org/install.html))
+* Access to Confluent Cloud
+* A [compute pool](../operate-and-deploy/create-compute-pool.html#flink-sql-manage-compute-pool) in Confluent Cloud
+* A Apache Kafka® [cluster](../../clusters/create-cluster.html#cloud-create-cluster), if you want to run examples that store data in Kafka
+* Java version 11 or later
+* Maven (see [Installing Apache Maven](https://maven.apache.org/install.html))
 
 To run Table API and Flink SQL programs, you must generate an API key that’s specific to the Flink environment. Also, you need Confluent Cloud account details, like your organization and environment identifiers.
 
-  * **Flink API Key:** Follow the steps in [Generate a Flink API key](../operate-and-deploy/flink-rest-api.html#flink-rest-api-generate-api-key). For convenience, assign your Flink key and secret to the FLINK_API_KEY and FLINK_API_SECRET environment variables.
-  * **Organization ID:** The identifier your organization, for example, `b0b421724-4586-4a07-b787-d0bb5aacbf87`. For convenience, assign your organization identifier to the ORG_ID environment variable.
-  * **Environment ID:** The identifier of the environment where your Flink SQL statements run, for example, `env-z3y2x1`. For convenience, assign your environment identifier to the ENV_ID environment variable.
-  * **Cloud provider name:** The name of the cloud provider where your cluster runs, for example, `aws`. To see the available providers, run the `confluent flink region list` command. For convenience, assign your cloud provider to the CLOUD_PROVIDER environment variable.
-  * **Cloud region:** The name of the region where your cluster runs, for example, `us-east-1`. To see the available regions, run the `confluent flink region list` command. For convenience, assign your cloud region to the CLOUD_REGION environment variable.
+* **Flink API Key:** Follow the steps in [Generate a Flink API key](../operate-and-deploy/flink-rest-api.html#flink-rest-api-generate-api-key). For convenience, assign your Flink key and secret to the FLINK_API_KEY and FLINK_API_SECRET environment variables.
+* **Organization ID:** The identifier your organization, for example, `b0b421724-4586-4a07-b787-d0bb5aacbf87`. For convenience, assign your organization identifier to the ORG_ID environment variable.
+* **Environment ID:** The identifier of the environment where your Flink SQL statements run, for example, `env-z3y2x1`. For convenience, assign your environment identifier to the ENV_ID environment variable.
+* **Cloud provider name:** The name of the cloud provider where your cluster runs, for example, `aws`. To see the available providers, run the `confluent flink region list` command. For convenience, assign your cloud provider to the CLOUD_PROVIDER environment variable.
+* **Cloud region:** The name of the region where your cluster runs, for example, `us-east-1`. To see the available regions, run the `confluent flink region list` command. For convenience, assign your cloud region to the CLOUD_REGION environment variable.
 
     export CLOUD_PROVIDER="aws"
     export CLOUD_REGION="us-east-1"

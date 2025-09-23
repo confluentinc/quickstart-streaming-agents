@@ -11,24 +11,24 @@ Confluent Cloud for Apache Flink® enables generating a transformed topic from a
 
 In this guide, you create a Flink table and apply a transformation that creates an output topic with these changes:
 
-  * Rename a field
-  * Specify a bucket key
-  * Change the key and value serialization format
-  * Specify a different partition count
+* Rename a field
+* Specify a bucket key
+* Change the key and value serialization format
+* Specify a different partition count
 
 The Transform Topic action creates a Flink SQL statement for you, but no knowledge of Flink SQL is required to use it.
 
 This guide shows the following steps:
 
-  * Step 1: Create a users table
-  * Step 2: Apply the Transform Topic action
-  * Step 3: Inspect the transformed topic
+* Step 1: Create a users table
+* Step 2: Apply the Transform Topic action
+* Step 3: Inspect the transformed topic
 
 ## Prerequisites¶
 
-  * Access to Confluent Cloud.
-  * The OrganizationAdmin, EnvironmentAdmin, or FlinkAdmin role for creating compute pools, or the FlinkDeveloper role if you already have a compute pool. If you don’t have the appropriate role, contact your OrganizationAdmin or EnvironmentAdmin. For more information, see [Grant Role-Based Access in Confluent Cloud for Apache Flink](../operate-and-deploy/flink-rbac.html#flink-rbac).
-  * A provisioned Flink compute pool.
+* Access to Confluent Cloud.
+* The OrganizationAdmin, EnvironmentAdmin, or FlinkAdmin role for creating compute pools, or the FlinkDeveloper role if you already have a compute pool. If you don’t have the appropriate role, contact your OrganizationAdmin or EnvironmentAdmin. For more information, see [Grant Role-Based Access in Confluent Cloud for Apache Flink](../operate-and-deploy/flink-rbac.html#flink-rbac).
+* A provisioned Flink compute pool.
 
 ## Step 1: Create a users table¶
 

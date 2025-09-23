@@ -148,14 +148,14 @@ Run the following commands to update the log level for a logging configuration.
 
 The following log levels are supported.
 
-  * OFF
-  * FATAL
-  * ERROR
-  * WARN
-  * INFO
-  * DEBUG
-  * TRACE
-  * ALL
+* OFF
+* FATAL
+* ERROR
+* WARN
+* INFO
+* DEBUG
+* TRACE
+* ALL
 
 Confluent CLIREST API
 

@@ -52,13 +52,13 @@ Currently, only one type of Compute Pool is supported. The `DEDICATED` Compute P
 
 There are a few fields that must not be specified for Compute Pools because they are automatically managed by CMF:
 
-  * **serviceAccount** : CMF uses a dedicated Kubernetes service account to deploy statements
-  * **job** : most properties of the job spec are automatically set by CMF, including `jarURI`, `entryClass`, `args`, `parallelism`, and `state`.
+* **serviceAccount** : CMF uses a dedicated Kubernetes service account to deploy statements
+* **job** : most properties of the job spec are automatically set by CMF, including `jarURI`, `entryClass`, `args`, `parallelism`, and `state`.
 
 CMF also creates two volumes and volume mounts to pass information from CMF to the Flink cluster that you should not interfere with:
 
-  * volume: `statement-plan-volume`, mount path: `/opt/flink/statement`
-  * volume: `statement-encryption-volume`, mount path: `/opt/flink/statement-secret`
+* volume: `statement-plan-volume`, mount path: `/opt/flink/statement`
+* volume: `statement-encryption-volume`, mount path: `/opt/flink/statement-secret`
 
 The `image` field must be set to a `confluentinc/cp-flink-sql` image (or an image that uses the `cp-flink-sql` image as base image). CMF expects the image to contain a specific Flink job JAR and certain dependencies to be present.
 

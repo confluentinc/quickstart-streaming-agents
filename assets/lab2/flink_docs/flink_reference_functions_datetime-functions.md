@@ -74,7 +74,7 @@ Example
 
 Related function
 
-  * FLOOR
+* FLOOR
 
 ### CONVERT_TZ¶
 
@@ -107,8 +107,8 @@ Description
 
 The `CURRENT_DATE` function returns the current SQL date in the local time zone.
 
-  * In streaming mode, the current date is evaluated for each record.
-  * In batch mode, the current date is evaluated once when the query starts, and `CURRENT_DATE` returns the same result for every row.
+* In streaming mode, the current date is evaluated for each record.
+* In batch mode, the current date is evaluated once when the query starts, and `CURRENT_DATE` returns the same result for every row.
 
 Example
 
@@ -162,8 +162,8 @@ Description
 
 The `CURRENT_TIMESTAMP` function returns the current SQL timestamp in the local time zone. The return type is `TIMESTAMP_LTZ(3)`.
 
-  * In streaming mode, the current timestamp is evaluated for each record.
-  * In batch mode, the current timestamp is evaluated once when the query starts, and `CURRENT_TIMESTAMP` returns the same result for every row.
+* In streaming mode, the current timestamp is evaluated for each record.
+* In batch mode, the current timestamp is evaluated once when the query starts, and `CURRENT_TIMESTAMP` returns the same result for every row.
 
 The `CURRENT_TIMESTAMP` function is equivalent to NOW.
 
@@ -203,7 +203,7 @@ The following example shows how to filter out late data by using the `CURRENT_WA
 
 Related function
 
-  * SOURCE_WATERMARK
+* SOURCE_WATERMARK
 
 ### DATE_FORMAT¶
 
@@ -317,9 +317,9 @@ Example
 
 Related functions
 
-  * DAYOFMONTH
-  * DAYOFWEEK
-  * DAYOFYEAR
+* DAYOFMONTH
+* DAYOFWEEK
+* DAYOFYEAR
 
 ### FLOOR¶
 
@@ -338,7 +338,7 @@ Example
 
 Related function
 
-  * CEIL
+* CEIL
 
 ### FROM_UNIXTIME¶
 
@@ -383,8 +383,8 @@ Example
 
 Related functions
 
-  * MINUTE
-  * SECOND
+* MINUTE
+* SECOND
 
 ### INTERVAL¶
 
@@ -400,15 +400,15 @@ The `INTERVAL` function parses an interval string in the form “dd hh:mm:ss.fff
 
 For intervals of milliseconds, these interval ranges apply:
 
-  * DAY
-  * MINUTE
-  * DAY TO HOUR
-  * DAY TO SECOND
+* DAY
+* MINUTE
+* DAY TO HOUR
+* DAY TO SECOND
 
 For intervals of months, these interval ranges apply:
 
-  * YEAR
-  * YEAR TO MONTH
+* YEAR
+* YEAR TO MONTH
 
 Examples
 
@@ -435,8 +435,8 @@ Description
 
 The `LOCALTIME` function returns the current SQL time in the local time zone. The return type is `TIME(0)`.
 
-  * In streaming mode, the current local time is evaluated for each record.
-  * In batch mode, the current local time is evaluated once when the query starts, and `LOCALTIME` returns the same result for every row.
+* In streaming mode, the current local time is evaluated for each record.
+* In batch mode, the current local time is evaluated once when the query starts, and `LOCALTIME` returns the same result for every row.
 
 Example
 
@@ -456,8 +456,8 @@ Description
 
 The `LOCALTIMESTAMP` function returns the current SQL timestamp in local time zone. The return type is `TIMESTAMP(3)`.
 
-  * In streaming mode, the current timestamp is evaluated for each record.
-  * In batch mode, the current timestamp is evaluated once when the query starts, and `LOCALTIMESTAMP` returns the same result for every row.
+* In streaming mode, the current timestamp is evaluated for each record.
+* In batch mode, the current timestamp is evaluated once when the query starts, and `LOCALTIMESTAMP` returns the same result for every row.
 
 Example
 
@@ -486,8 +486,8 @@ Example
 
 Related functions
 
-  * HOUR
-  * SECOND
+* HOUR
+* SECOND
 
 ### MONTH¶
 
@@ -510,10 +510,10 @@ Example
 
 Related functions
 
-  * DAYOFMONTH
-  * DAYOFYEAR
-  * WEEK
-  * YEAR
+* DAYOFMONTH
+* DAYOFYEAR
+* WEEK
+* YEAR
 
 ### NOW¶
 
@@ -578,10 +578,10 @@ Example
 
 Related functions
 
-  * DAYOFMONTH
-  * DAYOFYEAR
-  * WEEK
-  * YEAR
+* DAYOFMONTH
+* DAYOFYEAR
+* WEEK
+* YEAR
 
 ### SECOND¶
 
@@ -604,8 +604,8 @@ Example
 
 Related functions
 
-  * HOUR
-  * MINUTE
+* HOUR
+* MINUTE
 
 ### SOURCE_WATERMARK¶
 
@@ -656,8 +656,8 @@ Example
 
 Related functions
 
-  * CURRENT_WATERMARK
-  * [Watermark clause](../statements/create-table.html#flink-sql-watermark-clause)
+* CURRENT_WATERMARK
+* [Watermark clause](../statements/create-table.html#flink-sql-watermark-clause)
 
 ### TIME¶
 
@@ -748,8 +748,8 @@ The first version of the `TO_TIMESTAMP_LTZ` function converts Unix epoch seconds
 
 These are the valid precision values:
 
-  * **0** , which represents `TO_TIMESTAMP_LTZ(epoch_seconds, 0)`
-  * **3** , which represents `TO_TIMESTAMP_LTZ(epoch_milliseconds, 3)`
+* **0** , which represents `TO_TIMESTAMP_LTZ(epoch_seconds, 0)`
+* **3** , which represents `TO_TIMESTAMP_LTZ(epoch_milliseconds, 3)`
 
 If no precision is provided, the default precision is 3.
 
@@ -785,12 +785,12 @@ Returns the sum of `timepoint` and the `interval` number of time units specified
 
 The unit for the interval is given by the first argument, which must be one of the following values:
 
-  * DAY
-  * HOUR
-  * MINUTE
-  * MONTH
-  * SECOND
-  * YEAR
+* DAY
+* HOUR
+* MINUTE
+* MONTH
+* SECOND
+* YEAR
 
 Example
 
@@ -814,12 +814,12 @@ The `TIMESTAMPDIFF` function returns the (signed) number of `timepointunit` betw
 
 The unit for the interval is given by the first argument, which must be one of the following values:
 
-  * DAY
-  * HOUR
-  * MINUTE
-  * MONTH
-  * SECOND
-  * YEAR
+* DAY
+* HOUR
+* MINUTE
+* MONTH
+* SECOND
+* YEAR
 
 Example
 
@@ -899,10 +899,10 @@ Example
 
 Related functions
 
-  * DAYOFMONTH
-  * DAYOFYEAR
-  * QUARTER
-  * YEAR
+* DAYOFMONTH
+* DAYOFYEAR
+* QUARTER
+* YEAR
 
 ### YEAR¶
 
@@ -923,30 +923,30 @@ Example
 
 Related functions
 
-  * DAYOFMONTH
-  * DAYOFYEAR
-  * QUARTER
-  * MONTH
+* DAYOFMONTH
+* DAYOFYEAR
+* QUARTER
+* MONTH
 
 ### Other built-in functions¶
 
-  * [Aggregate Functions](aggregate-functions.html#flink-sql-aggregate-functions)
-  * [Collection Functions](collection-functions.html#flink-sql-collection-functions)
-  * [Comparison Functions](comparison-functions.html#flink-sql-comparison-functions)
-  * [Conditional Functions](conditional-functions.html#flink-sql-conditional-functions)
-  * Datetime Functions
-  * [Hash Functions](hash-functions.html#flink-sql-hash-functions)
-  * [JSON Functions](json-functions.html#flink-sql-json-functions)
-  * [ML Preprocessing Functions](ml-preprocessing-functions.html#flink-sql-ml-preprocessing-functions)
-  * [Model Inference Functions](model-inference-functions.html#flink-sql-model-inference-functions)
-  * [Numeric Functions](numeric-functions.html#flink-sql-numeric-functions)
-  * [String Functions](string-functions.html#flink-sql-string-functions)
-  * [Table API Functions](table-api-functions.html#flink-table-api-functions)
+* [Aggregate Functions](aggregate-functions.html#flink-sql-aggregate-functions)
+* [Collection Functions](collection-functions.html#flink-sql-collection-functions)
+* [Comparison Functions](comparison-functions.html#flink-sql-comparison-functions)
+* [Conditional Functions](conditional-functions.html#flink-sql-conditional-functions)
+* Datetime Functions
+* [Hash Functions](hash-functions.html#flink-sql-hash-functions)
+* [JSON Functions](json-functions.html#flink-sql-json-functions)
+* [ML Preprocessing Functions](ml-preprocessing-functions.html#flink-sql-ml-preprocessing-functions)
+* [Model Inference Functions](model-inference-functions.html#flink-sql-model-inference-functions)
+* [Numeric Functions](numeric-functions.html#flink-sql-numeric-functions)
+* [String Functions](string-functions.html#flink-sql-string-functions)
+* [Table API Functions](table-api-functions.html#flink-table-api-functions)
 
 ### Related content¶
 
-  * [User-defined Functions](../../concepts/user-defined-functions.html#flink-sql-udfs)
-  * [Create a User Defined Function](../../how-to-guides/create-udf.html#flink-sql-create-udf)
+* [User-defined Functions](../../concepts/user-defined-functions.html#flink-sql-udfs)
+* [Create a User Defined Function](../../how-to-guides/create-udf.html#flink-sql-create-udf)
 
 Note
 

@@ -26,10 +26,10 @@ Confluent Cloud for Apache Flink® enables viewing and analyzing the query plans
 
 The EXPLAIN statement provides detailed information about how Flink executes a specified query or INSERT statement. EXPLAIN shows:
 
-  * The optimized physical execution plan
-  * If the [changelog mode](create-table.html#flink-sql-create-table-with-changelog-mode) is not append-only, details about the changelog mode per operator
-  * Upsert keys and primary keys where applicable
-  * Table source and sink details
+* The optimized physical execution plan
+* If the [changelog mode](create-table.html#flink-sql-create-table-with-changelog-mode) is not append-only, details about the changelog mode per operator
+* Upsert keys and primary keys where applicable
+* Table source and sink details
 
 This information is valuable for understanding query performance, optimizing complex queries, and debugging unexpected results.
 

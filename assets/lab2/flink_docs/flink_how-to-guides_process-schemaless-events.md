@@ -15,9 +15,9 @@ When working with Kafka topics containing events that aren’t serialized with S
 
 ## Prerequisites¶
 
-  * Access to Confluent Cloud
-  * A Kafka topic containing events you want to process
-  * Appropriate permissions to access Schema Registry in Confluent Cloud
+* Access to Confluent Cloud
+* A Kafka topic containing events you want to process
+* Appropriate permissions to access Schema Registry in Confluent Cloud
 
 ## Step 1: Submit your schema to Schema Registry¶
 

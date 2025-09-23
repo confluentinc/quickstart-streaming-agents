@@ -25,8 +25,8 @@ The `TUMBLE` function assigns each element to a window of specified window size.
 
 The `TUMBLE` function assigns a window for each row of a relation based on a time attribute field.
 
-  * In streaming mode, the time attribute field must be an [event time attribute](../../concepts/timely-stream-processing.html#flink-sql-time-attributes).
-  * In batch mode, the time attribute field of window table function must be an attribute of type `TIMESTAMP` or `TIMESTAMP_LTZ`.
+* In streaming mode, the time attribute field must be an [event time attribute](../../concepts/timely-stream-processing.html#flink-sql-time-attributes).
+* In batch mode, the time attribute field of window table function must be an attribute of type `TIMESTAMP` or `TIMESTAMP_LTZ`.
 
 The return value of `TUMBLE` is a new relation that includes all columns of the original relation, as well as an additional 3 columns named `window_start`, `window_end`, and `window_time` to indicate the assigned window. The original time attribute, `timecol` is a regular timestamp column after windowing TVF.
 
@@ -34,10 +34,10 @@ The `TUMBLE` function takes three required parameters and one optional parameter
 
     TUMBLE(TABLE data, DESCRIPTOR(timecol), size [, offset ])
 
-  * `data`: is a table parameter that can be any relation with a time attribute column.
-  * `timecol`: is a column descriptor indicating which time attributes column of data should be mapped to tumbling windows.
-  * `size`: is a duration specifying the width of the tumbling windows.
-  * `offset`: is an optional parameter to specify the offset which window start would be shifted by.
+* `data`: is a table parameter that can be any relation with a time attribute column.
+* `timecol`: is a column descriptor indicating which time attributes column of data should be mapped to tumbling windows.
+* `size`: is a duration specifying the width of the tumbling windows.
+* `offset`: is an optional parameter to specify the offset which window start would be shifted by.
 
 Here is an example invocation on the `orders` table:
 

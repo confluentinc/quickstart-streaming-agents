@@ -40,8 +40,8 @@ For example, you could have windows of size 10 minutes that slides by 5 minutes.
 
 The `HOP` function assigns windows that cover rows within the interval of size and shifting every slide based on a time attribute field.
 
-  * In streaming mode, the time attribute field must be an [event time attribute](../../concepts/timely-stream-processing.html#flink-sql-time-attributes).
-  * In batch mode, the time attribute field of window table function must be an attribute of type `TIMESTAMP` or `TIMESTAMP_LTZ`.
+* In streaming mode, the time attribute field must be an [event time attribute](../../concepts/timely-stream-processing.html#flink-sql-time-attributes).
+* In batch mode, the time attribute field of window table function must be an attribute of type `TIMESTAMP` or `TIMESTAMP_LTZ`.
 
 The return value of `HOP` is a new relation that includes all columns of the original relation as well as an additional 3 columns named `window_start`, `window_end`, and `window_time` to indicate the assigned window. The original time attribute, `timecol`, is a regular timestamp column after windowing TVF.
 
@@ -49,11 +49,11 @@ The `HOP` takes four required parameters and one optional parameter:
 
     HOP(TABLE data, DESCRIPTOR(timecol), slide, size [, offset ])
 
-  * `data`: is a table parameter that can be any relation with an time attribute column.
-  * `timecol`: is a column descriptor indicating which time attributes column of data should be mapped to hopping windows.
-  * `slide`: is a duration specifying the duration between the start of sequential hopping windows
-  * `size`: is a duration specifying the width of the hopping windows.
-  * `offset`: is an optional parameter to specify the offset which window start would be shifted by.
+* `data`: is a table parameter that can be any relation with an time attribute column.
+* `timecol`: is a column descriptor indicating which time attributes column of data should be mapped to hopping windows.
+* `slide`: is a duration specifying the duration between the start of sequential hopping windows
+* `size`: is a duration specifying the width of the hopping windows.
+* `offset`: is an optional parameter to specify the offset which window start would be shifted by.
 
 The following queries return all rows in the `orders` table in hopping windows with a 5-minute slide and 10-minute size.
 

@@ -80,8 +80,8 @@ For example, the following query joins all orders with their corresponding shipm
 
 The following predicates are examples of valid interval join conditions:
 
-  * `ltime = rtime`
-  * `ltime >= rtime AND ltime < rtime + INTERVAL '10' MINUTE`
-  * `ltime BETWEEN rtime - INTERVAL '10' SECOND AND rtime + INTERVAL '5' SECOND`
+* `ltime = rtime`
+* `ltime >= rtime AND ltime < rtime + INTERVAL '10' MINUTE`
+* `ltime BETWEEN rtime - INTERVAL '10' SECOND AND rtime + INTERVAL '5' SECOND`
 
 For streaming queries, compared to the regular join, interval join only supports append-only tables with time attributes. Because time attributes increase quasi-monotonically, Flink can remove old values from its state without affecting the correctness of the result.

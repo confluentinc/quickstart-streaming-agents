@@ -15,8 +15,8 @@ Tables can also be created and populated by the results of a query in one create
 
 The CTAS statement consists of two parts:
 
-  * The SELECT part can be any SELECT query supported by Flink SQL.
-  * The CREATE part takes the resulting schema from the SELECT part and creates the target table.
+* The SELECT part can be any SELECT query supported by Flink SQL.
+* The CREATE part takes the resulting schema from the SELECT part and creates the target table.
 
 The following two code examples are equivalent.
 

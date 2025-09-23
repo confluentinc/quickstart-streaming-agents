@@ -3,9 +3,10 @@
 Test script to validate document parsing functionality.
 """
 
-import sys
 import json
+import sys
 from pathlib import Path
+
 from publish_docs import FlinkDocsPublisher
 
 
@@ -16,7 +17,7 @@ def test_document_parsing():
 
     # Test with a real document
     docs_dir = Path(__file__).parent
-    sample_files = list(docs_dir.glob('*.md'))[:3]  # Test first 3 files
+    sample_files = list(docs_dir.glob("*.md"))[:3]  # Test first 3 files
 
     if not sample_files:
         print("No markdown files found for testing")
@@ -37,17 +38,17 @@ def test_document_parsing():
             print(f"  Metadata keys: {list(document['metadata'].keys())}")
 
             # Show first 200 chars of content
-            content_preview = document['document_text'][:200].replace('\n', ' ')
+            content_preview = document["document_text"][:200].replace("\n", " ")
             print(f"  Content preview: {content_preview}...")
 
             # Validate required fields for Avro
-            if 'document_id' in document and 'document_text' in document:
+            if "document_id" in document and "document_text" in document:
                 print("  ✓ Required Avro fields present")
 
                 # Test Avro record creation
                 avro_record = {
-                    'document_id': document['document_id'],
-                    'document_text': document['document_text']
+                    "document_id": document["document_id"],
+                    "document_text": document["document_text"],
                 }
                 print(f"  ✓ Avro record created successfully")
             else:
@@ -79,7 +80,7 @@ def test_avro_schema():
     return True
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print("Flink Docs Publisher - Testing Document Parsing\n")
 
     try:
@@ -96,5 +97,6 @@ if __name__ == '__main__':
     except Exception as e:
         print(f"\n❌ Tests failed: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)

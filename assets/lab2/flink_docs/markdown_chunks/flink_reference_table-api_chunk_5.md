@@ -51,24 +51,24 @@ The Table API plugin is in Open Preview stage.
 
 The following features are not supported.
 
-  * Temporary catalog objects (including tables, views, functions)
-  * Custom modules
-  * Custom catalogs
-  * User-defined functions (including system functions)
-  * Anonymous, inline objects (including functions, data types)
-  * CompiledPlan features are not supported
-  * Batch mode
-  * Restrictions from Confluent Cloud
-    * custom connectors/formats
-    * processing time operations
-    * structured data types
-    * many configuration options
-    * limited SQL syntax
-    * batch execution mode
+* Temporary catalog objects (including tables, views, functions)
+* Custom modules
+* Custom catalogs
+* User-defined functions (including system functions)
+* Anonymous, inline objects (including functions, data types)
+* CompiledPlan features are not supported
+* Batch mode
+* Restrictions from Confluent Cloud
+  * custom connectors/formats
+  * processing time operations
+  * structured data types
+  * many configuration options
+  * limited SQL syntax
+  * batch execution mode
 
 ### Issues in Apache Flink¶
 
-  * Both catalog and database must be set, or identifiers must be fully qualified. A mixture of setting a current catalog and using two-part identifiers can cause errors.
-  * String concatenation with `.plus` causes errors. Instead, use `Expressions.concat`.
-  * Selecting `.rowtime` in windows causes errors.
-  * Using `.limit()` can cause errors.
+* Both catalog and database must be set, or identifiers must be fully qualified. A mixture of setting a current catalog and using two-part identifiers can cause errors.
+* String concatenation with `.plus` causes errors. Instead, use `Expressions.concat`.
+* Selecting `.rowtime` in windows causes errors.
+* Using `.limit()` can cause errors.

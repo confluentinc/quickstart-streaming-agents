@@ -29,17 +29,17 @@ Description
     The `ML_BUCKETIZE` function divides numerical values into discrete buckets based on specified split points. Each bucket represents a range of values, and the function returns the bucket index or name for each input value.
 Arguments
 
-  * **value** : Numerical expression to be bucketized. If the input value is `NaN` or `NULL`, it is bucketized to the `NULL` bucket.
-  * **splitBucketPoints** : Array of numerical values that define the bucket boundaries, or _split points_.
-    * If the `splitBucketPoints` array is empty, an exception is thrown.
-    * Any split points that are `NaN` or `NULL` are removed from the `splitBucketPoints` array.
-    * `splitBucketPoints` must be in ascending order, or an exception is thrown.
-    * Duplicates are removed from `splitBucketPoints`.
-  * **bucketNames** : (Optional) Array of names of the buckets defined in `splitBucketPoints`.
-    * If the `bucketNames` array is not provided, buckets are named `bin_NULL`, `bin_1`, `bin_2` … `bin_n`, with `n` being the total number of buckets in `splitBucketPoints`.
-    * If the `bucketNames` array is provided, names must be in the same order as in the `splitBucketPoints` array.
-    * Names for all of the buckets must be provided, including the `NULL` bucket, or an exception is thrown.
-    * If the `bucketNames` array is provided, the first name is the name for the `NULL` bucket.
+* **value** : Numerical expression to be bucketized. If the input value is `NaN` or `NULL`, it is bucketized to the `NULL` bucket.
+* **splitBucketPoints** : Array of numerical values that define the bucket boundaries, or _split points_.
+  * If the `splitBucketPoints` array is empty, an exception is thrown.
+  * Any split points that are `NaN` or `NULL` are removed from the `splitBucketPoints` array.
+  * `splitBucketPoints` must be in ascending order, or an exception is thrown.
+  * Duplicates are removed from `splitBucketPoints`.
+* **bucketNames** : (Optional) Array of names of the buckets defined in `splitBucketPoints`.
+  * If the `bucketNames` array is not provided, buckets are named `bin_NULL`, `bin_1`, `bin_2` … `bin_n`, with `n` being the total number of buckets in `splitBucketPoints`.
+  * If the `bucketNames` array is provided, names must be in the same order as in the `splitBucketPoints` array.
+  * Names for all of the buckets must be provided, including the `NULL` bucket, or an exception is thrown.
+  * If the `bucketNames` array is provided, the first name is the name for the `NULL` bucket.
 
 Example
 
@@ -70,14 +70,14 @@ The function tries to keep every chunk within the `chunkSize` limit, but if a ch
 
 Arguments
 
-  * **text** : The input text to be split. If the input text is `NULL`, it is returned as is.
-  * **chunkSize** : The size of each chunk. If `chunkSize < 0` or `chunkOverlap > chunkSize`, an exception is thrown.
-  * **chunkOverlap** : The number of overlapping characters between chunks. If `chunkOverlap < 0`, an exception is thrown.
-  * **separator** : The separator used for splitting.
-  * **isSeparatorRegex** : Whether the separator is a regex pattern.
-  * **trimWhitespace** : (Optional) Whether to trim whitespace from chunks. The default is `TRUE`.
-  * **keepSeparator** : (Optional) Whether to keep the separator in the chunks. The default is `FALSE`.
-  * **separatorPosition** : (Optional) The position of the separator. Valid values are `START` or `END`. The default is `START`. `START` means place the separator at the start of the following chunk, and `END` means place the separator at the end of the previous chunk.
+* **text** : The input text to be split. If the input text is `NULL`, it is returned as is.
+* **chunkSize** : The size of each chunk. If `chunkSize < 0` or `chunkOverlap > chunkSize`, an exception is thrown.
+* **chunkOverlap** : The number of overlapping characters between chunks. If `chunkOverlap < 0`, an exception is thrown.
+* **separator** : The separator used for splitting.
+* **isSeparatorRegex** : Whether the separator is a regex pattern.
+* **trimWhitespace** : (Optional) Whether to trim whitespace from chunks. The default is `TRUE`.
+* **keepSeparator** : (Optional) Whether to keep the separator in the chunks. The default is `FALSE`.
+* **separatorPosition** : (Optional) The position of the separator. Valid values are `START` or `END`. The default is `START`. `START` means place the separator at the start of the following chunk, and `END` means place the separator at the end of the previous chunk.
 
 Example
 

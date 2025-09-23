@@ -19,10 +19,10 @@ The Query Profiler is a dynamic, real-time visual dashboard that provides insigh
 
 Key features of the Query Profiler include:
 
-  * **Monitor in real time:** Track the live performance of your Flink SQL statements, enabling you to react quickly to emerging issues.
-  * **View detailed metrics:** The profiler provides a breakdown of performance metrics at various levels, including statement, task, operator, and partition levels, which helps you understand how different components of a Flink SQL job are performing.
-  * **Visualize data flow:** The profiler visualizes data flow as a job graph, showing how data is processed through different tasks and operators. This helps you identify operators experiencing high latency, large amounts of state, or workload imbalances.
-  * **Reduce manual analysis:** By offering immediate visibility into performance data, the profiler reduces the need for extensive manual logging and analysis, which can consume significant developer time. This enables you to focus on optimizing your queries and improving performance.
+* **Monitor in real time:** Track the live performance of your Flink SQL statements, enabling you to react quickly to emerging issues.
+* **View detailed metrics:** The profiler provides a breakdown of performance metrics at various levels, including statement, task, operator, and partition levels, which helps you understand how different components of a Flink SQL job are performing.
+* **Visualize data flow:** The profiler visualizes data flow as a job graph, showing how data is processed through different tasks and operators. This helps you identify operators experiencing high latency, large amounts of state, or workload imbalances.
+* **Reduce manual analysis:** By offering immediate visibility into performance data, the profiler reduces the need for extensive manual logging and analysis, which can consume significant developer time. This enables you to focus on optimizing your queries and improving performance.
 
 The Query Profiler helps you manage the complexities of stream processing applications and optimize query performance in real time.
 

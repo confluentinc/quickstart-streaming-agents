@@ -48,16 +48,16 @@ Although TIMESTAMP and TIMESTAMP_LTZ are similarly named, they represent differe
 
 TIMESTAMP_LTZ
 
-  * TIMESTAMP_LTZ in SQL is similar to the `Instant` class in Java.
-  * TIMESTAMP_LTZ represents a _moment_ , or a specific point in the UTC timeline.
-  * TIMESTAMP_LTZ stores time as a UTC integer, which can be converted dynamically to every other timezone.
-  * When printing or casting TIMESTAMP_LTZ as a character string, the `sql.local-time-zone` setting is considered.
+* TIMESTAMP_LTZ in SQL is similar to the `Instant` class in Java.
+* TIMESTAMP_LTZ represents a _moment_ , or a specific point in the UTC timeline.
+* TIMESTAMP_LTZ stores time as a UTC integer, which can be converted dynamically to every other timezone.
+* When printing or casting TIMESTAMP_LTZ as a character string, the `sql.local-time-zone` setting is considered.
 
 TIMESTAMP
 
-  * TIMESTAMP in SQL is similar to `LocalDateTime` in Java.
-  * TIMESTAMP has no time zone or offset from UTC, so it can’t represent a moment.
-  * TIMESTAMP stores time as character string, not related to any timezone.
+* TIMESTAMP in SQL is similar to `LocalDateTime` in Java.
+* TIMESTAMP has no time zone or offset from UTC, so it can’t represent a moment.
+* TIMESTAMP stores time as character string, not related to any timezone.
 
 ### TIMESTAMP WITH TIME ZONE¶
 

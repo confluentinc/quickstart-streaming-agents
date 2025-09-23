@@ -69,9 +69,9 @@ SHOW CREATE TABLE returns:
 
 Properties
 
-  * Key and value formats are raw (binary format) with BYTES
+* Key and value formats are raw (binary format) with BYTES
 
-  * Following Kafka message semantics, both key and value support NULL as well, so the following statement is supported:
+* Following Kafka message semantics, both key and value support NULL as well, so the following statement is supported:
 
         INSERT INTO t_raw (key, val) SELECT CAST(NULL AS BYTES), CAST(NULL AS BYTES);
 
@@ -111,9 +111,9 @@ SHOW CREATE TABLE returns:
 
 Properties
 
-  * Key format is raw (binary format) with BYTES
+* Key format is raw (binary format) with BYTES
 
-  * Following Kafka message semantics, key supports NULL as well. So this is possible: so the following statement is supported:
+* Following Kafka message semantics, key supports NULL as well. So this is possible: so the following statement is supported:
 
         INSERT INTO t_raw_key SELECT CAST(NULL AS BYTES), 12, 'Bob';
 
@@ -155,8 +155,8 @@ SHOW CREATE TABLE returns:
 
 Properties
 
-  * Schema Registry defines column data type INT NOT NULL.
-  * The column name `key` is used as a default, because Schema Registry doesn’t provide a column name.
+* Schema Registry defines column data type INT NOT NULL.
+* The column name `key` is used as a default, because Schema Registry doesn’t provide a column name.
 
 #### Overlapping names in key/value, no key in Schema Registry¶
 

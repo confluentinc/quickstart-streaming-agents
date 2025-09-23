@@ -9,8 +9,8 @@ total_chunks: 6
 
 Related functions
 
-  * CURRENT_WATERMARK
-  * [Watermark clause](../statements/create-table.html#flink-sql-watermark-clause)
+* CURRENT_WATERMARK
+* [Watermark clause](../statements/create-table.html#flink-sql-watermark-clause)
 
 ### TIME¶
 
@@ -101,8 +101,8 @@ The first version of the `TO_TIMESTAMP_LTZ` function converts Unix epoch seconds
 
 These are the valid precision values:
 
-  * **0** , which represents `TO_TIMESTAMP_LTZ(epoch_seconds, 0)`
-  * **3** , which represents `TO_TIMESTAMP_LTZ(epoch_milliseconds, 3)`
+* **0** , which represents `TO_TIMESTAMP_LTZ(epoch_seconds, 0)`
+* **3** , which represents `TO_TIMESTAMP_LTZ(epoch_milliseconds, 3)`
 
 If no precision is provided, the default precision is 3.
 
@@ -138,12 +138,12 @@ Returns the sum of `timepoint` and the `interval` number of time units specified
 
 The unit for the interval is given by the first argument, which must be one of the following values:
 
-  * DAY
-  * HOUR
-  * MINUTE
-  * MONTH
-  * SECOND
-  * YEAR
+* DAY
+* HOUR
+* MINUTE
+* MONTH
+* SECOND
+* YEAR
 
 Example
 
@@ -167,12 +167,12 @@ The `TIMESTAMPDIFF` function returns the (signed) number of `timepointunit` betw
 
 The unit for the interval is given by the first argument, which must be one of the following values:
 
-  * DAY
-  * HOUR
-  * MINUTE
-  * MONTH
-  * SECOND
-  * YEAR
+* DAY
+* HOUR
+* MINUTE
+* MONTH
+* SECOND
+* YEAR
 
 Example
 

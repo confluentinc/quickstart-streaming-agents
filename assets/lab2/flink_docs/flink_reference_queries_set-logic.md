@@ -9,11 +9,11 @@ scraped_date: 2025-09-05T13:50:08.347076
 
 Confluent Cloud for Apache Flink® enables set logic operations on tables in SQL statements.
 
-  * EXCEPT
-  * EXISTS
-  * IN
-  * INTERSECT
-  * UNION
+* EXCEPT
+* EXISTS
+* IN
+* INTERSECT
+* UNION
 
 ## Example data¶
 
@@ -30,8 +30,8 @@ The following examples use these tables to show how the different logical operat
 
 `EXCEPT` and `EXCEPT ALL` return the rows that are found in one table but not the other.
 
-  * `EXCEPT` returns only distinct rows.
-  * `EXCEPT ALL` doesn’t remove duplicates from the result rows.
+* `EXCEPT` returns only distinct rows.
+* `EXCEPT ALL` doesn’t remove duplicates from the result rows.
 
 The following code example shows output from the `EXCEPT` function on tables `t1` and `t2`.
 
@@ -83,8 +83,8 @@ The optimizer rewrites the IN condition into a join and group operation. For str
 
 `INTERSECT` and `INTERSECT ALL` return the rows that are found in both tables.
 
-  * `INTERSECT` returns only distinct rows.
-  * `INTERSECT ALL` doesn’t remove duplicates from the result rows.
+* `INTERSECT` returns only distinct rows.
+* `INTERSECT ALL` doesn’t remove duplicates from the result rows.
 
 The following code example shows output from the `INTERSECT` function on tables `t1` and `t2`.
 
@@ -111,8 +111,8 @@ Your output should resemble:
 
 `UNION` and `UNION ALL` return the rows that are found in either table.
 
-  * `UNION` returns only distinct rows.
-  * `UNION ALL` doesn’t remove duplicates from the result rows.
+* `UNION` returns only distinct rows.
+* `UNION ALL` doesn’t remove duplicates from the result rows.
 
 The following code example shows output from the `UNION` function on tables `t1` and `t2`.
 

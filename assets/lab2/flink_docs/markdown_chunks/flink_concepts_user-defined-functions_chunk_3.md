@@ -13,12 +13,12 @@ a User Defined Table Function](../how-to-guides/create-udf.html#flink-sql-implem
 
 All UDFs adhere to a few common implementation principles, which are described in the following sections.
 
-  * Function class
-  * Evaluation methods
-  * Type inference
-  * Named parameters
-  * Scalar functions
-  * Table functions
+* Function class
+* Evaluation methods
+* Type inference
+* Named parameters
+* Scalar functions
+* Table functions
 
 The following code example shows how to implement a simple scalar function and how to call it in Flink SQL.
 
@@ -45,8 +45,8 @@ The following example shows how to call the `SubstringFunction` UDF in a Flink S
 
 Your implementation class must extend one of the system-provided base classes.
 
-  * Scalar functions extend the `org.apache.flink.table.functions.ScalarFunction` class.
-  * Table functions extend the `org.apache.flink.table.functions.TableFunction` class.
+* Scalar functions extend the `org.apache.flink.table.functions.ScalarFunction` class.
+* Table functions extend the `org.apache.flink.table.functions.TableFunction` class.
 
 The class must be declared public, not abstract, and must be accessible globally. Non-static inner or anonymous classes are not supported.
 
@@ -58,10 +58,10 @@ The evaluation method is called by code-generated operators during runtime.
 
 Regular JVM method-calling semantics apply, so these implementation options are available:
 
-  * You can implement overloaded methods, like `eval(Integer)` and `eval(LocalDateTime)`.
-  * You can use var-args, like `eval(Integer...)`.
-  * You can use object inheritance, like `eval(Object)` that takes both `LocalDateTime` and `Integer`.
-  * You can use combinations of these, like `eval(Object...)` that takes all kinds of arguments.
+* You can implement overloaded methods, like `eval(Integer)` and `eval(LocalDateTime)`.
+* You can use var-args, like `eval(Integer...)`.
+* You can use object inheritance, like `eval(Object)` that takes both `LocalDateTime` and `Integer`.
+* You can use combinations of these, like `eval(Object...)` that takes all kinds of arguments.
 
 The `ScalarFunction` base class provides a set of optional methods that you can override, `open()`, `close()`, `isDeterministic()`, and `supportsConstantFolding()`. You can use the `open()` method for initialization work and the `close()` method for cleanup work.
 

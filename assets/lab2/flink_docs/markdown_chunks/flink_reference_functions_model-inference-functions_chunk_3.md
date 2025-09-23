@@ -39,10 +39,10 @@ Classification models choose a group to place their inputs in and return one of 
 
 Classification models return these metrics:
 
-  * [Accuracy](https://en.wikipedia.org/wiki/Accuracy_and_precision): Total Fraction of correct predictions across all classes.
-  * [F1 Score](https://en.wikipedia.org/wiki/F1_score): Harmonic mean of precision and recall.
-  * [Precision](https://en.wikipedia.org/wiki/Precision_and_recall): (Class X Correctly Predicted) / (# of Class X Predicted)
-  * [Recall](https://en.wikipedia.org/wiki/Precision_and_recall): (Class X Correctly Predicted) / (# of actual Class X)
+* [Accuracy](https://en.wikipedia.org/wiki/Accuracy_and_precision): Total Fraction of correct predictions across all classes.
+* [F1 Score](https://en.wikipedia.org/wiki/F1_score): Harmonic mean of precision and recall.
+* [Precision](https://en.wikipedia.org/wiki/Precision_and_recall): (Class X Correctly Predicted) / (# of Class X Predicted)
+* [Recall](https://en.wikipedia.org/wiki/Precision_and_recall): (Class X Correctly Predicted) / (# of actual Class X)
 
 #### Clustering¶
 
@@ -50,17 +50,17 @@ Clustering models group the model examples into K groups. Metrics are a measure 
 
 Clustering models return these metrics:
 
-  * [Davies Bouldin Index](https://en.wikipedia.org/wiki/Davies%E2%80%93Bouldin_index): A measure of how separated clusters are and how compact they are.
-  * Intra-Cluster Variance (Mean Squared Distance): Average Squared distance of each training point to the centroid of the cluster it was assigned to.
-  * [Silhouette Score](https://en.wikipedia.org/wiki/Silhouette_\(clustering\)): Compares how similar each point is to its own cluster with how dissimilar it is to other clusters.
+* [Davies Bouldin Index](https://en.wikipedia.org/wiki/Davies%E2%80%93Bouldin_index): A measure of how separated clusters are and how compact they are.
+* Intra-Cluster Variance (Mean Squared Distance): Average Squared distance of each training point to the centroid of the cluster it was assigned to.
+* [Silhouette Score](https://en.wikipedia.org/wiki/Silhouette_\(clustering\)): Compares how similar each point is to its own cluster with how dissimilar it is to other clusters.
 
 #### Embedding¶
 
 Embedding models return these metrics:
 
-  * [Mean Cosine Similarity](https://en.wikipedia.org/wiki/Cosine_similarity): A measure of how similar two vectors are.
-  * [Mean Jaccard Similarity](https://en.wikipedia.org/wiki/Jaccard_index): A measure of how similar two sets are.
-  * [Mean Euclidean Distance](https://en.wikipedia.org/wiki/Euclidean_distance): A measure of how similar two vectors are.
+* [Mean Cosine Similarity](https://en.wikipedia.org/wiki/Cosine_similarity): A measure of how similar two vectors are.
+* [Mean Jaccard Similarity](https://en.wikipedia.org/wiki/Jaccard_index): A measure of how similar two sets are.
+* [Mean Euclidean Distance](https://en.wikipedia.org/wiki/Euclidean_distance): A measure of how similar two vectors are.
 
 #### Regression¶
 
@@ -68,16 +68,16 @@ Regression models predict a continuous output variable based on one or more inpu
 
 Regression models return these metrics:
 
-  * [Mean Absolute Error](https://en.wikipedia.org/wiki/Mean_absolute_error): The average of the absolute differences between the predicted and actual values.
-  * [Mean Squared Error](https://en.wikipedia.org/wiki/Mean_squared_error): The average of the squared differences between the predicted and actual values.
+* [Mean Absolute Error](https://en.wikipedia.org/wiki/Mean_absolute_error): The average of the absolute differences between the predicted and actual values.
+* [Mean Squared Error](https://en.wikipedia.org/wiki/Mean_squared_error): The average of the squared differences between the predicted and actual values.
 
 #### Text generation¶
 
 Text generation models generate text based on a prompt. Text generation models return these metrics:
 
-  * [Mean BLEU](https://en.wikipedia.org/wiki/BLEU): A measure of how similar two texts are.
-  * [Mean ROUGE](https://en.wikipedia.org/wiki/ROUGE_\(metric\)): A measure of how similar two texts are.
-  * [Mean Semantic Similarity](https://en.wikipedia.org/wiki/Semantic_similarity): A measure of how similar two texts are.
+* [Mean BLEU](https://en.wikipedia.org/wiki/BLEU): A measure of how similar two texts are.
+* [Mean ROUGE](https://en.wikipedia.org/wiki/ROUGE_\(metric\)): A measure of how similar two texts are.
+* [Mean Semantic Similarity](https://en.wikipedia.org/wiki/Semantic_similarity): A measure of how similar two texts are.
 
 #### Example metrics¶
 

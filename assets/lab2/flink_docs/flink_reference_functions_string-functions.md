@@ -56,8 +56,8 @@ Examples
 
 Related functions
 
-  * CONCAT
-  * CONCAT_WS
+* CONCAT
+* CONCAT_WS
 
 ## BTRIM¶
 
@@ -69,8 +69,8 @@ Syntax
 
 Arguments
 
-  * `str`: A source STRING expression.
-  * `trimStr`: An optional STRING expression that has characters to be trimmed. The default is the space character.
+* `str`: A source STRING expression.
+* `trimStr`: An optional STRING expression that has characters to be trimmed. The default is the space character.
 
 Returns
     A trimmed STRING.
@@ -89,9 +89,9 @@ Examples
 
 Related functions
 
-  * LTRIM
-  * RTRIM
-  * TRIM
+* LTRIM
+* RTRIM
+* TRIM
 
 ## CHARACTER_LENGTH¶
 
@@ -151,8 +151,8 @@ Example
 
 Related functions
 
-  * string1 || string2
-  * CONCAT_WS
+* string1 || string2
+* CONCAT_WS
 
 ## CONCAT_WS¶
 
@@ -177,8 +177,8 @@ Example
 
 Related functions
 
-  * string1 || string2
-  * CONCAT
+* string1 || string2
+* CONCAT
 
 ## DECODE¶
 
@@ -194,16 +194,16 @@ The `DECODE` function decodes the binary argument into a string using the specif
 
 These are the supported character set strings:
 
-  * ‘ISO-8859-1’
-  * ‘US-ASCII’
-  * ‘UTF-8’
-  * ‘UTF-16BE’
-  * ‘UTF-16LE’
-  * ‘UTF-16’
+* ‘ISO-8859-1’
+* ‘US-ASCII’
+* ‘UTF-8’
+* ‘UTF-16BE’
+* ‘UTF-16LE’
+* ‘UTF-16’
 
 Related function
 
-  * ENCODE
+* ENCODE
 
 ## ELT¶
 
@@ -215,8 +215,8 @@ Syntax
 
 Arguments
 
-  * `index`: The 1-based index of the expression to get. `index` must be an integer between 1 and the number of expressions.
-  * `expr`: An expression that resolves to CHAR, VARCHAR, BINARY, or VARBINARY.
+* `index`: The 1-based index of the expression to get. `index` must be an integer between 1 and the number of expressions.
+* `expr`: An expression that resolves to CHAR, VARCHAR, BINARY, or VARBINARY.
 
 Returns
 
@@ -245,16 +245,16 @@ The `ENCODE` function encodes `string1` into a BINARY using the specified `strin
 
 These are the supported character set strings:
 
-  * ‘ISO-8859-1’
-  * ‘US-ASCII’
-  * ‘UTF-8’
-  * ‘UTF-16BE’
-  * ‘UTF-16LE’
-  * ‘UTF-16’
+* ‘ISO-8859-1’
+* ‘US-ASCII’
+* ‘UTF-8’
+* ‘UTF-16BE’
+* ‘UTF-16LE’
+* ‘UTF-16’
 
 Related function
 
-  * DECODE
+* DECODE
 
 ## FROM_BASE64¶
 
@@ -273,7 +273,7 @@ Example
 
 Related function
 
-  * TO_BASE64
+* TO_BASE64
 
 ## INITCAP¶
 
@@ -296,8 +296,8 @@ Example
 
 Related functions
 
-  * LOWER
-  * UPPER
+* LOWER
+* UPPER
 
 ## INSTR¶
 
@@ -320,7 +320,7 @@ Example
 
 Related function
 
-  * LOCATE
+* LOCATE
 
 ## LEFT¶
 
@@ -339,7 +339,7 @@ Example
 
 Related function
 
-  * RIGHT
+* RIGHT
 
 ## LOCATE¶
 
@@ -377,8 +377,8 @@ Example
 
 Related functions
 
-  * INITCAP
-  * UPPER
+* INITCAP
+* UPPER
 
 ## LPAD¶
 
@@ -427,9 +427,9 @@ Example
 
 Related functions
 
-  * BTRIM
-  * RTRIM
-  * TRIM
+* BTRIM
+* RTRIM
+* TRIM
 
 ## OVERLAY¶
 
@@ -455,9 +455,9 @@ Examples
 
 Related functions
 
-  * REGEXP_REPLACE
-  * REPLACE
-  * TRANSLATE
+* REGEXP_REPLACE
+* REPLACE
+* TRANSLATE
 
 ## PARSE_URL¶
 
@@ -477,14 +477,14 @@ Returns NULL if `string1` or `string2` is NULL.
 
 These are the valid values for `string2`:
 
-  * ‘AUTHORITY’
-  * ‘FILE’
-  * ‘HOST’
-  * ‘PATH’
-  * ‘PROTOCOL’
-  * ‘QUERY’
-  * ‘REF’
-  * ‘USERINFO’
+* ‘AUTHORITY’
+* ‘FILE’
+* ‘HOST’
+* ‘PATH’
+* ‘PROTOCOL’
+* ‘QUERY’
+* ‘REF’
+* ‘USERINFO’
 
 Example
 
@@ -572,9 +572,9 @@ Example
 
 Related functions
 
-  * OVERLAY
-  * REPLACE
-  * TRANSLATE
+* OVERLAY
+* REPLACE
+* TRANSLATE
 
 ## REPEAT¶
 
@@ -611,9 +611,9 @@ Examples
 
 Related functions
 
-  * OVERLAY
-  * REGEXP_REPLACE
-  * TRANSLATE
+* OVERLAY
+* REGEXP_REPLACE
+* TRANSLATE
 
 ## REVERSE¶
 
@@ -647,7 +647,7 @@ Example
 
 Related function
 
-  * LEFT
+* LEFT
 
 ## RPAD¶
 
@@ -675,7 +675,7 @@ Examples
 
 Related function
 
-  * LPAD
+* LPAD
 
 ## RTRIM¶
 
@@ -698,9 +698,9 @@ Example
 
 Related functions
 
-  * BTRIM
-  * LTRIM
-  * TRIM
+* BTRIM
+* LTRIM
+* TRIM
 
 ## SPLIT_INDEX¶
 
@@ -780,7 +780,7 @@ Example
 
 Related function
 
-  * FROM_BASE64
+* FROM_BASE64
 
 ## TRANSLATE¶
 
@@ -792,9 +792,9 @@ Syntax
 
 Arguments
 
-  * `expr`: A source STRING expression.
-  * `from`: A STRING expression that specifies a set of characters to be replaced.
-  * `to`: A STRING expression that specifies a corresponding set of replacement characters.
+* `expr`: A source STRING expression.
+* `from`: A STRING expression that specifies a set of characters to be replaced.
+* `to`: A STRING expression that specifies a corresponding set of replacement characters.
 
 Returns
     A STRING that has the characters of `expr` replaced with the characters specified in the `to` string.
@@ -820,9 +820,9 @@ Examples:
 
 Related functions
 
-  * OVERLAY
-  * REGEXP_REPLACE
-  * REPLACE
+* OVERLAY
+* REGEXP_REPLACE
+* REPLACE
 
 ## TRIM¶
 
@@ -848,9 +848,9 @@ Examples
 
 Related functions
 
-  * BTRIM
-  * LTRIM
-  * RTRIM
+* BTRIM
+* LTRIM
+* RTRIM
 
 ## UPPER¶
 
@@ -911,15 +911,15 @@ Example
 
 ## Other built-in functions¶
 
-  * [Aggregate Functions](aggregate-functions.html#flink-sql-aggregate-functions)
-  * [Collection Functions](collection-functions.html#flink-sql-collection-functions)
-  * [Comparison Functions](comparison-functions.html#flink-sql-comparison-functions)
-  * [Conditional Functions](conditional-functions.html#flink-sql-conditional-functions)
-  * [Datetime Functions](datetime-functions.html#flink-sql-datetime-functions)
-  * [Hash Functions](hash-functions.html#flink-sql-hash-functions)
-  * [JSON Functions](json-functions.html#flink-sql-json-functions)
-  * [ML Preprocessing Functions](ml-preprocessing-functions.html#flink-sql-ml-preprocessing-functions)
-  * [Model Inference Functions](model-inference-functions.html#flink-sql-model-inference-functions)
-  * [Numeric Functions](numeric-functions.html#flink-sql-numeric-functions)
-  * String Functions
-  * [Table API Functions](table-api-functions.html#flink-table-api-functions)
+* [Aggregate Functions](aggregate-functions.html#flink-sql-aggregate-functions)
+* [Collection Functions](collection-functions.html#flink-sql-collection-functions)
+* [Comparison Functions](comparison-functions.html#flink-sql-comparison-functions)
+* [Conditional Functions](conditional-functions.html#flink-sql-conditional-functions)
+* [Datetime Functions](datetime-functions.html#flink-sql-datetime-functions)
+* [Hash Functions](hash-functions.html#flink-sql-hash-functions)
+* [JSON Functions](json-functions.html#flink-sql-json-functions)
+* [ML Preprocessing Functions](ml-preprocessing-functions.html#flink-sql-ml-preprocessing-functions)
+* [Model Inference Functions](model-inference-functions.html#flink-sql-model-inference-functions)
+* [Numeric Functions](numeric-functions.html#flink-sql-numeric-functions)
+* String Functions
+* [Table API Functions](table-api-functions.html#flink-table-api-functions)

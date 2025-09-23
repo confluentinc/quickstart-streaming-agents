@@ -33,7 +33,7 @@ Your output should resemble:
 
 Delete a compute pool in your environment by sending a DELETE request to the [Compute Pools endpoint](/cloud/current/api.html#tag/Compute-Pools-\(fcpmv2\)/operation/deleteFcpmV2ComputePool).
 
-  * This request uses your Cloud API key instead of the Flink API key.
+* This request uses your Cloud API key instead of the Flink API key.
 
 Deleting a compute pool requires the following inputs:
 

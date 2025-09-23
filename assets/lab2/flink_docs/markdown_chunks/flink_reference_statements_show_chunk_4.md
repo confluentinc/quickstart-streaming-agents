@@ -23,9 +23,9 @@ CREATE TABLE `t_raw_disjoint` (
 
 Properties
 
-  * Schema Registry value defines columns INT NOT NULL and `key STRING`
-  * The column name `key BYTES` is used as a default if no key is in Schema Registry
-  * Because `key` would collide with value column, `key_` prefix is added
+* Schema Registry value defines columns INT NOT NULL and `key STRING`
+* The column name `key BYTES` is used as a default if no key is in Schema Registry
+* Because `key` would collide with value column, `key_` prefix is added
 
 #### Record key and record value in Schema Registry¶
 
@@ -73,8 +73,8 @@ SHOW CREATE TABLE returns:
 
 Properties
 
-  * Schema Registry defines columns for both key and value.
-  * The column names of key and value are disjoint sets and don’t overlap.
+* Schema Registry defines columns for both key and value.
+* The column names of key and value are disjoint sets and don’t overlap.
 
 #### Record key and record value with overlap in Schema Registry¶
 
@@ -126,9 +126,9 @@ SHOW CREATE TABLE returns:
 
 Properties
 
-  * Schema Registry defines columns for both key and value.
-  * The column names of key and value overlap on `uid`.
-  * `'value.fields-include' = 'all'` is set to exclude the key because it is fully contained in the value.
+* Schema Registry defines columns for both key and value.
+* The column names of key and value overlap on `uid`.
+* `'value.fields-include' = 'all'` is set to exclude the key because it is fully contained in the value.
 
 ### Inferred tables schema evolution¶
 
@@ -182,11 +182,11 @@ SHOW CREATE TABLE shows:
 
 Properties
 
-  * Schema Registry says there is a timestamp physical column, but Flink says there is timestamp metadata column.
+* Schema Registry says there is a timestamp physical column, but Flink says there is timestamp metadata column.
 
-  * In this case, metadata columns and computed columns have precedence, so Flink removes the physical column from the schema.
+* In this case, metadata columns and computed columns have precedence, so Flink removes the physical column from the schema.
 
-  * Given that Flink advertises FULL_TRANSITIVE mode, queries still work, and the physical column is set to NULL in the payload:
+* Given that Flink advertises FULL_TRANSITIVE mode, queries still work, and the physical column is set to NULL in the payload:
 
         INSERT INTO t_metadata_overlap
           SELECT CAST(NULL AS BYTES), 42, TO_TIMESTAMP_LTZ(0, 3);
@@ -214,4 +214,4 @@ SHOW CREATE TABLE shows:
 
 Properties
 
-  * Now, both physical and metadata column show up and can be accessed both for reading and writing.
+* Now, both physical and metadata column show up and can be accessed both for reading and writing.

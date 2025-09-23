@@ -86,7 +86,7 @@ This pattern works by:
 
 You can adapt this pattern by:
 
-  * Adding more streams to the [UNION ALL](../reference/queries/set-logic.html#flink-sql-set-logic-union)
-  * Changing the common identifier field in the [PARTITION BY](../reference/queries/match_recognize.html#flink-sql-pattern-recognition-partitioning) clause
-  * Modifying the selected fields based on your needs
-  * Using a custom defined watermark strategy
+* Adding more streams to the [UNION ALL](../reference/queries/set-logic.html#flink-sql-set-logic-union)
+* Changing the common identifier field in the [PARTITION BY](../reference/queries/match_recognize.html#flink-sql-pattern-recognition-partitioning) clause
+* Modifying the selected fields based on your needs
+* Using a custom defined watermark strategy

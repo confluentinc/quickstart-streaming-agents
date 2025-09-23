@@ -15,9 +15,9 @@ The statement CFU metrics give you insights into the resource consumed by indivi
 
 Specifically, the statement CFU metrics enable you to:
 
-  * **Monitor individual statement usage** : Accurately measure the number of CFUs each statement consumes over time. This metric is available for all types of statements submitted in Confluent Cloud for Apache Flink.
-  * **Track resource distribution** : Understand how the resources in a compute pool are being distributed among the statements running in the compute pool.
-  * **Identify high-consumption statements** : Pinpoint which statements are consuming the most CFUs, enabling you to optimize the statement’s Flink SQL code or adjust the resources available to this statement.
+* **Monitor individual statement usage** : Accurately measure the number of CFUs each statement consumes over time. This metric is available for all types of statements submitted in Confluent Cloud for Apache Flink.
+* **Track resource distribution** : Understand how the resources in a compute pool are being distributed among the statements running in the compute pool.
+* **Identify high-consumption statements** : Pinpoint which statements are consuming the most CFUs, enabling you to optimize the statement’s Flink SQL code or adjust the resources available to this statement.
 
 By monitoring statement-level CFU consumption, you can make informed decisions about your Flink application’s cost efficiency and resource utilization.
 
@@ -27,8 +27,8 @@ You can’t set minimum or maximum CFU limits on individual statements, but maxi
 
 The statement CFU consumption metrics are available to view in the statements summary table and in the statement side panel.
 
-  * **Statements summary table** : Get an overview of CFU consumption for all your statements directly within the statements summary table. This provides a quick way to identify the most resource intensive statements.
-  * **Statement side panel** : For a deeper dive into a statement’s resource usage, open the statement side panel. Here, you’ll find the current CFU consumption and a time-series chart that visualizes how the statement’s CFU consumption has evolved over time.
+* **Statements summary table** : Get an overview of CFU consumption for all your statements directly within the statements summary table. This provides a quick way to identify the most resource intensive statements.
+* **Statement side panel** : For a deeper dive into a statement’s resource usage, open the statement side panel. Here, you’ll find the current CFU consumption and a time-series chart that visualizes how the statement’s CFU consumption has evolved over time.
 
 ## How UDF resource consumption is represented¶
 

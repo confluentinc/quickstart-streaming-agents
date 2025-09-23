@@ -35,9 +35,9 @@ For an inferred table with no registered key or value schemas, SHOW CREATE TABLE
 
 Properties
 
-  * Key and value formats are raw (binary format) with BYTES.
+* Key and value formats are raw (binary format) with BYTES.
 
-  * Following Kafka message semantics, both key and value support NULL as well, so the following code is valid:
+* Following Kafka message semantics, both key and value support NULL as well, so the following code is valid:
 
         INSERT INTO t_raw (key, val) SELECT CAST(NULL AS BYTES), CAST(NULL AS BYTES);
 
@@ -77,9 +77,9 @@ SHOW CREATE TABLE returns the following output:
 
 Properties
 
-  * The key format is raw (binary format) with BYTES.
+* The key format is raw (binary format) with BYTES.
 
-  * Following Kafka message semantics, the key supports NULL as well, so the following code is valid:
+* Following Kafka message semantics, the key supports NULL as well, so the following code is valid:
 
         INSERT INTO t_raw_key SELECT CAST(NULL AS BYTES), 12, 'Bob';
 
@@ -123,8 +123,8 @@ SHOW CREATE TABLE returns the following output:
 
 Properties
 
-  * Schema Registry defines the column data type as INT NOT NULL.
-  * The column name, `key`, is used as the default, because Schema Registry doesn’t provide a column name.
+* Schema Registry defines the column data type as INT NOT NULL.
+* The column name, `key`, is used as the default, because Schema Registry doesn’t provide a column name.
 
 ### Overlapping names in key/value, no key in Schema Registry¶
 
@@ -163,9 +163,9 @@ SHOW CREATE TABLE returns the following output:
 
 Properties
 
-  * The Schema Registry value schema defines columns `i INT NOT NULL` and `key STRING`.
-  * The column name `key BYTES` is used as the default if no key is in Schema Registry.
-  * Because `key` would collide with value schema column, the `key_` prefix is added.
+* The Schema Registry value schema defines columns `i INT NOT NULL` and `key STRING`.
+* The column name `key BYTES` is used as the default if no key is in Schema Registry.
+* Because `key` would collide with value schema column, the `key_` prefix is added.
 
 ### Record key and record value in Schema Registry¶
 

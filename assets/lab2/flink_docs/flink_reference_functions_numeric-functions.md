@@ -409,9 +409,9 @@ Syntax
 
 Arguments
 
-  * `expr`: A NUMERIC expression.
-  * `percentage`: A NUMERIC expression between 0 and 1, or an ARRAY of NUMERIC expressions, each between 0 and 1.
-  * `frequency`: An optional integral number greater than 0 that describes the number of times `expr` must be counted. The default is 1.
+* `expr`: A NUMERIC expression.
+* `percentage`: A NUMERIC expression between 0 and 1, or an ARRAY of NUMERIC expressions, each between 0 and 1.
+* `frequency`: An optional integral number greater than 0 that describes the number of times `expr` must be counted. The default is 1.
 
 Returns
     DOUBLE if `percentage` is numeric, or an ARRAY of DOUBLE if `percentage` is an ARRAY.
@@ -755,8 +755,8 @@ Examples
 
 Related functions
 
-  * [DECODE](string-functions.html#flink-sql-decode-function)
-  * HEX
+* [DECODE](string-functions.html#flink-sql-decode-function)
+* HEX
 
 ## UUID¶
 
@@ -780,15 +780,15 @@ Examples
 
 ## Other built-in functions¶
 
-  * [Aggregate Functions](aggregate-functions.html#flink-sql-aggregate-functions)
-  * [Collection Functions](collection-functions.html#flink-sql-collection-functions)
-  * [Comparison Functions](comparison-functions.html#flink-sql-comparison-functions)
-  * [Conditional Functions](conditional-functions.html#flink-sql-conditional-functions)
-  * [Datetime Functions](datetime-functions.html#flink-sql-datetime-functions)
-  * [Hash Functions](hash-functions.html#flink-sql-hash-functions)
-  * [JSON Functions](json-functions.html#flink-sql-json-functions)
-  * [ML Preprocessing Functions](ml-preprocessing-functions.html#flink-sql-ml-preprocessing-functions)
-  * [Model Inference Functions](model-inference-functions.html#flink-sql-model-inference-functions)
-  * Numeric Functions
-  * [String Functions](string-functions.html#flink-sql-string-functions)
-  * [Table API Functions](table-api-functions.html#flink-table-api-functions)
+* [Aggregate Functions](aggregate-functions.html#flink-sql-aggregate-functions)
+* [Collection Functions](collection-functions.html#flink-sql-collection-functions)
+* [Comparison Functions](comparison-functions.html#flink-sql-comparison-functions)
+* [Conditional Functions](conditional-functions.html#flink-sql-conditional-functions)
+* [Datetime Functions](datetime-functions.html#flink-sql-datetime-functions)
+* [Hash Functions](hash-functions.html#flink-sql-hash-functions)
+* [JSON Functions](json-functions.html#flink-sql-json-functions)
+* [ML Preprocessing Functions](ml-preprocessing-functions.html#flink-sql-ml-preprocessing-functions)
+* [Model Inference Functions](model-inference-functions.html#flink-sql-model-inference-functions)
+* Numeric Functions
+* [String Functions](string-functions.html#flink-sql-string-functions)
+* [Table API Functions](table-api-functions.html#flink-table-api-functions)

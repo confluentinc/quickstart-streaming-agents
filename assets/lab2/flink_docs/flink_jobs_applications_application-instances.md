@@ -11,10 +11,10 @@ Flink application instances enable you to track the details of your deployed Fli
 
 Flink application instances enable you to know more about your running Flink applications. You can:
 
-  * Understand what the effective specification of a Flink application looks like, after the defaults from the Environment have been applied.
-  * Understand what changes have been made to a Flink application over time
-  * Correlate Flink applications with centralized logging systems. This enables you to determine the particular instance that produced a log event.
-  * Use Flink applications for running finite streaming workloads (also called batch processing) on Confluent Platform for Apache Flink.
+* Understand what the effective specification of a Flink application looks like, after the defaults from the Environment have been applied.
+* Understand what changes have been made to a Flink application over time
+* Correlate Flink applications with centralized logging systems. This enables you to determine the particular instance that produced a log event.
+* Use Flink applications for running finite streaming workloads (also called batch processing) on Confluent Platform for Apache Flink.
 
 An application instance also tracks the status of the underlying Flink job.
 
@@ -36,9 +36,9 @@ You could revert the Flink application to its previous state, making the upgrade
 
 In summary, the following apply to application instances:
 
-  * A Flink application instance is created for every Flink application spec change.
-  * A Flink application will have at most one physical cluster deployed and have at most one Flink application name in its `FlinkApplication.status.currentDeployedInstanceName` property.
-  * The status field of an application instance (`FlinkApplication.status`) tracks the `status.jobStatus.state` field. This field contains the last observed Flink job status provided by the Flink Kubernetes Operator (FKO) and reports if the last state of an instance was FAILED or FINISHED. This is particularly useful for tracking finite / batch jobs.
+* A Flink application instance is created for every Flink application spec change.
+* A Flink application will have at most one physical cluster deployed and have at most one Flink application name in its `FlinkApplication.status.currentDeployedInstanceName` property.
+* The status field of an application instance (`FlinkApplication.status`) tracks the `status.jobStatus.state` field. This field contains the last observed Flink job status provided by the Flink Kubernetes Operator (FKO) and reports if the last state of an instance was FAILED or FINISHED. This is particularly useful for tracking finite / batch jobs.
 
 ## Instances and logging¶
 

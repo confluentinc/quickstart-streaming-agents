@@ -13,8 +13,8 @@ This topic walks you through configuring your project for packaging with Conflue
 
 ## Prerequisites¶
 
-  * Confluent Manager for Apache Flink installed using Helm. For installation instructions, see [Install Confluent Manager for Apache Flink with Helm](../../installation/helm.html#install-cmf-helm).
-  * A Flink project configured with Maven. For more information, see [configuration overview](https://nightlies.apache.org/flink/flink-docs-release-1.19/docs/dev/configuration/overview/) and [Maven configuration](https://nightlies.apache.org/flink/flink-docs-release-1.19/docs/dev/configuration/maven/).
+* Confluent Manager for Apache Flink installed using Helm. For installation instructions, see [Install Confluent Manager for Apache Flink with Helm](../../installation/helm.html#install-cmf-helm).
+* A Flink project configured with Maven. For more information, see [configuration overview](https://nightlies.apache.org/flink/flink-docs-release-1.19/docs/dev/configuration/overview/) and [Maven configuration](https://nightlies.apache.org/flink/flink-docs-release-1.19/docs/dev/configuration/maven/).
 
 ## Set up the project configuration¶
 

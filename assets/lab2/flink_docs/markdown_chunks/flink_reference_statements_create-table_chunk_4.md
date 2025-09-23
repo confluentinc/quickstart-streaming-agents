@@ -45,23 +45,23 @@ The watermark generation expression is evaluated by Flink SQL for every record. 
 
 No new watermark is emitted if any of the following conditions apply.
 
-  * The current watermark is null.
-  * The current watermark is identical to the previous watermark.
-  * The value of the returned watermark is smaller than the value of the last emitted watermark.
+* The current watermark is null.
+* The current watermark is identical to the previous watermark.
+* The value of the returned watermark is smaller than the value of the last emitted watermark.
 
 When you use event-time semantics, your tables must contain an event-time attribute and watermarking strategy.
 
 Flink SQL provides these watermark strategies.
 
-  * **Strictly ascending timestamps:** Emit a watermark of the maximum observed timestamp so far. Rows that have a timestamp larger than the max timestamp are not late.
+* **Strictly ascending timestamps:** Emit a watermark of the maximum observed timestamp so far. Rows that have a timestamp larger than the max timestamp are not late.
 
         WATERMARK FOR rowtime_column AS rowtime_column
 
-  * **Ascending timestamps:** Emit a watermark of the maximum observed timestamp so far, minus _1_. Rows that have a timestamp larger than or equal to the max timestamp are not late.
+* **Ascending timestamps:** Emit a watermark of the maximum observed timestamp so far, minus _1_. Rows that have a timestamp larger than or equal to the max timestamp are not late.
 
         WATERMARK FOR rowtime_column AS rowtime_column - INTERVAL '0.001' SECOND
 
-  * **Bounded out-of-orderness timestamps:** Emit watermarks which are the maximum observed timestamp minus the specified delay.
+* **Bounded out-of-orderness timestamps:** Emit watermarks which are the maximum observed timestamp minus the specified delay.
 
         WATERMARK FOR rowtime_column AS rowtime_column - INTERVAL 'string' timeUnit
 

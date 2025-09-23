@@ -26,13 +26,13 @@ The local timezone defines the current session timezone id. You can configure th
 
 The return values of the following datetime functions depend on the configured timezone.
 
-  * [LOCALTIME](functions/datetime-functions.html#flink-sql-localtime-function)
-  * [LOCALTIMESTAMP](functions/datetime-functions.html#flink-sql-localtimestamp-function)
-  * [CURRENT_DATE](functions/datetime-functions.html#flink-sql-current-date-function)
-  * [CURRENT_TIME](functions/datetime-functions.html#flink-sql-current-time-function)
-  * [CURRENT_TIMESTAMP](functions/datetime-functions.html#flink-sql-current-timestamp-function)
-  * [CURRENT_ROW_TIMESTAMP](functions/datetime-functions.html#flink-sql-current-row-timestamp-function)
-  * [NOW](functions/datetime-functions.html#flink-sql-now-function)
+* [LOCALTIME](functions/datetime-functions.html#flink-sql-localtime-function)
+* [LOCALTIMESTAMP](functions/datetime-functions.html#flink-sql-localtimestamp-function)
+* [CURRENT_DATE](functions/datetime-functions.html#flink-sql-current-date-function)
+* [CURRENT_TIME](functions/datetime-functions.html#flink-sql-current-time-function)
+* [CURRENT_TIMESTAMP](functions/datetime-functions.html#flink-sql-current-timestamp-function)
+* [CURRENT_ROW_TIMESTAMP](functions/datetime-functions.html#flink-sql-current-row-timestamp-function)
+* [NOW](functions/datetime-functions.html#flink-sql-now-function)
 
 The following example code shows the return types of these datetime functions.
 

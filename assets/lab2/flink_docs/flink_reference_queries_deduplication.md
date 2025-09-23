@@ -25,10 +25,10 @@ Note
 
 This query pattern must be followed exactly, otherwise, the optimizer can’t translate the query.
 
-  * `ROW_NUMBER()`: Assigns an unique, sequential number to each row, starting with one.
-  * `PARTITION BY column1[, column2...]`: Specifies the partition columns by the deduplicate key.
-  * `ORDER BY time_attr [asc|desc]`: Specifies the ordering column, which must be a [time attribute](../../concepts/timely-stream-processing.html#flink-sql-time-attributes). Flink SQL supports the [event time attribute](../../concepts/timely-stream-processing.html#flink-sql-time-attributes-event-time). Processing time is not supported in Confluent Cloud for Apache Flink. Ordering by ASC means keeping the first row, ordering by DESC means keeping the last row.
-  * `WHERE rownum = 1`: The `rownum = 1` is required for Flink SQL to recognize the query is deduplication.
+* `ROW_NUMBER()`: Assigns an unique, sequential number to each row, starting with one.
+* `PARTITION BY column1[, column2...]`: Specifies the partition columns by the deduplicate key.
+* `ORDER BY time_attr [asc|desc]`: Specifies the ordering column, which must be a [time attribute](../../concepts/timely-stream-processing.html#flink-sql-time-attributes). Flink SQL supports the [event time attribute](../../concepts/timely-stream-processing.html#flink-sql-time-attributes-event-time). Processing time is not supported in Confluent Cloud for Apache Flink. Ordering by ASC means keeping the first row, ordering by DESC means keeping the last row.
+* `WHERE rownum = 1`: The `rownum = 1` is required for Flink SQL to recognize the query is deduplication.
 
 ## Description¶
 

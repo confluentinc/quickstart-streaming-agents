@@ -24,10 +24,10 @@ Confluent Cloud for Apache Flink® enables viewing and analyzing the query plans
 
 The EXPLAIN statement provides detailed information about how Flink executes a specified query or INSERT statement. EXPLAIN shows:
 
-  * The optimized physical execution plan
-  * If the [changelog mode](create-table.html#flink-sql-create-table-with-changelog-mode) is not append-only, details about the changelog mode per operator
-  * Upsert keys and primary keys where applicable
-  * Table source and sink details
+* The optimized physical execution plan
+* If the [changelog mode](create-table.html#flink-sql-create-table-with-changelog-mode) is not append-only, details about the changelog mode per operator
+* Upsert keys and primary keys where applicable
+* Table source and sink details
 
 This information is valuable for understanding query performance, optimizing complex queries, and debugging unexpected results.
 
@@ -348,9 +348,9 @@ The physical plan shows how Flink executes your query. Each operation is numbere
 
 Changelog modes describe how operators handle data modifications:
 
-  * **Append:** The operator processes only insert operations. New rows are simply added.
-  * **Upsert:** The operator handles both inserts and updates. It uses an “upsert key” to identify rows. If a row with a given key exists already, the operator updates it; otherwise, it inserts a new row.
-  * **Retract:** The operator handles inserts, updates, and deletes. Updates are typically represented as a retraction (deletion) of the old row followed by an insertion of the new row. Deletes are represented as retractions.
+* **Append:** The operator processes only insert operations. New rows are simply added.
+* **Upsert:** The operator handles both inserts and updates. It uses an “upsert key” to identify rows. If a row with a given key exists already, the operator updates it; otherwise, it inserts a new row.
+* **Retract:** The operator handles inserts, updates, and deletes. Updates are typically represented as a retraction (deletion) of the old row followed by an insertion of the new row. Deletes are represented as retractions.
 
 Operators change changelog modes when different update patterns are needed, such as when moving from streaming reads to aggregations.
 
@@ -358,17 +358,17 @@ Operators change changelog modes when different update patterns are needed, such
 
 The physical details section shows how data moves between operators. Watch for:
 
-  * Exchange operators indicating data redistribution
-  * Changes in upsert keys showing where data must be reshuffled
-  * Operator reuse marked by “(reused)” references
+* Exchange operators indicating data redistribution
+* Changes in upsert keys showing where data must be reshuffled
+* Operator reuse marked by “(reused)” references
 
 ### State size¶
 
 Each operator in the physical plan includes a “State Size” property indicating its memory requirements during execution:
 
-  * LOW: Minimal state maintenance, typically efficient memory usage
-  * MEDIUM: Moderate state requirements, may need attention with high cardinality
-  * HIGH: Significant state maintenance that requires careful management
+* LOW: Minimal state maintenance, typically efficient memory usage
+* MEDIUM: Moderate state requirements, may need attention with high cardinality
+* HIGH: Significant state maintenance that requires careful management
 
 When operators show HIGH state size, you should configure a state TTL to prevent unbounded state growth. Without TTL configuration, these operators can accumulate unlimited state over time, potentially leading to resource exhaustion and the statement ending up in a `DEGRADED` state.
 
@@ -406,8 +406,8 @@ StreamSink
 
 Writes results to a destination. Present in any INSERT or when displaying query results. Supports two modes of operation:
 
-  * Append-only: Each record is treated as a new event, which displays as **State size: Low**.
-  * Upsert-materialize: Maintains state to handle updates/deletes based on key fields. which displays as **State size: High**.
+* Append-only: Each record is treated as a new event, which displays as **State size: Low**.
+* Upsert-materialize: Maintains state to handle updates/deletes based on key fields. which displays as **State size: High**.
 
     INSERT INTO order_summaries
     SELECT status, COUNT(*)
@@ -619,9 +619,9 @@ Executes [pattern-matching operations](../queries/match_recognize.html#flink-sql
 
 Data shuffling impacts performance. When examining EXPLAIN output:
 
-  * Look for exchange operators and upsert key changes.
-  * Consider keeping compatible partitioning keys through your query.
-  * Watch for opportunities to reduce data redistribution.
+* Look for exchange operators and upsert key changes.
+* Consider keeping compatible partitioning keys through your query.
+* Watch for opportunities to reduce data redistribution.
 
 Pay special attention to data skew when designing your queries. If a particular key value appears much more frequently than others, it can lead to uneven processing where a single parallel instance becomes overwhelmed handling that key’s data. Consider strategies like adding additional dimensions to your keys or pre-aggregating hot keys to distribute the workload more evenly.
 
@@ -629,14 +629,14 @@ Pay special attention to data skew when designing your queries. If a particular 
 
 Flink automatically reuses operators when possible. In EXPLAIN output:
 
-  * Look for “(reused)” references showing optimization.
-  * Consider restructuring queries to enable more reuse.
-  * Verify that similar operations share scan results.
+* Look for “(reused)” references showing optimization.
+* Consider restructuring queries to enable more reuse.
+* Verify that similar operations share scan results.
 
 ### Optimizing sink configuration¶
 
 When working with sinks in upsert mode, it’s crucial to align your primary and upsert keys for optimal performance:
 
-  * Whenever possible, configure the primary key to be identical to the upsert key.
-  * Having different primary and upsert keys in upsert mode can lead to significant performance degradation.
-  * If you must use different keys, carefully evaluate the performance impact and consider restructuring your query to align these keys.
+* Whenever possible, configure the primary key to be identical to the upsert key.
+* Having different primary and upsert keys in upsert mode can lead to significant performance degradation.
+* If you must use different keys, carefully evaluate the performance impact and consider restructuring your query to align these keys.

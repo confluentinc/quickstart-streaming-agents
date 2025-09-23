@@ -15,15 +15,15 @@ You must be using Confluent CLI version 4.7.0 or later to use these commands. Co
 
 You can use the Confluent CLI to manage the following CMF resources:
 
-  * [Environments](../configure/environments.html#cmf-environments)
-  * [Applications](../jobs/applications/overview.html#cmf-applications)
+* [Environments](../configure/environments.html#cmf-environments)
+* [Applications](../jobs/applications/overview.html#cmf-applications)
 
 ## Configure the CLI¶
 
 To use the Confluent CLI to manage Flink Applications and Environments, the CLI needs to be connected to the CMF server. There are two ways of configuring the CLI.
 
-  * Setting an environment variable
-  * Using a `--url` flag when you make a call
+* Setting an environment variable
+* Using a `--url` flag when you make a call
 
 Note
 
@@ -39,9 +39,9 @@ Or each time you invoke the CLI, like the following:
 
 The following authentication and authorization parameters are available:
 
-  * Client Key path
-  * Client Certificate path
-  * Certificate Authority path
+* Client Key path
+* Client Certificate path
+* Certificate Authority path
 
 You can set them globally like the following:
 
@@ -68,11 +68,11 @@ You can also see a list of the available options on the [/confluent-cli/current/
 
 Using the Confluent CLI, you can perform these actions:
 
-  * Create a new environment
-  * Update an existing environment
-  * Describe an environment
-  * Delete an environment
-  * List all available environments
+* Create a new environment
+* Update an existing environment
+* Describe an environment
+* Delete an environment
+* List all available environments
 
 ### Create a new environment¶
 
@@ -247,12 +247,12 @@ The default output format for this command is human-readable. You can get the ou
 
 Using the Confluent CLI, you can perform these actions:
 
-  * Create a new application
-  * Update an existing application
-  * Describe an application
-  * Delete an application
-  * List all applications in a given environment
-  * Access the Flink Web UI for the application
+* Create a new application
+* Update an existing application
+* Describe an application
+* Delete an application
+* List all applications in a given environment
+* Access the Flink Web UI for the application
 
 The output format for these commands is either JSON or YAML. Human-readable output is not an option.
 

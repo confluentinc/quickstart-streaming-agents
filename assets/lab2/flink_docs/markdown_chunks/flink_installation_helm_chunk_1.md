@@ -27,6 +27,7 @@ Flink Kubernetes Operator [2] | 1 | N/A | 3 GB RAM | 2
 ---|---
 [2]| These resource requirements are calculated to support the execution of 200 Flink applications.
 ---|---
+
   2. Install the required tools.
 
 This installation guide assumes you have already installed Helm. CMF supports Helm 3 for installation. You should have already configured Helm using the Helm documentation. To verify that your environment is prepared, the following commands should complete without error:

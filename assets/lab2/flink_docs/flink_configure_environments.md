@@ -11,8 +11,8 @@ An Flink environment in Confluent Manager for Apache Flink® (CMF) groups a set 
 
 Flink environments fulfill two main roles:
 
-  * Isolation: [Access control](access-control.html#cmf-access-control) for individual team members is managed at the Environment-level (logical isolation). Flink applications that belong to an Environment are deployed to the same Kubernetes namespace (physical isolation).
-  * Share configuration: Flink configuration at the Environment level has precedence over Flink configuration for individual Flink applications. This can be used to enforce configuration options and avoid redundant configuration. A common use case is setting a common observability configuration, or checkpoint storage destination for all Flink clusters in an environment.
+* Isolation: [Access control](access-control.html#cmf-access-control) for individual team members is managed at the Environment-level (logical isolation). Flink applications that belong to an Environment are deployed to the same Kubernetes namespace (physical isolation).
+* Share configuration: Flink configuration at the Environment level has precedence over Flink configuration for individual Flink applications. This can be used to enforce configuration options and avoid redundant configuration. A common use case is setting a common observability configuration, or checkpoint storage destination for all Flink clusters in an environment.
 
 For example, you might configure `dev` and `prod` environments or regional environments for your organization.
 
@@ -22,9 +22,9 @@ Flink configuration options, such as for the storage location of Flink checkpoin
 
 You can use these tools to create and manage environments:
 
-  * [REST APIs for Confluent Manager for Apache Flink](../clients-api/rest.html#af-rest-api)
-  * [Confluent CLI reference](/confluent-cli/current/command-reference/flink/index.html)
-  * [Confluent for Kubernetes](../clients-api/flink-cfk.html#cmf-cfk)
+* [REST APIs for Confluent Manager for Apache Flink](../clients-api/rest.html#af-rest-api)
+* [Confluent CLI reference](/confluent-cli/current/command-reference/flink/index.html)
+* [Confluent for Kubernetes](../clients-api/flink-cfk.html#cmf-cfk)
 
 ## Isolation between environments¶
 

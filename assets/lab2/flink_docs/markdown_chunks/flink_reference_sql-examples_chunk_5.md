@@ -23,8 +23,8 @@ SHOW CREATE TABLE returns the following output:
 
 Properties
 
-  * Schema Registry defines columns for both key and value.
-  * The column names of key and value are disjoint sets and don’t overlap.
+* Schema Registry defines columns for both key and value.
+* The column names of key and value are disjoint sets and don’t overlap.
 
 ### Record key and record value with overlap in Schema Registry¶
 
@@ -78,10 +78,10 @@ SHOW CREATE TABLE returns the following output:
 
 Properties
 
-  * Schema Registry defines columns for both key and value.
-  * The column names of key and value overlap on `uid`.
-  * `'value.fields-include' = 'all'` is set to exclude the key, because it is fully contained in the value.
-  * Detecting that key is fully contained in the value requires that _both field name and data type match completely, including nullability_ , and _all fields of the key_ are included in the value.
+* Schema Registry defines columns for both key and value.
+* The column names of key and value overlap on `uid`.
+* `'value.fields-include' = 'all'` is set to exclude the key, because it is fully contained in the value.
+* Detecting that key is fully contained in the value requires that _both field name and data type match completely, including nullability_ , and _all fields of the key_ are included in the value.
 
 ### Union types in Schema Registry¶
 
@@ -139,9 +139,9 @@ SHOW CREATE TABLE returns the following output:
 
 Properties
 
-  * NULL and NOT NULL are inferred depending on whether a union contains NULL.
-  * Elements of a union are always NULL, because they need to be set to NULL when a different element is set.
-  * If a record defines a `namespace`, the field is prefixed with it, for example, `org.myorg.avro.User`.
+* NULL and NOT NULL are inferred depending on whether a union contains NULL.
+* Elements of a union are always NULL, because they need to be set to NULL when a different element is set.
+* If a record defines a `namespace`, the field is prefixed with it, for example, `org.myorg.avro.User`.
 
 ### Multi-message protobuf schema in Schema Registry¶
 

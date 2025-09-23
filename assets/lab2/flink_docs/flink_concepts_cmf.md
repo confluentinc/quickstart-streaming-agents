@@ -9,9 +9,9 @@ scraped_date: 2025-09-05T13:48:12.197148
 
 Confluent Manager for Apache Flink® (CMF) is a central management component that enables users to securely manage a fleet of Flink [Applications](../jobs/applications/overview.html#cmf-applications) across multiple [Environments](../configure/environments.html#cmf-environments). CMF provides:
 
-  * Job life-cycle management for Flink jobs.
-  * Integration with Confluent Platform for authentication and authorization (RBAC).
-  * Well-defined REST APIs and command-line interfaces (CLIs).
+* Job life-cycle management for Flink jobs.
+* Integration with Confluent Platform for authentication and authorization (RBAC).
+* Well-defined REST APIs and command-line interfaces (CLIs).
 
 The following image shows the high-level architecture of how CMF fits in.
 

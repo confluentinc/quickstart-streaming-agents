@@ -19,9 +19,9 @@ Confluent Manager for Apache Flink requires its own service principal to authori
 
 All the three following roles have sufficient privileges for the CMF service principal, however, you should choose the role with the least privileges to meet your needs, to interact with CMF. For a full list of RBAC roles, see [Use Predefined RBAC Roles in Confluent Platform](../../security/authorization/rbac/rbac-predefined-roles.html#rbac-predefined-roles).
 
-  * SystemAdmin
-  * UserAdmin
-  * SecurityAdmin
+* SystemAdmin
+* UserAdmin
+* SecurityAdmin
 
 Before enabling the authorization feature for Confluent Manager for Apache Flink you must assign the cluster identifiers for CMF. For more information on the cluster identifiers, see [Cluster identifiers](../configure/access-control.html#af-ac-cluster-id).
 

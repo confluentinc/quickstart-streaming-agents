@@ -57,8 +57,8 @@ To make it possible to use any character in an identifier, you can enclose it in
 
 If you want to use one of the keyword strings as an identifier, enclose them with backticks, for example:
 
-  * ``value``
-  * ``count``
+* ``value``
+* ``count``
 
 When you use backticked identifiers, Flink SQL captures the case exactly, and any future references to the identifier are case-sensitive. For example, if you declare the following table:
 
@@ -94,29 +94,29 @@ A string constant is an arbitrary series of characters surrounded by single quot
 
 Numeric constants are accepted in the following forms:
 
-  * digits
-  * digits.[digits][e[+-]digits]
-  * [digits].digits[e[+-]digits]
-  * digitse[+-]digits
+* digits
+* digits.[digits][e[+-]digits]
+* [digits].digits[e[+-]digits]
+* digitse[+-]digits
 
 where `digits` is one or more single-digit integers (_0_ through _9_).
 
-  * At least one digit must be present before or after the decimal point, if there is one.
-  * At least one digit must follow the exponent symbol `e`, if there is one.
-  * No spaces, underscores, or any other characters are allowed in the constant.
-  * Numeric constants may also have a `+` or `-` prefix, but this is considered to be a function applied to the constant, not the constant itself.
+* At least one digit must be present before or after the decimal point, if there is one.
+* At least one digit must follow the exponent symbol `e`, if there is one.
+* No spaces, underscores, or any other characters are allowed in the constant.
+* Numeric constants may also have a `+` or `-` prefix, but this is considered to be a function applied to the constant, not the constant itself.
 
 Here are some examples of valid numeric constants:
 
-  * `5`
-  * `7.2`
-  * `0.0087`
-  * `1.`
-  * `.5`
-  * `1e-3`
-  * `1.332434e+2`
-  * `+100`
-  * `-250`
+* `5`
+* `7.2`
+* `0.0087`
+* `1.`
+* `.5`
+* `1e-3`
+* `1.332434e+2`
+* `+100`
+* `-250`
 
 ### Boolean constants¶
 
@@ -132,12 +132,12 @@ For a complete list of operators, see [Comparison Functions in Confluent Cloud f
 
 Some characters have a particular meaning that doesn’t correspond to an operator. The following list describes the special characters and their purposes.
 
-  * Parentheses (`()`) retain their usual meaning in programming languages for grouping expressions and controlling the order of evaluation.
-  * Brackets (`[]`) are used to work with arrays, both in their construction and subscript access. They also allow you to key into maps.
-  * Commas (`,`) delineate a discrete list of entities.
-  * The semi-colon (`;`) terminates a SQL statement.
-  * The asterisk (`*`), when used in particular syntax, is used as an “all” qualifier. This is seen most commonly in a SELECT command to retrieve all columns.
-  * The period (`.`) accesses a column in a table or a field in a struct data type.
+* Parentheses (`()`) retain their usual meaning in programming languages for grouping expressions and controlling the order of evaluation.
+* Brackets (`[]`) are used to work with arrays, both in their construction and subscript access. They also allow you to key into maps.
+* Commas (`,`) delineate a discrete list of entities.
+* The semi-colon (`;`) terminates a SQL statement.
+* The asterisk (`*`), when used in particular syntax, is used as an “all” qualifier. This is seen most commonly in a SELECT command to retrieve all columns.
+* The period (`.`) accesses a column in a table or a field in a struct data type.
 
 ## Comments¶
 

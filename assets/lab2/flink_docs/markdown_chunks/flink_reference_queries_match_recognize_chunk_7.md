@@ -36,14 +36,16 @@ The following table describes how these conditions are evaluated for each incomi
 
 The table consists of the following columns:
 
-  * `#` \- the row identifier that uniquely identifies an incoming row in the lists `[A.price]` / `[B.price]` / `[price]`.
-  * `price` \- the price of the incoming row.
-  * `[A.price]`/ `[B.price]`/ `[price]` \- describe lists of rows which are used in the `DEFINE` clause to evaluate conditions.
-  * `Classifier` \- the classifier of the current row which indicates the pattern variable the row is mapped to.
-  * `A.price`/ `B.price`/ `SUM(price)`/ `SUM(B.price)` \- describes the result after those expressions have been evaluated.
+* `#` \- the row identifier that uniquely identifies an incoming row in the lists `[A.price]` / `[B.price]` / `[price]`.
+* `price` \- the price of the incoming row.
+* `[A.price]`/ `[B.price]`/ `[price]` \- describe lists of rows which are used in the `DEFINE` clause to evaluate conditions.
+* `Classifier` \- the classifier of the current row which indicates the pattern variable the row is mapped to.
+* `A.price`/ `B.price`/ `SUM(price)`/ `SUM(B.price)` \- describes the result after those expressions have been evaluated.
 
     == ===== ========== ========= ============== ================== ======= ======= ========== ============
-    #  price Classifier [A.price] [B.price]      [price]            A.price B.price SUM(price) SUM(B.price)
+
+#  price Classifier [A.price] [B.price]      [price]            A.price B.price SUM(price) SUM(B.price)
+
     == ===== ========== ========= ============== ================== ======= ======= ========== ============
     #1 10    -> A       #1        -              -                  10      -       -          -
     #2 15    -> B       #1        #2             #1, #2             10      15      25         15
@@ -77,9 +79,9 @@ The following table describes how these conditions are evaluated for each incomi
 
 The table consists of the following columns:
 
-  * `price` \- the price of the incoming row.
-  * `Classifier` \- the classifier of the current row which indicates the pattern variable the row is mapped to.
-  * `LAST(B.price, 1)`/ `LAST(B.price, 2)` \- describes the result after these expressions have been evaluated.
+* `price` \- the price of the incoming row.
+* `Classifier` \- the classifier of the current row which indicates the pattern variable the row is mapped to.
+* `LAST(B.price, 1)`/ `LAST(B.price, 2)` \- describes the result after these expressions have been evaluated.
 
     ===== ========== ================ ================ ========================================================================================
     price Classifier LAST(B.price, 1) LAST(B.price, 2) Comment

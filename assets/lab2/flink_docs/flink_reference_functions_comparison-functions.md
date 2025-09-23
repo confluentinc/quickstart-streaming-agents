@@ -9,10 +9,10 @@ scraped_date: 2025-09-05T13:49:10.535546
 
 Confluent Cloud for Apache Flink® provides these built-in comparison functions to use in SQL queries:
 
-  * Equality operations
-  * Logical operations
-  * Comparison Functions
-  * Conversion functions
+* Equality operations
+* Logical operations
+* Comparison Functions
+* Conversion functions
 
 ## Equality operations¶
 
@@ -306,8 +306,8 @@ The `LIKE` function returns TRUE if `string1` matches the pattern specified by `
 
 The pattern can contain these special characters:
 
-  * **%** – matches any number of characters
-  * **_** – matches a single character
+* **%** – matches any number of characters
+* **_** – matches a single character
 
 Returns UNKNOWN if either `string1` or `string2` is NULL.
 
@@ -336,8 +336,8 @@ The `NOT LIKE` function returns TRUE if `string1` does not match the pattern spe
 
 The pattern can contain these special characters:
 
-  * **%** – matches any number of characters
-  * **_** – matches a single character
+* **%** – matches any number of characters
+* **_** – matches a single character
 
 Returns UNKNOWN if `string1` or `string2` is NULL.
 
@@ -400,9 +400,9 @@ Examples
 
 ## Conversion functions¶
 
-  * CAST
-  * TRY_CAST
-  * TYPEOF
+* CAST
+* TRY_CAST
+* TYPEOF
 
 ### CAST¶
 
@@ -492,15 +492,15 @@ Examples
 
 ## Other built-in functions¶
 
-  * [Aggregate Functions](aggregate-functions.html#flink-sql-aggregate-functions)
-  * [Collection Functions](collection-functions.html#flink-sql-collection-functions)
-  * Comparison Functions
-  * [Conditional Functions](conditional-functions.html#flink-sql-conditional-functions)
-  * [Datetime Functions](datetime-functions.html#flink-sql-datetime-functions)
-  * [Hash Functions](hash-functions.html#flink-sql-hash-functions)
-  * [JSON Functions](json-functions.html#flink-sql-json-functions)
-  * [ML Preprocessing Functions](ml-preprocessing-functions.html#flink-sql-ml-preprocessing-functions)
-  * [Model Inference Functions](model-inference-functions.html#flink-sql-model-inference-functions)
-  * [Numeric Functions](numeric-functions.html#flink-sql-numeric-functions)
-  * [String Functions](string-functions.html#flink-sql-string-functions)
-  * [Table API Functions](table-api-functions.html#flink-table-api-functions)
+* [Aggregate Functions](aggregate-functions.html#flink-sql-aggregate-functions)
+* [Collection Functions](collection-functions.html#flink-sql-collection-functions)
+* Comparison Functions
+* [Conditional Functions](conditional-functions.html#flink-sql-conditional-functions)
+* [Datetime Functions](datetime-functions.html#flink-sql-datetime-functions)
+* [Hash Functions](hash-functions.html#flink-sql-hash-functions)
+* [JSON Functions](json-functions.html#flink-sql-json-functions)
+* [ML Preprocessing Functions](ml-preprocessing-functions.html#flink-sql-ml-preprocessing-functions)
+* [Model Inference Functions](model-inference-functions.html#flink-sql-model-inference-functions)
+* [Numeric Functions](numeric-functions.html#flink-sql-numeric-functions)
+* [String Functions](string-functions.html#flink-sql-string-functions)
+* [Table API Functions](table-api-functions.html#flink-table-api-functions)

@@ -5,12 +5,14 @@ This directory contains scripts to publish Flink documentation to Kafka in Avro 
 ## Setup
 
 1. **Create virtual environment** (from project root):
+
    ```bash
    uv venv
    uv pip install -r requirements.txt
    ```
 
 2. **Deploy infrastructure** (AWS or Azure):
+
    ```bash
    # For AWS
    cd terraform/aws/lab2-vector-search
@@ -24,12 +26,14 @@ This directory contains scripts to publish Flink documentation to Kafka in Avro 
 ## Usage
 
 ### AWS Deployment
+
 ```bash
 cd terraform/aws/lab2-vector-search
 ../../../.venv/bin/python publish_docs.py
 ```
 
 ### Azure Deployment
+
 ```bash
 cd terraform/azure/lab2-vector-search
 ../../../.venv/bin/python publish_docs.py
@@ -40,12 +44,14 @@ cd terraform/azure/lab2-vector-search
 1. **Extracts credentials** from Terraform state (both local and core infrastructure)
 2. **Parses ~210 Flink docs** with YAML frontmatter and markdown content
 3. **Publishes to Kafka** using Avro schema:
+
    ```json
    {
      "document_id": "string",
      "document_text": "string"
    }
    ```
+
 4. **Publishes to topic**: `documents`
 
 ## Architecture

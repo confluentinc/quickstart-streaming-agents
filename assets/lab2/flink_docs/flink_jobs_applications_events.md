@@ -9,10 +9,10 @@ scraped_date: 2025-09-05T13:52:48.205812
 
 Apache Flink® Application Events are a new feature in Confluent Manager for Apache Flink® (CMF) that enables you to track the state of your Flink applications and clusters. Events provide insight into changes that occur within a Flink application. Flink events tell you:
 
-  * The time an event occurred.
-  * The Flink application instance that the event is associated with.
-  * What changes to the Flink application resource occurred.
-  * The status of the Flink cluster.
+* The time an event occurred.
+* The Flink application instance that the event is associated with.
+* What changes to the Flink application resource occurred.
+* The status of the Flink cluster.
 
 Events help you to understand the status of your Flink clusters, without examining the Kubernetes cluster or using the Flink Web Interface.
 
@@ -26,25 +26,25 @@ You can use CMF to track the following events.
 
 **CMF Status** :
 
-  * Flink application resource creation.
-  * Flink application resource updated.
+* Flink application resource creation.
+* Flink application resource updated.
 
 **Cluster status**. Tracked from `status.lifecycleState` of the FlinkApplication:
 
-  * CREATED: The resource was created in Kubernetes but not yet handled by the operator.
-  * SUSPENDED: The (job) resource has been suspended.
-  * UPGRADING: The resource is suspended before upgrading to a new spec.
-  * DEPLOYED: The resource is deployed/submitted to Kubernetes, but it’s not yet considered to be stable and might be rolled back in the future.
-  * STABLE: The resource deployment is considered to be stable and won’t be rolled back. This means the Flink cluster is healthy.
-  * ROLLING_BACK: The resource is being rolled back to the last stable spec.
-  * ROLLED_BACK: The resource is deployed with the last stable spec.
-  * FAILED: The job terminally failed.
+* CREATED: The resource was created in Kubernetes but not yet handled by the operator.
+* SUSPENDED: The (job) resource has been suspended.
+* UPGRADING: The resource is suspended before upgrading to a new spec.
+* DEPLOYED: The resource is deployed/submitted to Kubernetes, but it’s not yet considered to be stable and might be rolled back in the future.
+* STABLE: The resource deployment is considered to be stable and won’t be rolled back. This means the Flink cluster is healthy.
+* ROLLING_BACK: The resource is being rolled back to the last stable spec.
+* ROLLED_BACK: The resource is deployed with the last stable spec.
+* FAILED: The job terminally failed.
 
 **Flink Job status** :
 
-  * Any change to the Flink job status. Tracked from the `FlinkApplication.status.jobStatus.state`.
+* Any change to the Flink job status. Tracked from the `FlinkApplication.status.jobStatus.state`.
 
-** Flink Exceptions**: Any exception causing a restart of a Flink job will be tracked as an event.
+**Flink Exceptions**: Any exception causing a restart of a Flink job will be tracked as an event.
 
 ## View events with Control Center¶
 

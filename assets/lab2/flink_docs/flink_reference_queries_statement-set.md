@@ -27,8 +27,8 @@ To use statement sets, you enclose one or more SQL statements in a block and exe
 
 The following query results in a single statement being executed which reads from an `orders` table.
 
-  * If the status is `completed`, the `product` and `quantity` values are written to the `sales` table.
-  * If the status is `returned`, the `product` and `quantity` values are written to the `returns` table.
+* If the status is `completed`, the `product` and `quantity` values are written to the `sales` table.
+* If the status is `returned`, the `product` and `quantity` values are written to the `returns` table.
 
     EXECUTE STATEMENT SET
     BEGIN

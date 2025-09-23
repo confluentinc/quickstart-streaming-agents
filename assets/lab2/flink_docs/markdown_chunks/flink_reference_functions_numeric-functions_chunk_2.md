@@ -125,9 +125,9 @@ Syntax
 
 Arguments
 
-  * `expr`: A NUMERIC expression.
-  * `percentage`: A NUMERIC expression between 0 and 1, or an ARRAY of NUMERIC expressions, each between 0 and 1.
-  * `frequency`: An optional integral number greater than 0 that describes the number of times `expr` must be counted. The default is 1.
+* `expr`: A NUMERIC expression.
+* `percentage`: A NUMERIC expression between 0 and 1, or an ARRAY of NUMERIC expressions, each between 0 and 1.
+* `frequency`: An optional integral number greater than 0 that describes the number of times `expr` must be counted. The default is 1.
 
 Returns
     DOUBLE if `percentage` is numeric, or an ARRAY of DOUBLE if `percentage` is an ARRAY.

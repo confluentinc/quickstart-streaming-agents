@@ -13,8 +13,8 @@ is lower than 5 minutes.
 
 Confluent Cloud for Apache Flink can process data based on different notions of time.
 
-  * **Event time** refers to stream processing based on timestamps that are attached to each row. The timestamps can encode when an event happened.
-  * **Processing time** refers to the machine’s system time that’s executing the operation. Processing time is also known as “epoch time”, for example, Java’s `System.currentTimeMillis()`. Processing time is not supported in Confluent Cloud for Apache Flink.
+* **Event time** refers to stream processing based on timestamps that are attached to each row. The timestamps can encode when an event happened.
+* **Processing time** refers to the machine’s system time that’s executing the operation. Processing time is also known as “epoch time”, for example, Java’s `System.currentTimeMillis()`. Processing time is not supported in Confluent Cloud for Apache Flink.
 
 Time attributes can be part of every table schema. They are defined when creating a table from a `CREATE TABLE` DDL statement.
 

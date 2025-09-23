@@ -9,13 +9,13 @@ scraped_date: 2025-09-05T13:51:47.846988
 
 You can use the Confluent REST API to manage these resources for Confluent Manager for Apache Flink® (CMF):
 
-  * Environments
-  * Applications
+* Environments
+* Applications
 
 In addition to the REST API, you can manage the above resources by using these Confluent tools:
 
-  * [Confluent CLI](/confluent-cli/current/command-reference/flink/index.html)
-  * [Confluent for Kubernetes](https://docs.confluent.io/operator/current/co-manage-flink.html)
+* [Confluent CLI](/confluent-cli/current/command-reference/flink/index.html)
+* [Confluent for Kubernetes](https://docs.confluent.io/operator/current/co-manage-flink.html)
 
 ## Prerequisites¶
 
@@ -27,8 +27,8 @@ If you have configured authentication and/or authorization, each API request mus
 
 For more information, see:
 
-  * [Installation with Helm](../installation/helm.html#install-cmf-helm)
-  * [Access Control](../configure/access-control.html#cmf-access-control)
+* [Installation with Helm](../installation/helm.html#install-cmf-helm)
+* [Access Control](../configure/access-control.html#cmf-access-control)
 
 ## Endpoints (v1)¶
 
@@ -38,9 +38,9 @@ All endpoints are served under `/cmf/api/v1`.
 
 All resources are identified by name. Each name must be unique in its scope and follow the following restrictions:
 
-  * Minimum length: 4
-  * Maximum length: 253
-  * Pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+* Minimum length: 4
+* Maximum length: 253
+* Pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
 
 ## Timestamps¶
 
@@ -3024,7 +3024,7 @@ View the entire YAML specification file
 
 Status Codes:|
 
-  * [201 Created](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.2) – The Environment was successfully created or updated. **Example response:**
+* [201 Created](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.2) – The Environment was successfully created or updated. **Example response:**
 
         HTTP/1.1 201 Created
         Content-Type: application/json
@@ -3046,7 +3046,7 @@ Status Codes:|
             }
         }
 
-  * [400 Bad Request](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1) – Bad request. **Example response:**
+* [400 Bad Request](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1) – Bad request. **Example response:**
 
         HTTP/1.1 400 Bad Request
         Content-Type: application/json
@@ -3059,7 +3059,7 @@ Status Codes:|
             ]
         }
 
-  * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
+* [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
 
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
@@ -3078,13 +3078,14 @@ Status Codes:|
 
 **Retrieve a paginated list of all environments.**
 
-Query Parameters:
+Query Parameters
 ---
+
 |
 
-  * **page** (_integer_) – Zero-based page index (0..N)
-  * **size** (_integer_) – The size of the page to be returned
-  * **sort** (_array_) – Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.
+* **page** (_integer_) – Zero-based page index (0..N)
+* **size** (_integer_) – The size of the page to be returned
+* **sort** (_array_) – Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.
 
 **Example request:**
 
@@ -3093,7 +3094,7 @@ Query Parameters:
 
 Status Codes:|
 
-  * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – List of environments found. If no environments are found, an empty list is returned. Note the information about secret is not included in the list call yet. In order to get the information about secret, make a getSecret call. **Example response:**
+* [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – List of environments found. If no environments are found, an empty list is returned. Note the information about secret is not included in the list call yet. In order to get the information about secret, make a getSecret call. **Example response:**
 
         HTTP/1.1 200 OK
         Content-Type: application/json
@@ -3131,8 +3132,8 @@ Status Codes:|
             ]
         }
 
-  * [304 Not Modified](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.5) – Not modified.
-  * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
+* [304 Not Modified](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.5) – Not modified.
+* [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
 
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
@@ -3149,7 +3150,7 @@ Status Codes:|
 Response Headers:
 |
 
-  * **ETag** – An ID for this version of the response.
+* **ETag** – An ID for this version of the response.
 
 `GET ``/cmf/api/v1/environments/{envName}`¶
 
@@ -3157,7 +3158,7 @@ Response Headers:
 
 Parameters:|
 
-  * **envName** (_string_) – Name of the Environment to be retrieved.
+* **envName** (_string_) – Name of the Environment to be retrieved.
 
 ---|---
 
@@ -3168,7 +3169,7 @@ Parameters:|
 
 Status Codes:|
 
-  * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Environment found and returned. **Example response:**
+* [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Environment found and returned. **Example response:**
 
         HTTP/1.1 200 OK
         Content-Type: application/json
@@ -3190,7 +3191,7 @@ Status Codes:|
             }
         }
 
-  * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Environment not found. **Example response:**
+* [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Environment not found. **Example response:**
 
         HTTP/1.1 404 Not Found
         Content-Type: application/json
@@ -3203,7 +3204,7 @@ Status Codes:|
             ]
         }
 
-  * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
+* [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
 
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
@@ -3221,14 +3222,14 @@ Status Codes:|
 `DELETE ``/cmf/api/v1/environments/{envName}`¶
      Parameters:|
 
-  * **envName** (_string_) – Name of the Environment to be deleted.
+* **envName** (_string_) – Name of the Environment to be deleted.
 
 ---|---
 Status Codes:|
 
-  * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Environment found and deleted.
-  * [304 Not Modified](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.5) – Not modified.
-  * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
+* [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Environment found and deleted.
+* [304 Not Modified](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.5) – Not modified.
+* [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
 
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
@@ -3241,7 +3242,7 @@ Status Codes:|
             ]
         }
 
-  * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Environment not found. **Example response:**
+* [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Environment not found. **Example response:**
 
         HTTP/1.1 404 Not Found
         Content-Type: application/json
@@ -3260,7 +3261,7 @@ Status Codes:|
 
 Parameters:|
 
-  * **envName** (_string_) – Name of the Environment
+* **envName** (_string_) – Name of the Environment
 
 ---|---
 
@@ -3280,7 +3281,7 @@ Parameters:|
 
 Status Codes:|
 
-  * [201 Created](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.2) – The Application was successfully created or updated. **Example response:**
+* [201 Created](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.2) – The Application was successfully created or updated. **Example response:**
 
         HTTP/1.1 201 Created
         Content-Type: application/json
@@ -3293,7 +3294,7 @@ Status Codes:|
             "status": {}
         }
 
-  * [400 Bad Request](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1) – Bad request. **Example response:**
+* [400 Bad Request](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1) – Bad request. **Example response:**
 
         HTTP/1.1 400 Bad Request
         Content-Type: application/json
@@ -3306,7 +3307,7 @@ Status Codes:|
             ]
         }
 
-  * [422 Unprocessable Entity](https://www.rfc-editor.org/rfc/rfc4918#section-11.2) – Request valid but invalid content. **Example response:**
+* [422 Unprocessable Entity](https://www.rfc-editor.org/rfc/rfc4918#section-11.2) – Request valid but invalid content. **Example response:**
 
         HTTP/1.1 422 Unprocessable Entity
         Content-Type: application/json
@@ -3319,7 +3320,7 @@ Status Codes:|
             ]
         }
 
-  * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
+* [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
 
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
@@ -3340,15 +3341,15 @@ Status Codes:|
 
 Parameters:|
 
-  * **envName** (_string_) – Name of the Environment
+* **envName** (_string_) – Name of the Environment
 
 ---|---
 Query Parameters:
 |
 
-  * **page** (_integer_) – Zero-based page index (0..N)
-  * **size** (_integer_) – The size of the page to be returned
-  * **sort** (_array_) – Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.
+* **page** (_integer_) – Zero-based page index (0..N)
+* **size** (_integer_) – The size of the page to be returned
+* **sort** (_array_) – Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.
 
 **Example request:**
 
@@ -3357,7 +3358,7 @@ Query Parameters:
 
 Status Codes:|
 
-  * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Application found and returned. **Example response:**
+* [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Application found and returned. **Example response:**
 
         HTTP/1.1 200 OK
         Content-Type: application/json
@@ -3386,8 +3387,8 @@ Status Codes:|
             ]
         }
 
-  * [304 Not Modified](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.5) – Not modified.
-  * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Environment not found. **Example response:**
+* [304 Not Modified](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.5) – Not modified.
+* [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Environment not found. **Example response:**
 
         HTTP/1.1 404 Not Found
         Content-Type: application/json
@@ -3400,7 +3401,7 @@ Status Codes:|
             ]
         }
 
-  * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
+* [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
 
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
@@ -3417,7 +3418,7 @@ Status Codes:|
 Response Headers:
 |
 
-  * **ETag** – An ID for this version of the response.
+* **ETag** – An ID for this version of the response.
 
 `GET ``/cmf/api/v1/environments/{envName}/applications/{appName}`¶
 
@@ -3425,8 +3426,8 @@ Response Headers:
 
 Parameters:|
 
-  * **envName** (_string_) – Name of the Environment
-  * **appName** (_string_) – Name of the Application
+* **envName** (_string_) – Name of the Environment
+* **appName** (_string_) – Name of the Application
 
 ---|---
 
@@ -3437,7 +3438,7 @@ Parameters:|
 
 Status Codes:|
 
-  * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Application found and returned. **Example response:**
+* [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Application found and returned. **Example response:**
 
         HTTP/1.1 200 OK
         Content-Type: application/json
@@ -3450,8 +3451,8 @@ Status Codes:|
             "status": {}
         }
 
-  * [304 Not Modified](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.5) – Not modified.
-  * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
+* [304 Not Modified](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.5) – Not modified.
+* [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
 
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
@@ -3464,7 +3465,7 @@ Status Codes:|
             ]
         }
 
-  * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Application not found. **Example response:**
+* [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Application not found. **Example response:**
 
         HTTP/1.1 404 Not Found
         Content-Type: application/json
@@ -3481,7 +3482,7 @@ Status Codes:|
 Response Headers:
 |
 
-  * **ETag** – An ID for this version of the response.
+* **ETag** – An ID for this version of the response.
 
 `DELETE ``/cmf/api/v1/environments/{envName}/applications/{appName}`¶
 
@@ -3489,15 +3490,15 @@ Response Headers:
 
 Parameters:|
 
-  * **envName** (_string_) – Name of the Environment
-  * **appName** (_string_) – Name of the Application
+* **envName** (_string_) – Name of the Environment
+* **appName** (_string_) – Name of the Application
 
 ---|---
 Status Codes:|
 
-  * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Application found and deleted.
-  * [304 Not Modified](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.5) – Not modified.
-  * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
+* [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Application found and deleted.
+* [304 Not Modified](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.5) – Not modified.
+* [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
 
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
@@ -3516,16 +3517,16 @@ Status Codes:|
 
 Parameters:|
 
-  * **envName** (_string_) – Name of the Environment
-  * **appName** (_string_) – Name of the Application
+* **envName** (_string_) – Name of the Environment
+* **appName** (_string_) – Name of the Application
 
 ---|---
 Query Parameters:
 |
 
-  * **page** (_integer_) – Zero-based page index (0..N)
-  * **size** (_integer_) – The size of the page to be returned
-  * **sort** (_array_) – Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.
+* **page** (_integer_) – Zero-based page index (0..N)
+* **size** (_integer_) – The size of the page to be returned
+* **sort** (_array_) – Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.
 
 **Example request:**
 
@@ -3534,7 +3535,7 @@ Query Parameters:
 
 Status Codes:|
 
-  * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Events found and returned. **Example response:**
+* [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Events found and returned. **Example response:**
 
         HTTP/1.1 200 OK
         Content-Type: application/json
@@ -3575,7 +3576,7 @@ Status Codes:|
             ]
         }
 
-  * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Environment or Application not found. **Example response:**
+* [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Environment or Application not found. **Example response:**
 
         HTTP/1.1 404 Not Found
         Content-Type: application/json
@@ -3588,7 +3589,7 @@ Status Codes:|
             ]
         }
 
-  * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
+* [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
 
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
@@ -3609,13 +3610,13 @@ Status Codes:|
 
 Parameters:|
 
-  * **envName** (_string_) – Name of the Environment
-  * **appName** (_string_) – Name of the Application
+* **envName** (_string_) – Name of the Environment
+* **appName** (_string_) – Name of the Application
 
 ---|---
 Status Codes:|
 
-  * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Application started **Example response:**
+* [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Application started **Example response:**
 
         HTTP/1.1 200 OK
         Content-Type: application/json
@@ -3628,8 +3629,8 @@ Status Codes:|
             "status": {}
         }
 
-  * [304 Not Modified](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.5) – Not modified.
-  * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
+* [304 Not Modified](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.5) – Not modified.
+* [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
 
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
@@ -3648,13 +3649,13 @@ Status Codes:|
 
 Parameters:|
 
-  * **envName** (_string_) – Name of the Environment
-  * **appName** (_string_) – Name of the Application
+* **envName** (_string_) – Name of the Environment
+* **appName** (_string_) – Name of the Application
 
 ---|---
 Status Codes:|
 
-  * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Application suspended **Example response:**
+* [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Application suspended **Example response:**
 
         HTTP/1.1 200 OK
         Content-Type: application/json
@@ -3667,8 +3668,8 @@ Status Codes:|
             "status": {}
         }
 
-  * [304 Not Modified](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.5) – Not modified.
-  * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
+* [304 Not Modified](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.5) – Not modified.
+* [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
 
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
@@ -3687,16 +3688,16 @@ Status Codes:|
 
 Parameters:|
 
-  * **envName** (_string_) – Name of the Environment
-  * **appName** (_string_) – Name of the Application
+* **envName** (_string_) – Name of the Environment
+* **appName** (_string_) – Name of the Application
 
 ---|---
 Query Parameters:
 |
 
-  * **page** (_integer_) – Zero-based page index (0..N)
-  * **size** (_integer_) – The size of the page to be returned
-  * **sort** (_array_) – Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.
+* **page** (_integer_) – Zero-based page index (0..N)
+* **size** (_integer_) – The size of the page to be returned
+* **sort** (_array_) – Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.
 
 **Example request:**
 
@@ -3705,7 +3706,7 @@ Query Parameters:
 
 Status Codes:|
 
-  * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Instances found and returned. **Example response:**
+* [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Instances found and returned. **Example response:**
 
         HTTP/1.1 200 OK
         Content-Type: application/json
@@ -3746,7 +3747,7 @@ Status Codes:|
             ]
         }
 
-  * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Environment or Application not found. **Example response:**
+* [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Environment or Application not found. **Example response:**
 
         HTTP/1.1 404 Not Found
         Content-Type: application/json
@@ -3759,7 +3760,7 @@ Status Codes:|
             ]
         }
 
-  * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
+* [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
 
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
@@ -3780,9 +3781,9 @@ Status Codes:|
 
 Parameters:|
 
-  * **envName** (_string_) – Name of the Environment
-  * **appName** (_string_) – Name of the Application
-  * **instName** (_string_) – Name of the ApplicationInstance
+* **envName** (_string_) – Name of the Environment
+* **appName** (_string_) – Name of the Application
+* **instName** (_string_) – Name of the ApplicationInstance
 
 ---|---
 
@@ -3793,7 +3794,7 @@ Parameters:|
 
 Status Codes:|
 
-  * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – ApplicationInstance found and returned. **Example response:**
+* [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – ApplicationInstance found and returned. **Example response:**
 
         HTTP/1.1 200 OK
         Content-Type: application/json
@@ -3818,7 +3819,7 @@ Status Codes:|
             }
         }
 
-  * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – FlinkApplicationInstance or environment or application not found. **Example response:**
+* [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – FlinkApplicationInstance or environment or application not found. **Example response:**
 
         HTTP/1.1 404 Not Found
         Content-Type: application/json
@@ -3831,7 +3832,7 @@ Status Codes:|
             ]
         }
 
-  * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
+* [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
 
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
@@ -3852,14 +3853,14 @@ Status Codes:|
 
 Parameters:|
 
-  * **envName** (_string_) – Name of the Environment in which the mapping has to be deleted.
-  * **name** (_string_) – Name of the environment secret mapping to be deleted in the given environment.
+* **envName** (_string_) – Name of the Environment in which the mapping has to be deleted.
+* **name** (_string_) – Name of the environment secret mapping to be deleted in the given environment.
 
 ---|---
 Status Codes:|
 
-  * [204 No Content](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.5) – The Environment Secret Mapping was successfully deleted.
-  * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Environment or Secret not found. **Example response:**
+* [204 No Content](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.5) – The Environment Secret Mapping was successfully deleted.
+* [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Environment or Secret not found. **Example response:**
 
         HTTP/1.1 404 Not Found
         Content-Type: application/json
@@ -3872,7 +3873,7 @@ Status Codes:|
             ]
         }
 
-  * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
+* [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
 
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
@@ -3891,8 +3892,8 @@ Status Codes:|
 
 Parameters:|
 
-  * **envName** (_string_) – Name of the Environment
-  * **name** (_string_) – Name of the environment secret mapping to be retrieved.
+* **envName** (_string_) – Name of the Environment
+* **name** (_string_) – Name of the environment secret mapping to be retrieved.
 
 ---|---
 
@@ -3903,7 +3904,7 @@ Parameters:|
 
 Status Codes:|
 
-  * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Environment Secret Mapping found and returned. **Example response:**
+* [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Environment Secret Mapping found and returned. **Example response:**
 
         HTTP/1.1 200 OK
         Content-Type: application/json
@@ -3924,7 +3925,7 @@ Status Codes:|
             }
         }
 
-  * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Environment or Secret not found. **Example response:**
+* [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Environment or Secret not found. **Example response:**
 
         HTTP/1.1 404 Not Found
         Content-Type: application/json
@@ -3937,7 +3938,7 @@ Status Codes:|
             ]
         }
 
-  * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
+* [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
 
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
@@ -3958,8 +3959,8 @@ Status Codes:|
 
 Parameters:|
 
-  * **envName** (_string_) – Name of the Environment
-  * **name** (_string_) – Name of the environment secret mapping to be updated
+* **envName** (_string_) – Name of the Environment
+* **name** (_string_) – Name of the environment secret mapping to be updated
 
 ---|---
 
@@ -3987,7 +3988,7 @@ Parameters:|
 
 Status Codes:|
 
-  * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – The Environment Secret Mapping was successfully updated. **Example response:**
+* [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – The Environment Secret Mapping was successfully updated. **Example response:**
 
         HTTP/1.1 200 OK
         Content-Type: application/json
@@ -4008,7 +4009,7 @@ Status Codes:|
             }
         }
 
-  * [400 Bad Request](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1) – Bad request. **Example response:**
+* [400 Bad Request](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1) – Bad request. **Example response:**
 
         HTTP/1.1 400 Bad Request
         Content-Type: application/json
@@ -4021,7 +4022,7 @@ Status Codes:|
             ]
         }
 
-  * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Environment or Secret not found. **Example response:**
+* [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Environment or Secret not found. **Example response:**
 
         HTTP/1.1 404 Not Found
         Content-Type: application/json
@@ -4034,7 +4035,7 @@ Status Codes:|
             ]
         }
 
-  * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
+* [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
 
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
@@ -4055,7 +4056,7 @@ Status Codes:|
 
 Parameters:|
 
-  * **envName** (_string_) – Name of the Environment
+* **envName** (_string_) – Name of the Environment
 
 ---|---
 
@@ -4083,7 +4084,7 @@ Parameters:|
 
 Status Codes:|
 
-  * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – The Environment Secret Mapping was successfully created. **Example response:**
+* [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – The Environment Secret Mapping was successfully created. **Example response:**
 
         HTTP/1.1 200 OK
         Content-Type: application/json
@@ -4104,7 +4105,7 @@ Status Codes:|
             }
         }
 
-  * [400 Bad Request](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1) – Bad request. **Example response:**
+* [400 Bad Request](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1) – Bad request. **Example response:**
 
         HTTP/1.1 400 Bad Request
         Content-Type: application/json
@@ -4117,7 +4118,7 @@ Status Codes:|
             ]
         }
 
-  * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Environment not found. **Example response:**
+* [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Environment not found. **Example response:**
 
         HTTP/1.1 404 Not Found
         Content-Type: application/json
@@ -4130,7 +4131,7 @@ Status Codes:|
             ]
         }
 
-  * [409 Conflict](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.10) – Environment Secret Mapping already exists. **Example response:**
+* [409 Conflict](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.10) – Environment Secret Mapping already exists. **Example response:**
 
         HTTP/1.1 409 Conflict
         Content-Type: application/json
@@ -4143,7 +4144,7 @@ Status Codes:|
             ]
         }
 
-  * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
+* [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
 
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
@@ -4164,15 +4165,15 @@ Status Codes:|
 
 Parameters:|
 
-  * **envName** (_string_) – Name of the Environment
+* **envName** (_string_) – Name of the Environment
 
 ---|---
 Query Parameters:
 |
 
-  * **page** (_integer_) – Zero-based page index (0..N)
-  * **size** (_integer_) – The size of the page to be returned
-  * **sort** (_array_) – Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.
+* **page** (_integer_) – Zero-based page index (0..N)
+* **size** (_integer_) – The size of the page to be returned
+* **sort** (_array_) – Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.
 
 **Example request:**
 
@@ -4181,7 +4182,7 @@ Query Parameters:
 
 Status Codes:|
 
-  * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Environment Secret Mappings found and returned. **Example response:**
+* [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Environment Secret Mappings found and returned. **Example response:**
 
         HTTP/1.1 200 OK
         Content-Type: application/json
@@ -4218,7 +4219,7 @@ Status Codes:|
             ]
         }
 
-  * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Environment not found. **Example response:**
+* [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Environment not found. **Example response:**
 
         HTTP/1.1 404 Not Found
         Content-Type: application/json
@@ -4231,7 +4232,7 @@ Status Codes:|
             ]
         }
 
-  * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
+* [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
 
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
@@ -4252,7 +4253,7 @@ Status Codes:|
 
 Parameters:|
 
-  * **envName** (_string_) – Name of the Environment
+* **envName** (_string_) – Name of the Environment
 
 ---|---
 
@@ -4336,7 +4337,7 @@ Parameters:|
 
 Status Codes:|
 
-  * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – The Statement was successfully created. **Example response:**
+* [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – The Statement was successfully created. **Example response:**
 
         HTTP/1.1 200 OK
         Content-Type: application/json
@@ -4413,7 +4414,7 @@ Status Codes:|
             }
         }
 
-  * [400 Bad Request](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1) – Bad request. **Example response:**
+* [400 Bad Request](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1) – Bad request. **Example response:**
 
         HTTP/1.1 400 Bad Request
         Content-Type: application/json
@@ -4426,7 +4427,7 @@ Status Codes:|
             ]
         }
 
-  * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Environment not found. **Example response:**
+* [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Environment not found. **Example response:**
 
         HTTP/1.1 404 Not Found
         Content-Type: application/json
@@ -4439,7 +4440,7 @@ Status Codes:|
             ]
         }
 
-  * [409 Conflict](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.10) – Statement already exists. **Example response:**
+* [409 Conflict](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.10) – Statement already exists. **Example response:**
 
         HTTP/1.1 409 Conflict
         Content-Type: application/json
@@ -4452,7 +4453,7 @@ Status Codes:|
             ]
         }
 
-  * [422 Unprocessable Entity](https://www.rfc-editor.org/rfc/rfc4918#section-11.2) – Request valid but invalid content. **Example response:**
+* [422 Unprocessable Entity](https://www.rfc-editor.org/rfc/rfc4918#section-11.2) – Request valid but invalid content. **Example response:**
 
         HTTP/1.1 422 Unprocessable Entity
         Content-Type: application/json
@@ -4465,7 +4466,7 @@ Status Codes:|
             ]
         }
 
-  * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
+* [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
 
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
@@ -4486,17 +4487,17 @@ Status Codes:|
 
 Parameters:|
 
-  * **envName** (_string_) – Name of the Environment
+* **envName** (_string_) – Name of the Environment
 
 ---|---
 Query Parameters:
 |
 
-  * **page** (_integer_) – Zero-based page index (0..N)
-  * **size** (_integer_) – The size of the page to be returned
-  * **sort** (_array_) – Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.
-  * **compute-pool** (_string_) – Name of the ComputePool to filter on
-  * **phase** (_string_) – Phase to filter on
+* **page** (_integer_) – Zero-based page index (0..N)
+* **size** (_integer_) – The size of the page to be returned
+* **sort** (_array_) – Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.
+* **compute-pool** (_string_) – Name of the ComputePool to filter on
+* **phase** (_string_) – Phase to filter on
 
 **Example request:**
 
@@ -4505,7 +4506,7 @@ Query Parameters:
 
 Status Codes:|
 
-  * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Statements found and returned. **Example response:**
+* [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Statements found and returned. **Example response:**
 
         HTTP/1.1 200 OK
         Content-Type: application/json
@@ -4598,7 +4599,7 @@ Status Codes:|
             ]
         }
 
-  * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Environment not found. **Example response:**
+* [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Environment not found. **Example response:**
 
         HTTP/1.1 404 Not Found
         Content-Type: application/json
@@ -4611,7 +4612,7 @@ Status Codes:|
             ]
         }
 
-  * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
+* [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
 
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
@@ -4632,8 +4633,8 @@ Status Codes:|
 
 Parameters:|
 
-  * **envName** (_string_) – Name of the Environment
-  * **stmtName** (_string_) – Name of the Statement
+* **envName** (_string_) – Name of the Environment
+* **stmtName** (_string_) – Name of the Statement
 
 ---|---
 
@@ -4644,7 +4645,7 @@ Parameters:|
 
 Status Codes:|
 
-  * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Statement found and returned. **Example response:**
+* [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Statement found and returned. **Example response:**
 
         HTTP/1.1 200 OK
         Content-Type: application/json
@@ -4721,7 +4722,7 @@ Status Codes:|
             }
         }
 
-  * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Statement not found. **Example response:**
+* [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Statement not found. **Example response:**
 
         HTTP/1.1 404 Not Found
         Content-Type: application/json
@@ -4734,7 +4735,7 @@ Status Codes:|
             ]
         }
 
-  * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
+* [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
 
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
@@ -4755,15 +4756,15 @@ Status Codes:|
 
 Parameters:|
 
-  * **envName** (_string_) – Name of the Environment
-  * **stmtName** (_string_) – Name of the Statement
+* **envName** (_string_) – Name of the Environment
+* **stmtName** (_string_) – Name of the Statement
 
 ---|---
 Status Codes:|
 
-  * [204 No Content](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.5) – Statement was found and deleted.
-  * [202 Accepted](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.3) – Statement was found and deletion request received.
-  * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Statement not found. **Example response:**
+* [204 No Content](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.5) – Statement was found and deleted.
+* [202 Accepted](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.3) – Statement was found and deletion request received.
+* [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Statement not found. **Example response:**
 
         HTTP/1.1 404 Not Found
         Content-Type: application/json
@@ -4776,7 +4777,7 @@ Status Codes:|
             ]
         }
 
-  * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
+* [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
 
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
@@ -4795,8 +4796,8 @@ Status Codes:|
 
 Parameters:|
 
-  * **envName** (_string_) – Name of the Environment
-  * **stmtName** (_string_) – Name of the Statement
+* **envName** (_string_) – Name of the Environment
+* **stmtName** (_string_) – Name of the Statement
 
 ---|---
 
@@ -4880,8 +4881,8 @@ Parameters:|
 
 Status Codes:|
 
-  * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Statement was found and updated.
-  * [400 Bad Request](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1) – Bad request. **Example response:**
+* [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Statement was found and updated.
+* [400 Bad Request](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1) – Bad request. **Example response:**
 
         HTTP/1.1 400 Bad Request
         Content-Type: application/json
@@ -4894,7 +4895,7 @@ Status Codes:|
             ]
         }
 
-  * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Statement not found. **Example response:**
+* [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Statement not found. **Example response:**
 
         HTTP/1.1 404 Not Found
         Content-Type: application/json
@@ -4907,7 +4908,7 @@ Status Codes:|
             ]
         }
 
-  * [422 Unprocessable Entity](https://www.rfc-editor.org/rfc/rfc4918#section-11.2) – Request valid but invalid content. **Example response:**
+* [422 Unprocessable Entity](https://www.rfc-editor.org/rfc/rfc4918#section-11.2) – Request valid but invalid content. **Example response:**
 
         HTTP/1.1 422 Unprocessable Entity
         Content-Type: application/json
@@ -4920,7 +4921,7 @@ Status Codes:|
             ]
         }
 
-  * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
+* [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
 
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
@@ -4941,14 +4942,14 @@ Status Codes:|
 
 Parameters:|
 
-  * **envName** (_string_) – Name of the Environment
-  * **stmtName** (_string_) – Name of the Statement
+* **envName** (_string_) – Name of the Environment
+* **stmtName** (_string_) – Name of the Statement
 
 ---|---
 Query Parameters:
 |
 
-  * **page-token** (_string_) – Token for the next page of results
+* **page-token** (_string_) – Token for the next page of results
 
 **Example request:**
 
@@ -4957,7 +4958,7 @@ Query Parameters:
 
 Status Codes:|
 
-  * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – StatementResults found and returned. **Example response:**
+* [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – StatementResults found and returned. **Example response:**
 
         HTTP/1.1 200 OK
         Content-Type: application/json
@@ -4976,7 +4977,7 @@ Status Codes:|
             }
         }
 
-  * [400 Bad Request](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1) – Statement does not return results. **Example response:**
+* [400 Bad Request](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1) – Statement does not return results. **Example response:**
 
         HTTP/1.1 400 Bad Request
         Content-Type: application/json
@@ -4989,7 +4990,7 @@ Status Codes:|
             ]
         }
 
-  * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Statement not found. **Example response:**
+* [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Statement not found. **Example response:**
 
         HTTP/1.1 404 Not Found
         Content-Type: application/json
@@ -5002,7 +5003,7 @@ Status Codes:|
             ]
         }
 
-  * [410 Gone](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.11) – Results are gone. **Example response:**
+* [410 Gone](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.11) – Results are gone. **Example response:**
 
         HTTP/1.1 410 Gone
         Content-Type: application/json
@@ -5015,7 +5016,7 @@ Status Codes:|
             ]
         }
 
-  * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
+* [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
 
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
@@ -5036,8 +5037,8 @@ Status Codes:|
 
 Parameters:|
 
-  * **envName** (_string_) – Name of the Environment
-  * **stmtName** (_string_) – Name of the Statement
+* **envName** (_string_) – Name of the Environment
+* **stmtName** (_string_) – Name of the Statement
 
 ---|---
 
@@ -5048,7 +5049,7 @@ Parameters:|
 
 Status Codes:|
 
-  * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – StatementExceptions found and returned. **Example response:**
+* [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – StatementExceptions found and returned. **Example response:**
 
         HTTP/1.1 200 OK
         Content-Type: application/json
@@ -5067,7 +5068,7 @@ Status Codes:|
             ]
         }
 
-  * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Statement not found. **Example response:**
+* [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Statement not found. **Example response:**
 
         HTTP/1.1 404 Not Found
         Content-Type: application/json
@@ -5080,7 +5081,7 @@ Status Codes:|
             ]
         }
 
-  * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
+* [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
 
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
@@ -5101,7 +5102,7 @@ Status Codes:|
 
 Parameters:|
 
-  * **envName** (_string_) – Name of the Environment
+* **envName** (_string_) – Name of the Environment
 
 ---|---
 
@@ -5132,7 +5133,7 @@ Parameters:|
 
 Status Codes:|
 
-  * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – The Compute Pool was successfully created. **Example response:**
+* [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – The Compute Pool was successfully created. **Example response:**
 
         HTTP/1.1 200 OK
         Content-Type: application/json
@@ -5156,7 +5157,7 @@ Status Codes:|
             }
         }
 
-  * [400 Bad Request](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1) – Bad request. **Example response:**
+* [400 Bad Request](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1) – Bad request. **Example response:**
 
         HTTP/1.1 400 Bad Request
         Content-Type: application/json
@@ -5169,7 +5170,7 @@ Status Codes:|
             ]
         }
 
-  * [409 Conflict](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.10) – Compute Pool already exists. **Example response:**
+* [409 Conflict](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.10) – Compute Pool already exists. **Example response:**
 
         HTTP/1.1 409 Conflict
         Content-Type: application/json
@@ -5182,7 +5183,7 @@ Status Codes:|
             ]
         }
 
-  * [422 Unprocessable Entity](https://www.rfc-editor.org/rfc/rfc4918#section-11.2) – Request valid but invalid content. **Example response:**
+* [422 Unprocessable Entity](https://www.rfc-editor.org/rfc/rfc4918#section-11.2) – Request valid but invalid content. **Example response:**
 
         HTTP/1.1 422 Unprocessable Entity
         Content-Type: application/json
@@ -5195,7 +5196,7 @@ Status Codes:|
             ]
         }
 
-  * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
+* [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
 
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
@@ -5216,15 +5217,15 @@ Status Codes:|
 
 Parameters:|
 
-  * **envName** (_string_) – Name of the Environment
+* **envName** (_string_) – Name of the Environment
 
 ---|---
 Query Parameters:
 |
 
-  * **page** (_integer_) – Zero-based page index (0..N)
-  * **size** (_integer_) – The size of the page to be returned
-  * **sort** (_array_) – Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.
+* **page** (_integer_) – Zero-based page index (0..N)
+* **size** (_integer_) – The size of the page to be returned
+* **sort** (_array_) – Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.
 
 **Example request:**
 
@@ -5233,7 +5234,7 @@ Query Parameters:
 
 Status Codes:|
 
-  * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Compute Pools found and returned. **Example response:**
+* [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Compute Pools found and returned. **Example response:**
 
         HTTP/1.1 200 OK
         Content-Type: application/json
@@ -5273,7 +5274,7 @@ Status Codes:|
             ]
         }
 
-  * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Environment not found. **Example response:**
+* [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Environment not found. **Example response:**
 
         HTTP/1.1 404 Not Found
         Content-Type: application/json
@@ -5286,7 +5287,7 @@ Status Codes:|
             ]
         }
 
-  * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
+* [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
 
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
@@ -5307,8 +5308,8 @@ Status Codes:|
 
 Parameters:|
 
-  * **envName** (_string_) – Name of the Environment
-  * **computePoolName** (_string_) – Name of the Compute Pool
+* **envName** (_string_) – Name of the Environment
+* **computePoolName** (_string_) – Name of the Compute Pool
 
 ---|---
 
@@ -5319,7 +5320,7 @@ Parameters:|
 
 Status Codes:|
 
-  * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Compute Pool found and returned. **Example response:**
+* [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Compute Pool found and returned. **Example response:**
 
         HTTP/1.1 200 OK
         Content-Type: application/json
@@ -5343,7 +5344,7 @@ Status Codes:|
             }
         }
 
-  * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Compute Pool not found. **Example response:**
+* [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Compute Pool not found. **Example response:**
 
         HTTP/1.1 404 Not Found
         Content-Type: application/json
@@ -5356,7 +5357,7 @@ Status Codes:|
             ]
         }
 
-  * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
+* [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
 
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
@@ -5377,14 +5378,14 @@ Status Codes:|
 
 Parameters:|
 
-  * **envName** (_string_) – Name of the Environment
-  * **computePoolName** (_string_) – Name of the ComputePool
+* **envName** (_string_) – Name of the Environment
+* **computePoolName** (_string_) – Name of the ComputePool
 
 ---|---
 Status Codes:|
 
-  * [204 No Content](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.5) – Compute Pool was found and deleted.
-  * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Compute Pool not found. **Example response:**
+* [204 No Content](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.5) – Compute Pool was found and deleted.
+* [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Compute Pool not found. **Example response:**
 
         HTTP/1.1 404 Not Found
         Content-Type: application/json
@@ -5397,7 +5398,7 @@ Status Codes:|
             ]
         }
 
-  * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
+* [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
 
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
@@ -5410,7 +5411,7 @@ Status Codes:|
             ]
         }
 
-  * [409 Conflict](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.10) – Compute Pool is in use and cannot be deleted. **Example response:**
+* [409 Conflict](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.10) – Compute Pool is in use and cannot be deleted. **Example response:**
 
         HTTP/1.1 409 Conflict
         Content-Type: application/json
@@ -5450,7 +5451,7 @@ Create a Secret. This secrets can be then used to specify sensitive information 
 
 Status Codes:|
 
-  * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – The Secret was successfully created. Note that for security reasons, you can never view the contents of the secret itself once created. **Example response:**
+* [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – The Secret was successfully created. Note that for security reasons, you can never view the contents of the secret itself once created. **Example response:**
 
         HTTP/1.1 200 OK
         Content-Type: application/json
@@ -5477,7 +5478,7 @@ Status Codes:|
             }
         }
 
-  * [400 Bad Request](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1) – Bad request. **Example response:**
+* [400 Bad Request](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1) – Bad request. **Example response:**
 
         HTTP/1.1 400 Bad Request
         Content-Type: application/json
@@ -5490,7 +5491,7 @@ Status Codes:|
             ]
         }
 
-  * [409 Conflict](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.10) – The Secret already exists. **Example response:**
+* [409 Conflict](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.10) – The Secret already exists. **Example response:**
 
         HTTP/1.1 409 Conflict
         Content-Type: application/json
@@ -5503,7 +5504,7 @@ Status Codes:|
             ]
         }
 
-  * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
+* [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
 
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
@@ -5522,13 +5523,14 @@ Status Codes:|
 
 **Retrieve a paginated list of all secrets. Note that the actual secret data is masked for security reasons.**
 
-Query Parameters:
+Query Parameters
 ---
+
 |
 
-  * **page** (_integer_) – Zero-based page index (0..N)
-  * **size** (_integer_) – The size of the page to be returned
-  * **sort** (_array_) – Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.
+* **page** (_integer_) – Zero-based page index (0..N)
+* **size** (_integer_) – The size of the page to be returned
+* **sort** (_array_) – Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.
 
 **Example request:**
 
@@ -5537,7 +5539,7 @@ Query Parameters:
 
 Status Codes:|
 
-  * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – List of secrets found. If no secrets are found, an empty list is returned. **Example response:**
+* [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – List of secrets found. If no secrets are found, an empty list is returned. **Example response:**
 
         HTTP/1.1 200 OK
         Content-Type: application/json
@@ -5580,8 +5582,8 @@ Status Codes:|
             ]
         }
 
-  * [304 Not Modified](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.5) – The list of secrets has not changed.
-  * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
+* [304 Not Modified](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.5) – The list of secrets has not changed.
+* [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
 
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
@@ -5598,7 +5600,7 @@ Status Codes:|
 Response Headers:
 |
 
-  * **ETag** – An ID for this version of the response.
+* **ETag** – An ID for this version of the response.
 
 `GET ``/cmf/api/v1/secrets/{secretName}`¶
 
@@ -5606,7 +5608,7 @@ Response Headers:
 
 Parameters:|
 
-  * **secretName** (_string_) – Name of the Secret
+* **secretName** (_string_) – Name of the Secret
 
 ---|---
 
@@ -5617,7 +5619,7 @@ Parameters:|
 
 Status Codes:|
 
-  * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Secret found and returned, with security data masked. **Example response:**
+* [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Secret found and returned, with security data masked. **Example response:**
 
         HTTP/1.1 200 OK
         Content-Type: application/json
@@ -5644,7 +5646,7 @@ Status Codes:|
             }
         }
 
-  * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Secret not found. **Example response:**
+* [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Secret not found. **Example response:**
 
         HTTP/1.1 404 Not Found
         Content-Type: application/json
@@ -5657,7 +5659,7 @@ Status Codes:|
             ]
         }
 
-  * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
+* [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
 
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
@@ -5678,7 +5680,7 @@ Status Codes:|
 
 Parameters:|
 
-  * **secretName** (_string_) – Name of the Secret
+* **secretName** (_string_) – Name of the Secret
 
 ---|---
 
@@ -5703,7 +5705,7 @@ Parameters:|
 
 Status Codes:|
 
-  * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Returns the updated Secret **Example response:**
+* [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Returns the updated Secret **Example response:**
 
         HTTP/1.1 200 OK
         Content-Type: application/json
@@ -5730,7 +5732,7 @@ Status Codes:|
             }
         }
 
-  * [400 Bad Request](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1) – Bad request. **Example response:**
+* [400 Bad Request](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1) – Bad request. **Example response:**
 
         HTTP/1.1 400 Bad Request
         Content-Type: application/json
@@ -5743,7 +5745,7 @@ Status Codes:|
             ]
         }
 
-  * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Secret with the given name not found. **Example response:**
+* [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Secret with the given name not found. **Example response:**
 
         HTTP/1.1 404 Not Found
         Content-Type: application/json
@@ -5756,7 +5758,7 @@ Status Codes:|
             ]
         }
 
-  * [422 Unprocessable Entity](https://www.rfc-editor.org/rfc/rfc4918#section-11.2) – Request valid but invalid content. **Example response:**
+* [422 Unprocessable Entity](https://www.rfc-editor.org/rfc/rfc4918#section-11.2) – Request valid but invalid content. **Example response:**
 
         HTTP/1.1 422 Unprocessable Entity
         Content-Type: application/json
@@ -5769,7 +5771,7 @@ Status Codes:|
             ]
         }
 
-  * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
+* [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
 
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
@@ -5790,13 +5792,13 @@ Status Codes:|
 
 Parameters:|
 
-  * **secretName** (_string_) – Name of the Secret
+* **secretName** (_string_) – Name of the Secret
 
 ---|---
 Status Codes:|
 
-  * [204 No Content](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.5) – Secret was successfully deleted.
-  * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Secret not found. **Example response:**
+* [204 No Content](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.5) – Secret was successfully deleted.
+* [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Secret not found. **Example response:**
 
         HTTP/1.1 404 Not Found
         Content-Type: application/json
@@ -5809,7 +5811,7 @@ Status Codes:|
             ]
         }
 
-  * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
+* [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
 
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
@@ -5859,7 +5861,7 @@ Status Codes:|
 
 Status Codes:|
 
-  * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – The Kafka Catalog was successfully created. **Example response:**
+* [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – The Kafka Catalog was successfully created. **Example response:**
 
         HTTP/1.1 200 OK
         Content-Type: application/json
@@ -5889,7 +5891,7 @@ Status Codes:|
             }
         }
 
-  * [400 Bad Request](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1) – Bad request. **Example response:**
+* [400 Bad Request](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1) – Bad request. **Example response:**
 
         HTTP/1.1 400 Bad Request
         Content-Type: application/json
@@ -5902,7 +5904,7 @@ Status Codes:|
             ]
         }
 
-  * [409 Conflict](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.10) – Kafka Catalog already exists. **Example response:**
+* [409 Conflict](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.10) – Kafka Catalog already exists. **Example response:**
 
         HTTP/1.1 409 Conflict
         Content-Type: application/json
@@ -5915,7 +5917,7 @@ Status Codes:|
             ]
         }
 
-  * [422 Unprocessable Entity](https://www.rfc-editor.org/rfc/rfc4918#section-11.2) – Request valid but invalid content. **Example response:**
+* [422 Unprocessable Entity](https://www.rfc-editor.org/rfc/rfc4918#section-11.2) – Request valid but invalid content. **Example response:**
 
         HTTP/1.1 422 Unprocessable Entity
         Content-Type: application/json
@@ -5928,7 +5930,7 @@ Status Codes:|
             ]
         }
 
-  * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
+* [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
 
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
@@ -5947,13 +5949,14 @@ Status Codes:|
 
 **Retrieve a paginated list of Kafka Catalogs**
 
-Query Parameters:
+Query Parameters
 ---
+
 |
 
-  * **page** (_integer_) – Zero-based page index (0..N)
-  * **size** (_integer_) – The size of the page to be returned
-  * **sort** (_array_) – Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.
+* **page** (_integer_) – Zero-based page index (0..N)
+* **size** (_integer_) – The size of the page to be returned
+* **sort** (_array_) – Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.
 
 **Example request:**
 
@@ -5962,7 +5965,7 @@ Query Parameters:
 
 Status Codes:|
 
-  * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Kafka Catalogs found and returned. **Example response:**
+* [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Kafka Catalogs found and returned. **Example response:**
 
         HTTP/1.1 200 OK
         Content-Type: application/json
@@ -6008,7 +6011,7 @@ Status Codes:|
             ]
         }
 
-  * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
+* [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
 
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
@@ -6029,7 +6032,7 @@ Status Codes:|
 
 Parameters:|
 
-  * **catName** (_string_) – Name of the Kafka Catalog
+* **catName** (_string_) – Name of the Kafka Catalog
 
 ---|---
 
@@ -6040,7 +6043,7 @@ Parameters:|
 
 Status Codes:|
 
-  * [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Kafka Catalog found and returned. **Example response:**
+* [200 OK](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1) – Kafka Catalog found and returned. **Example response:**
 
         HTTP/1.1 200 OK
         Content-Type: application/json
@@ -6070,7 +6073,7 @@ Status Codes:|
             }
         }
 
-  * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Kafka Catalog not found. **Example response:**
+* [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Kafka Catalog not found. **Example response:**
 
         HTTP/1.1 404 Not Found
         Content-Type: application/json
@@ -6083,7 +6086,7 @@ Status Codes:|
             ]
         }
 
-  * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
+* [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
 
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
@@ -6104,13 +6107,13 @@ Status Codes:|
 
 Parameters:|
 
-  * **catName** (_string_) – Name of the Kafka Catalog
+* **catName** (_string_) – Name of the Kafka Catalog
 
 ---|---
 Status Codes:|
 
-  * [204 No Content](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.5) – Kafka Catalog was found and deleted.
-  * [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Kafka Catalog not found. **Example response:**
+* [204 No Content](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.5) – Kafka Catalog was found and deleted.
+* [404 Not Found](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) – Kafka Catalog not found. **Example response:**
 
         HTTP/1.1 404 Not Found
         Content-Type: application/json
@@ -6123,7 +6126,7 @@ Status Codes:|
             ]
         }
 
-  * [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
+* [500 Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) – Server error. **Example response:**
 
         HTTP/1.1 500 Internal Server Error
         Content-Type: application/json
@@ -6138,7 +6141,7 @@ Status Codes:|
 
 ## Troubleshooting¶
 
-  * **Resource not found** : If you encounter the error _Resource not found…_ when making a GET call, it may be due to the wrong URL. Specifically, the requested REST resource might not exist.
+* **Resource not found** : If you encounter the error _Resource not found…_ when making a GET call, it may be due to the wrong URL. Specifically, the requested REST resource might not exist.
 
 For example:
 

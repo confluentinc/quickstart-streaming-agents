@@ -10,17 +10,16 @@ AWS-specific wrapper script for publishing Flink docs to Kafka.
 This script extracts credentials from AWS Terraform state and runs the main publisher.
 """
 
-import os
-import sys
 import json
-import subprocess
 import logging
+import os
+import subprocess
+import sys
 from pathlib import Path
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -36,12 +35,12 @@ def run_terraform_output(state_path: Path) -> dict:
         Dictionary of terraform outputs
     """
     try:
-        cmd = ['terraform', 'output', '-json', f'-state={state_path}']
+        cmd = ["terraform", "output", "-json", f"-state={state_path}"]
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         outputs = json.loads(result.stdout)
 
         # Extract values from terraform output format
-        return {key: value['value'] for key, value in outputs.items()}
+        return {key: value["value"] for key, value in outputs.items()}
     except subprocess.CalledProcessError as e:
         logger.error(f"Terraform output failed: {e.stderr}")
         raise
@@ -81,18 +80,24 @@ def get_credentials():
     try:
         credentials = {
             # Kafka connection details
-            'bootstrap_servers': core_outputs['confluent_kafka_cluster_bootstrap_endpoint'],
-            'kafka_api_key': core_outputs['app_manager_kafka_api_key'],
-            'kafka_api_secret': core_outputs['app_manager_kafka_api_secret'],
-
+            "bootstrap_servers": core_outputs[
+                "confluent_kafka_cluster_bootstrap_endpoint"
+            ],
+            "kafka_api_key": core_outputs["app_manager_kafka_api_key"],
+            "kafka_api_secret": core_outputs["app_manager_kafka_api_secret"],
             # Schema Registry details
-            'schema_registry_url': core_outputs['confluent_schema_registry_rest_endpoint'],
-            'schema_registry_api_key': core_outputs['app_manager_schema_registry_api_key'],
-            'schema_registry_api_secret': core_outputs['app_manager_schema_registry_api_secret'],
-
+            "schema_registry_url": core_outputs[
+                "confluent_schema_registry_rest_endpoint"
+            ],
+            "schema_registry_api_key": core_outputs[
+                "app_manager_schema_registry_api_key"
+            ],
+            "schema_registry_api_secret": core_outputs[
+                "app_manager_schema_registry_api_secret"
+            ],
             # Topic configuration
-            'environment_name': core_outputs['confluent_environment_display_name'],
-            'cluster_name': core_outputs['confluent_kafka_cluster_display_name'],
+            "environment_name": core_outputs["confluent_environment_display_name"],
+            "cluster_name": core_outputs["confluent_kafka_cluster_display_name"],
         }
 
         logger.info("Successfully extracted all required credentials")
@@ -109,7 +114,9 @@ def get_credentials():
 def run_publisher(credentials: dict):
     """Run the main publisher script with extracted credentials."""
     # Path to the main publisher script
-    main_script = Path(__file__).parent / "../../../assets/lab2/flink_docs/publish_docs.py"
+    main_script = (
+        Path(__file__).parent / "../../../assets/lab2/flink_docs/publish_docs.py"
+    )
 
     if not main_script.exists():
         logger.error(f"Main publisher script not found: {main_script}")
@@ -117,18 +124,22 @@ def run_publisher(credentials: dict):
 
     # Set environment variables for the main script
     env = os.environ.copy()
-    env.update({
-        'KAFKA_BOOTSTRAP_SERVERS': credentials['bootstrap_servers'],
-        'KAFKA_API_KEY': credentials['kafka_api_key'],
-        'KAFKA_API_SECRET': credentials['kafka_api_secret'],
-        'SCHEMA_REGISTRY_URL': credentials['schema_registry_url'],
-        'SCHEMA_REGISTRY_API_KEY': credentials['schema_registry_api_key'],
-        'SCHEMA_REGISTRY_API_SECRET': credentials['schema_registry_api_secret'],
-        'KAFKA_TOPIC': f"{credentials['environment_name']}.{credentials['cluster_name']}.documents"  # Full topic name
-    })
+    env.update(
+        {
+            "KAFKA_BOOTSTRAP_SERVERS": credentials["bootstrap_servers"],
+            "KAFKA_API_KEY": credentials["kafka_api_key"],
+            "KAFKA_API_SECRET": credentials["kafka_api_secret"],
+            "SCHEMA_REGISTRY_URL": credentials["schema_registry_url"],
+            "SCHEMA_REGISTRY_API_KEY": credentials["schema_registry_api_key"],
+            "SCHEMA_REGISTRY_API_SECRET": credentials["schema_registry_api_secret"],
+            "KAFKA_TOPIC": f"{credentials['environment_name']}.{credentials['cluster_name']}.documents",  # Full topic name
+        }
+    )
 
     logger.info(f"Running main publisher script: {main_script}")
-    logger.info(f"Publishing to topic 'documents' in cluster '{credentials['cluster_name']}'")
+    logger.info(
+        f"Publishing to topic 'documents' in cluster '{credentials['cluster_name']}'"
+    )
 
     try:
         # Use uv virtual environment python
@@ -139,7 +150,9 @@ def run_publisher(credentials: dict):
             sys.exit(1)
 
         # Run the main script
-        result = subprocess.run([str(venv_python), str(main_script)], env=env, check=True)
+        result = subprocess.run(
+            [str(venv_python), str(main_script)], env=env, check=True
+        )
         logger.info("Publisher completed successfully")
         return result.returncode
     except subprocess.CalledProcessError as e:
@@ -166,5 +179,5 @@ def main():
         sys.exit(1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

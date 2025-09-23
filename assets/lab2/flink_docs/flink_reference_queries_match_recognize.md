@@ -35,10 +35,10 @@ In December 2016, the International Organization for Standardization (ISO) relea
 
 A `MATCH_RECOGNIZE` clause enables the following tasks:
 
-  * Logically partition and order the data that is used with the `PARTITION BY` and `ORDER BY` clauses.
-  * Define patterns of rows to seek using the `PATTERN` clause. These patterns use a syntax similar to that of regular expressions.
-  * The logical components of the row pattern variables are specified in the `DEFINE` clause.
-  * Define measures, which are expressions usable in other parts of the SQL query, in the `MEASURES` clause.
+* Logically partition and order the data that is used with the `PARTITION BY` and `ORDER BY` clauses.
+* Define patterns of rows to seek using the `PATTERN` clause. These patterns use a syntax similar to that of regular expressions.
+* The logical components of the row pattern variables are specified in the `DEFINE` clause.
+* Define measures, which are expressions usable in other parts of the SQL query, in the `MEASURES` clause.
 
 This topic explains each keyword in more detail and illustrates more complex examples.
 
@@ -54,13 +54,13 @@ To use the `MATCH_RECOGNIZE` clause in the Flink SQL CLI, no action is necessary
 
 Every `MATCH_RECOGNIZE` query consists of the following clauses:
 
-  * PARTITION BY \- defines the logical partitioning of the table, similar to a `GROUP BY` operation.
-  * ORDER BY \- specifies how the incoming rows should be ordered, which is essential, because patterns depend on an order.
-  * MEASURES \- defines the output of the clause, similar to a `SELECT` clause.
-  * ONE ROW PER MATCH \- output mode that defines how many rows per match to produce.
-  * AFTER MATCH SKIP \- specifies where the next match should start. This is also a way to control how many distinct matches a single event can belong to.
-  * PATTERN \- enables constructing patterns that will be searched for using a syntax that’s similar to regular expressions.
-  * DEFINE \- defines the conditions that the pattern variables must satisfy.
+* PARTITION BY \- defines the logical partitioning of the table, similar to a `GROUP BY` operation.
+* ORDER BY \- specifies how the incoming rows should be ordered, which is essential, because patterns depend on an order.
+* MEASURES \- defines the output of the clause, similar to a `SELECT` clause.
+* ONE ROW PER MATCH \- output mode that defines how many rows per match to produce.
+* AFTER MATCH SKIP \- specifies where the next match should start. This is also a way to control how many distinct matches a single event can belong to.
+* PATTERN \- enables constructing patterns that will be searched for using a syntax that’s similar to regular expressions.
+* DEFINE \- defines the conditions that the pattern variables must satisfy.
 
 ### Examples¶
 
@@ -226,15 +226,15 @@ The following SQL shows an example pattern:
 
 You can use the following operators:
 
-  * _Concatenation_ \- a pattern like `(A B)` means that the contiguity is strict between `A` and `B`, so there can be no rows that weren’t mapped to `A` or `B` in between.
-  * _Quantifiers_ \- modify the number of rows that can be mapped to the pattern variable.
-    * `*` — _0_ or more rows
-    * `+` — _1_ or more rows
-    * `?` — _0_ or _1_ rows
-    * `{ n }` — exactly _n_ rows (_n > 0_)
-    * `{ n, }` — _n_ or more rows (_n ≥ 0_)
-    * `{ n, m }` — between _n_ and _m_ (inclusive) rows (_0 ≤ n ≤ m, 0 < m_)
-    * `{ , m }` — between _0_ and _m_ (inclusive) rows (_m > 0_)
+* _Concatenation_ \- a pattern like `(A B)` means that the contiguity is strict between `A` and `B`, so there can be no rows that weren’t mapped to `A` or `B` in between.
+* _Quantifiers_ \- modify the number of rows that can be mapped to the pattern variable.
+  * `*` — _0_ or more rows
+  * `+` — _1_ or more rows
+  * `?` — _0_ or _1_ rows
+  * `{ n }` — exactly _n_ rows (_n > 0_)
+  * `{ n, }` — _n_ or more rows (_n ≥ 0_)
+  * `{ n, m }` — between _n_ and _m_ (inclusive) rows (_0 ≤ n ≤ m, 0 < m_)
+  * `{ , m }` — between _0_ and _m_ (inclusive) rows (_m > 0_)
 
 Important
 
@@ -368,8 +368,8 @@ Even though prices also drop by higher values, for example, by _11_ (between `01
 
 The _output mode_ describes how many rows should be emitted for every found match. The SQL standard describes two modes:
 
-  * `ALL ROWS PER MATCH`
-  * `ONE ROW PER MATCH`
+* `ALL ROWS PER MATCH`
+* `ONE ROW PER MATCH`
 
 In Flink SQL, the only supported output mode is `ONE ROW PER MATCH`, and it always produces one output summary row for each found match.
 
@@ -437,14 +437,16 @@ The following table describes how these conditions are evaluated for each incomi
 
 The table consists of the following columns:
 
-  * `#` \- the row identifier that uniquely identifies an incoming row in the lists `[A.price]` / `[B.price]` / `[price]`.
-  * `price` \- the price of the incoming row.
-  * `[A.price]`/ `[B.price]`/ `[price]` \- describe lists of rows which are used in the `DEFINE` clause to evaluate conditions.
-  * `Classifier` \- the classifier of the current row which indicates the pattern variable the row is mapped to.
-  * `A.price`/ `B.price`/ `SUM(price)`/ `SUM(B.price)` \- describes the result after those expressions have been evaluated.
+* `#` \- the row identifier that uniquely identifies an incoming row in the lists `[A.price]` / `[B.price]` / `[price]`.
+* `price` \- the price of the incoming row.
+* `[A.price]`/ `[B.price]`/ `[price]` \- describe lists of rows which are used in the `DEFINE` clause to evaluate conditions.
+* `Classifier` \- the classifier of the current row which indicates the pattern variable the row is mapped to.
+* `A.price`/ `B.price`/ `SUM(price)`/ `SUM(B.price)` \- describes the result after those expressions have been evaluated.
 
     == ===== ========== ========= ============== ================== ======= ======= ========== ============
-    #  price Classifier [A.price] [B.price]      [price]            A.price B.price SUM(price) SUM(B.price)
+
+#  price Classifier [A.price] [B.price]      [price]            A.price B.price SUM(price) SUM(B.price)
+
     == ===== ========== ========= ============== ================== ======= ======= ========== ============
     #1 10    -> A       #1        -              -                  10      -       -          -
     #2 15    -> B       #1        #2             #1, #2             10      15      25         15
@@ -478,9 +480,9 @@ The following table describes how these conditions are evaluated for each incomi
 
 The table consists of the following columns:
 
-  * `price` \- the price of the incoming row.
-  * `Classifier` \- the classifier of the current row which indicates the pattern variable the row is mapped to.
-  * `LAST(B.price, 1)`/ `LAST(B.price, 2)` \- describes the result after these expressions have been evaluated.
+* `price` \- the price of the incoming row.
+* `Classifier` \- the classifier of the current row which indicates the pattern variable the row is mapped to.
+* `LAST(B.price, 1)`/ `LAST(B.price, 2)` \- describes the result after these expressions have been evaluated.
 
     ===== ========== ================ ================ ========================================================================================
     price Classifier LAST(B.price, 1) LAST(B.price, 2) Comment
@@ -528,10 +530,10 @@ The `AFTER MATCH SKIP` clause specifies where to start a new matching procedure 
 
 There are four different strategies:
 
-  * `SKIP PAST LAST ROW` \- resumes the pattern matching at the next row after the last row of the current match.
-  * `SKIP TO NEXT ROW` \- continues searching for a new match starting at the next row after the starting row of the match.
-  * `SKIP TO LAST variable` \- resumes the pattern matching at the last row that is mapped to the specified pattern variable.
-  * `SKIP TO FIRST variable` \- resumes the pattern matching at the first row that is mapped to the specified pattern variable.
+* `SKIP PAST LAST ROW` \- resumes the pattern matching at the next row after the last row of the current match.
+* `SKIP TO NEXT ROW` \- continues searching for a new match starting at the next row after the starting row of the match.
+* `SKIP TO LAST variable` \- resumes the pattern matching at the last row that is mapped to the specified pattern variable.
+* `SKIP TO FIRST variable` \- resumes the pattern matching at the first row that is mapped to the specified pattern variable.
 
 This is also a way to specify how many matches a single event can belong to. For example, with the `SKIP PAST LAST ROW` strategy, every event can belong to at most one match.
 
@@ -674,18 +676,18 @@ The Flink SQL implementation of the `MATCH_RECOGNIZE` clause is an ongoing effor
 
 Unsupported features include:
 
-  * Pattern expressions
-    * Pattern groups - this means that e.g. quantifiers can not be applied to a subsequence of the pattern. Thus, `(A (B C)+)` is not a valid pattern.
-    * Alterations - patterns like `PATTERN((A B | C D) E)`, which means that either a subsequence `A B` or `C D` has to be found before looking for the `E` row.
-    * `PERMUTE` operator - which is equivalent to all permutations of variables that it was applied to e.g. `PATTERN (PERMUTE (A, B, C))` = `PATTERN (A B C | A C B | B A C | B C A | C A B | C B A)`.
-    * Anchors - `^, $`, which denote beginning/end of a partition, those do not make sense in the streaming context and will not be supported.
-    * Exclusion - `PATTERN ({- A -} B)` meaning that `A` will be looked for but will not participate in the output. This works only for the `ALL ROWS PER MATCH` mode.
-    * Reluctant optional quantifier - `PATTERN A??` only the greedy optional quantifier is supported.
-  * `ALL ROWS PER MATCH` output mode - which produces an output row for every row that participated in the creation of a found match. This also means:
-    * The only supported semantic for the `MEASURES` clause is `FINAL`.
-    * `CLASSIFIER` function, which returns the pattern variable that a row was mapped to, is not yet supported.
-  * `SUBSET` \- which allows creating logical groups of pattern variables and using those groups in the `DEFINE` and `MEASURES` clauses.
-  * Physical offsets - `PREV/NEXT`, which indexes all events seen rather than only those that were mapped to a pattern variable (as in the logical offsets case).
-  * `MATCH_RECOGNIZE` is supported only for SQL. There is no equivalent in the Table API.
-  * Aggregations
-    * Distinct aggregations are not supported.
+* Pattern expressions
+  * Pattern groups - this means that e.g. quantifiers can not be applied to a subsequence of the pattern. Thus, `(A (B C)+)` is not a valid pattern.
+  * Alterations - patterns like `PATTERN((A B | C D) E)`, which means that either a subsequence `A B` or `C D` has to be found before looking for the `E` row.
+  * `PERMUTE` operator - which is equivalent to all permutations of variables that it was applied to e.g. `PATTERN (PERMUTE (A, B, C))` = `PATTERN (A B C | A C B | B A C | B C A | C A B | C B A)`.
+  * Anchors - `^, $`, which denote beginning/end of a partition, those do not make sense in the streaming context and will not be supported.
+  * Exclusion - `PATTERN ({- A -} B)` meaning that `A` will be looked for but will not participate in the output. This works only for the `ALL ROWS PER MATCH` mode.
+  * Reluctant optional quantifier - `PATTERN A??` only the greedy optional quantifier is supported.
+* `ALL ROWS PER MATCH` output mode - which produces an output row for every row that participated in the creation of a found match. This also means:
+  * The only supported semantic for the `MEASURES` clause is `FINAL`.
+  * `CLASSIFIER` function, which returns the pattern variable that a row was mapped to, is not yet supported.
+* `SUBSET` \- which allows creating logical groups of pattern variables and using those groups in the `DEFINE` and `MEASURES` clauses.
+* Physical offsets - `PREV/NEXT`, which indexes all events seen rather than only those that were mapped to a pattern variable (as in the logical offsets case).
+* `MATCH_RECOGNIZE` is supported only for SQL. There is no equivalent in the Table API.
+* Aggregations
+  * Distinct aggregations are not supported.

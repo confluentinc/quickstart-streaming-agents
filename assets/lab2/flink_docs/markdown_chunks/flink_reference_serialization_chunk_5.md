@@ -9,15 +9,15 @@ total_chunks: 8
 
 #### MULTISET[VARCHAR]¶
 
-  * JSON Schema type: `Object`
+* JSON Schema type: `Object`
 
-  * Additional properties:
+* Additional properties:
 
-    * `connect.type=map`
-    * `flink.type=multiset`
-  * JSON type title: The count (value) in the JSON schema must map to a Flink INT type. For MULTISET types, the count (value) in the JSON schema must map to a Flink INT type, which corresponds to `connect.type: int32` in the JSON Schema. Using `connect.type: int64` causes a validation error.
+  * `connect.type=map`
+  * `flink.type=multiset`
+* JSON type title: The count (value) in the JSON schema must map to a Flink INT type. For MULTISET types, the count (value) in the JSON schema must map to a Flink INT type, which corresponds to `connect.type: int32` in the JSON Schema. Using `connect.type: int64` causes a validation error.
 
-  * Example:
+* Example:
 
         {
           "type": "object",
@@ -31,20 +31,20 @@ total_chunks: 8
 
 #### ROW¶
 
-  * JSON Schema type: `Object`
-  * Additional properties: –
-  * JSON type title: –
-  * Example: –
+* JSON Schema type: `Object`
+* Additional properties: –
+* JSON type title: –
+* Example: –
 
 #### SMALLINT¶
 
-  * JSON Schema type: `Number`
+* JSON Schema type: `Number`
 
-  * Additional properties: `connect.type=int16`
+* Additional properties: `connect.type=int16`
 
-  * JSON type title: –
+* JSON type title: –
 
-  * Example:
+* Example:
 
         {
           "type": "number",
@@ -53,15 +53,15 @@ total_chunks: 8
 
 #### TIME¶
 
-  * JSON Schema type: `Number`
+* JSON Schema type: `Number`
 
-  * Additional properties:
+* Additional properties:
 
-    * `connect.type=int32`
-    * `flink.precision`
-  * JSON type title: `org.apache.kafka.connect.data.Time`
+  * `connect.type=int32`
+  * `flink.precision`
+* JSON type title: `org.apache.kafka.connect.data.Time`
 
-  * Example:
+* Example:
 
         {
           "type":"number",
@@ -73,16 +73,16 @@ total_chunks: 8
 
 #### TIMESTAMP¶
 
-  * JSON Schema type: `Number`
+* JSON Schema type: `Number`
 
-  * Additional properties:
+* Additional properties:
 
-    * `connect.type=int64`
-    * `flink.precision`
-    * `flink.type=timestamp`
-  * JSON type title: `org.apache.kafka.connect.data.Timestamp`
+  * `connect.type=int64`
+  * `flink.precision`
+  * `flink.type=timestamp`
+* JSON type title: `org.apache.kafka.connect.data.Timestamp`
 
-  * Example:
+* Example:
 
         {
           "type":"number",
@@ -95,15 +95,15 @@ total_chunks: 8
 
 #### TIMESTAMP_LTZ¶
 
-  * JSON Schema type: `Number`
+* JSON Schema type: `Number`
 
-  * Additional properties:
+* Additional properties:
 
-    * `connect.type=int64`
-    * `flink.precision`
-  * JSON type title: `org.apache.kafka.connect.data.Timestamp`
+  * `connect.type=int64`
+  * `flink.precision`
+* JSON type title: `org.apache.kafka.connect.data.Timestamp`
 
-  * Example:
+* Example:
 
         {
           "type":"number",
@@ -115,13 +115,13 @@ total_chunks: 8
 
 #### TINYINT¶
 
-  * JSON Schema type: `Number`
+* JSON Schema type: `Number`
 
-  * Additional properties: `connect.type=int8`
+* Additional properties: `connect.type=int8`
 
-  * JSON type title: –
+* JSON type title: –
 
-  * Example:
+* Example:
 
         {
           "type": "number",
@@ -130,15 +130,15 @@ total_chunks: 8
 
 #### VARBINARY¶
 
-  * JSON Schema type: `String`
+* JSON Schema type: `String`
 
-  * Additional properties:
+* Additional properties:
 
-    * `connect.type=bytes`
-    * `flink.maxLength`: Different from JSON’s `maxLength`, because this property describes bytes length, not string length.
-  * JSON type title: –
+  * `connect.type=bytes`
+  * `flink.maxLength`: Different from JSON’s `maxLength`, because this property describes bytes length, not string length.
+* JSON type title: –
 
-  * Example:
+* Example:
 
         {
           "type": "string",
@@ -149,13 +149,13 @@ total_chunks: 8
 
 #### VARCHAR¶
 
-  * JSON Schema type: `String`
+* JSON Schema type: `String`
 
-  * Additional properties: `maxLength`
+* Additional properties: `maxLength`
 
-  * JSON type title: –
+* JSON type title: –
 
-  * Example:
+* Example:
 
         {
           "type": "string",

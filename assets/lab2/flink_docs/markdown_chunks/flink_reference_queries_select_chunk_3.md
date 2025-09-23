@@ -7,7 +7,7 @@ chunk_index: 3
 total_chunks: 3
 ---
 
-https://acme.com/index.html 1692812175 10.0.0.1 https://acme.com/index.html 1692812175
+<https://acme.com/index.html> 1692812175 10.0.0.1 <https://acme.com/index.html> 1692812175
 
 ## Examples¶
 
@@ -21,7 +21,7 @@ Syntax
 
 Properties
 
-  * Statement is bounded
+* Statement is bounded
 
 ### Check local time zone is configured correctly¶
 
@@ -31,8 +31,8 @@ Syntax
 
 Properties
 
-  * Statement is bounded
-  * NOW() returns a TIMSTAMP_LTZ(3), so if the client is configured correctly, it should show a timestamp in your local time zone.
+* Statement is bounded
+* NOW() returns a TIMSTAMP_LTZ(3), so if the client is configured correctly, it should show a timestamp in your local time zone.
 
 ### Combine multiple tables into one¶
 
@@ -66,10 +66,10 @@ The output resembles:
 
 Properties
 
-  * The CURRENT_WATERMARK function returns the watermark that arrived at the operator evaluating the SELECT statement.
-  * The returned watermark is the minimum of all inputs, across all tables/topics and their partitions.
-  * If a common watermark was not received from all inputs, the function returns NULL.
-  * The CURRENT_WATERMARK function takes a [time attribute](../../concepts/timely-stream-processing.html#flink-sql-time-attributes), which is a column that has WATERMARK FOR defined.
+* The CURRENT_WATERMARK function returns the watermark that arrived at the operator evaluating the SELECT statement.
+* The returned watermark is the minimum of all inputs, across all tables/topics and their partitions.
+* If a common watermark was not received from all inputs, the function returns NULL.
+* The CURRENT_WATERMARK function takes a [time attribute](../../concepts/timely-stream-processing.html#flink-sql-time-attributes), which is a column that has WATERMARK FOR defined.
 
 A watermark is always emitted after the row has been processed, so the first row always has a NULL watermark.
 

@@ -11,14 +11,14 @@ This quick start gets you up and running with Confluent Cloud for Apache Flink®
 
 In this quick start guide, you perform the following steps:
 
-  * Step 1: Create a workspace
-  * Step 2: Run SQL statements
-  * Step 3: Query streaming data
-  * Step 4: Query existing topics (optional)
+* Step 1: Create a workspace
+* Step 2: Run SQL statements
+* Step 3: Query streaming data
+* Step 4: Query existing topics (optional)
 
 ## Prerequisites¶
 
-  * Access to Confluent Cloud.
+* Access to Confluent Cloud.
 
 ## Step 1: Create a workspace¶
 
@@ -80,8 +80,8 @@ Flink SQL enables using familiar SQL syntax to query streaming data. Confluent C
 
 In Flink SQL, catalog objects, like tables, are scoped by catalog and database.
 
-  * A _catalog_ is a collection of databases that share the same namespace.
-  * A _database_ is a collection of tables that share the same namespace.
+* A _catalog_ is a collection of databases that share the same namespace.
+* A _database_ is a collection of tables that share the same namespace.
 
 In Confluent Cloud, an environment is mapped to a Flink catalog, and a Kafka cluster is mapped to a Flink database.
 

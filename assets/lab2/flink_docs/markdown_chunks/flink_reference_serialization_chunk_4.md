@@ -17,19 +17,19 @@ The following table shows the mapping of Flink SQL types to JSON Schema types.
 
 This mapping is important for creating tables, because it defines the JSON Schema that’s produced by a CREATE TABLE statement.
 
-  * Nullable types are expressed as oneOf(Null, T).
-  * Object for a MAP and MULTISET must have two fields [key, value].
-  * MULTISET is equivalent to MAP[K, INT] and is serialized accordingly.
+* Nullable types are expressed as oneOf(Null, T).
+* Object for a MAP and MULTISET must have two fields [key, value].
+* MULTISET is equivalent to MAP[K, INT] and is serialized accordingly.
 
 #### ARRAY¶
 
-  * JSON Schema type: `Array`
+* JSON Schema type: `Array`
 
-  * Additional properties: –
+* Additional properties: –
 
-  * JSON type title: –
+* JSON type title: –
 
-  * Example:
+* Example:
 
         {
           "type": "array",
@@ -44,13 +44,13 @@ This mapping is important for creating tables, because it defines the JSON Schem
 
 #### BIGINT¶
 
-  * JSON Schema type: `Number`
+* JSON Schema type: `Number`
 
-  * Additional properties: `connect.type=int64`
+* Additional properties: `connect.type=int64`
 
-  * JSON type title: –
+* JSON type title: –
 
-  * Example:
+* Example:
 
         {
           "type": "number",
@@ -59,15 +59,15 @@ This mapping is important for creating tables, because it defines the JSON Schem
 
 #### BINARY¶
 
-  * JSON Schema type: `String`
+* JSON Schema type: `String`
 
-  * Additional properties:
+* Additional properties:
 
-    * `connect.type=bytes`
-    * `flink.minLength=flink.maxLength`: Different from JSON’s `minLength/maxLength`, because this property describes bytes length, not string length.
-  * JSON type title: –
+  * `connect.type=bytes`
+  * `flink.minLength=flink.maxLength`: Different from JSON’s `minLength/maxLength`, because this property describes bytes length, not string length.
+* JSON type title: –
 
-  * Example:
+* Example:
 
         {
           "type": "string",
@@ -79,13 +79,13 @@ This mapping is important for creating tables, because it defines the JSON Schem
 
 #### BOOLEAN¶
 
-  * JSON Schema type: `Boolean`
+* JSON Schema type: `Boolean`
 
-  * Additional properties: –
+* Additional properties: –
 
-  * JSON type title: –
+* JSON type title: –
 
-  * Example:
+* Example:
 
         {
           "type": "array",
@@ -100,13 +100,13 @@ This mapping is important for creating tables, because it defines the JSON Schem
 
 #### CHAR¶
 
-  * JSON Schema type: `String`
+* JSON Schema type: `String`
 
-  * Additional properties: `minLength=maxLength`
+* Additional properties: `minLength=maxLength`
 
-  * JSON type title: –
+* JSON type title: –
 
-  * Example:
+* Example:
 
         {
           "type": "string",
@@ -116,27 +116,27 @@ This mapping is important for creating tables, because it defines the JSON Schem
 
 #### DATE¶
 
-  * JSON Schema type: `Number`
-  * Additional properties: `connect.type=int32`
-  * JSON type title: `org.apache.kafka.connect.data.Date`
-  * Example: –
+* JSON Schema type: `Number`
+* Additional properties: `connect.type=int32`
+* JSON type title: `org.apache.kafka.connect.data.Date`
+* Example: –
 
 #### DECIMAL¶
 
-  * JSON Schema type: `Number`
-  * Additional properties: `connect.type=bytes`
-  * JSON type title: `org.apache.kafka.connect.data.Decimal`
-  * Example: –
+* JSON Schema type: `Number`
+* Additional properties: `connect.type=bytes`
+* JSON type title: `org.apache.kafka.connect.data.Decimal`
+* Example: –
 
 #### DOUBLE¶
 
-  * JSON Schema type: `Number`
+* JSON Schema type: `Number`
 
-  * Additional properties: `connect.type=float64`
+* Additional properties: `connect.type=float64`
 
-  * JSON type title: –
+* JSON type title: –
 
-  * Example:
+* Example:
 
         {
           "type": "number",
@@ -145,13 +145,13 @@ This mapping is important for creating tables, because it defines the JSON Schem
 
 #### FLOAT¶
 
-  * JSON Schema type: `Number`
+* JSON Schema type: `Number`
 
-  * Additional properties: `connect.type=float32`
+* Additional properties: `connect.type=float32`
 
-  * JSON type title: –
+* JSON type title: –
 
-  * Example:
+* Example:
 
         {
           "type": "number",
@@ -160,13 +160,13 @@ This mapping is important for creating tables, because it defines the JSON Schem
 
 #### INT¶
 
-  * JSON Schema type: `Number`
+* JSON Schema type: `Number`
 
-  * Additional properties: `connect.type=int32`
+* Additional properties: `connect.type=int32`
 
-  * JSON type title: –
+* JSON type title: –
 
-  * Example:
+* Example:
 
         {
           "type": "number",
@@ -175,13 +175,13 @@ This mapping is important for creating tables, because it defines the JSON Schem
 
 #### MAP[K, V]¶
 
-  * JSON Schema type: `Array[Object]`
+* JSON Schema type: `Array[Object]`
 
-  * Additional properties: `connect.type=map`
+* Additional properties: `connect.type=map`
 
-  * JSON type title: –
+* JSON type title: –
 
-  * Example:
+* Example:
 
         {
           "type": "array",
@@ -203,13 +203,13 @@ This mapping is important for creating tables, because it defines the JSON Schem
 
 #### MAP[VARCHAR, V]¶
 
-  * JSON Schema type: `Object`
+* JSON Schema type: `Object`
 
-  * Additional properties: `connect.type=map`
+* Additional properties: `connect.type=map`
 
-  * JSON type title: –
+* JSON type title: –
 
-  * Example:
+* Example:
 
         {
           "type":"object",
@@ -223,15 +223,15 @@ This mapping is important for creating tables, because it defines the JSON Schem
 
 #### MULTISET[K]¶
 
-  * JSON Schema type: `Array[Object]`
+* JSON Schema type: `Array[Object]`
 
-  * Additional properties:
+* Additional properties:
 
-    * `connect.type=map`
-    * `flink.type=multiset`
-  * JSON type title: The count (value) in the JSON schema must map to a Flink INT type. For MULTISET types, the count (value) in the JSON schema must map to a Flink INT type, which corresponds to `connect.type: int32` in the JSON Schema. Using `connect.type: int64` causes a validation error.
+  * `connect.type=map`
+  * `flink.type=multiset`
+* JSON type title: The count (value) in the JSON schema must map to a Flink INT type. For MULTISET types, the count (value) in the JSON schema must map to a Flink INT type, which corresponds to `connect.type: int32` in the JSON Schema. Using `connect.type: int64` causes a validation error.
 
-  * Example:
+* Example:
 
         {
           "type": "array",

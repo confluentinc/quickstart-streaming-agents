@@ -15,15 +15,15 @@ In this guide, you create a Flink table and apply the Deduplicate Rows action to
 
 This guide shows the following steps:
 
-  * Step 1: Create a users table
-  * Step 2: Apply the Deduplicate Topic action
-  * Step 3: Inspect the output table
+* Step 1: Create a users table
+* Step 2: Apply the Deduplicate Topic action
+* Step 3: Inspect the output table
 
 ## Prerequisites¶
 
-  * Access to Confluent Cloud.
-  * The OrganizationAdmin, EnvironmentAdmin, or FlinkAdmin role for creating compute pools, or the FlinkDeveloper role if you already have a compute pool. If you don’t have the appropriate role, contact your OrganizationAdmin or EnvironmentAdmin. For more information, see [Grant Role-Based Access in Confluent Cloud for Apache Flink](../operate-and-deploy/flink-rbac.html#flink-rbac).
-  * A provisioned Flink compute pool.
+* Access to Confluent Cloud.
+* The OrganizationAdmin, EnvironmentAdmin, or FlinkAdmin role for creating compute pools, or the FlinkDeveloper role if you already have a compute pool. If you don’t have the appropriate role, contact your OrganizationAdmin or EnvironmentAdmin. For more information, see [Grant Role-Based Access in Confluent Cloud for Apache Flink](../operate-and-deploy/flink-rbac.html#flink-rbac).
+* A provisioned Flink compute pool.
 
 ## Step 1: Create a users table¶
 

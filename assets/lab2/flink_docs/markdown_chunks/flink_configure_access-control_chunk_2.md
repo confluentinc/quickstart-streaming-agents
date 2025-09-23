@@ -85,7 +85,7 @@ DeveloperManage: Resource-level | Yes | Yes | Yes | No
 
 The following roles do not have access to the CMF resources:
 
-  * SecurityAdmin
-  * AuditAdmin
-  * Operator
-  * DeveloperWrite
+* SecurityAdmin
+* AuditAdmin
+* Operator
+* DeveloperWrite

@@ -70,8 +70,8 @@ The `LIKE` function returns TRUE if `string1` matches the pattern specified by `
 
 The pattern can contain these special characters:
 
-  * **%** – matches any number of characters
-  * **_** – matches a single character
+* **%** – matches any number of characters
+* **_** – matches a single character
 
 Returns UNKNOWN if either `string1` or `string2` is NULL.
 
@@ -100,8 +100,8 @@ The `NOT LIKE` function returns TRUE if `string1` does not match the pattern spe
 
 The pattern can contain these special characters:
 
-  * **%** – matches any number of characters
-  * **_** – matches a single character
+* **%** – matches any number of characters
+* **_** – matches a single character
 
 Returns UNKNOWN if `string1` or `string2` is NULL.
 

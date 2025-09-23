@@ -15,21 +15,21 @@ In this guide, you learn how to run a Flink SQL statement that combines multiple
 
 This topic shows the following steps:
 
-  * Step 1: Inspect the example source streams
-  * Step 2: Create a unified view with most recent records
+* Step 1: Inspect the example source streams
+* Step 2: Create a unified view with most recent records
 
 ## Prerequisites¶
 
-  * Access to Confluent Cloud.
-  * The OrganizationAdmin, EnvironmentAdmin, or FlinkAdmin role for creating compute pools, or the FlinkDeveloper role if you already have a compute pool. If you don’t have the appropriate role, contact your OrganizationAdmin or EnvironmentAdmin. For more information, see [Grant Role-Based Access in Confluent Cloud for Apache Flink](../operate-and-deploy/flink-rbac.html#flink-rbac).
-  * A provisioned Flink compute pool.
+* Access to Confluent Cloud.
+* The OrganizationAdmin, EnvironmentAdmin, or FlinkAdmin role for creating compute pools, or the FlinkDeveloper role if you already have a compute pool. If you don’t have the appropriate role, contact your OrganizationAdmin or EnvironmentAdmin. For more information, see [Grant Role-Based Access in Confluent Cloud for Apache Flink](../operate-and-deploy/flink-rbac.html#flink-rbac).
+* A provisioned Flink compute pool.
 
 ## Step 1: Inspect the example source streams¶
 
 In this step, you examine the read-only `orders` and `clicks` tables in the `examples.marketplace` database to identify:
 
-  * The common identifier field that links the streams
-  * The unique fields from each stream that you want to track
+* The common identifier field that links the streams
+* The unique fields from each stream that you want to track
 
   1. Log in to Confluent Cloud and navigate to your Flink workspace.
 

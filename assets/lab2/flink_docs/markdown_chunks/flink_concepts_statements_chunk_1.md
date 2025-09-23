@@ -13,9 +13,9 @@ In Confluent Cloud for Apache Flink®, a _statement_ represents a high-level res
 
 Each statement has a property that holds the SQL query that you entered. Based on the SQL query, the statement may be one of these kinds:
 
-  * A metadata operation, or [DDL statement](../reference/statements/overview.html#flink-sql-statements-overview)
-  * A _background statement_ , which writes data back to a table/topic while running in the background
-  * A _foreground statement_ , which writes data back to the UI or a client.
+* A metadata operation, or [DDL statement](../reference/statements/overview.html#flink-sql-statements-overview)
+* A _background statement_ , which writes data back to a table/topic while running in the background
+* A _foreground statement_ , which writes data back to the UI or a client.
 
 In all of these cases, the statement represents any SQL statement for [Data Definition Language (DDL)](../reference/statements/overview.html#flink-sql-statements-overview), [Data Manipulation Language (DML)](../reference/queries/overview.html#flink-sql-queries), and Data Query Language (DQL).
 

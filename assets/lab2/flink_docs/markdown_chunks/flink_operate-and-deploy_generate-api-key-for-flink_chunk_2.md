@@ -41,7 +41,7 @@ For production Flink deployments, select the **Service account** option, and cli
 
   11. Click **Complete**.
 
-You can use the Confluent CLI to generate an API key for Flink access. For more information, see [confluent api-key create ](https://docs.confluent.io/confluent-cli/current/command-reference/api-key/confluent_api-key_create.html).
+You can use the Confluent CLI to generate an API key for Flink access. For more information, see [confluent api-key create](https://docs.confluent.io/confluent-cli/current/command-reference/api-key/confluent_api-key_create.html).
 
   1. Log in to Confluent Cloud:
 

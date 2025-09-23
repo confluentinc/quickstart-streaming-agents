@@ -98,5 +98,5 @@ The non-determinism in batch processing is caused mainly by the non-deterministi
 
 This difference is due to the fact that Flink SQL inherits the definition of functions from Apache Calcite, where there are two types of functions other than deterministic function: non-deterministic functions and dynamic functions.
 
-  * The non-deterministic functions are executed at runtime in clusters and evaluated per record.
-  * The dynamic functions determine the corresponding values only when the query plan is generated. They’re not executed at runtime, and different values are obtained at different times, but the same values are obtained during the same execution. Built-in dynamic functions are mainly temporal functions.
+* The non-deterministic functions are executed at runtime in clusters and evaluated per record.
+* The dynamic functions determine the corresponding values only when the query plan is generated. They’re not executed at runtime, and different values are obtained at different times, but the same values are obtained during the same execution. Built-in dynamic functions are mainly temporal functions.

@@ -20,8 +20,8 @@ Confluent Platform | Confluent Manager for Apache Flink® | Apache Flink® | Apa
 
 Note the following:
 
-  * Standard support means any support level below Platinum support. For example, if you have Gold support, you have Standard support.
-  * The end of support date applies to minor versions and any maintenance versions that come after the minor version. This means that maintenance versions follow the same lifecycle of the minor version.
+* Standard support means any support level below Platinum support. For example, if you have Gold support, you have Standard support.
+* The end of support date applies to minor versions and any maintenance versions that come after the minor version. This means that maintenance versions follow the same lifecycle of the minor version.
 
 Confluent Platform for Apache Flink has the following operational requirements:
 

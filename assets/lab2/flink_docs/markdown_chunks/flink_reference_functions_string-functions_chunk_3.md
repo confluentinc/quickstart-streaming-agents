@@ -7,7 +7,7 @@ chunk_index: 3
 total_chunks: 5
 ---
 
-'v1' SELECT PARSE_URL('http://confluent.io/path1/p.php?k1=v1&k2=v2#Ref1', 'QUERY', 'k1');
+'v1' SELECT PARSE_URL('<http://confluent.io/path1/p.php?k1=v1&k2=v2#Ref1>', 'QUERY', 'k1');
 
 ## POSITION¶
 
@@ -87,9 +87,9 @@ Example
 
 Related functions
 
-  * OVERLAY
-  * REPLACE
-  * TRANSLATE
+* OVERLAY
+* REPLACE
+* TRANSLATE
 
 ## REPEAT¶
 
@@ -126,9 +126,9 @@ Examples
 
 Related functions
 
-  * OVERLAY
-  * REGEXP_REPLACE
-  * TRANSLATE
+* OVERLAY
+* REGEXP_REPLACE
+* TRANSLATE
 
 ## REVERSE¶
 
@@ -162,7 +162,7 @@ Example
 
 Related function
 
-  * LEFT
+* LEFT
 
 ## RPAD¶
 
@@ -190,7 +190,7 @@ Examples
 
 Related function
 
-  * LPAD
+* LPAD
 
 ## RTRIM¶
 
@@ -213,9 +213,9 @@ Example
 
 Related functions
 
-  * BTRIM
-  * LTRIM
-  * TRIM
+* BTRIM
+* LTRIM
+* TRIM
 
 ## SPLIT_INDEX¶
 

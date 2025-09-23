@@ -9,21 +9,21 @@ scraped_date: 2025-09-05T13:47:06.810611
 
 Confluent Cloud for Apache Flink® supports records in the Avro Schema Registry, JSON_SR, and Protobuf Schema Registry formats.
 
-  * Avro schemas
-  * JSON Schema
-  * Protobuf schema
+* Avro schemas
+* JSON Schema
+* Protobuf schema
 
 ## Avro schemas¶
 
 ### Known limitations¶
 
-  * Avro enums have limited support. Flink supports reading and writing enums but treats them as a STRING type. From Flink’s perspective, enums are not distinguishable from the STRING type. You can’t create an Avro schema from Flink that has an enum field.
-  * Flink doesn’t support reading Avro `time-micros` as a TIME type. Flink supports TIME with precision up to `3`. `time-micros` is read and written as BIGINT.
-  * Field names must match Avro criteria. Avro expects field names to start with `[A-Za-z_]` and subsequently contain only `[A-Za-z0-9_]`.
-  * These Flink types are not supported:
-    * INTERVAL_DAY_TIME
-    * INTERVAL_YEAR_MONTH
-    * TIMESTAMP_WITH_TIMEZONE
+* Avro enums have limited support. Flink supports reading and writing enums but treats them as a STRING type. From Flink’s perspective, enums are not distinguishable from the STRING type. You can’t create an Avro schema from Flink that has an enum field.
+* Flink doesn’t support reading Avro `time-micros` as a TIME type. Flink supports TIME with precision up to `3`. `time-micros` is read and written as BIGINT.
+* Field names must match Avro criteria. Avro expects field names to start with `[A-Za-z_]` and subsequently contain only `[A-Za-z0-9_]`.
+* These Flink types are not supported:
+  * INTERVAL_DAY_TIME
+  * INTERVAL_YEAR_MONTH
+  * TIMESTAMP_WITH_TIMEZONE
 
 ### Flink SQL types to Avro types¶
 
@@ -33,13 +33,13 @@ This mapping is important for creating tables, because it defines the Avro schem
 
 #### ARRAY¶
 
-  * Avro type: `array`
+* Avro type: `array`
 
-  * Avro logical type: –
+* Avro logical type: –
 
-  * Additional properties: –
+* Additional properties: –
 
-  * Example:
+* Example:
 
         {
           "type" : "array",
@@ -48,20 +48,20 @@ This mapping is important for creating tables, because it defines the Avro schem
 
 #### BIGINT¶
 
-  * Avro type: `long`
-  * Avro logical type: –
-  * Additional properties: –
-  * Example: `long`
+* Avro type: `long`
+* Avro logical type: –
+* Additional properties: –
+* Example: `long`
 
 #### BINARY¶
 
-  * Avro type: `fixed`
+* Avro type: `fixed`
 
-  * Avro logical type: –
+* Avro logical type: –
 
-  * Additional properties: `flink.maxLength` (MAX_LENGTH if not set)
+* Additional properties: `flink.maxLength` (MAX_LENGTH if not set)
 
-  * Example:
+* Example:
 
         {
             "type" : "fixed",
@@ -72,20 +72,20 @@ This mapping is important for creating tables, because it defines the Avro schem
 
 #### BOOLEAN¶
 
-  * Avro type: `boolean`
-  * Avro logical type: –
-  * Additional properties: –
-  * Example: `boolean`
+* Avro type: `boolean`
+* Avro logical type: –
+* Additional properties: –
+* Example: `boolean`
 
 #### CHAR¶
 
-  * Avro type: `string`
+* Avro type: `string`
 
-  * Avro logical type: –
+* Avro logical type: –
 
-  * Additional properties: `flink.maxLength` (MAX_LENGTH if not set)
+* Additional properties: `flink.maxLength` (MAX_LENGTH if not set)
 
-  * Example:
+* Example:
 
         {
           "type" : "string",
@@ -96,13 +96,13 @@ This mapping is important for creating tables, because it defines the Avro schem
 
 #### DATE¶
 
-  * Avro type: `int`
+* Avro type: `int`
 
-  * Avro logical type: `date`
+* Avro logical type: `date`
 
-  * Additional properties: –
+* Additional properties: –
 
-  * Example:
+* Example:
 
         {
           "type" : "int",
@@ -111,13 +111,13 @@ This mapping is important for creating tables, because it defines the Avro schem
 
 #### DECIMAL¶
 
-  * Avro type: `bytes`
+* Avro type: `bytes`
 
-  * Avro logical type: `decimal`
+* Avro logical type: `decimal`
 
-  * Additional properties: –
+* Additional properties: –
 
-  * Example:
+* Example:
 
         {
           "type" : "bytes",
@@ -128,34 +128,34 @@ This mapping is important for creating tables, because it defines the Avro schem
 
 #### DOUBLE¶
 
-  * Avro type: `double`
-  * Avro logical type: –
-  * Additional properties: –
-  * Example: `double`
+* Avro type: `double`
+* Avro logical type: –
+* Additional properties: –
+* Example: `double`
 
 #### FLOAT¶
 
-  * Avro type: `float`
-  * Avro logical type: –
-  * Additional properties: –
-  * Example: `float`
+* Avro type: `float`
+* Avro logical type: –
+* Additional properties: –
+* Example: `float`
 
 #### INT¶
 
-  * Avro type: `int`
-  * Avro logical type: –
-  * Additional properties: –
-  * Example: `int`
+* Avro type: `int`
+* Avro logical type: –
+* Additional properties: –
+* Example: `int`
 
 #### MAP (character key)¶
 
-  * Avro type: `map`
+* Avro type: `map`
 
-  * Avro logical type: –
+* Avro logical type: –
 
-  * Additional properties: –
+* Additional properties: –
 
-  * Example:
+* Example:
 
         {
           "type" : "map",
@@ -164,13 +164,13 @@ This mapping is important for creating tables, because it defines the Avro schem
 
 #### MAP (non-character key)¶
 
-  * Avro type: `array`
+* Avro type: `array`
 
-  * Avro logical type: –
+* Avro logical type: –
 
-  * Additional properties: array of `io.confluent.connect.avro.MapEntry(key, value)`
+* Additional properties: array of `io.confluent.connect.avro.MapEntry(key, value)`
 
-  * Example:
+* Example:
 
         {
           "type" : "array",
@@ -190,13 +190,13 @@ This mapping is important for creating tables, because it defines the Avro schem
 
 #### MULTISET (character element)¶
 
-  * Avro type: `map`
+* Avro type: `map`
 
-  * Avro logical type: –
+* Avro logical type: –
 
-  * Additional properties: `flink.type : multiset`
+* Additional properties: `flink.type : multiset`
 
-  * Example:
+* Example:
 
         {
           "type" : "map",
@@ -207,13 +207,13 @@ This mapping is important for creating tables, because it defines the Avro schem
 
 #### MULTISET (non-character key)¶
 
-  * Avro type: `array`
+* Avro type: `array`
 
-  * Avro logical type: –
+* Avro logical type: –
 
-  * Additional properties: array of `io.confluent.connect.avro.MapEntry(key, value)`, `flink.type : multiset`
+* Additional properties: array of `io.confluent.connect.avro.MapEntry(key, value)`, `flink.type : multiset`
 
-  * Example:
+* Example:
 
         {
           "type" : "array",
@@ -235,17 +235,17 @@ This mapping is important for creating tables, because it defines the Avro schem
 
 #### ROW¶
 
-  * Avro type: `record`
+* Avro type: `record`
 
-  * Avro logical type: –
+* Avro logical type: –
 
-  * Additional properties: `connect.type=int16`
+* Additional properties: `connect.type=int16`
 
-  * Name: `org.apache.flink.avro.generated.record`
+* Name: `org.apache.flink.avro.generated.record`
 
-  * Nested records name: `org.apache.flink.avro.generated.record_$fieldName`
+* Nested records name: `org.apache.flink.avro.generated.record_$fieldName`
 
-  * Example:
+* Example:
 
         {
           "type" : "record",
@@ -260,13 +260,13 @@ This mapping is important for creating tables, because it defines the Avro schem
 
 #### SMALLINT¶
 
-  * Avro type: `int`
+* Avro type: `int`
 
-  * Avro logical type: –
+* Avro logical type: –
 
-  * Additional properties: `connect.type=int16`
+* Additional properties: `connect.type=int16`
 
-  * Example:
+* Example:
 
         {
           "type" : "int",
@@ -275,13 +275,13 @@ This mapping is important for creating tables, because it defines the Avro schem
 
 #### STRING / VARCHAR¶
 
-  * Avro type: `string`
+* Avro type: `string`
 
-  * Avro logical type: –
+* Avro logical type: –
 
-  * Additional properties: `flink.maxLength = flink.minLength` (MAX_LENGTH if not set)
+* Additional properties: `flink.maxLength = flink.minLength` (MAX_LENGTH if not set)
 
-  * Example:
+* Example:
 
         {
           "type" : "string",
@@ -291,13 +291,13 @@ This mapping is important for creating tables, because it defines the Avro schem
 
 #### TIME¶
 
-  * Avro type: `int`
+* Avro type: `int`
 
-  * Avro logical type: `time-millis`
+* Avro logical type: `time-millis`
 
-  * Additional properties: `flink.precision` (default: 3, max supported: 3)
+* Additional properties: `flink.precision` (default: 3, max supported: 3)
 
-  * Example:
+* Example:
 
         {
           "type" : "int",
@@ -308,13 +308,13 @@ This mapping is important for creating tables, because it defines the Avro schem
 
 #### TIMESTAMP¶
 
-  * Avro type: `long`
+* Avro type: `long`
 
-  * Avro logical type: `local-timestamp-millis` / `local-timestamp-micros`
+* Avro logical type: `local-timestamp-millis` / `local-timestamp-micros`
 
-  * Additional properties: `flink.precision` (default: 3/6, max supported: 3/9)
+* Additional properties: `flink.precision` (default: 3/6, max supported: 3/9)
 
-  * Example:
+* Example:
 
         {
           "type" : "long",
@@ -325,13 +325,13 @@ This mapping is important for creating tables, because it defines the Avro schem
 
 #### TIMESTAMP_LTZ¶
 
-  * Avro type: `long`
+* Avro type: `long`
 
-  * Avro logical type: `timestamp-millis` / `timestamp-micros`
+* Avro logical type: `timestamp-millis` / `timestamp-micros`
 
-  * Additional properties: `flink.precision` (default: 3/6, max supported: 3/9)
+* Additional properties: `flink.precision` (default: 3/6, max supported: 3/9)
 
-  * Example:
+* Example:
 
         {
           "type" : "long",
@@ -342,13 +342,13 @@ This mapping is important for creating tables, because it defines the Avro schem
 
 #### TINYINT¶
 
-  * Avro type: `int`
+* Avro type: `int`
 
-  * Avro logical type: –
+* Avro logical type: –
 
-  * Additional properties: `connect.type=int8`
+* Additional properties: `connect.type=int8`
 
-  * Example:
+* Example:
 
         {
           "type" : "int",
@@ -357,13 +357,13 @@ This mapping is important for creating tables, because it defines the Avro schem
 
 #### VARBINARY¶
 
-  * Avro type: `bytes`
+* Avro type: `bytes`
 
-  * Avro logical type: –
+* Avro logical type: –
 
-  * Additional properties: `flink.maxLength` (MAX_LENGTH if not set)
+* Additional properties: `flink.maxLength` (MAX_LENGTH if not set)
 
-  * Example:
+* Example:
 
         {
             "type" : "bytes",
@@ -413,19 +413,19 @@ The following table shows the mapping of Flink SQL types to JSON Schema types.
 
 This mapping is important for creating tables, because it defines the JSON Schema that’s produced by a CREATE TABLE statement.
 
-  * Nullable types are expressed as oneOf(Null, T).
-  * Object for a MAP and MULTISET must have two fields [key, value].
-  * MULTISET is equivalent to MAP[K, INT] and is serialized accordingly.
+* Nullable types are expressed as oneOf(Null, T).
+* Object for a MAP and MULTISET must have two fields [key, value].
+* MULTISET is equivalent to MAP[K, INT] and is serialized accordingly.
 
 #### ARRAY¶
 
-  * JSON Schema type: `Array`
+* JSON Schema type: `Array`
 
-  * Additional properties: –
+* Additional properties: –
 
-  * JSON type title: –
+* JSON type title: –
 
-  * Example:
+* Example:
 
         {
           "type": "array",
@@ -440,13 +440,13 @@ This mapping is important for creating tables, because it defines the JSON Schem
 
 #### BIGINT¶
 
-  * JSON Schema type: `Number`
+* JSON Schema type: `Number`
 
-  * Additional properties: `connect.type=int64`
+* Additional properties: `connect.type=int64`
 
-  * JSON type title: –
+* JSON type title: –
 
-  * Example:
+* Example:
 
         {
           "type": "number",
@@ -455,15 +455,15 @@ This mapping is important for creating tables, because it defines the JSON Schem
 
 #### BINARY¶
 
-  * JSON Schema type: `String`
+* JSON Schema type: `String`
 
-  * Additional properties:
+* Additional properties:
 
-    * `connect.type=bytes`
-    * `flink.minLength=flink.maxLength`: Different from JSON’s `minLength/maxLength`, because this property describes bytes length, not string length.
-  * JSON type title: –
+  * `connect.type=bytes`
+  * `flink.minLength=flink.maxLength`: Different from JSON’s `minLength/maxLength`, because this property describes bytes length, not string length.
+* JSON type title: –
 
-  * Example:
+* Example:
 
         {
           "type": "string",
@@ -475,13 +475,13 @@ This mapping is important for creating tables, because it defines the JSON Schem
 
 #### BOOLEAN¶
 
-  * JSON Schema type: `Boolean`
+* JSON Schema type: `Boolean`
 
-  * Additional properties: –
+* Additional properties: –
 
-  * JSON type title: –
+* JSON type title: –
 
-  * Example:
+* Example:
 
         {
           "type": "array",
@@ -496,13 +496,13 @@ This mapping is important for creating tables, because it defines the JSON Schem
 
 #### CHAR¶
 
-  * JSON Schema type: `String`
+* JSON Schema type: `String`
 
-  * Additional properties: `minLength=maxLength`
+* Additional properties: `minLength=maxLength`
 
-  * JSON type title: –
+* JSON type title: –
 
-  * Example:
+* Example:
 
         {
           "type": "string",
@@ -512,27 +512,27 @@ This mapping is important for creating tables, because it defines the JSON Schem
 
 #### DATE¶
 
-  * JSON Schema type: `Number`
-  * Additional properties: `connect.type=int32`
-  * JSON type title: `org.apache.kafka.connect.data.Date`
-  * Example: –
+* JSON Schema type: `Number`
+* Additional properties: `connect.type=int32`
+* JSON type title: `org.apache.kafka.connect.data.Date`
+* Example: –
 
 #### DECIMAL¶
 
-  * JSON Schema type: `Number`
-  * Additional properties: `connect.type=bytes`
-  * JSON type title: `org.apache.kafka.connect.data.Decimal`
-  * Example: –
+* JSON Schema type: `Number`
+* Additional properties: `connect.type=bytes`
+* JSON type title: `org.apache.kafka.connect.data.Decimal`
+* Example: –
 
 #### DOUBLE¶
 
-  * JSON Schema type: `Number`
+* JSON Schema type: `Number`
 
-  * Additional properties: `connect.type=float64`
+* Additional properties: `connect.type=float64`
 
-  * JSON type title: –
+* JSON type title: –
 
-  * Example:
+* Example:
 
         {
           "type": "number",
@@ -541,13 +541,13 @@ This mapping is important for creating tables, because it defines the JSON Schem
 
 #### FLOAT¶
 
-  * JSON Schema type: `Number`
+* JSON Schema type: `Number`
 
-  * Additional properties: `connect.type=float32`
+* Additional properties: `connect.type=float32`
 
-  * JSON type title: –
+* JSON type title: –
 
-  * Example:
+* Example:
 
         {
           "type": "number",
@@ -556,13 +556,13 @@ This mapping is important for creating tables, because it defines the JSON Schem
 
 #### INT¶
 
-  * JSON Schema type: `Number`
+* JSON Schema type: `Number`
 
-  * Additional properties: `connect.type=int32`
+* Additional properties: `connect.type=int32`
 
-  * JSON type title: –
+* JSON type title: –
 
-  * Example:
+* Example:
 
         {
           "type": "number",
@@ -571,13 +571,13 @@ This mapping is important for creating tables, because it defines the JSON Schem
 
 #### MAP[K, V]¶
 
-  * JSON Schema type: `Array[Object]`
+* JSON Schema type: `Array[Object]`
 
-  * Additional properties: `connect.type=map`
+* Additional properties: `connect.type=map`
 
-  * JSON type title: –
+* JSON type title: –
 
-  * Example:
+* Example:
 
         {
           "type": "array",
@@ -599,13 +599,13 @@ This mapping is important for creating tables, because it defines the JSON Schem
 
 #### MAP[VARCHAR, V]¶
 
-  * JSON Schema type: `Object`
+* JSON Schema type: `Object`
 
-  * Additional properties: `connect.type=map`
+* Additional properties: `connect.type=map`
 
-  * JSON type title: –
+* JSON type title: –
 
-  * Example:
+* Example:
 
         {
           "type":"object",
@@ -619,15 +619,15 @@ This mapping is important for creating tables, because it defines the JSON Schem
 
 #### MULTISET[K]¶
 
-  * JSON Schema type: `Array[Object]`
+* JSON Schema type: `Array[Object]`
 
-  * Additional properties:
+* Additional properties:
 
-    * `connect.type=map`
-    * `flink.type=multiset`
-  * JSON type title: The count (value) in the JSON schema must map to a Flink INT type. For MULTISET types, the count (value) in the JSON schema must map to a Flink INT type, which corresponds to `connect.type: int32` in the JSON Schema. Using `connect.type: int64` causes a validation error.
+  * `connect.type=map`
+  * `flink.type=multiset`
+* JSON type title: The count (value) in the JSON schema must map to a Flink INT type. For MULTISET types, the count (value) in the JSON schema must map to a Flink INT type, which corresponds to `connect.type: int32` in the JSON Schema. Using `connect.type: int64` causes a validation error.
 
-  * Example:
+* Example:
 
         {
           "type": "array",
@@ -650,15 +650,15 @@ This mapping is important for creating tables, because it defines the JSON Schem
 
 #### MULTISET[VARCHAR]¶
 
-  * JSON Schema type: `Object`
+* JSON Schema type: `Object`
 
-  * Additional properties:
+* Additional properties:
 
-    * `connect.type=map`
-    * `flink.type=multiset`
-  * JSON type title: The count (value) in the JSON schema must map to a Flink INT type. For MULTISET types, the count (value) in the JSON schema must map to a Flink INT type, which corresponds to `connect.type: int32` in the JSON Schema. Using `connect.type: int64` causes a validation error.
+  * `connect.type=map`
+  * `flink.type=multiset`
+* JSON type title: The count (value) in the JSON schema must map to a Flink INT type. For MULTISET types, the count (value) in the JSON schema must map to a Flink INT type, which corresponds to `connect.type: int32` in the JSON Schema. Using `connect.type: int64` causes a validation error.
 
-  * Example:
+* Example:
 
         {
           "type": "object",
@@ -672,20 +672,20 @@ This mapping is important for creating tables, because it defines the JSON Schem
 
 #### ROW¶
 
-  * JSON Schema type: `Object`
-  * Additional properties: –
-  * JSON type title: –
-  * Example: –
+* JSON Schema type: `Object`
+* Additional properties: –
+* JSON type title: –
+* Example: –
 
 #### SMALLINT¶
 
-  * JSON Schema type: `Number`
+* JSON Schema type: `Number`
 
-  * Additional properties: `connect.type=int16`
+* Additional properties: `connect.type=int16`
 
-  * JSON type title: –
+* JSON type title: –
 
-  * Example:
+* Example:
 
         {
           "type": "number",
@@ -694,15 +694,15 @@ This mapping is important for creating tables, because it defines the JSON Schem
 
 #### TIME¶
 
-  * JSON Schema type: `Number`
+* JSON Schema type: `Number`
 
-  * Additional properties:
+* Additional properties:
 
-    * `connect.type=int32`
-    * `flink.precision`
-  * JSON type title: `org.apache.kafka.connect.data.Time`
+  * `connect.type=int32`
+  * `flink.precision`
+* JSON type title: `org.apache.kafka.connect.data.Time`
 
-  * Example:
+* Example:
 
         {
           "type":"number",
@@ -714,16 +714,16 @@ This mapping is important for creating tables, because it defines the JSON Schem
 
 #### TIMESTAMP¶
 
-  * JSON Schema type: `Number`
+* JSON Schema type: `Number`
 
-  * Additional properties:
+* Additional properties:
 
-    * `connect.type=int64`
-    * `flink.precision`
-    * `flink.type=timestamp`
-  * JSON type title: `org.apache.kafka.connect.data.Timestamp`
+  * `connect.type=int64`
+  * `flink.precision`
+  * `flink.type=timestamp`
+* JSON type title: `org.apache.kafka.connect.data.Timestamp`
 
-  * Example:
+* Example:
 
         {
           "type":"number",
@@ -736,15 +736,15 @@ This mapping is important for creating tables, because it defines the JSON Schem
 
 #### TIMESTAMP_LTZ¶
 
-  * JSON Schema type: `Number`
+* JSON Schema type: `Number`
 
-  * Additional properties:
+* Additional properties:
 
-    * `connect.type=int64`
-    * `flink.precision`
-  * JSON type title: `org.apache.kafka.connect.data.Timestamp`
+  * `connect.type=int64`
+  * `flink.precision`
+* JSON type title: `org.apache.kafka.connect.data.Timestamp`
 
-  * Example:
+* Example:
 
         {
           "type":"number",
@@ -756,13 +756,13 @@ This mapping is important for creating tables, because it defines the JSON Schem
 
 #### TINYINT¶
 
-  * JSON Schema type: `Number`
+* JSON Schema type: `Number`
 
-  * Additional properties: `connect.type=int8`
+* Additional properties: `connect.type=int8`
 
-  * JSON type title: –
+* JSON type title: –
 
-  * Example:
+* Example:
 
         {
           "type": "number",
@@ -771,15 +771,15 @@ This mapping is important for creating tables, because it defines the JSON Schem
 
 #### VARBINARY¶
 
-  * JSON Schema type: `String`
+* JSON Schema type: `String`
 
-  * Additional properties:
+* Additional properties:
 
-    * `connect.type=bytes`
-    * `flink.maxLength`: Different from JSON’s `maxLength`, because this property describes bytes length, not string length.
-  * JSON type title: –
+  * `connect.type=bytes`
+  * `flink.maxLength`: Different from JSON’s `maxLength`, because this property describes bytes length, not string length.
+* JSON type title: –
 
-  * Example:
+* Example:
 
         {
           "type": "string",
@@ -790,13 +790,13 @@ This mapping is important for creating tables, because it defines the JSON Schem
 
 #### VARCHAR¶
 
-  * JSON Schema type: `String`
+* JSON Schema type: `String`
 
-  * Additional properties: `maxLength`
+* Additional properties: `maxLength`
 
-  * JSON type title: –
+* JSON type title: –
 
-  * Example:
+* Example:
 
         {
           "type": "string",
@@ -826,13 +826,13 @@ This mapping is important for creating tables, because it defines the Protobuf s
 
 #### ARRAY[T]¶
 
-  * Protobuf type: `repeated T`
+* Protobuf type: `repeated T`
 
-  * Message type: –
+* Message type: –
 
-  * Additional properties: `flink.wrapped`, which indicates that Flink wrappers are used to represent nullability, because Protobuf doesn’t support nullable repeated natively.
+* Additional properties: `flink.wrapped`, which indicates that Flink wrappers are used to represent nullability, because Protobuf doesn’t support nullable repeated natively.
 
-  * Example:
+* Example:
 
         repeated int64 value = 1;
 
@@ -876,25 +876,25 @@ Nullable elements:
 
 #### BIGINT¶
 
-  * Protobuf type: `INT64`
+* Protobuf type: `INT64`
 
-  * Message type: –
+* Message type: –
 
-  * Additional properties: –
+* Additional properties: –
 
-  * Example:
+* Example:
 
         optional int64 bigint = 8;
 
 #### BINARY¶
 
-  * Protobuf type: `BYTES`
+* Protobuf type: `BYTES`
 
-  * Message type: –
+* Message type: –
 
-  * Additional properties: `flink.maxLength=flink.minLength`
+* Additional properties: `flink.maxLength=flink.minLength`
 
-  * Example:
+* Example:
 
         optional bytes binary = 13 [(confluent.field_meta) = {
           params: [
@@ -915,25 +915,25 @@ Nullable elements:
 
 #### BOOLEAN¶
 
-  * Protobuf type: `BOOL`
+* Protobuf type: `BOOL`
 
-  * Message type: –
+* Message type: –
 
-  * Additional properties: –
+* Additional properties: –
 
-  * Example:
+* Example:
 
         optional bool boolean = 2;
 
 #### CHAR¶
 
-  * Protobuf type: `STRING`
+* Protobuf type: `STRING`
 
-  * Message type: –
+* Message type: –
 
-  * Additional properties: `flink.maxLength=flink.minLength`
+* Additional properties: `flink.maxLength=flink.minLength`
 
-  * Example:
+* Example:
 
         optional string char = 11 [(confluent.field_meta) = {
           params: [
@@ -954,25 +954,25 @@ Nullable elements:
 
 #### DATE¶
 
-  * Protobuf type: `MESSAGE`
+* Protobuf type: `MESSAGE`
 
-  * Message type: `google.type.Date`
+* Message type: `google.type.Date`
 
-  * Additional properties: –
+* Additional properties: –
 
-  * Example:
+* Example:
 
         optional .google.type.Date date = 17;
 
 #### DECIMAL¶
 
-  * Protobuf type: `MESSAGE`
+* Protobuf type: `MESSAGE`
 
-  * Message type: `confluent.type.Decimal`
+* Message type: `confluent.type.Decimal`
 
-  * Additional properties: –
+* Additional properties: –
 
-  * Example:
+* Example:
 
         optional .confluent.type.Decimal decimal = 19 [(confluent.field_meta) = {
           params: [
@@ -993,49 +993,49 @@ Nullable elements:
 
 #### DOUBLE¶
 
-  * Protobuf type: `DOUBLE`
+* Protobuf type: `DOUBLE`
 
-  * Message type: –
+* Message type: –
 
-  * Additional properties: –
+* Additional properties: –
 
-  * Example:
+* Example:
 
         optional double double = 10;
 
 #### FLOAT¶
 
-  * Protobuf type: `FLOAT`
+* Protobuf type: `FLOAT`
 
-  * Message type: –
+* Message type: –
 
-  * Additional properties: –
+* Additional properties: –
 
-  * Example:
+* Example:
 
         optional float float = 9;
 
 #### INT¶
 
-  * Protobuf type: `INT32`
+* Protobuf type: `INT32`
 
-  * Message type: –
+* Message type: –
 
-  * Additional properties: –
+* Additional properties: –
 
-  * Example:
+* Example:
 
         optional int32 int = 7;
 
 #### MAP[K, V]¶
 
-  * Protobuf type: `repeated MESSAGE`
+* Protobuf type: `repeated MESSAGE`
 
-  * Message type: `XXEntry(K key, V value)`
+* Message type: `XXEntry(K key, V value)`
 
-  * Additional properties: `flink.wrapped`, which indicates that Flink wrappers are used to represent nullability, because Protobuf doesn’t support nullable repeated natively. For examples, see the ARRAY type.
+* Additional properties: `flink.wrapped`, which indicates that Flink wrappers are used to represent nullability, because Protobuf doesn’t support nullable repeated natively. For examples, see the ARRAY type.
 
-  * Example:
+* Example:
 
         repeated MapEntry map = 20;
 
@@ -1046,15 +1046,15 @@ Nullable elements:
 
 #### MULTISET[V]¶
 
-  * Protobuf type: `repeated MESSAGE`
+* Protobuf type: `repeated MESSAGE`
 
-  * Message type: `XXEntry(V key, int32 value)`
+* Message type: `XXEntry(V key, int32 value)`
 
-  * Additional properties:
+* Additional properties:
 
-    * `flink.wrapped`, which indicates that Flink wrappers are used to represent nullability, because Protobuf doesn’t support nullable repeated natively. For examples, see the ARRAY type.
-    * `flink.type=multiset`
-  * Example:
+  * `flink.wrapped`, which indicates that Flink wrappers are used to represent nullability, because Protobuf doesn’t support nullable repeated natively. For examples, see the ARRAY type.
+  * `flink.type=multiset`
+* Example:
 
         repeated MultisetEntry multiset = 1 [(confluent.field_meta) = {
           params: [
@@ -1076,13 +1076,13 @@ Nullable elements:
 
 #### ROW¶
 
-  * Protobuf type: `MESSAGE`
+* Protobuf type: `MESSAGE`
 
-  * Message type: `fieldName`
+* Message type: `fieldName`
 
-  * Additional properties: –
+* Additional properties: –
 
-  * Example:
+* Example:
 
         meta_Row meta = 1;
 
@@ -1093,13 +1093,13 @@ Nullable elements:
 
 #### SMALLINT¶
 
-  * Protobuf type: `INT32`
+* Protobuf type: `INT32`
 
-  * Message type: –
+* Message type: –
 
-  * Additional properties: MetaProto extension: `connect.type = int16`
+* Additional properties: MetaProto extension: `connect.type = int16`
 
-  * Example:
+* Example:
 
         optional int32 smallInt = 6 [(confluent.field_meta) = {
           doc: "smallInt comment",
@@ -1117,15 +1117,15 @@ Nullable elements:
 
 #### TIMESTAMP¶
 
-  * Protobuf type: `MESSAGE`
+* Protobuf type: `MESSAGE`
 
-  * Message type: `google.protobuf.Timestamp`
+* Message type: `google.protobuf.Timestamp`
 
-  * Additional properties:
+* Additional properties:
 
-    * `flink.precision`
-    * `flink.type=timestamp`
-  * Example:
+  * `flink.precision`
+  * `flink.type=timestamp`
+* Example:
 
         optional .google.protobuf.Timestamp timestamp_ltz_3 = 16 [(confluent.field_meta) = {
           params: [
@@ -1146,13 +1146,13 @@ Nullable elements:
 
 #### TIMESTAMP_LTZ¶
 
-  * Protobuf type: `MESSAGE`
+* Protobuf type: `MESSAGE`
 
-  * Message type: `google.protobuf.Timestamp`
+* Message type: `google.protobuf.Timestamp`
 
-  * Additional properties: `flink.precision`
+* Additional properties: `flink.precision`
 
-  * Example:
+* Example:
 
         optional .google.protobuf.Timestamp timestamp_ltz_3 = 15 [(confluent.field_meta) = {
           params: [
@@ -1169,13 +1169,13 @@ Nullable elements:
 
 #### TIME_WITHOUT_TIME_ZONE¶
 
-  * Protobuf type: `MESSAGE`
+* Protobuf type: `MESSAGE`
 
-  * Message type: `google.type.TimeOfDay`
+* Message type: `google.type.TimeOfDay`
 
-  * Additional properties: –
+* Additional properties: –
 
-  * Example:
+* Example:
 
         optional .google.type.TimeOfDay time = 18 [(confluent.field_meta) = {
           params: [
@@ -1192,13 +1192,13 @@ Nullable elements:
 
 #### TINYINT¶
 
-  * Protobuf type: `INT32`
+* Protobuf type: `INT32`
 
-  * Message type: –
+* Message type: –
 
-  * Additional properties: MetaProto extension: `connect.type = int8`
+* Additional properties: MetaProto extension: `connect.type = int8`
 
-  * Example:
+* Example:
 
         optional int32 tinyInt = 4 [(confluent.field_meta) = {
           doc: "tinyInt comment",
@@ -1216,13 +1216,13 @@ Nullable elements:
 
 #### VARBINARY¶
 
-  * Protobuf type: `BYTES`
+* Protobuf type: `BYTES`
 
-  * Message type: –
+* Message type: –
 
-  * Additional properties: `flink.maxLength` (default = MAX_LENGTH)
+* Additional properties: `flink.maxLength` (default = MAX_LENGTH)
 
-  * Example:
+* Example:
 
         optional bytes varbinary = 14 [(confluent.field_meta) = {
           params: [
@@ -1239,13 +1239,13 @@ Nullable elements:
 
 #### VARCHAR¶
 
-  * Protobuf type: `STRING`
+* Protobuf type: `STRING`
 
-  * Message type: –
+* Message type: –
 
-  * Additional properties: `flink.maxLength` (default = MAX_LENGTH)
+* Additional properties: `flink.maxLength` (default = MAX_LENGTH)
 
-  * Example:
+* Example:
 
         optional string varchar = 12 [(confluent.field_meta) = {
           params: [
@@ -1293,11 +1293,11 @@ When converting to a Protobuf schema, Flink marks all NULLABLE fields as `option
 
 In Protobuf, expressing something as NULLABLE or NOT NULL is not straightforward.
 
-  * All non-MESSAGE types are NOT NULL. If not set explicitly, the default value is assigned.
+* All non-MESSAGE types are NOT NULL. If not set explicitly, the default value is assigned.
 
-  * Non-MESSAGE types marked with `optional` can be checked if they were set. If not set, Flink assumes NULL.
+* Non-MESSAGE types marked with `optional` can be checked if they were set. If not set, Flink assumes NULL.
 
-  * MESSAGE types are all NULLABLE, which means that all fields of MESSAGE type are optional, and there is no way to ensure on a format level they are NOT NULL. To store this information, Flink uses the `flink.notNull` property, for example:
+* MESSAGE types are all NULLABLE, which means that all fields of MESSAGE type are optional, and there is no way to ensure on a format level they are NOT NULL. To store this information, Flink uses the `flink.notNull` property, for example:
 
         message Row {
           .google.type.Date date = 1 [(confluent.field_meta) = {

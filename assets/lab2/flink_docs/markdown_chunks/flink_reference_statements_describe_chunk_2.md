@@ -7,7 +7,7 @@ chunk_index: 2
 total_chunks: 3
 ---
 
-Type * Endpoint * Comment
+Type *Endpoint* Comment
 
 ## Examples¶
 

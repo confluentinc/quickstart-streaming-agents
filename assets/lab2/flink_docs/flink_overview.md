@@ -19,12 +19,12 @@ Confluent Cloud for Apache Flink supports creating stream-processing application
 
 To run Flink on-premises with Confluent Platform, see [Confluent Platform for Apache Flink](/platform/current/flink/overview.html).
 
-  * What is Confluent Cloud for Apache Flink?
-  * Cloud native
-  * Complete
-  * Everywhere
-  * Program Flink with SQL, Java, and Python
-  * Confluent for VS Code
+* What is Confluent Cloud for Apache Flink?
+* Cloud native
+* Complete
+* Everywhere
+* Program Flink with SQL, Java, and Python
+* Confluent for VS Code
 
 ## What is Confluent Cloud for Apache Flink?¶
 
@@ -34,22 +34,22 @@ Confluent Cloud for Apache Flink integrates with the Kafka ecosystem¶
 
 Confluent Cloud for Apache Flink is Flink re-imagined as a truly cloud-native service. Confluent’s fully managed Flink service enables you to:
 
-  * Easily filter, join, and enrich your data streams with Flink
-  * Enable high-performance and efficient stream processing at any scale, without the complexities of managing infrastructure
-  * Experience Kafka and Flink as a unified platform, with fully integrated monitoring, security, and governance
+* Easily filter, join, and enrich your data streams with Flink
+* Enable high-performance and efficient stream processing at any scale, without the complexities of managing infrastructure
+* Experience Kafka and Flink as a unified platform, with fully integrated monitoring, security, and governance
 
 When bringing Flink to Confluent Cloud, the goal was to provide a uniquely serverless experience superior to just “cloud-hosted” Flink. Kafka on Confluent Cloud goes beyond Kafka by using the [Kora engine](https://www.confluent.io/resources/report/kora-a-cloud-native-event-streaming-platform-for-kafka/), which showcases Confluent’s engineering expertise in building cloud-native data systems. Confluent’s goal is to deliver the same simplicity, security, and scalability for Flink that you expect for Kafka.
 
 Confluent Cloud for Apache Flink is engineered to be:
 
-  * Cloud-native: Flink is fully managed on Confluent Cloud and autoscales up and down with your workloads.
-  * Complete: Flink is integrated deeply with Confluent Cloud to provide an enterprise-ready experience.
-  * Everywhere: Flink is available in AWS, Azure, and Google Cloud.
+* Cloud-native: Flink is fully managed on Confluent Cloud and autoscales up and down with your workloads.
+* Complete: Flink is integrated deeply with Confluent Cloud to provide an enterprise-ready experience.
+* Everywhere: Flink is available in AWS, Azure, and Google Cloud.
 
 Get started with Confluent Cloud for Apache Flink:
 
-  * [Flink SQL Quick Start with Confluent Cloud Console](get-started/quick-start-cloud-console.html#flink-sql-quick-start-cloud-console)
-  * [Flink SQL Shell Quick Start](get-started/quick-start-shell.html#flink-sql-quick-start-shell)
+* [Flink SQL Quick Start with Confluent Cloud Console](get-started/quick-start-cloud-console.html#flink-sql-quick-start-cloud-console)
+* [Flink SQL Shell Quick Start](get-started/quick-start-shell.html#flink-sql-quick-start-shell)
 
 ## Confluent Cloud for Apache Flink is cloud-native¶
 
@@ -116,15 +116,15 @@ Confluent Cloud for Apache Flink has a deep integration with [Role-Based Access 
 
 #### Access from Flink to the data¶
 
-  * For ad-hoc queries, you can use your user account, because the permissions of the current user are applied automatically without any additional setting needed.
-  * For long-running statements that need to run 24/7, like [INSERT INTO](reference/queries/insert-into-from-select.html#flink-sql-insert-into-from-select-statement), you should use a [service account](../security/authenticate/workload-identities/service-accounts/overview.html#service-accounts), so the statements are not affected by a user leaving the company or changing teams.
+* For ad-hoc queries, you can use your user account, because the permissions of the current user are applied automatically without any additional setting needed.
+* For long-running statements that need to run 24/7, like [INSERT INTO](reference/queries/insert-into-from-select.html#flink-sql-insert-into-from-select-statement), you should use a [service account](../security/authenticate/workload-identities/service-accounts/overview.html#service-accounts), so the statements are not affected by a user leaving the company or changing teams.
 
 #### Access to Flink¶
 
 To manage Flink access, Confluent has introduced two roles. In both cases, RBAC of the user on the underlying data is still applied.
 
-  * [FlinkDeveloper](../security/access-control/rbac/predefined-rbac-roles.html#flinkdeveloper-role): basic access to Flink, enabling users to query data and manage their own statements.
-  * [FlinkAdmin](../security/access-control/rbac/predefined-rbac-roles.html#flinkadmin-role): role that enables creating and managing Flink compute pools.
+* [FlinkDeveloper](../security/access-control/rbac/predefined-rbac-roles.html#flinkdeveloper-role): basic access to Flink, enabling users to query data and manage their own statements.
+* [FlinkAdmin](../security/access-control/rbac/predefined-rbac-roles.html#flinkadmin-role): role that enables creating and managing Flink compute pools.
 
 #### Service accounts¶
 
@@ -160,9 +160,9 @@ Flink statements themselves can then access all the environments in the same org
 
 Confluent Cloud for Apache Flink supports programming your streaming applications in these languages:
 
-  * [SQL](reference/sql-syntax.html#flink-sql-syntax)
-  * [Java Table API](get-started/quick-start-java-table-api.html#flink-java-table-api-quick-start)
-  * [Python Table API](get-started/quick-start-python-table-api.html#flink-python-table-api-quick-start)
+* [SQL](reference/sql-syntax.html#flink-sql-syntax)
+* [Java Table API](get-started/quick-start-java-table-api.html#flink-java-table-api-quick-start)
+* [Python Table API](get-started/quick-start-python-table-api.html#flink-python-table-api-quick-start)
 
 Also, you can create custom user-defined functions and call them in your SQL statements. For more information, see [User-defined Functions](concepts/user-defined-functions.html#flink-sql-udfs).
 

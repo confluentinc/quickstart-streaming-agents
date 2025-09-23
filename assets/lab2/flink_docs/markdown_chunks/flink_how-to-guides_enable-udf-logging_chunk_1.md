@@ -19,10 +19,10 @@ When you create a user defined function (UDF) with Confluent Cloud for Apache Fl
 
 In this topic, you perform the following steps.
 
-  * Step 1: Enable the UDF log for an environment and region
-  * Step 2: Implement logging code
-  * View logged events
-  * Manage your UDF logs
+* Step 1: Enable the UDF log for an environment and region
+* Step 2: Implement logging code
+* View logged events
+* Manage your UDF logs
 
 For more information on creating UDFs, see [Create a User Defined Function](create-udf.html#flink-sql-create-udf).
 
@@ -34,13 +34,13 @@ For limitations related to logs, see [UDF logging limitations](../concepts/user-
 
 You need the following prerequisites to use Confluent Cloud for Apache Flink.
 
-  * Access to Confluent Cloud.
+* Access to Confluent Cloud.
 
-  * The organization ID, environment ID, and compute pool ID for your organization.
+* The organization ID, environment ID, and compute pool ID for your organization.
 
-  * The OrganizationAdmin, EnvironmentAdmin, or FlinkAdmin role for creating compute pools, or the FlinkDeveloper role if you already have a compute pool. If you don’t have the appropriate role, reach out to your OrganizationAdmin or EnvironmentAdmin.
+* The OrganizationAdmin, EnvironmentAdmin, or FlinkAdmin role for creating compute pools, or the FlinkDeveloper role if you already have a compute pool. If you don’t have the appropriate role, reach out to your OrganizationAdmin or EnvironmentAdmin.
 
-  * The Confluent CLI. To use the Flink SQL shell, update to the latest version of the Confluent CLI by running the following command:
+* The Confluent CLI. To use the Flink SQL shell, update to the latest version of the Confluent CLI by running the following command:
 
         confluent update --yes
 
@@ -48,18 +48,18 @@ If you used homebrew to install the Confluent CLI, update the CLI by using the `
 
 For more information, see [Confluent CLI](https://docs.confluent.io/confluent-cli/current/overview.html).
 
-  * A provisioned Flink compute pool in Confluent Cloud.
+* A provisioned Flink compute pool in Confluent Cloud.
 
-  * Apache Maven software project management tool (see [Installing Apache Maven](https://maven.apache.org/install.html))
+* Apache Maven software project management tool (see [Installing Apache Maven](https://maven.apache.org/install.html))
 
-  * Java 11 to Java 17
+* Java 11 to Java 17
 
-  * Sufficient permissions to upload and invoke UDFs in Confluent Cloud. For more information, see [Flink RBAC](../operate-and-deploy/flink-rbac.html#flink-rbac).
+* Sufficient permissions to upload and invoke UDFs in Confluent Cloud. For more information, see [Flink RBAC](../operate-and-deploy/flink-rbac.html#flink-rbac).
 
-  * Sufficient permissions to enable UDF logging. For more information, see [RBAC for UDF Logging](../operate-and-deploy/flink-rbac.html#flink-rbac-udf-logging).
+* Sufficient permissions to enable UDF logging. For more information, see [RBAC for UDF Logging](../operate-and-deploy/flink-rbac.html#flink-rbac-udf-logging).
 
-  * Flink versions 1.18.x and 1.19.x of `flink-table-api-java` are supported.
+* Flink versions 1.18.x and 1.19.x of `flink-table-api-java` are supported.
 
-  * Confluent CLI version 4.13.0 or later
+* Confluent CLI version 4.13.0 or later
 
-  * A Kafka topic that receives the log output
+* A Kafka topic that receives the log output

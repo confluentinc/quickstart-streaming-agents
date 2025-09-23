@@ -11,11 +11,11 @@ Confluent Cloud for Apache Flink® supports user-defined functions (UDFs), which
 
 You can implement user-defined functions in Java, and you can use third-party libraries within a UDF. Confluent Cloud for Apache Flink supports scalar functions (UDFs), which map scalar values to a new scalar value, and table functions (UDTFs), which map multiple scalar values to multiple output rows.
 
-  * **Create an example UDF:** [Create a User Defined Function](../how-to-guides/create-udf.html#flink-sql-create-udf)
-  * **Add logging to your UDFs:** [Enable Logging in a User Defined Function](../how-to-guides/enable-udf-logging.html#flink-sql-enable-udf-logging)
-  * **Availability:** UDF regional availability
-  * **Limitations:** UDF limitations
-  * **Example code:** [Flink UDF Java Examples](https://github.com/confluentinc/flink-udf-java-examples)
+* **Create an example UDF:** [Create a User Defined Function](../how-to-guides/create-udf.html#flink-sql-create-udf)
+* **Add logging to your UDFs:** [Enable Logging in a User Defined Function](../how-to-guides/enable-udf-logging.html#flink-sql-enable-udf-logging)
+* **Availability:** UDF regional availability
+* **Limitations:** UDF limitations
+* **Example code:** [Flink UDF Java Examples](https://github.com/confluentinc/flink-udf-java-examples)
 
 ## Artifacts¶
 
@@ -51,8 +51,8 @@ To upload artifacts, register functions, and invoke functions, you must have the
 
 Confluent supports the UDF infrastructure in Confluent Cloud only. It is your responsibility to troubleshoot custom UDF issues for functions you build or that are provided to you by others. The following provides additional details about shared support responsibilities.
 
-  * **Customer Managed** : You are responsible for function logic. Confluent does not provide any support for debugging services and features within UDFs.
-  * **Confluent Managed** : Confluent is responsible for managing the Flink services and custom compute platform, and provides support for these.
+* **Customer Managed** : You are responsible for function logic. Confluent does not provide any support for debugging services and features within UDFs.
+* **Confluent Managed** : Confluent is responsible for managing the Flink services and custom compute platform, and provides support for these.
 
 ## Scalar functions¶
 
@@ -127,12 +127,12 @@ To build and upload a user-defined table function to Confluent Cloud for Apache 
 
 All UDFs adhere to a few common implementation principles, which are described in the following sections.
 
-  * Function class
-  * Evaluation methods
-  * Type inference
-  * Named parameters
-  * Scalar functions
-  * Table functions
+* Function class
+* Evaluation methods
+* Type inference
+* Named parameters
+* Scalar functions
+* Table functions
 
 The following code example shows how to implement a simple scalar function and how to call it in Flink SQL.
 
@@ -159,8 +159,8 @@ The following example shows how to call the `SubstringFunction` UDF in a Flink S
 
 Your implementation class must extend one of the system-provided base classes.
 
-  * Scalar functions extend the `org.apache.flink.table.functions.ScalarFunction` class.
-  * Table functions extend the `org.apache.flink.table.functions.TableFunction` class.
+* Scalar functions extend the `org.apache.flink.table.functions.ScalarFunction` class.
+* Table functions extend the `org.apache.flink.table.functions.TableFunction` class.
 
 The class must be declared public, not abstract, and must be accessible globally. Non-static inner or anonymous classes are not supported.
 
@@ -172,10 +172,10 @@ The evaluation method is called by code-generated operators during runtime.
 
 Regular JVM method-calling semantics apply, so these implementation options are available:
 
-  * You can implement overloaded methods, like `eval(Integer)` and `eval(LocalDateTime)`.
-  * You can use var-args, like `eval(Integer...)`.
-  * You can use object inheritance, like `eval(Object)` that takes both `LocalDateTime` and `Integer`.
-  * You can use combinations of these, like `eval(Object...)` that takes all kinds of arguments.
+* You can implement overloaded methods, like `eval(Integer)` and `eval(LocalDateTime)`.
+* You can use var-args, like `eval(Integer...)`.
+* You can use object inheritance, like `eval(Object)` that takes both `LocalDateTime` and `Integer`.
+* You can use combinations of these, like `eval(Object...)` that takes all kinds of arguments.
 
 The `ScalarFunction` base class provides a set of optional methods that you can override, `open()`, `close()`, `isDeterministic()`, and `supportsConstantFolding()`. You can use the `open()` method for initialization work and the `close()` method for cleanup work.
 
@@ -421,83 +421,83 @@ The `isDynamicFunction` method applies only to system functions.
 
 The following system functions are always non-deterministic, which means they are evaluated per-record during runtime, both in batch and streaming mode.
 
-  * CURRENT_ROW_TIMESTAMP
-  * RAND
-  * RAND_INTEGER
-  * UNIX_TIMESTAMP
-  * UUID
+* CURRENT_ROW_TIMESTAMP
+* RAND
+* RAND_INTEGER
+* UNIX_TIMESTAMP
+* UUID
 
 The following system temporal functions are dynamic and are pre-evaluated during planning (query-start) for batch mode and evaluated per-record for streaming mode.
 
-  * CURRENT_DATE
-  * CURRENT_TIME
-  * CURRENT_TIMESTAMP
-  * LOCALTIME
-  * LOCALTIMESTAMP
-  * NOW
+* CURRENT_DATE
+* CURRENT_TIME
+* CURRENT_TIMESTAMP
+* LOCALTIME
+* LOCALTIMESTAMP
+* NOW
 
 ## UDF regional availability¶
 
 Flink UDFs are available in the following AWS regions.
 
-  * ap-east-1
-  * ap-northeast-2
-  * ap-south-1
-  * ap-southeast-1
-  * ap-southeast-2
-  * ca-central-1
-  * eu-central-1
-  * eu-central-2
-  * eu-north-1
-  * eu-west-1
-  * eu-west-2
-  * me-south-1
-  * sa-east-1
-  * us-east-1
-  * us-east-2
-  * us-west-2
+* ap-east-1
+* ap-northeast-2
+* ap-south-1
+* ap-southeast-1
+* ap-southeast-2
+* ca-central-1
+* eu-central-1
+* eu-central-2
+* eu-north-1
+* eu-west-1
+* eu-west-2
+* me-south-1
+* sa-east-1
+* us-east-1
+* us-east-2
+* us-west-2
 
 Flink UDFs are available in the following Azure regions.
 
-  * australiaeast
-  * brazilsouth
-  * centralindia
-  * centralus
-  * eastus
-  * eastus2
-  * francecentral
-  * northeurope
-  * southcentralus
-  * southeastasia
-  * spaincentral
-  * uaenorth
-  * uksouth
-  * westeurope
-  * westus2
-  * westus3
+* australiaeast
+* brazilsouth
+* centralindia
+* centralus
+* eastus
+* eastus2
+* francecentral
+* northeurope
+* southcentralus
+* southeastasia
+* spaincentral
+* uaenorth
+* uksouth
+* westeurope
+* westus2
+* westus3
 
 ## UDF limitations¶
 
 User-defined functions have the following limitations.
 
-  * Confluent CLI version 4.13.0 or later is required.
-  * External network calls from UDFs are not supported.
-  * JDK 17 is the latest supported Java version for uploaded JAR files.
-  * Each Flink statement can have no more than 10 UDFs.
-  * Each organization/cloud/region/environment can have no more than 100 Flink artifacts.
-  * The size limit of each artifact is 100 MB.
-  * Aggregates are not supported.
-  * Table aggregates are not supported.
-  * Temporary functions are not supported.
-  * The ALTER FUNCTION statement is not supported.
-  * UDFs can’t be used in combination with [MATCH_RECOGNIZE](../reference/queries/match_recognize.html#flink-sql-pattern-recognition).
-  * Vararg functions are not supported.
-  * User-defined structured types are not supported.
-  * Python is not supported.
-  * Both inputs and outputs of the UDF have a row-size limit of 4MB.
-  * Custom type inference is not supported.
-  * Constant expression reduction is not supported.
-  * The UDF feature is optimized for streaming processing, so the initial query may be slow, but after the initial query, a UDF runs with low latency.
+* Confluent CLI version 4.13.0 or later is required.
+* External network calls from UDFs are not supported.
+* JDK 17 is the latest supported Java version for uploaded JAR files.
+* Each Flink statement can have no more than 10 UDFs.
+* Each organization/cloud/region/environment can have no more than 100 Flink artifacts.
+* The size limit of each artifact is 100 MB.
+* Aggregates are not supported.
+* Table aggregates are not supported.
+* Temporary functions are not supported.
+* The ALTER FUNCTION statement is not supported.
+* UDFs can’t be used in combination with [MATCH_RECOGNIZE](../reference/queries/match_recognize.html#flink-sql-pattern-recognition).
+* Vararg functions are not supported.
+* User-defined structured types are not supported.
+* Python is not supported.
+* Both inputs and outputs of the UDF have a row-size limit of 4MB.
+* Custom type inference is not supported.
+* Constant expression reduction is not supported.
+* The UDF feature is optimized for streaming processing, so the initial query may be slow, but after the initial query, a UDF runs with low latency.
 
 ### File system access limitations¶
 
@@ -509,6 +509,6 @@ Libraries that use Java Native Interface (JNI) or require native binaries are no
 
 ## UDF logging limitations¶
 
-  * **Public Kafka destinations only:** Private networked cluster types aren’t supported as logging destinations.
-  * **Log4j logging only:** External UDF loggers can be composed only with the Apache Log4j logging framework.
-  * **Burst rate to 1000/s** : UDF logging supports up to 1000 log events per second for each UDF during a short burst of high activity. This helps to optimize performance and to reduce noise in logs. Events that exceed the maximum rate are dropped.
+* **Public Kafka destinations only:** Private networked cluster types aren’t supported as logging destinations.
+* **Log4j logging only:** External UDF loggers can be composed only with the Apache Log4j logging framework.
+* **Burst rate to 1000/s** : UDF logging supports up to 1000 log events per second for each UDF during a short burst of high activity. This helps to optimize performance and to reduce noise in logs. Events that exceed the maximum rate are dropped.

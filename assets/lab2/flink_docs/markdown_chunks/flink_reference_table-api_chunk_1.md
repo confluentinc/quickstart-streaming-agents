@@ -17,9 +17,9 @@ To use the Table API, you work with tables that change over time, a concept insp
 
 A table program has these characteristics:
 
-  * Runs in a regular `main()` method (Java)
-  * Uses Flink APIs
-  * Communicates with Confluent Cloud by using REST requests, for example, [Statements endpoint](/cloud/current/api.html#tag/Statements-\(sqlv1\)/operation/createSqlv1Statement).
+* Runs in a regular `main()` method (Java)
+* Uses Flink APIs
+* Communicates with Confluent Cloud by using REST requests, for example, [Statements endpoint](/cloud/current/api.html#tag/Statements-\(sqlv1\)/operation/createSqlv1Statement).
 
 For a list of Table API functions supported by Confluent Cloud for Apache Flink, see [Table API functions](functions/table-api-functions.html#flink-table-api-functions).
 

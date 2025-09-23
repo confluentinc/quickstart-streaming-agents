@@ -127,18 +127,18 @@ SHOW CREATE TABLE returns the following output:
 
 Properties
 
-  * Flink detects the Debezium format automatically, based on the schema structure with `after`, `before`, and `op` fields.
+* Flink detects the Debezium format automatically, based on the schema structure with `after`, `before`, and `op` fields.
 
-  * The table schema is inferred from the `after` schema, exposing only the actual data fields.
+* The table schema is inferred from the `after` schema, exposing only the actual data fields.
 
-  * **Automatic Debezium Envelope Detection** : For schemas created after May 19, 2025 at 09:00 UTC, Flink automatically detects Debezium envelopes and sets appropriate defaults:
+* **Automatic Debezium Envelope Detection** : For schemas created after May 19, 2025 at 09:00 UTC, Flink automatically detects Debezium envelopes and sets appropriate defaults:
 
-    * `value.format` defaults to `*-debezium-registry` (instead of `*-registry`)
-    * `changelog.mode` defaults to `retract` (instead of `append`)
-    * Exception: If Kafka `cleanup.policy` is `compact`, `changelog.mode` is set to `upsert`
-  * The default `changelog.mode` is `retract`, which properly handles all CDC operations, including inserts, updates, and deletes.
+  * `value.format` defaults to `*-debezium-registry` (instead of `*-registry`)
+  * `changelog.mode` defaults to `retract` (instead of `append`)
+  * Exception: If Kafka `cleanup.policy` is `compact`, `changelog.mode` is set to `upsert`
+* The default `changelog.mode` is `retract`, which properly handles all CDC operations, including inserts, updates, and deletes.
 
-  * You can manually override the changelog mode if necessary:
+* You can manually override the changelog mode if necessary:
 
         -- Change to upsert mode for primary key-based operations
         ALTER TABLE customer_changes SET ('changelog.mode' = 'upsert');

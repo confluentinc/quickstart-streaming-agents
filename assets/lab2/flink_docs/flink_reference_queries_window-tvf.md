@@ -15,10 +15,10 @@ Windows are central to processing infinite streams. Windows split the stream int
 
 Flink provides several window table-valued functions (TVF) to divide the elements of your table into windows, including:
 
-  * Tumble Windows
-  * Hop Windows
-  * Cumulate Windows
-  * Session Windows (not supported in batch mode)
+* Tumble Windows
+* Hop Windows
+* Cumulate Windows
+* Session Windows (not supported in batch mode)
 
 Note that each element can logically belong to more than one window, depending on the windowing table-valued function you use. For example, HOP windowing creates overlapping windows in which a single element can be assigned to multiple windows.
 
@@ -26,17 +26,17 @@ Windowing TVFs are Flink-defined Polymorphic Table Functions (abbreviated PTF). 
 
 These are frequently-used computations based on windowing TVF:
 
-  * [Window Aggregation](window-aggregation.html#flink-sql-window-aggregation)
-  * [Window TopN](window-topn.html#flink-sql-window-top-n)
-  * [Window Join](window-join.html#flink-sql-window-join)
-  * [Window Deduplication](window-deduplication.html#flink-sql-window-deduplication)
+* [Window Aggregation](window-aggregation.html#flink-sql-window-aggregation)
+* [Window TopN](window-topn.html#flink-sql-window-top-n)
+* [Window Join](window-join.html#flink-sql-window-join)
+* [Window Deduplication](window-deduplication.html#flink-sql-window-deduplication)
 
 ## Window functions¶
 
 Flink provides 4 built-in windowing TVFs: `TUMBLE`, `HOP`, `CUMULATE` and `SESSION`. The return value of windowing TVF is a new relation that includes all columns of original relation as well as additional 3 columns named “window_start”, “window_end”, “window_time” to indicate the assigned window.
 
-  * In streaming mode, the “window_time” field is a [time attribute](../../concepts/timely-stream-processing.html#flink-sql-time-attributes) of the window.
-  * In batch mode, the “window_time” field is an attribute of type `TIMESTAMP` or `TIMESTAMP_LTZ` based on input time field type.
+* In streaming mode, the “window_time” field is a [time attribute](../../concepts/timely-stream-processing.html#flink-sql-time-attributes) of the window.
+* In batch mode, the “window_time” field is an attribute of type `TIMESTAMP` or `TIMESTAMP_LTZ` based on input time field type.
 
 The “window_time” field can be used in subsequent time-based operations, for example, another windowing TVF, [interval-join](joins.html#flink-sql-interval-joins), or [over aggregation](over-aggregation.html#flink-sql-over-aggregation). The value of `window_time` always equal to `window_end - 1ms`.
 
@@ -44,9 +44,9 @@ The “window_time” field can be used in subsequent time-based operations, for
 
 Time-based window boundaries align with clock seconds, minutes, hours, and days. For example, assume that you have events with these timestamps (in UTC):
 
-  * 00:59:00.000
-  * 00:59:30.000
-  * 01:00:15.000
+* 00:59:00.000
+* 00:59:30.000
+* 01:00:15.000
 
 If you put these events into hour-long tumbling windows, the first two land in the window for `00:00:00-00:59:59.999`, and the third event lands in the following hour.
 
@@ -54,10 +54,10 @@ If you put these events into hour-long tumbling windows, the first two land in t
 
 Window TVFs support the following [time units](../functions/datetime-functions.html#flink-sql-time-interval-and-point-unit-specifiers):
 
-  * SECOND
-  * MINUTE
-  * HOUR
-  * DAY
+* SECOND
+* MINUTE
+* HOUR
+* DAY
 
 MONTH and YEAR time units are not currently supported.
 
@@ -77,8 +77,8 @@ The `TUMBLE` function assigns each element to a window of specified window size.
 
 The `TUMBLE` function assigns a window for each row of a relation based on a time attribute field.
 
-  * In streaming mode, the time attribute field must be an [event time attribute](../../concepts/timely-stream-processing.html#flink-sql-time-attributes).
-  * In batch mode, the time attribute field of window table function must be an attribute of type `TIMESTAMP` or `TIMESTAMP_LTZ`.
+* In streaming mode, the time attribute field must be an [event time attribute](../../concepts/timely-stream-processing.html#flink-sql-time-attributes).
+* In batch mode, the time attribute field of window table function must be an attribute of type `TIMESTAMP` or `TIMESTAMP_LTZ`.
 
 The return value of `TUMBLE` is a new relation that includes all columns of the original relation, as well as an additional 3 columns named `window_start`, `window_end`, and `window_time` to indicate the assigned window. The original time attribute, `timecol` is a regular timestamp column after windowing TVF.
 
@@ -86,10 +86,10 @@ The `TUMBLE` function takes three required parameters and one optional parameter
 
     TUMBLE(TABLE data, DESCRIPTOR(timecol), size [, offset ])
 
-  * `data`: is a table parameter that can be any relation with a time attribute column.
-  * `timecol`: is a column descriptor indicating which time attributes column of data should be mapped to tumbling windows.
-  * `size`: is a duration specifying the width of the tumbling windows.
-  * `offset`: is an optional parameter to specify the offset which window start would be shifted by.
+* `data`: is a table parameter that can be any relation with a time attribute column.
+* `timecol`: is a column descriptor indicating which time attributes column of data should be mapped to tumbling windows.
+* `size`: is a duration specifying the width of the tumbling windows.
+* `offset`: is an optional parameter to specify the offset which window start would be shifted by.
 
 Here is an example invocation on the `orders` table:
 
@@ -175,8 +175,8 @@ For example, you could have windows of size 10 minutes that slides by 5 minutes.
 
 The `HOP` function assigns windows that cover rows within the interval of size and shifting every slide based on a time attribute field.
 
-  * In streaming mode, the time attribute field must be an [event time attribute](../../concepts/timely-stream-processing.html#flink-sql-time-attributes).
-  * In batch mode, the time attribute field of window table function must be an attribute of type `TIMESTAMP` or `TIMESTAMP_LTZ`.
+* In streaming mode, the time attribute field must be an [event time attribute](../../concepts/timely-stream-processing.html#flink-sql-time-attributes).
+* In batch mode, the time attribute field of window table function must be an attribute of type `TIMESTAMP` or `TIMESTAMP_LTZ`.
 
 The return value of `HOP` is a new relation that includes all columns of the original relation as well as an additional 3 columns named `window_start`, `window_end`, and `window_time` to indicate the assigned window. The original time attribute, `timecol`, is a regular timestamp column after windowing TVF.
 
@@ -184,11 +184,11 @@ The `HOP` takes four required parameters and one optional parameter:
 
     HOP(TABLE data, DESCRIPTOR(timecol), slide, size [, offset ])
 
-  * `data`: is a table parameter that can be any relation with an time attribute column.
-  * `timecol`: is a column descriptor indicating which time attributes column of data should be mapped to hopping windows.
-  * `slide`: is a duration specifying the duration between the start of sequential hopping windows
-  * `size`: is a duration specifying the width of the hopping windows.
-  * `offset`: is an optional parameter to specify the offset which window start would be shifted by.
+* `data`: is a table parameter that can be any relation with an time attribute column.
+* `timecol`: is a column descriptor indicating which time attributes column of data should be mapped to hopping windows.
+* `slide`: is a duration specifying the duration between the start of sequential hopping windows
+* `size`: is a duration specifying the width of the hopping windows.
+* `offset`: is an optional parameter to specify the offset which window start would be shifted by.
 
 The following queries return all rows in the `orders` table in hopping windows with a 5-minute slide and 10-minute size.
 
@@ -248,15 +248,15 @@ The `CUMULATE` function assigns elements to windows that cover rows within an in
 
 For example, you could have a cumulating window with a 1-hour step and 1-day maximum size, and you will get these windows for every day:
 
-  * `[00:00, 01:00)`
-  * `[00:00, 02:00)`
-  * `[00:00, 03:00)` …
-  * `[00:00, 24:00)`
+* `[00:00, 01:00)`
+* `[00:00, 02:00)`
+* `[00:00, 03:00)` …
+* `[00:00, 24:00)`
 
 The `CUMULATE` function assigns windows based on a time attribute column.
 
-  * In streaming mode, the time attribute field must be an [event time attribute](../../concepts/timely-stream-processing.html#flink-sql-time-attributes).
-  * In batch mode, the time attribute field of window table function must be an attribute of type `TIMESTAMP` or `TIMESTAMP_LTZ`.
+* In streaming mode, the time attribute field must be an [event time attribute](../../concepts/timely-stream-processing.html#flink-sql-time-attributes).
+* In batch mode, the time attribute field of window table function must be an attribute of type `TIMESTAMP` or `TIMESTAMP_LTZ`.
 
 The return value of `CUMULATE` is a new relation that includes all columns of the original relation, as well as an additional 3 columns named `window_start`, `window_end`, and `window_time` to indicate the assigned window. The original time attribute, `timecol`, is a regular timestamp column after window TVF.
 
@@ -264,11 +264,11 @@ The `CUMULATE` takes four required parameters and one optional parameter:
 
     CUMULATE(TABLE data, DESCRIPTOR(timecol), step, size)
 
-  * `data`: is a table parameter that can be any relation with an time attribute column.
-  * `timecol`: is a column descriptor indicating which time attributes column of data should be mapped to cumulating windows.
-  * `step`: is a duration specifying the increased window size between the end of sequential cumulating windows.
-  * `size`: is a duration specifying the max width of the cumulating windows. `size` must be an integral multiple of `step`.
-  * `offset`: is an optional parameter to specify the offset which window start would be shifted by.
+* `data`: is a table parameter that can be any relation with an time attribute column.
+* `timecol`: is a column descriptor indicating which time attributes column of data should be mapped to cumulating windows.
+* `step`: is a duration specifying the increased window size between the end of sequential cumulating windows.
+* `size`: is a duration specifying the max width of the cumulating windows. `size` must be an integral multiple of `step`.
+* `offset`: is an optional parameter to specify the offset which window start would be shifted by.
 
 The following queries return all rows in the `orders` table in CUMULATE windows that have a 2-minute step and 10-minute size.
 
@@ -326,8 +326,8 @@ For example, you could have windows with a gap of 1 minute. With this configurat
 
 The `SESSION` function assigns windows that cover rows based on a time attribute.
 
-  * In streaming mode, the time attribute field must be an [event time attribute](../../concepts/timely-stream-processing.html#flink-sql-time-attributes).
-  * `SESSION` Window TVF is not supported in batch mode.
+* In streaming mode, the time attribute field must be an [event time attribute](../../concepts/timely-stream-processing.html#flink-sql-time-attributes).
+* `SESSION` Window TVF is not supported in batch mode.
 
 The return value of `SESSION` is a new relation that includes all columns of the original relation, as well as three additional columns named `window_start`, `window_end`, and `window_time` to indicate the assigned window. The original time attribute `timecol` becomes a regular timestamp column after the windowing TVF.
 
@@ -335,10 +335,10 @@ The `SESSION` function takes three required parameters and one optional paramete
 
     SESSION(TABLE data [PARTITION BY(keycols, ...)], DESCRIPTOR(timecol), gap)
 
-  * `data`: is a table parameter that can be any relation with a time attribute column.
-  * `keycols`: is a column or set of columns indicating which columns should be used to partition the data prior to session windows.
-  * `timecol`: is a column descriptor indicating which time attribute column of data should be mapped to session windows.
-  * `gap`: is the maximum interval in timestamp for two events to be considered part of the same session window.
+* `data`: is a table parameter that can be any relation with a time attribute column.
+* `keycols`: is a column or set of columns indicating which columns should be used to partition the data prior to session windows.
+* `timecol`: is a column descriptor indicating which time attribute column of data should be mapped to session windows.
+* `gap`: is the maximum interval in timestamp for two events to be considered part of the same session window.
 
 The following query returns all columns from the `orders` table within SESSION windows that have a 1-minute gap, partitioned by `product_id`:
 
@@ -394,13 +394,13 @@ The output resembles:
 
 For example, which window would a record be assigned to if it has a timestamp of `2021-06-30 00:00:00`, for a Tumble window with 10 MINUTE as size?
 
-  * If the `offset` is `-16 MINUTE`, the record assigns to window [`2021-06-29 23:44:00`, `2021-06-29 23:54:00`].
-  * If the `offset` is `-6 MINUTE`, the record assigns to window [`2021-06-29 23:54:00`, `2021-06-30 00:04:00`].
-  * If the `offset` is `-4 MINUTE`, the record assigns to window [`2021-06-29 23:56:00`, `2021-06-30 00:06:00`].
-  * If the `offset` is `0`, the record assigns to window [`2021-06-30 00:00:00`, `2021-06-30 00:10:00`].
-  * If the `offset` is `4 MINUTE`, the record assigns to window [`2021-06-30 00:04:00`, `2021-06-30 00:14:00`].
-  * If the `offset` is `6 MINUTE`, the record assigns to window [`2021-06-30 00:06:00`, `2021-06-30 00:16:00`].
-  * If the `offset` is `16 MINUTE`, the record assigns to window [`2021-06-30 00:16:00`, `2021-06-30 00:26:00`].
+* If the `offset` is `-16 MINUTE`, the record assigns to window [`2021-06-29 23:44:00`, `2021-06-29 23:54:00`].
+* If the `offset` is `-6 MINUTE`, the record assigns to window [`2021-06-29 23:54:00`, `2021-06-30 00:04:00`].
+* If the `offset` is `-4 MINUTE`, the record assigns to window [`2021-06-29 23:56:00`, `2021-06-30 00:06:00`].
+* If the `offset` is `0`, the record assigns to window [`2021-06-30 00:00:00`, `2021-06-30 00:10:00`].
+* If the `offset` is `4 MINUTE`, the record assigns to window [`2021-06-30 00:04:00`, `2021-06-30 00:14:00`].
+* If the `offset` is `6 MINUTE`, the record assigns to window [`2021-06-30 00:06:00`, `2021-06-30 00:16:00`].
+* If the `offset` is `16 MINUTE`, the record assigns to window [`2021-06-30 00:16:00`, `2021-06-30 00:26:00`].
 
 Note
 

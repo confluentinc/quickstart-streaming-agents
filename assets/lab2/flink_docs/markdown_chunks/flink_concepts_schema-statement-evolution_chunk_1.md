@@ -13,8 +13,8 @@ Confluent Cloud for Apache Flink® enables evolving your statements over time as
 
 This topic describes these concepts:
 
-  * How you can evolve your statements and the tables they maintain over time.
-  * How statements behave when the schema of their source tables change.
+* How you can evolve your statements and the tables they maintain over time.
+* How statements behave when the schema of their source tables change.
 
 ## Example¶
 
@@ -50,7 +50,7 @@ The `orders_with_customers_v1` table uses a user-defined function named `to_mino
 
 A statement has the following components:
 
-  * an **immutable** query, for example:
+* an **immutable** query, for example:
 
         SELECT
           v_orders.product,
@@ -60,11 +60,11 @@ A statement has the following components:
         JOIN customers FOR SYSTEM TIME AS OF orders.$rowtime
         ON v_orders.customer_id = customers.id;
 
-  * **immutable** statement properties, for example:
+* **immutable** statement properties, for example:
 
         'sql.state-ttl' = '1h'
 
-  * a **mutable** principal, that is, the user or service account under which this statement runs.
+* a **mutable** principal, that is, the user or service account under which this statement runs.
 
 The principal and compute pool are mutable when stopping and resuming the statement. Note that stopping and resume the statement results in a temporarily higher materialization delay and latency.
 
@@ -76,17 +76,17 @@ If your use case requires a lower latency, reach out to Confluent Support or you
 
 The table which the statement is writing to has these components:
 
-  * An immutable name, for example: `orders_with_customers_v1`.
+* An immutable name, for example: `orders_with_customers_v1`.
 
-  * Mutable constraints, for example:
+* Mutable constraints, for example:
 
         PRIMARY KEY (v_orders.order_id)
 
-  * A mutable watermark definition.
+* A mutable watermark definition.
 
-  * a mutable column definition
+* a mutable column definition
 
-  * partially mutable table options
+* partially mutable table options
 
 The name of a table is immutable, because it maps one-to-one to the underlying topic, which you can’t rename.
 
@@ -100,14 +100,14 @@ The constraints are partially mutable by using the `ALTER TABLE ADD/DROP PRIMARY
 
 A statement almost always references other catalog objects such as tables and functions. In the current example, the `orders_with_customers_v1` table references these objects:
 
-  * A table named `customers`.
-  * A table named `v_orders`.
-  * A user-defined function named `to_minor_currency`.
+* A table named `customers`.
+* A table named `v_orders`.
+* A user-defined function named `to_minor_currency`.
 
 When a statement is created, it takes a snapshot of the configuration of all the catalog objects that it depends on. Changes, or the deletion of these objects from the catalog, are not propagated to existing statements, which means that:
 
-  * A change to the watermark strategy of a source table is not picked up by existing statements that reference the table.
-  * A change to a table option of a source table is not picked up by existing statements that reference the table.
-  * A change to the implementation of a user-defined functions is not picked up by existing statements that reference the function.
+* A change to the watermark strategy of a source table is not picked up by existing statements that reference the table.
+* A change to a table option of a source table is not picked up by existing statements that reference the table.
+* A change to the implementation of a user-defined functions is not picked up by existing statements that reference the function.
 
 If an underlying physical resource is deleted that statements require at runtime, like the topic, the statements transition into the FAILED, STOPPED, or RECOVERING state, depending on which resource was deleted.

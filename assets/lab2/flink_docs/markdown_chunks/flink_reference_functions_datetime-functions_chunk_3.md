@@ -107,9 +107,9 @@ Example
 
 Related functions
 
-  * DAYOFMONTH
-  * DAYOFWEEK
-  * DAYOFYEAR
+* DAYOFMONTH
+* DAYOFWEEK
+* DAYOFYEAR
 
 ### FLOOR¶
 
@@ -128,7 +128,7 @@ Example
 
 Related function
 
-  * CEIL
+* CEIL
 
 ### FROM_UNIXTIME¶
 
@@ -173,8 +173,8 @@ Example
 
 Related functions
 
-  * MINUTE
-  * SECOND
+* MINUTE
+* SECOND
 
 ### INTERVAL¶
 
@@ -190,15 +190,15 @@ The `INTERVAL` function parses an interval string in the form “dd hh:mm:ss.fff
 
 For intervals of milliseconds, these interval ranges apply:
 
-  * DAY
-  * MINUTE
-  * DAY TO HOUR
-  * DAY TO SECOND
+* DAY
+* MINUTE
+* DAY TO HOUR
+* DAY TO SECOND
 
 For intervals of months, these interval ranges apply:
 
-  * YEAR
-  * YEAR TO MONTH
+* YEAR
+* YEAR TO MONTH
 
 Examples
 
@@ -225,8 +225,8 @@ Description
 
 The `LOCALTIME` function returns the current SQL time in the local time zone. The return type is `TIME(0)`.
 
-  * In streaming mode, the current local time is evaluated for each record.
-  * In batch mode, the current local time is evaluated once when the query starts, and `LOCALTIME` returns the same result for every row.
+* In streaming mode, the current local time is evaluated for each record.
+* In batch mode, the current local time is evaluated once when the query starts, and `LOCALTIME` returns the same result for every row.
 
 Example
 

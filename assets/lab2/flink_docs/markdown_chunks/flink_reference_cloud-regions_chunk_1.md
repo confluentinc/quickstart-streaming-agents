@@ -13,13 +13,13 @@ Confluent Cloud for Apache Flink® is available on AWS, Azure, and Google Cloud.
 
 Flink is supported in the following regions.
 
-  * AWS supported regions
-  * Azure supported regions
-  * Google Cloud supported regions
+* AWS supported regions
+* Azure supported regions
+* Google Cloud supported regions
 
 You can see the regions where Confluent Cloud for Apache Flink is supported by using the Confluent Cloud Console, the Confluent CLI, and the Flink REST API.
 
-  * List regions by using Cloud Console, Confluent CLI, or REST API
+* List regions by using Cloud Console, Confluent CLI, or REST API
 
 ## AWS supported regions¶
 

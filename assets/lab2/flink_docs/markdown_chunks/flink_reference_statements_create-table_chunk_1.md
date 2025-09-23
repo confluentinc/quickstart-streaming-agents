@@ -61,24 +61,24 @@ Trying to create a table with a name that exists in the catalog causes an except
 
 The table name can be in these formats:
 
-  * `catalog_name.db_name.table_name`: The table is registered with the catalog named “catalog_name” and the database named “db_name”.
-  * `db_name.table_name`: The table is registered into the current catalog of the execution table environment and the database named “db_name”.
-  * `table_name`: The table is registered into the current catalog and the database of the execution table environment.
+* `catalog_name.db_name.table_name`: The table is registered with the catalog named “catalog_name” and the database named “db_name”.
+* `db_name.table_name`: The table is registered into the current catalog of the execution table environment and the database named “db_name”.
+* `table_name`: The table is registered into the current catalog and the database of the execution table environment.
 
 A table registered with the CREATE TABLE statement can be used as both table source and table sink. Flink can’t determine whether the table is used as a source or a sink until it’s referenced in a [DML query](../queries/overview.html#flink-sql-queries).
 
 The following sections show the options and clauses that are available with the CREATE TABLE statement.
 
-  * Physical / Regular Columns
-  * Metadata columns
-  * Computed columns
-  * System columns
-  * Watermark clause
-  * PRIMARY KEY constraint
-  * DISTRIBUTED BY clause
-  * CREATE TABLE AS SELECT (CTAS)
-  * LIKE
-  * WITH options
+* Physical / Regular Columns
+* Metadata columns
+* Computed columns
+* System columns
+* Watermark clause
+* PRIMARY KEY constraint
+* DISTRIBUTED BY clause
+* CREATE TABLE AS SELECT (CTAS)
+* LIKE
+* WITH options
 
 ## Usage¶
 

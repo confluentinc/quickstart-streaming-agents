@@ -71,7 +71,7 @@ Your output should resemble:
 
 Get the details about a connection in your environment by sending a GET request to the [Connections endpoint](/cloud/current/api.html#tag/Connections-\(sqlv1\)/operation/getSqlv1Connection).
 
-  * This request uses your Cloud API key instead of the Flink API key.
+* This request uses your Cloud API key instead of the Flink API key.
 
 Getting details about a connection requires the following inputs:
 

@@ -1,6 +1,7 @@
 # MongoDB Vector Search Query Comparison
 
 ## Overview
+
 This document compares the current (broken) vector search queries with corrected versions based on the working test example.
 
 ## Original Terraform-Generated Queries (From mongodb_commands.txt)
@@ -8,6 +9,7 @@ This document compares the current (broken) vector search queries with corrected
 ### Step 1: Populate Embedding Tables (ORIGINAL - with problems)
 
 **Original documents_embed population:**
+
 ```sql
 INSERT INTO `streaming-agents-env-1fda8714`.`streaming-agents-cluster-1fda8714`.documents_embed
 WITH chunked_texts AS (
@@ -33,6 +35,7 @@ LATERAL TABLE(
 ```
 
 **Original queries_embed population:**
+
 ```sql
 INSERT INTO `streaming-agents-env-1fda8714`.`streaming-agents-cluster-1fda8714`.queries_embed
 SELECT
@@ -45,6 +48,7 @@ LATERAL TABLE(ML_PREDICT('llm_embedding_model', query));
 ## Current Queries (From Terraform/mongodb_commands.txt)
 
 ### ✅ Query 1: documents_vectordb External Table (CORRECT)
+
 ```sql
 CREATE TABLE `streaming-agents-env-1fda8714`.`streaming-agents-cluster-1fda8714`.documents_vectordb (
   document_id STRING,
@@ -62,6 +66,7 @@ CREATE TABLE `streaming-agents-env-1fda8714`.`streaming-agents-cluster-1fda8714`
 ```
 
 ### ❌ Query 2: search_results Table (BROKEN)
+
 ```sql
 CREATE TABLE `streaming-agents-env-1fda8714`.`streaming-agents-cluster-1fda8714`.search_results AS
 SELECT
@@ -83,11 +88,13 @@ LATERAL TABLE(VECTOR_SEARCH(                           -- ❌ Wrong function nam
 ```
 
 **Problems:**
+
 1. Using `VECTOR_SEARCH` instead of `VECTOR_SEARCH_AGG`
 2. Wrong parameter order: should be `(table, DESCRIPTOR(col), embedding, limit)`
 3. Complex array casting that may not work properly
 
 ### ❌ Query 3: search_results_response Table (DEPENDENT ON BROKEN QUERY 2)
+
 ```sql
 CREATE TABLE `streaming-agents-env-1fda8714`.`streaming-agents-cluster-1fda8714`.search_results_response AS
 SELECT
@@ -136,11 +143,13 @@ LATERAL TABLE(
 ```
 
 **Problems:**
+
 1. Depends on broken `search_results` table structure
 2. Complex array indexing that won't work with corrected structure
 3. Sales coach specific - not generic
 
 ### Step 2: Original External Table (CORRECT)
+
 ```sql
 CREATE TABLE `streaming-agents-env-1fda8714`.`streaming-agents-cluster-1fda8714`.documents_vectordb (
   document_id STRING,
@@ -162,6 +171,7 @@ CREATE TABLE `streaming-agents-env-1fda8714`.`streaming-agents-cluster-1fda8714`
 ## CORRECTED Queries
 
 ### ✅ Query 1: documents_vectordb External Table (No changes needed)
+
 ```sql
 -- Same as existing - this one is correct
 -- Removing full qualifications for easier testing
@@ -183,11 +193,13 @@ CREATE TABLE documents_vectordb (
 ### ✅ Query 2: search_results Table (FIXED VERSION)
 
 **IMPORTANT**: `VECTOR_SEARCH_AGG` returns an array structure:
+
 ```
 search_results ARRAY<ROW<`document_id` STRING, `chunk` STRING, `embedding` ARRAY<FLOAT>, `score` DOUBLE>>
 ```
 
 **Option A: CROSS JOIN UNNEST (Recommended)**
+
 ```sql
 -- 🔧 CHANGES:
 -- 1. VECTOR_SEARCH → VECTOR_SEARCH_AGG
@@ -212,6 +224,7 @@ CROSS JOIN UNNEST(vs.search_results) AS T(document_id, chunk, embedding, score);
 ```
 
 **Option B: Array Indexing (Similar to original approach)**
+
 ```sql
 -- Alternative: Direct array indexing if you need fixed structure
 CREATE TABLE search_results_indexed AS
@@ -238,6 +251,7 @@ LATERAL TABLE(VECTOR_SEARCH_AGG(
 ### ✅ Query 3: search_results_response Table (GENERIC VERSION)
 
 **Recommended: Works with Option B (search_results_indexed)**
+
 ```sql
 -- =================================================================
 -- CONFIGURABLE PROMPT - MODIFY AS NEEDED
@@ -293,6 +307,7 @@ Please provide a comprehensive response that synthesizes information from the mo
 ```
 
 **Alternative: For Flattened Results (if using search_results_flat)**
+
 ```sql
 -- Works with CROSS JOIN UNNEST flattened results
 -- Aggregates all search results per query for comprehensive responses

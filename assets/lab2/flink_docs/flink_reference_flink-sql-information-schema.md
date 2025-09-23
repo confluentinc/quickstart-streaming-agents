@@ -23,14 +23,14 @@ The information schema is a powerful tool for querying metadata about your Flink
 
 The following views are supported in the Confluent INFORMATION_SCHEMA:
 
-  * CATALOGS
-  * COLUMNS
-  * INFORMATION_SCHEMA_CATALOG_NAME
-  * KEY_COLUMN_USAGE
-  * SCHEMATA / DATABASES
-  * TABLES
-  * TABLE_CONSTRAINTS
-  * TABLE_OPTIONS
+* CATALOGS
+* COLUMNS
+* INFORMATION_SCHEMA_CATALOG_NAME
+* KEY_COLUMN_USAGE
+* SCHEMATA / DATABASES
+* TABLES
+* TABLE_CONSTRAINTS
+* TABLE_OPTIONS
 
 ## Query syntax in INFORMATION_SCHEMA¶
 
@@ -38,29 +38,29 @@ Metadata queries on the INFORMATION_SCHEMA tables support the following syntax.
 
 Supported data types:
 
-  * INT
-  * STRING
+* INT
+* STRING
 
 Supported operators:
 
-  * SELECT
-  * WHERE
-  * UNION ALL
+* SELECT
+* WHERE
+* UNION ALL
 
 Supported expressions:
 
-  * CAST(NULL AS dt), CAST(x as dt)
-  * UNION ALL (see this example)
-  * AND, OR
-  * = , <>, IS NULL, IS NOT NULL
-  * AS
-  * STRING and INT literals
+* CAST(NULL AS dt), CAST(x as dt)
+* UNION ALL (see this example)
+* AND, OR
+* = , <>, IS NULL, IS NOT NULL
+* AS
+* STRING and INT literals
 
 The following limitations apply to INFORMATION_SCHEMA:
 
-  * You can use INFORMATION_SCHEMA views only in SELECT statements, not in INSERT INTO statements.
-  * You can’t use INFORMATION_SCHEMA in joins with real tables.
-  * Only the previously listed equality and basic expressions are supported.
+* You can use INFORMATION_SCHEMA views only in SELECT statements, not in INSERT INTO statements.
+* You can’t use INFORMATION_SCHEMA in joins with real tables.
+* Only the previously listed equality and basic expressions are supported.
 
 ## Available views¶
 

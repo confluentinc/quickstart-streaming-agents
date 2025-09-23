@@ -19,7 +19,7 @@ Confluent Cloud for Apache Flink® enables inserting SELECT query results direct
       select_statement
 
 **OVERWRITE**
-    ` INSERT OVERWRITE` overwrites all existing data in the table or partition. New records are appended.
+    `INSERT OVERWRITE` overwrites all existing data in the table or partition. New records are appended.
 **PARTITION**
      The `PARTITION` clause contains static partition columns for the insertion.
 **COLUMN LIST**
@@ -109,6 +109,6 @@ Your output should resemble:
 
 Properties
 
-  * A column list is defined between the table name and the SELECT in the INSERT INTO statement, so the SELECT statement uses a reduced schema.
-  * Columns `c1`, `c2`, are `c4` are filled with NULLs.
-  * If one of the columns is declared NOT NULL, an error occurs.
+* A column list is defined between the table name and the SELECT in the INSERT INTO statement, so the SELECT statement uses a reduced schema.
+* Columns `c1`, `c2`, are `c4` are filled with NULLs.
+* If one of the columns is declared NOT NULL, an error occurs.

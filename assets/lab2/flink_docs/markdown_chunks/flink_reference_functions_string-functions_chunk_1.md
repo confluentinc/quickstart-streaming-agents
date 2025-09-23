@@ -58,8 +58,8 @@ Examples
 
 Related functions
 
-  * CONCAT
-  * CONCAT_WS
+* CONCAT
+* CONCAT_WS
 
 ## BTRIM¶
 
@@ -71,8 +71,8 @@ Syntax
 
 Arguments
 
-  * `str`: A source STRING expression.
-  * `trimStr`: An optional STRING expression that has characters to be trimmed. The default is the space character.
+* `str`: A source STRING expression.
+* `trimStr`: An optional STRING expression that has characters to be trimmed. The default is the space character.
 
 Returns
     A trimmed STRING.
@@ -91,9 +91,9 @@ Examples
 
 Related functions
 
-  * LTRIM
-  * RTRIM
-  * TRIM
+* LTRIM
+* RTRIM
+* TRIM
 
 ## CHARACTER_LENGTH¶
 
@@ -153,8 +153,8 @@ Example
 
 Related functions
 
-  * string1 || string2
-  * CONCAT_WS
+* string1 || string2
+* CONCAT_WS
 
 ## CONCAT_WS¶
 
@@ -179,8 +179,8 @@ Example
 
 Related functions
 
-  * string1 || string2
-  * CONCAT
+* string1 || string2
+* CONCAT
 
 ## DECODE¶
 
@@ -196,16 +196,16 @@ The `DECODE` function decodes the binary argument into a string using the specif
 
 These are the supported character set strings:
 
-  * ‘ISO-8859-1’
-  * ‘US-ASCII’
-  * ‘UTF-8’
-  * ‘UTF-16BE’
-  * ‘UTF-16LE’
-  * ‘UTF-16’
+* ‘ISO-8859-1’
+* ‘US-ASCII’
+* ‘UTF-8’
+* ‘UTF-16BE’
+* ‘UTF-16LE’
+* ‘UTF-16’
 
 Related function
 
-  * ENCODE
+* ENCODE
 
 ## ELT¶
 
@@ -217,8 +217,8 @@ Syntax
 
 Arguments
 
-  * `index`: The 1-based index of the expression to get. `index` must be an integer between 1 and the number of expressions.
-  * `expr`: An expression that resolves to CHAR, VARCHAR, BINARY, or VARBINARY.
+* `index`: The 1-based index of the expression to get. `index` must be an integer between 1 and the number of expressions.
+* `expr`: An expression that resolves to CHAR, VARCHAR, BINARY, or VARBINARY.
 
 Returns
 
@@ -247,13 +247,13 @@ The `ENCODE` function encodes `string1` into a BINARY using the specified `strin
 
 These are the supported character set strings:
 
-  * ‘ISO-8859-1’
-  * ‘US-ASCII’
-  * ‘UTF-8’
-  * ‘UTF-16BE’
-  * ‘UTF-16LE’
-  * ‘UTF-16’
+* ‘ISO-8859-1’
+* ‘US-ASCII’
+* ‘UTF-8’
+* ‘UTF-16BE’
+* ‘UTF-16LE’
+* ‘UTF-16’
 
 Related function
 
-  * DECODE
+* DECODE

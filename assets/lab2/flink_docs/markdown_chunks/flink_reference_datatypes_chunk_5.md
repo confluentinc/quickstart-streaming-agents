@@ -17,9 +17,9 @@ The value representation is the same for all types of resolutions. For example, 
 
 Formatting intervals are tricky, because they have different resolutions:
 
-  * YEAR
-  * YEAR_TO_MONTH
-  * MONTH
+* YEAR
+* YEAR_TO_MONTH
+* MONTH
 
 Depending on the resolution, use:
 

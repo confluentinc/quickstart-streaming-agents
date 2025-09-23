@@ -28,14 +28,14 @@ This command starts a SQL shell that creates statements in the `env-1` Environme
 
 After the CLI SQL Shell is started, it shows a prompt and waits for user input. The user can submit all Statements that are supported by CMF, including:
 
-  * `LIST TABLES;`
-  * `LIST DATABASES;`
-  * `LIST CATALOGS;`
-  * `SHOW CURRENT DATABASE;`
-  * `SHOW CURRENT CATALOG;`
-  * `DESCRIBE <table>;`
-  * `SELECT ...;`
-  * `INSERT INTO ...;`
+* `LIST TABLES;`
+* `LIST DATABASES;`
+* `LIST CATALOGS;`
+* `SHOW CURRENT DATABASE;`
+* `SHOW CURRENT CATALOG;`
+* `DESCRIBE <table>;`
+* `SELECT ...;`
+* `INSERT INTO ...;`
 
 In addition, the user can execute `USE CATALOG` and `USE` commands to change the default catalog and database and `SET` commands to change properties.
 

@@ -11,6 +11,6 @@ This section describes how to configure Flink jobs in CMF.
 
 See the following topics for more information:
 
-  * [Configure Secure Flink Clusters](security.html#cmf-security)
-  * [Configure Logging](logging.html#cmf-logging)
-  * [Configure Metrics Reporting](metrics.html#cmf-metrics)
+* [Configure Secure Flink Clusters](security.html#cmf-security)
+* [Configure Logging](logging.html#cmf-logging)
+* [Configure Metrics Reporting](metrics.html#cmf-metrics)

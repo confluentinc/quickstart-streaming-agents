@@ -29,9 +29,9 @@ Billing is based on the number of CFUs provisioned in your compute pools and the
 
 ## What are the prerequisites for using Confluent Cloud for Apache Flink?¶
 
-  * You need a Confluent Cloud account and an environment with Stream Governance enabled.
-  * You must have the appropriate roles and permissions, for example, the [FlinkDeveloper](operate-and-deploy/flink-rbac.html#flink-rbac) role to run statements.
-  * You need access to at least one compute pool.
+* You need a Confluent Cloud account and an environment with Stream Governance enabled.
+* You must have the appropriate roles and permissions, for example, the [FlinkDeveloper](operate-and-deploy/flink-rbac.html#flink-rbac) role to run statements.
+* You need access to at least one compute pool.
 
 ## What sources and sinks are supported?¶
 

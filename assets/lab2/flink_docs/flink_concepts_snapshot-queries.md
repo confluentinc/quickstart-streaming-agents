@@ -23,10 +23,10 @@ Early Access Program features are intended for evaluation use in development and
 
 A snapshot query returns a consistent view of your data at the current point in time, similar to taking a photograph of your data at that moment. This is particularly useful when you need to:
 
-  * Generate reports that reflect your data’s state at a specific time
-  * Analyze historical data for auditing or compliance purposes
-  * Compare data states across different points in time
-  * Debug or investigate issues by examining past data states
+* Generate reports that reflect your data’s state at a specific time
+* Analyze historical data for auditing or compliance purposes
+* Compare data states across different points in time
+* Debug or investigate issues by examining past data states
 
 For example, if you want to know the total number of orders in your system at the current time, you can use a snapshot query.
 
@@ -36,11 +36,11 @@ A snapshot query is an ordinary Flink SQL statement that has one additional prop
 
 To enable snapshot queries, set the `sql.snapshot.mode` property to `now`. You can set this property in the following ways:
 
-  * **SQL Workspace:** Toggle the **Mode** dropdown to **Snapshot**.
-  * **Flink SQL:** Prepend your query with `SET 'sql.snapshot.mode' = 'now';`.
-  * **Table API:** In the `Cloud.Properties` project file, add `sql.snapshot.mode = now`.
-  * **REST API:** In the statement’s `spec.properties` map, add `"sql.snapshot.mode": "now"`.
-  * **Terraform:** In the statement properties, add `"sql.snapshot.mode" = "now"`.
+* **SQL Workspace:** Toggle the **Mode** dropdown to **Snapshot**.
+* **Flink SQL:** Prepend your query with `SET 'sql.snapshot.mode' = 'now';`.
+* **Table API:** In the `Cloud.Properties` project file, add `sql.snapshot.mode = now`.
+* **REST API:** In the statement’s `spec.properties` map, add `"sql.snapshot.mode": "now"`.
+* **Terraform:** In the statement properties, add `"sql.snapshot.mode" = "now"`.
 
 Snapshot queries use Flink’s batch execution mode, which enables you to run batch processing jobs beside your existing stream processing workloads, within the same Confluent Cloud environment.
 
@@ -61,8 +61,8 @@ The query execution is optimized to use Kafka’s time index for efficient offse
 
 If [Tableflow](../../topics/tableflow/overview.html#cloud-tableflow) is enabled on a topic, snapshot queries on the topic run in a hybrid mode.
 
-  * If Tableflow is not enabled on a topic, the query reads from Kafka.
-  * If Tableflow is enabled on a topic, the query reads from both Kafka and Parquet, for Confluent Managed Storage and custom storage (BYOS).
+* If Tableflow is not enabled on a topic, the query reads from Kafka.
+* If Tableflow is enabled on a topic, the query reads from both Kafka and Parquet, for Confluent Managed Storage and custom storage (BYOS).
 
 ## Run a snapshot query¶
 
@@ -76,27 +76,27 @@ For more information, see [Run a Snapshot Query](../how-to-guides/run-snapshot-q
 
 ## Technical Details¶
 
-  * **Timestamp Resolution** : Timestamps are processed with millisecond precision
-  * **State Handling** : For tables with state (like aggregations), Flink reconstructs the state by processing all relevant records up to the specified timestamp
-  * **Parallelism** : Queries are automatically parallelized across available compute resources
-  * **Resource Optimization** : Flink uses Kafka’s time index to quickly locate the relevant offsets, minimizing unnecessary data scanning
+* **Timestamp Resolution** : Timestamps are processed with millisecond precision
+* **State Handling** : For tables with state (like aggregations), Flink reconstructs the state by processing all relevant records up to the specified timestamp
+* **Parallelism** : Queries are automatically parallelized across available compute resources
+* **Resource Optimization** : Flink uses Kafka’s time index to quickly locate the relevant offsets, minimizing unnecessary data scanning
 
 ## Relationship to Batch Mode¶
 
 Snapshot queries are closely related to Flink’s batch processing mode. When you execute a snapshot query:
 
-  * Flink automatically switches to batch mode processing
-  * The query processes a finite, bounded dataset up to the current timestamp
-  * The computation benefits from batch optimizations like sort-merge joins
-  * Resources are released once the query completes
-  * Results are deterministic and reproducible
+* Flink automatically switches to batch mode processing
+* The query processes a finite, bounded dataset up to the current timestamp
+* The computation benefits from batch optimizations like sort-merge joins
+* Resources are released once the query completes
+* Results are deterministic and reproducible
 
 This behavior contrasts with streaming queries which:
 
-  * Process continuous, unbounded data streams
-  * Maintain persistent state and resources
-  * Produce incremental, real-time results
-  * May give different results when rerun due to new data
+* Process continuous, unbounded data streams
+* Maintain persistent state and resources
+* Produce incremental, real-time results
+* May give different results when rerun due to new data
 
 ## Billing¶
 

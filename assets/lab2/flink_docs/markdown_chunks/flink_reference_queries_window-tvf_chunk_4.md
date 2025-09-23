@@ -43,15 +43,15 @@ The `CUMULATE` function assigns elements to windows that cover rows within an in
 
 For example, you could have a cumulating window with a 1-hour step and 1-day maximum size, and you will get these windows for every day:
 
-  * `[00:00, 01:00)`
-  * `[00:00, 02:00)`
-  * `[00:00, 03:00)` …
-  * `[00:00, 24:00)`
+* `[00:00, 01:00)`
+* `[00:00, 02:00)`
+* `[00:00, 03:00)` …
+* `[00:00, 24:00)`
 
 The `CUMULATE` function assigns windows based on a time attribute column.
 
-  * In streaming mode, the time attribute field must be an [event time attribute](../../concepts/timely-stream-processing.html#flink-sql-time-attributes).
-  * In batch mode, the time attribute field of window table function must be an attribute of type `TIMESTAMP` or `TIMESTAMP_LTZ`.
+* In streaming mode, the time attribute field must be an [event time attribute](../../concepts/timely-stream-processing.html#flink-sql-time-attributes).
+* In batch mode, the time attribute field of window table function must be an attribute of type `TIMESTAMP` or `TIMESTAMP_LTZ`.
 
 The return value of `CUMULATE` is a new relation that includes all columns of the original relation, as well as an additional 3 columns named `window_start`, `window_end`, and `window_time` to indicate the assigned window. The original time attribute, `timecol`, is a regular timestamp column after window TVF.
 
@@ -59,11 +59,11 @@ The `CUMULATE` takes four required parameters and one optional parameter:
 
     CUMULATE(TABLE data, DESCRIPTOR(timecol), step, size)
 
-  * `data`: is a table parameter that can be any relation with an time attribute column.
-  * `timecol`: is a column descriptor indicating which time attributes column of data should be mapped to cumulating windows.
-  * `step`: is a duration specifying the increased window size between the end of sequential cumulating windows.
-  * `size`: is a duration specifying the max width of the cumulating windows. `size` must be an integral multiple of `step`.
-  * `offset`: is an optional parameter to specify the offset which window start would be shifted by.
+* `data`: is a table parameter that can be any relation with an time attribute column.
+* `timecol`: is a column descriptor indicating which time attributes column of data should be mapped to cumulating windows.
+* `step`: is a duration specifying the increased window size between the end of sequential cumulating windows.
+* `size`: is a duration specifying the max width of the cumulating windows. `size` must be an integral multiple of `step`.
+* `offset`: is an optional parameter to specify the offset which window start would be shifted by.
 
 The following queries return all rows in the `orders` table in CUMULATE windows that have a 2-minute step and 10-minute size.
 

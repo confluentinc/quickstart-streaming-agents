@@ -33,8 +33,8 @@ This animation has the same starting point as the previous example that showed t
 
 Because the SQL statement is doing grouping, the result is an updating table instead of an append-only/insert-only table. In this example, an order for 15 hats is cancelled. To process the event with the 15-hat order cancellation, the query produces two update events:
 
-  * The first is an UPDATE_BEFORE event that retracts the current result that showed 50 hats as the bestselling item.
-  * The second is an UPDATE_AFTER event that replaces the old entry with a new one that shows 35 hats.
+* The first is an UPDATE_BEFORE event that retracts the current result that showed 50 hats as the bestselling item.
+* The second is an UPDATE_AFTER event that replaces the old entry with a new one that shows 35 hats.
 
 Conceptually, the UPDATE_BEFORE event is processed first, which removes the old entry from the `Bestsellers` table. Then, the sync processes the UPDATE_AFTER event, which inserts the updated results.
 
@@ -69,6 +69,6 @@ Appending stream | Append stream | Contains only +I
 Upserting streams | Update stream | +I, +U, -D (never contains -U but can contain +U and/or -D)
 Retracting stream | Update stream | +I, +U, -U, -D (contains +I and can contain -U and/or -D)
 
-  * All streams can have +I / inserts.
-  * Both retract and upsert streams can have -D / deletes and +U / upserts (upsert afters).
-  * Only retract streams can have -U.
+* All streams can have +I / inserts.
+* Both retract and upsert streams can have -D / deletes and +U / upserts (upsert afters).
+* Only retract streams can have -U.

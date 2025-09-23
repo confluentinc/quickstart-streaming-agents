@@ -11,23 +11,23 @@ You can install Confluent Manager for Apache Flink® with Helm. By default, user
 
 To check interoperability and requirements:
 
-  * [Versions and Interoperability for Confluent Manager for Apache Flink](versions-interoperability.html#cmf-interop)
+* [Versions and Interoperability for Confluent Manager for Apache Flink](versions-interoperability.html#cmf-interop)
 
 To install Confluent Manager for Apache Flink, see:
 
-  * [Install Confluent Manager for Apache Flink with Helm](helm.html#install-cmf-helm)
+* [Install Confluent Manager for Apache Flink with Helm](helm.html#install-cmf-helm)
 
 To learn how to configure authentication and authorization see:
 
-  * [Configure Authentication for Confluent Manager for Apache Flink](authentication.html#cmf-authenticate)
-  * [Configure Authorization for Confluent Manager for Apache Flink](authorization.html#cmf-authorize)
+* [Configure Authentication for Confluent Manager for Apache Flink](authentication.html#cmf-authenticate)
+* [Configure Authorization for Confluent Manager for Apache Flink](authorization.html#cmf-authorize)
 
 To learn how to upgrade Confluent Manager for Apache Flink see:
 
-  * [Upgrade Confluent Manager for Apache Flink](upgrade-cmf.html#upgrade-cmf)
+* [Upgrade Confluent Manager for Apache Flink](upgrade-cmf.html#upgrade-cmf)
 
 Use the following topics to learn more about securing Confluent Manager for Apache Flink:
 
-  * [Configure Authentication for Confluent Manager for Apache Flink](authentication.html#cmf-authenticate)
-  * [Configure Authorization for Confluent Manager for Apache Flink](authorization.html#cmf-authorize)
-  * [Data Encryption in Confluent Manager for Apache Flink](encryption.html#data-encryption-cmf)
+* [Configure Authentication for Confluent Manager for Apache Flink](authentication.html#cmf-authenticate)
+* [Configure Authorization for Confluent Manager for Apache Flink](authorization.html#cmf-authorize)
+* [Data Encryption in Confluent Manager for Apache Flink](encryption.html#data-encryption-cmf)

@@ -58,9 +58,9 @@ In the following example, one user executes five different queries. Unlike other
 
 Example pricing calculation
 
-  * Number of queries executed = 5
-  * Total CFU-minutes consumed = 5
-  * Total charge: 5 CFU-minutes x $0.0035/CFU-minute = **$0.0175**
+* Number of queries executed = 5
+* Total CFU-minutes consumed = 5
+* Total charge: 5 CFU-minutes x $0.0035/CFU-minute = **$0.0175**
 
 **Note:** The charge appears on the invoice as “0.083 CFU-hours x $0.21/CFU-hour”.
 
@@ -83,8 +83,8 @@ Total | 309 |
 
 Example pricing calculation
 
-  * Number of statements executing = 5
-  * Total CFU-minutes consumed = 309
-  * Total charge: 309 CFU-minutes x $0.0035/CFU-minute = **$1.0815**
+* Number of statements executing = 5
+* Total CFU-minutes consumed = 309
+* Total charge: 309 CFU-minutes x $0.0035/CFU-minute = **$1.0815**
 
 **Note:** The charge appears on the invoice as “5.15 CFU-hours x $0.21/CFU-hour”.
