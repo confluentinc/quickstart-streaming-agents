@@ -61,7 +61,9 @@ You will see a compute pool created for you. Click on **Open SQL Workspace**
 
 ### Setting up the MCP connection and model
 
-Open `mcp_commands.txt` from the `[aws|azure]/lab1-tool-calling/` directory, and run the customized `confluent flink connection create` command in the Confluent CLI, then run the Flink SQL `CREATE MODEL zapier_mcp_model...` command in the Flink SQL Workspace.
+Open `mcp_commands.txt` from the `[aws|azure]/lab1-tool-calling/` directory (located [here for AWS](aws/lab1-tool-calling/mcp_commands.txt), [here for Azure](azure/lab1-tool-calling/mcp_commands.txt) once created), and then:
+1. run the customized `confluent flink connection create` command in the Confluent CLI
+2. run the Flink SQL `CREATE MODEL zapier_mcp_model...` command in the Flink SQL Workspace.
 
 `mcp_commands.txt` is generated automatically by Terraform when deploying Lab1, and its commands are custom tailored to your environment, so that they run right out of the box.
 
