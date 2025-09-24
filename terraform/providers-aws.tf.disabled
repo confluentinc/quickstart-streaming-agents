@@ -18,7 +18,6 @@ terraform {
 # AWS Provider Configuration
 provider "aws" {
   region = var.cloud_region
-  alias  = "main"
 }
 
 # Confluent Provider Configuration
