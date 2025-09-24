@@ -6,8 +6,9 @@ In this lab, we'll use Confluent Cloud's Apache Flink tool calling feature to lo
 
 ## Prerequisites
 
-- Core infrastructure deployed (see [main README](./README.md))
-- Zapier account and MCP server setup (instructions below)
+- ⚠️ **IMPORTANT: For AWS Users: [Request access to Claude Sonnet 3.7 in Bedrock for your cloud region](https://console.aws.amazon.com/bedrock/home#/modelaccess)**. If you do not activate it, you will get ModelRuntime errors in Flink and the LLM calls in this lab will not work. ⚠️ 
+- Core infrastructure deployed via `python setup.py` or manually with Terraform (see [main README](./README.md))
+- Zapier account and remote MCP server setup (instructions below)
 
 ## Zapier MCP Server Setup
 
@@ -34,11 +35,9 @@ Add these tools to your MCP server:
 
 ### 4. Get SSE Endpoint URL
 
-Click "Connect", change transport to "SSE Endpoint", and copy the URL.
+Click **"Connect",** choose **"Other"** for your client, then change transport to **"SSE Endpoint"**, and **copy the URL.** This is the `ZAPIER_SSE_ENDPOINT` you will need to enter when deploying the lab with `python setup.py` or manually with Terraform.
 
 ![SSE Endpoint](./assets/lab1/zapier/7.png)
-
-Save this URL - you'll need it for terraform configuration.
 
 ## Lab Architecture
 
@@ -60,29 +59,83 @@ You will see a compute pool created for you. Click on **Open SQL Workspace**
 
 ![Flink UI](./assets/lab1/flinkworkspace.png)
 
+### Setting up the MCP connection and model
+
+Open `mcp_commands.txt` from the `[aws|azure]/lab1-tool-calling/` directory, and run the customized `confluent flink connection create` command in the Confluent CLI, then run the Flink SQL `CREATE MODEL zapier_mcp_model...` command in the Flink SQL Workspace.
+
+`mcp_commands.txt` is generated automatically by Terraform when deploying Lab1, and its commands are custom tailored to your environment, so that they run right out of the box.
+
+### Test the LLM models before continuing
+
+Run the following queries:
+
+#### Test Query 1: Base LLM functioning
+
+```sql
+SELECT 
+  question,
+  response
+FROM (SELECT 'What is the capital of France?' as question) t,
+LATERAL TABLE(ML_PREDICT('llm_textgen_model', question, MAP['debug', true])) as r(response);
+```
+
+#### Test Query 2: LLM Tool Calling
+
+```sql
+SELECT 
+    AI_TOOL_INVOKE('zapier_mcp_model', 
+                   'Use the gmail_send_email tool to send an email. Instructions: send an email address to yourself, subject "Direct Query Test", body "This email was sent directly from Confluent Cloud!"', 
+                   MAP[],
+                   MAP['gmail_send_email', 'Create and send a new email message']) as response;
+```
+
+### Data Generation
+
+Navigate to your lab's data-gen directory:
+
+**AWS:**
+
+```bash
+cd aws/lab1-tool-calling/data-gen/
+```
+
+**Azure:**
+
+```bash
+cd azure/lab1-tool-calling/data-gen/
+```
+
+#### Unix/Mac Instructions
+
+Download the ShadowTraffic license file and run the data generator:
+
+```bash
+curl -O https://raw.githubusercontent.com/ShadowTraffic/shadowtraffic-examples/master/free-trial-license-docker.env
+chmod +x run.sh && ./run.sh
+```
+
+#### Windows Instructions
+
+Download the ShadowTraffic license file and run the data generator:
+
+```cmd
+curl -O https://raw.githubusercontent.com/ShadowTraffic/shadowtraffic-examples/master/free-trial-license-docker.env
+run.bat
+```
+
+#### What Data is Generated
+
+The data generator creates three interconnected data streams:
+
+- **Customers**: 100 customer records with realistic names, emails, addresses, and state information
+- **Products**: 17 product records including electronics, games, sports equipment, and household items with prices ranging from $5-$365
+- **Orders**: Continuous stream of orders linking customers to products with timestamps
+
+🎉 **Data is now flowing through your streaming pipeline! The agents will process this data in real-time.**
+
 ### Agent 1: URL Scraping Agent
 
 First, we need to enrich incoming Orders with product names, then search for and scrape these products from competitors' websites. We'll achieve this using Flink's Tool Calling feature, which will enable Flink to invoke the Zapier MCP server we previously created.
-
-![Agent 1: Price matching agent](./assets/lab1/agent1-diagram.png)
-
-In the Flink workspace, register the model and bind the tool to it in the Confluent catalog:
-
-> **Note:**
-> If you changed the `prefix`, retrieve the updated query from `mcp_commands.txt` in the Terraform directory.
-> The example below uses Azure OpenAI. If you are using Amazon Bedrock, use the corresponding query from `mcp_commands.txt`.
-
-```sql
-  CREATE MODEL `zapier_mcp_model`
-  INPUT (prompt STRING)
-  OUTPUT (response STRING)
-  WITH (
-    'provider' = 'azureopenai',
-    'task' = 'text_generation',
-    'azureopenai.connection' = 'streaming-agents-azure-openai-connection',
-    'mcp.connection' = 'zapier-mcp-connection'
-  );
-```
 
 Run this in Flink Workspace UI to start the first agent:
 
@@ -110,30 +163,7 @@ JOIN customers c ON o.customer_id = c.customer_id
 JOIN products p ON o.product_id = p.product_id;
 ```
 
-This agent uses the `product_name` as an input to URL scraping tool. The output is the `page_content` of the same product on the competitor website.
-
 ### Agent 2: Price Extractor Agent
-
-Agent 2 will take `recent_orders_scraped` topic as an input and extract the competitor price from the `page_content` field.
-
-![Agent 2: Price extractor agent](./assets/lab1/agent2-diagram.png)
-
-In Flink workspace, register the model for Agent 2 in Confluent catalog:
-
-> **Note:**
-> If you changed the `prefix`, retrieve the updated query from `mcp_commands.txt` in the Terraform directory.
-> The example below uses Azure OpenAI. If you are using Amazon Bedrock, use the corresponding query from `mcp_commands.txt`.
-
-```sql
-  CREATE MODEL `llm_textgen_model`
-  INPUT (prompt STRING)
-  OUTPUT (response STRING)
-  WITH(
-     'provider' = 'azureopenai',
-     'task' = 'text_generation',
-     'azureopenai.connection' = 'streaming-agents-azure-openai-connection'
-  );
-```
 
 Start **Agent 2** to extract the competitor's price from `page_content` and output it as a new field: `extracted_price`.
 
@@ -173,11 +203,7 @@ Notice the new field `extracted_price`. This will be used by the next Agent.
 ### Agent 3: Price Match Notification Agent
 
 In this step, we'll notify the customer when a price match has been applied.
-We'll again use Confluent Cloud's tool-calling feature — this time connecting to the Zapier MCP server to trigger an email or message to the customer.
-
-![Agent 3: Price Match Notification Agent](./assets/lab1/agent3-diagram.png)
-
-We don't need to register a new model here. Instead, we'll reuse the one from Agent 1, since both agents use the same Zapier MCP server and share the same tools.  For this agent, the tool is `gmail_send_email`.
+We'll again use Confluent Cloud's tool-calling feature — this time connecting to the Zapier MCP server to trigger an email or message to the customer. For this agent, the tool is `gmail_send_email`.
 
 Start Agent 3 by running:
 
@@ -188,8 +214,9 @@ SELECT
     scp.order_id,
     scp.customer_email,
     scp.product_name,
-    scp.order_price,
-    scp.competitor_price,
+    CAST(CAST(scp.order_price AS DECIMAL(10, 2)) AS STRING) as order_price,
+    CAST(CAST(scp.competitor_price AS DECIMAL(10, 2)) AS STRING) as competitor_price,
+    CAST(CAST((scp.order_price - scp.competitor_price) AS DECIMAL(10, 2)) AS STRING) as savings,
     AI_TOOL_INVOKE('zapier_mcp_model',
                    CONCAT('Use the gmail_send_email tool to send an email. ',
                           'Instructions: send yourself an email to your own email address, ',
@@ -203,15 +230,14 @@ We have great news! We found a better price for your recent purchase and have au
 📦 ORDER DETAILS:
    • Order Number: #', scp.order_id, '
    • Product: ', scp.product_name, '
-   • Customer: ', scp.customer_email, '
 
 💰 PRICE MATCH DETAILS:
-   • Original Price: $', CAST(scp.order_price AS STRING), '
-   • Competitor Price Found: $', CAST(scp.competitor_price AS STRING), '
-   • Your Savings: $', CAST((scp.order_price - scp.competitor_price) AS STRING), '
+   • Original Price: $', CAST(CAST(scp.order_price AS DECIMAL(10, 2)) AS STRING), '
+   • Competitor Price Found: $', CAST(CAST(scp.competitor_price AS DECIMAL(10, 2)) AS STRING), '
+   • Your Savings: $', CAST(CAST((scp.order_price - scp.competitor_price) AS DECIMAL(10, 2)) AS STRING), '
 
 ✅ ACTION TAKEN:
-We have processed a price match refund of $', CAST((scp.order_price - scp.competitor_price) AS STRING),
+We have processed a price match refund of $', CAST(CAST((scp.order_price - scp.competitor_price) AS DECIMAL(10, 2)) AS STRING),
 ' back to your original payment method. You should see this credit within 3-5 business days.
 
 🛒 WHY WE DO THIS:
@@ -243,10 +269,6 @@ With Agent 3 running, our real-time price matching pipeline is complete—orders
 Check out your email for price matched orders
 
 ![Price matched emails](./assets/lab1/email.png)
-
-## Data Generation
-
-Lab1 uses Flink SQL to create sample orders, customers, and products tables directly in the workspace. The sample data will automatically flow through your agents once they're running.
 
 ## Conclusion
 
