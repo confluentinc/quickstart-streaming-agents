@@ -6,7 +6,7 @@ In this lab, we'll use Confluent Cloud's Apache Flink tool calling feature to lo
 
 ## Prerequisites
 
-- ⚠️ **IMPORTANT: For AWS Users: [Request access to Claude Sonnet 3.7 in Bedrock for your cloud region](https://console.aws.amazon.com/bedrock/home#/modelaccess)**. If you do not activate it, you will get ModelRuntime errors in Flink and the LLM calls in this lab will not work. ⚠️ 
+- ⚠️ **IMPORTANT: For AWS Users: [Request access to Claude Sonnet 3.7 in Bedrock for your cloud region](https://console.aws.amazon.com/bedrock/home#/modelaccess)**. If you do not activate it, you will get ModelRuntime errors in Flink and the LLM calls in this lab will not work. ⚠️
 - Core infrastructure deployed via `python setup.py` or manually with Terraform (see [main README](./README.md))
 - Zapier account and remote MCP server setup (instructions below)
 
@@ -72,7 +72,7 @@ Run the following queries:
 #### Test Query 1: Base LLM functioning
 
 ```sql
-SELECT 
+SELECT
   question,
   response
 FROM (SELECT 'What is the capital of France?' as question) t,
@@ -82,9 +82,9 @@ LATERAL TABLE(ML_PREDICT('llm_textgen_model', question, MAP['debug', true])) as 
 #### Test Query 2: LLM Tool Calling
 
 ```sql
-SELECT 
-    AI_TOOL_INVOKE('zapier_mcp_model', 
-                   'Use the gmail_send_email tool to send an email. Instructions: send an email address to yourself, subject "Direct Query Test", body "This email was sent directly from Confluent Cloud!"', 
+SELECT
+    AI_TOOL_INVOKE('zapier_mcp_model',
+                   'Use the gmail_send_email tool to send an email. Instructions: send an email address to yourself, subject "Direct Query Test", body "This email was sent directly from Confluent Cloud!"',
                    MAP[],
                    MAP['gmail_send_email', 'Create and send a new email message']) as response;
 ```

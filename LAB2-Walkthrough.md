@@ -4,8 +4,9 @@ In this lab, we'll create a Retrieval-Augmented Generation (RAG) pipeline using 
 
 ## Prerequisites
 
+- ⚠️ **IMPORTANT: For AWS Users: [Request access to Claude Sonnet 3.7 in Bedrock for your cloud region](https://console.aws.amazon.com/bedrock/home#/modelaccess)**. If you do not activate it, the LLM calls in this lab will not work.
 - Core infrastructure deployed on either AWS or Azure by running `setup.py` (see [main README](./README.md))
-- MongoDB free account with Atlas cluster (M0 - Free Tier) with vector search enabled
+- MongoDB free account with Atlas cluster (M0 - Free Tier) with vector search enabled - directions below.
 
 ## MongoDB Atlas Setup
 
@@ -21,7 +22,7 @@ If running Lab2, set up a free MongoDB Atlas cluster:
 
 ![Create Cluster](./assets/lab2/mongodb/02_create_cluster.png)
 
-#### 3. Choose the **Free Tier (M0).** Then choose your **cloud provider** (AWS or Azure) and **region**. Make sure this is the same region that your Confluent Cloud deployment is in. Click **Create Cluster.**
+#### 3. Choose the **Free Tier (M0).** Then choose your cloud provider (AWS or Azure) and region. Make sure this is the same region that your Confluent Cloud deployment is in. Click **Create Cluster.**
 
 ![Choose Free Tier](./assets/lab2/mongodb/03_choose_free_tier_and_region.png)
 
@@ -35,7 +36,7 @@ If running Lab2, set up a free MongoDB Atlas cluster:
 
 #### 6. Go to **Network Access** in left sidebar. Click green **Add IP Address** button on the right. Then simply click the **Allow Access From Anywhere** button, or manually enter `0.0.0.0/0`. Click **Confirm.**
 
-   **NOTE:** Important step! Confluent Cloud will not be able to connect to MongoDB without this rule.
+ ⚠️ **NOTE:** Important step! Confluent Cloud will not be able to connect to MongoDB without this rule. ⚠️
 
 ![Network Access](./assets/lab2/mongodb/05_network_access_allow_all.png)
 
@@ -114,135 +115,6 @@ This will create:
 - ✅ Flink tables: `documents`, `documents_embed`, `queries`, `queries_embed`
 - ✅ MongoDB sink connector to stream embeddings to MongoDB Atlas
 - ✅ Setup commands file with manual steps
-
-### Step 3: Create MongoDB Connection
-
-After Terraform deployment, create the MongoDB connection using the Confluent CLI:
-
-```bash
-# Get the exact command from the generated mongodb_commands.txt file
-confluent flink connection create mongodb-connection \
-  --cloud AZURE \
-  --region "East US" \
-  --type mongodb \
-  --endpoint "mongodb+srv://cluster0.abc123.mongodb.net/?retryWrites=true&w=majority" \
-  --username confluent-user \
-  --password your-secure-password \
-  --environment env-123456
-```
-
-## Building the RAG Pipeline
-
-### Step 1: Create External Tables and Views
-
-In the Confluent Cloud Flink SQL workspace, execute these commands:
-
-#### 1. Populate Embedding Tables
-
-```sql
--- Populate documents_embed table with chunked and embedded documents
-INSERT INTO documents_embed
-WITH chunked_texts AS (
-  SELECT
-    document_id,
-    document_text,
-    chunk
-  FROM documents
-  CROSS JOIN UNNEST(
-    ML_CHARACTER_TEXT_SPLITTER(
-      document_text, 200, 20, '###', false, false, true, 'START'
-    )
-  ) AS t(chunk)
-)
-SELECT
-  document_id,
-  chunk,
-  embedding AS embedding
-FROM chunked_texts,
-LATERAL TABLE(
-  ML_PREDICT('llm_embedding_model', chunk)
-);
-
--- Populate queries_embed table with embedded queries
-INSERT INTO queries_embed
-SELECT
-  query,
-  embedding
-FROM queries,
-LATERAL TABLE(ML_PREDICT('llm_embedding_model', query));
-```
-
-#### 2. Create MongoDB Vector Store External Table
-
-```sql
--- Create documents_vectordb table (MongoDB vector store external table)
-CREATE TABLE documents_vectordb (
-  document_id STRING,
-  chunk STRING,
-  embedding ARRAY<FLOAT>
-) WITH (
-  'connector' = 'mongodb',
-  'mongodb.connection' = 'mongodb-connection',
-  'mongodb.database' = 'vector_search',
-  'mongodb.collection' = 'documents',
-  'mongodb.index' = 'vector_index',
-  'mongodb.embedding_column' = 'embedding',
-  'mongodb.numCandidates' = '500'
-);
-```
-
-#### 3. Create Vector Search Results Table
-
-```sql
--- Create search_results table (vector search results)
-CREATE TABLE search_results AS
-SELECT
-qe.query,
--- Transform the array with named fields to exclude embeddings
-ARRAY[
-    CAST(ROW(vs.search_results[1].document_id, vs.search_results[1].chunk) AS ROW<document_id STRING, chunk STRING>),
-    CAST(ROW(vs.search_results[2].document_id, vs.search_results[2].chunk) AS ROW<document_id STRING, chunk STRING>),
-    CAST(ROW(vs.search_results[3].document_id, vs.search_results[3].chunk) AS ROW<document_id STRING, chunk STRING>)
-] AS results
-FROM
-queries_embed AS qe,
-LATERAL TABLE(VECTOR_SEARCH(
-    documents_vectordb,
-    3,
-    DESCRIPTOR(embedding),
-    qe.embedding
-)) AS vs;
-```
-
-#### 4. Create RAG Response Generation Table
-
-```sql
--- Create search_results_response table (RAG responses)
-CREATE TABLE search_results_response AS
-SELECT
-    qr.query,
-    CAST(qr.results AS STRING) AS results_text,
-    pred.response
-FROM search_results qr,
-LATERAL TABLE(
-    ml_predict(
-        'llm_textgen_model',
-        CONCAT(
-            'You are an expert assistant. Provide helpful answers based on the provided context.
-
-            Question: ', qr.query,
-            '\n\nContext:\n',
-            'Document 1: ', qr.results[1].document_id, '\n',
-            qr.results[1].chunk, '\n\n',
-            'Document 2: ', qr.results[2].document_id, '\n',
-            qr.results[2].chunk, '\n\n',
-            'Document 3: ', qr.results[3].document_id, '\n',
-            qr.results[3].chunk,
-            '\n\nAnswer:'
-        )
-    )
-) AS pred;
-```
 
 ## Using the RAG Pipeline
 
@@ -342,7 +214,7 @@ db.documents.countDocuments();
 
 1. **MongoDB Connection Failed**
    - Verify IP allowlist includes Confluent Cloud IPs
-   - Check username/password are project-specific (not organization-level)
+   - Check username/password are database-specific (different than your MongoDB.com login)
    - Ensure connection string format is correct
 
 2. **Vector Search Not Working**

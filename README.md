@@ -43,9 +43,9 @@ Document embedding, vector search, and AI-powered responses. Includes MongoDB At
 
 ## Directory Structure
 
-```
+```sh
 quickstart-streaming-agents/
-├── aws/                    # AWS-specific deployments
+├── aws/                   # AWS-specific deployments
 │   ├── core/              # Shared infrastructure (deploy first)
 │   ├── lab1-tool-calling/
 │   └── lab2-vector-search/
@@ -53,13 +53,14 @@ quickstart-streaming-agents/
 │   ├── core/              # Shared infrastructure (deploy first)
 │   ├── lab1-tool-calling/
 │   └── lab2-vector-search/
-└── setup.py              # Automated setup script
+└── setup.py               # Automated setup script
 ```
 
 ## Manual Setup (Advanced)
 
 <details>
 <summary>Manual terraform deployment steps</summary>
+
 ### Prerequisites
 
 - `terraform`, `confluent` CLI installed (or use automated setup script)
