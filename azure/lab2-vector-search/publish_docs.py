@@ -113,13 +113,17 @@ def get_credentials():
 
 def run_publisher(credentials: dict):
     """Run the main publisher script with extracted credentials."""
-    # Path to the main publisher script
-    main_script = (
-        Path(__file__).parent / "../../../assets/lab2/flink_docs/publish_docs.py"
-    )
+    # Path to the main publisher script - find project root and navigate to assets
+    current_dir = Path(__file__).parent
+    # Go up to quickstart-streaming-agents root directory
+    project_root = current_dir.parent.parent
+    main_script = project_root / "assets/lab2/flink_docs/publish_docs.py"
 
     if not main_script.exists():
         logger.error(f"Main publisher script not found: {main_script}")
+        logger.error(f"Current script location: {Path(__file__)}")
+        logger.error(f"Project root: {project_root}")
+        logger.error(f"Looking for: {main_script}")
         sys.exit(1)
 
     # Set environment variables for the main script
@@ -142,21 +146,80 @@ def run_publisher(credentials: dict):
     )
 
     try:
-        # Use uv virtual environment python
-        venv_python = Path(__file__).parent / "../../../.venv/bin/python"
-        if not venv_python.exists():
-            logger.error(f"Virtual environment python not found: {venv_python}")
-            logger.error("Please run 'uv venv' from the project root directory")
-            sys.exit(1)
+        # Try to use virtual environment python first, fallback to system python
+        venv_python = project_root / ".venv/bin/python"
+        if venv_python.exists():
+            python_executable = str(venv_python)
+            logger.info("Using virtual environment python")
+        else:
+            python_executable = sys.executable
+            logger.info("Using system python (virtual environment not found)")
+
+        # Test dependencies first
+        logger.info("Testing required dependencies...")
+        try:
+            test_result = subprocess.run(
+                [python_executable, "-c",
+                 "import yaml, confluent_kafka.avro; print('Dependencies OK')"],
+                env=env, capture_output=True, text=True, check=True
+            )
+            logger.info("✓ All required dependencies are available")
+        except subprocess.CalledProcessError as e:
+            logger.error("✗ Missing required dependencies!")
+            logger.error(f"Dependency test failed: {e.stderr}")
+            logger.error("To install required packages:")
+            logger.error(f"  cd {project_root}")
+            logger.error("  uv pip install -r requirements.txt")
+            logger.error("  # Or activate virtual environment first:")
+            logger.error("  source .venv/bin/activate && pip install -r requirements.txt")
+            return 1
 
         # Run the main script
+        logger.info("Running publisher with all dependencies verified...")
         result = subprocess.run(
-            [str(venv_python), str(main_script)], env=env, check=True
+            [python_executable, str(main_script)],
+            env=env,
+            check=True,
+            capture_output=True,
+            text=True
         )
-        logger.info("Publisher completed successfully")
+
+        # Log the output for transparency
+        if result.stdout:
+            for line in result.stdout.strip().split('\n'):
+                logger.info(f"Publisher: {line}")
+
+        if result.returncode == 0:
+            logger.info("✓ Publisher completed successfully")
+        else:
+            logger.error(f"✗ Publisher failed with exit code {result.returncode}")
+            if result.stderr:
+                logger.error(f"Error output: {result.stderr}")
+
         return result.returncode
+
     except subprocess.CalledProcessError as e:
-        logger.error(f"Publisher failed with exit code {e.returncode}")
+        logger.error(f"✗ Publisher failed with exit code {e.returncode}")
+
+        # Show actual error output
+        if hasattr(e, 'stderr') and e.stderr:
+            logger.error("Error details:")
+            for line in e.stderr.strip().split('\n'):
+                logger.error(f"  {line}")
+
+        if hasattr(e, 'stdout') and e.stdout:
+            logger.error("Output before failure:")
+            for line in e.stdout.strip().split('\n'):
+                logger.error(f"  {line}")
+
+        # Provide helpful suggestions
+        if e.returncode == 1:
+            logger.error("Common causes:")
+            logger.error("  - Missing dependencies (run: uv pip install -r requirements.txt)")
+            logger.error("  - Wrong topic name or Kafka configuration")
+            logger.error("  - Network connectivity issues")
+            logger.error("  - Invalid Terraform state or credentials")
+
         return e.returncode
 
 

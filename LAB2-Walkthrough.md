@@ -16,21 +16,41 @@ If running Lab2, set up a free MongoDB Atlas cluster:
 
 #### 1. Create a **Project.**
 
-![Create Project](./assets/lab2/mongodb/01_create_project.png)
+<details>
+<summary>Click to view screenshot</summary>
+
+<img src="./assets/lab2/mongodb/01_create_project.png" alt="Create Project" width="50%" />
+
+</details>
 
 #### 2. Create a **Cluster.**
 
-![Create Cluster](./assets/lab2/mongodb/02_create_cluster.png)
+<details>
+<summary>Click to view screenshot</summary>
+
+<img src="./assets/lab2/mongodb/02_create_cluster.png" alt="Create Cluster" width="50%" />
+
+</details>
 
 #### 3. Choose the **Free Tier (M0).** Then choose your cloud provider (AWS or Azure) and region. Make sure this is the same region that your Confluent Cloud deployment is in. Click **Create Cluster.**
 
-![Choose Free Tier](./assets/lab2/mongodb/03_choose_free_tier_and_region.png)
+<details>
+<summary>Click to view screenshot</summary>
+
+<img src="./assets/lab2/mongodb/03_choose_free_tier_and_region.png" alt="Choose Free Tier" width="50%" />
+
+</details>
 
 #### 4. **Create a Database User.** **Write down the username and password** you choose, as they will be `mongodb_username` and `mongodb_password` that you will need to deploy Terraform later. Click **Create Database User** when you are done
 
    **Note:** the username and password you set up to access your database are the credentials you'll need to save for later, NOT the separate login you use for mongodb.com.
 
-![Create Database User](./assets/lab2/mongodb/04_create_database_user.png)
+<details>
+<summary>Click to view screenshot</summary>
+
+<img src="./assets/lab2/mongodb/04_create_database_user.png" alt="Create Database User" width="50%" />
+
+</details>
 
 #### 5. Click **Choose a Connection method.** => Shell => Copy the URL shown in **step 2.** This is the `MONGODB_CONNECTION_URL` you will need later. Don't worry about the rest of the command - you only need the URL that looks like `mongodb+srv://cluster0.xhgx1kr.mongodb.net`
 
@@ -38,7 +58,12 @@ If running Lab2, set up a free MongoDB Atlas cluster:
 
  ⚠️ **NOTE:** Important step! Confluent Cloud will not be able to connect to MongoDB without this rule. ⚠️
 
-![Network Access](./assets/lab2/mongodb/05_network_access_allow_all.png)
+<details>
+<summary>Click to view screenshot</summary>
+
+<img src="./assets/lab2/mongodb/05_network_access_allow_all.png" alt="Network Access" width="50%" />
+
+</details>
 
 #### 7. Next, from **Clusters** page, choose "Atlas Search" then click **Add my own data.** Enter
 
@@ -46,11 +71,21 @@ If running Lab2, set up a free MongoDB Atlas cluster:
 
    Collection name: `documents`
 
-![Add Data Collection](./assets/lab2/mongodb/06_add_data_collection.png)
+<details>
+<summary>Click to view screenshot</summary>
+
+<img src="./assets/lab2/mongodb/06_add_data_collection.png" alt="Add Data Collection" width="50%" />
+
+</details>
 
 #### 8. Next, click **Create Search Index.** Choose **Vector Search index, and name it `vector_search`
 
-![Create Vector Index](./assets/lab2/mongodb/07_create_vector_search_index.png)
+<details>
+<summary>Click to view screenshot</summary>
+
+<img src="./assets/lab2/mongodb/07_create_vector_search_index.png" alt="Create Vector Index" width="50%" />
+
+</details>
 
 #### 9. Scroll down to the bottom and choose **JSON Editor.** Enter the following
 
@@ -67,185 +102,127 @@ If running Lab2, set up a free MongoDB Atlas cluster:
    }
    ```
 
-![JSON Config](./assets/lab2/mongodb/08_json_editor_config.png)
+<details>
+<summary>Click to view screenshot</summary>
+
+<img src="./assets/lab2/mongodb/08_json_editor_config.png" alt="JSON Config" width="50%" />
+
+</details>
 
 ## Deployment
 
-### Step 1: Configure Variables
+### Step 1: Install Dependencies
 
-Navigate to your chosen cloud provider directory:
-
-```bash
-# For AWS
-cd aws/lab2-vector-search
-
-# For Azure
-cd azure/lab2-vector-search
-```
-
-Create or update `terraform.tfvars` with your MongoDB credentials:
-
-```hcl
-# MongoDB Connection Details
-MONGODB_CONNECTION_STRING = "mongodb+srv://cluster0.abc123.mongodb.net/?retryWrites=true&w=majority"
-MONGODB_DATABASE = "vector_search"
-MONGODB_COLLECTION = "documents"
-MONGODB_INDEX_NAME = "vector_index"
-
-# MongoDB Authentication (Project-specific credentials)
-mongodb_username = "confluent-user"
-mongodb_password = "your-secure-password"
-mongodb_host = "cluster0.abc123.mongodb.net"
-
-# Cloud Region
-cloud_region = "East US"  # For Azure
-# cloud_region = "us-east-1"  # For AWS
-```
-
-### Step 2: Deploy Terraform Infrastructure
+First, install the required Python dependencies:
 
 ```bash
-terraform init
-terraform plan
-terraform apply
+# From project root
+cd /path/to/quickstart-streaming-agents
+
+# Using uv (preferred)
+uv pip install -r requirements.txt
+
+# Or using pip
+pip install -r requirements.txt
 ```
 
-This will create:
+### Step 2: Deploy Infrastructure
 
-- ✅ Flink tables: `documents`, `documents_embed`, `queries`, `queries_embed`
-- ✅ MongoDB sink connector to stream embeddings to MongoDB Atlas
-- ✅ Setup commands file with manual steps
+Use the setup script to automatically deploy Lab2 infrastructure:
+
+```bash
+python setup.py
+```
+
+During deployment, you'll be prompted to provide 3 MongoDB variables:
+- `MONGODB_CONNECTION_STRING`: The connection URL from [Step 5](#step-1-create-mongodb-atlas-account-and-cluster) of MongoDB setup (e.g., `mongodb+srv://cluster0.abc123.mongodb.net`)
+- `mongodb_username`: The database-specific username you created in [Step 4](#step-1-create-mongodb-atlas-account-and-cluster) (*different* from what you use to login to MongoDB)
+- `mongodb_password`: The database-specific password you created in [Step 4](#step-1-create-mongodb-atlas-account-and-cluster)
+
+This creates the complete RAG pipeline:
+- **6 Flink tables** for the document-to-response flow
+- **LLM models** for embeddings and text generation
+- **MongoDB sink connector** to stream embeddings to Atlas
+- **Vector search integration** for semantic similarity
 
 ## Using the RAG Pipeline
 
-### 1. Insert Sample Documents
+### Load Confluent Flink Documentation
 
-```sql
-INSERT INTO documents VALUES
-('sales/pricing_guide.md', 'Our pricing model is flexible and designed to scale with your business. We offer three tiers: Starter at $99/month for up to 10 users, Professional at $299/month for up to 50 users, and Enterprise with custom pricing for larger organizations. All plans include 24/7 support and a 30-day money-back guarantee.'),
-('support/troubleshooting.md', 'When experiencing connection issues, first check your internet connection. Then verify your credentials are correct. If problems persist, restart the application and check for updates. Contact support if issues continue.'),
-('product/features.md', 'Our platform includes advanced analytics, real-time collaboration, automated workflows, and enterprise-grade security. The analytics dashboard provides comprehensive insights into user behavior and system performance.');
-```
-
-### 2. Submit Queries
-
-```sql
-INSERT INTO queries VALUES
-('What are your pricing options?'),
-('How do I troubleshoot connection problems?'),
-('What features does the platform include?');
-```
-
-### 3. View Results
-
-```sql
--- See search results with relevant document chunks
-SELECT * FROM search_results;
-
--- See AI-generated responses based on retrieved context
-SELECT query, response FROM search_results_response;
-```
-
-## Data Generation
-
-Each lab includes sample data and generation scripts:
+The lab uses real Confluent Flink documentation as the knowledge base:
 
 ```bash
-cd aws/lab2-vector-search   # or azure/lab2-vector-search
-python publish_documents.py
-python publish_queries.py
+cd aws/lab2-vector-search  # or azure/lab2-vector-search
+
+# Load 385 chunked documentation pages into the pipeline
+python publish_docs.py
 ```
 
-## Verification and Monitoring
+This publishes pre-chunked Flink documentation that gets:
+1. **Embedded** using the LLM embedding model
+2. **Stored** in MongoDB Atlas with vector search index
+3. **Made searchable** for semantic queries
 
-### Check MongoDB Sink Connector Status
+### Query the RAG System
 
 ```bash
-confluent connector list
-confluent connector describe <connector-id>
+# Just publish queries (view results in Confluent Cloud UI)
+python publish_queries.py "How do I use window functions in Flink?"
 ```
 
-### Monitor Data Flow
+Output shows:
+- AI-generated response based on retrieved docs
+- Source documents with similarity scores
+- Citations from the knowledge base
+
+### View Results in Confluent Cloud
+
+Monitor the pipeline in Confluent Cloud SQL workspace:
 
 ```sql
--- Check if documents are being processed
-SELECT COUNT(*) FROM documents;
-SELECT COUNT(*) FROM documents_embed;
+-- Check data flow through pipeline
+SELECT COUNT(*) FROM documents;        -- 385 Flink docs
+SELECT COUNT(*) FROM documents_embed;  -- Docs with embeddings
+SELECT COUNT(*) FROM queries;          -- Your questions
+SELECT COUNT(*) FROM queries_embed;    -- Queries with embeddings
 
--- Check if queries are being processed
-SELECT COUNT(*) FROM queries;
-SELECT COUNT(*) FROM queries_embed;
+-- See vector search results
+SELECT * FROM search_results LIMIT 5;
 
--- Verify MongoDB external table connectivity
-SELECT COUNT(*) FROM documents_vectordb;
+-- View final RAG responses
+SELECT query, response FROM search_results_response LIMIT 5;
 ```
-
-### View MongoDB Data
-
-In MongoDB Atlas or MongoDB Compass:
-
-```javascript
-// Check if data is being written to MongoDB
-db.documents.find().limit(5);
-db.documents.countDocuments();
-```
-
-## Tables Created
-
-- **documents**: Raw document input table (Kafka topic)
-- **documents_embed**: Documents with chunked text and embeddings (Kafka topic)
-- **queries**: User query input table (Kafka topic)
-- **queries_embed**: Queries with embeddings (Kafka topic)
-- **documents_vectordb**: MongoDB vector store external table
-- **search_results**: Vector search results view
-- **search_results_response**: Generated RAG responses view
-
-## Architecture Benefits
-
-- **Real-time Processing**: Stream processing enables immediate document indexing and query responses
-- **Scalable Vector Search**: MongoDB Atlas provides enterprise-grade vector search capabilities
-- **Contextual Responses**: RAG combines retrieval with generation for accurate, relevant answers
-- **Cloud Native**: Fully managed services eliminate infrastructure overhead
-- **Cost Effective**: Works with MongoDB Free Tier for development and testing
 
 ## Troubleshooting
 
-### Common Issues
+### Script Issues
+```bash
+# If publish_docs.py fails
+✗ Missing required dependencies!
+→ Run: uv pip install -r requirements.txt
 
-1. **MongoDB Connection Failed**
-   - Verify IP allowlist includes Confluent Cloud IPs
-   - Check username/password are database-specific (different than your MongoDB.com login)
-   - Ensure connection string format is correct
+✗ Terraform state not found!
+→ Ensure you ran terraform apply successfully
+```
 
-2. **Vector Search Not Working**
-   - Confirm vector search index is created and active
-   - Verify index configuration matches embedding dimensions (1536 for OpenAI)
-   - Check that embeddings are being written to MongoDB collection
+### Pipeline Issues
+```sql
+-- Debug data flow (run in Confluent Cloud SQL workspace)
+SELECT COUNT(*) FROM documents;        -- Should be 385 after publish_docs.py
+SELECT COUNT(*) FROM documents_embed;  -- Should match documents count
+SELECT COUNT(*) FROM queries;          -- Number of queries you sent
+SELECT COUNT(*) FROM search_results_response; -- Final RAG responses
+```
 
-3. **Flink SQL Errors**
-   - Ensure all required models are deployed (`llm_embedding_model`, `llm_textgen_model`)
-   - Verify compute pool has sufficient resources
-   - Check table schemas match expected formats
+### MongoDB Issues
+- **Connection failed**: Verify IP allowlist includes `0.0.0.0/0`
+- **No vector search**: Confirm Atlas vector search index `vector_search` is active
+- **Wrong credentials**: Use database user (not MongoDB.com login)
 
-4. **No Data in MongoDB**
-   - Verify MongoDB sink connector is running
-   - Check connector logs for errors
-   - Ensure documents_embed table has data
-
-### Getting Help
-
-- Check Terraform outputs for connection details
-- Review generated `mongodb_commands.txt` for setup steps
-- Use Confluent Cloud monitoring to track data flow
-- Check MongoDB Atlas metrics for storage and query performance
-
-## Next Steps
-
-- Experiment with different chunk sizes and overlap parameters
-- Tune vector search parameters (`mongodb.numCandidates`) for your use case
-- Integrate with front-end applications via Kafka consumers
-- Add document metadata for enhanced filtering and search
-- Scale to production with larger compute pools and MongoDB clusters
+### Common Fixes
+1. **Pipeline not processing**: Wait 30-60 seconds after publishing documents
+2. **No query responses**: Check that LLM models are deployed in core infrastructure
+3. **Empty results**: Verify MongoDB connector status in Confluent Cloud
 
 ## Navigation
 

@@ -15,8 +15,12 @@ import sys
 from pathlib import Path
 from typing import Any, Dict
 
+import warnings
 from confluent_kafka import avro
 from confluent_kafka.avro import AvroProducer
+
+# Suppress the deprecation warning for AvroProducer
+warnings.filterwarnings("ignore", message="AvroProducer has been deprecated")
 
 # Configure logging
 logging.basicConfig(
@@ -63,7 +67,6 @@ class QueryPublisher:
                     self.schema_registry_config
                 ),
             )
-            logger.info("Avro producer initialized successfully")
         except Exception as e:
             logger.error(f"Failed to initialize Avro producer: {e}")
             raise
@@ -89,7 +92,6 @@ class QueryPublisher:
             # Flush immediately
             self.producer.flush(timeout=10)
 
-            logger.info(f"Published query: {query[:100]}...")
             return True
 
         except Exception as e:
@@ -152,10 +154,8 @@ def get_credentials():
             raise
 
     # Get outputs from core state
-    logger.info("Extracting outputs from core Terraform state...")
     if core_state.exists():
         core_outputs = run_terraform_output(core_state)
-        logger.info(f"Core outputs available: {list(core_outputs.keys())}")
     else:
         logger.error(f"Core state file not found: {core_state}")
         sys.exit(1)
@@ -184,7 +184,6 @@ def get_credentials():
             "cluster_name": core_outputs["confluent_kafka_cluster_display_name"],
         }
 
-        logger.info("Successfully extracted all required credentials")
         return credentials
 
     except KeyError as e:
@@ -195,13 +194,49 @@ def get_credentials():
         sys.exit(1)
 
 
+def interactive_mode(publisher, topic):
+    """Interactive mode for publishing queries."""
+    logger.info("Entering interactive mode. Type 'exit', 'quit', or Ctrl+C to stop.")
+    logger.info("Enter queries to publish them to the Kafka topic:")
+
+    try:
+        while True:
+            try:
+                query = input("\n> ").strip()
+
+                if not query:
+                    continue
+
+                if query.lower() in ['exit', 'quit']:
+                    logger.info("Exiting interactive mode...")
+                    break
+
+                logger.info("Publishing...")
+
+                if publisher.publish_query(query, topic):
+                    logger.info("Published successfully")
+                else:
+                    logger.error("Failed to publish query")
+
+            except KeyboardInterrupt:
+                logger.info("\nExiting interactive mode...")
+                break
+            except EOFError:
+                logger.info("\nExiting interactive mode...")
+                break
+
+    except Exception as e:
+        logger.error(f"Error in interactive mode: {e}")
+
+
 def main():
     """Main function for publishing queries."""
-    if len(sys.argv) < 2:
-        logger.error("Usage: python publish_queries.py 'your query here'")
-        sys.exit(1)
-
-    query = sys.argv[1]
+    # Check if query provided as argument
+    if len(sys.argv) >= 2:
+        query = sys.argv[1]
+        single_query_mode = True
+    else:
+        single_query_mode = False
 
     try:
         # Extract credentials from Terraform
@@ -230,15 +265,19 @@ def main():
     publisher = QueryPublisher(kafka_config, schema_registry_config)
 
     try:
-        logger.info(f"Publishing query to topic '{topic}'")
-        logger.info(f"Query: {query}")
+        if single_query_mode:
+            # Single query mode
+            logger.info("Publishing...")
 
-        # Publish query
-        if publisher.publish_query(query, topic):
-            logger.info("Query published successfully")
+            # Publish query
+            if publisher.publish_query(query, topic):
+                logger.info("Published successfully")
+            else:
+                logger.error("Failed to publish query")
+                sys.exit(1)
         else:
-            logger.error("Failed to publish query")
-            sys.exit(1)
+            # Interactive mode
+            interactive_mode(publisher, topic)
 
     except Exception as e:
         logger.error(f"Publishing failed: {e}")

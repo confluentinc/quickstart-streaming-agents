@@ -17,7 +17,7 @@ This directory contains scripts to publish Flink documentation to Kafka in Avro 
    # For AWS
    cd terraform/aws/lab2-vector-search
    terraform init && terraform apply
-
+   
    # For Azure
    cd terraform/azure/lab2-vector-search
    terraform init && terraform apply

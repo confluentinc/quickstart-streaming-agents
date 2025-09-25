@@ -281,10 +281,14 @@ def main():
     publisher = FlinkDocsPublisher(kafka_config, schema_registry_config)
 
     try:
-        # Get docs directory (script should be run from flink_docs directory)
-        docs_dir = Path(__file__).parent
+        # Use markdown_chunks directory instead of full docs
+        docs_dir = Path(__file__).parent / "markdown_chunks"
 
-        logger.info(f"Publishing documents from {docs_dir} to topic '{topic}'")
+        if not docs_dir.exists():
+            logger.error(f"Markdown chunks directory not found: {docs_dir}")
+            sys.exit(1)
+
+        logger.info(f"Publishing document chunks from {docs_dir} to topic '{topic}'")
 
         # Publish all documents
         results = publisher.publish_directory(docs_dir, topic)
