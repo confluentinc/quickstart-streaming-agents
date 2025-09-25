@@ -272,6 +272,47 @@ Check out your email for price matched orders
 
 ![Price matched emails](./assets/lab1/email.png)
 
+## Verification Queries
+
+```sql
+-- Check pipeline progress
+SELECT 
+    'Orders Scraped' as step,
+    COUNT(*) as record_count
+FROM recent_orders_scraped
+WHERE page_content IS NOT NULL
+
+UNION ALL
+
+SELECT 
+    'Prices Extracted' as step,
+    COUNT(*) as record_count
+FROM streaming_competitor_prices
+WHERE extracted_price IS NOT NULL
+
+UNION ALL
+
+SELECT 
+    'Emails Sent' as step,
+    COUNT(*) as record_count
+FROM price_match_email_results
+WHERE email_response IS NOT NULL;
+```
+
+```sql
+-- View successful price matches
+SELECT 
+    order_id,
+    product_name,
+    order_price,
+    competitor_price,
+    (order_price - competitor_price) as savings
+FROM price_match_email_results
+ORDER BY savings DESC;
+```
+
+
+
 ## Conclusion
 
 By chaining these agents together, we've built a real-time data pipeline that reacts to market changes in seconds, ensures pricing competitiveness, and delivers immediate value to customers—right in their inbox.

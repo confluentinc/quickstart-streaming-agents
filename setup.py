@@ -1408,7 +1408,11 @@ MONGODB_INDEX_NAME = "vector_index"
             }
 
             # Add lab-specific credentials
-            if "lab1" in lab_name and "ZAPIER_SSE_ENDPOINT" in config:
+            if "lab1" in lab_name:
+                if "ZAPIER_SSE_ENDPOINT" not in config:
+                    self.ui.print_error("❌ ZAPIER_SSE_ENDPOINT is required for Lab1 deployment but not found in configuration.")
+                    self.ui.print_info("Please run the setup again to configure the Zapier SSE endpoint.")
+                    return False
                 lab_config["ZAPIER_SSE_ENDPOINT"] = config["ZAPIER_SSE_ENDPOINT"]
             elif "lab2" in lab_name:
                 for key in [
@@ -1740,6 +1744,25 @@ MONGODB_INDEX_NAME = "vector_index"
 
         # Load complete config including lab-specific credentials from terraform files
         complete_config = self.config_manager.load_existing_config()
+
+        # Validate that lab-specific required fields exist
+        missing_lab_fields = []
+        if lab_selection in ["lab1", "all"]:
+            if "ZAPIER_SSE_ENDPOINT" not in complete_config or not complete_config["ZAPIER_SSE_ENDPOINT"]:
+                missing_lab_fields.append("ZAPIER_SSE_ENDPOINT")
+        if lab_selection in ["lab2", "all"]:
+            for field in ["MONGODB_CONNECTION_STRING", "mongodb_username", "mongodb_password"]:
+                if field not in complete_config or not complete_config[field]:
+                    missing_lab_fields.append(field)
+
+        # If lab-specific fields are missing, redirect to configuration flow
+        if missing_lab_fields:
+            self.ui.print_warning(f"⚠️ Missing required configuration for selected lab(s): {', '.join(missing_lab_fields)}")
+            return self.handle_config_and_deploy(
+                "🔧 Lab-specific configuration needed...",
+                existing_valid=valid_config,
+                lab_selection=lab_selection,
+            )
 
         # Deploy Core first
         if not self.deploy_core_if_needed(complete_config):

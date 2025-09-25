@@ -4,8 +4,8 @@ In this lab, we'll create a Retrieval-Augmented Generation (RAG) pipeline using 
 
 ## Prerequisites
 
-- ⚠️ **IMPORTANT: For AWS Users: [Request access to Claude Sonnet 3.7 in Bedrock for your cloud region](https://console.aws.amazon.com/bedrock/home#/modelaccess)**. If you do not activate it, the LLM calls in this lab will not work.
-- Core infrastructure deployed on either AWS or Azure by running `setup.py` (see [main README](./README.md))
+- ⚠️ **IMPORTANT: For AWS Users: [Request access to Claude Sonnet 3.7 in Bedrock for your cloud region](https://console.aws.amazon.com/bedrock/home#/modelaccess)**. If you do not activate it, the LLM calls in this lab will not work. ⚠️
+- Core infrastructure deployed on either AWS or Azure by running `python setup.py` (see [main README](./README.md))
 - MongoDB free account with Atlas cluster (M0 - Free Tier) with vector search enabled - directions below.
 
 ## MongoDB Atlas Setup
@@ -140,10 +140,17 @@ During deployment, you'll be prompted to provide 3 MongoDB variables:
 - `mongodb_password`: The database-specific password you created in [Step 4](#step-1-create-mongodb-atlas-account-and-cluster)
 
 This creates the complete RAG pipeline:
-- **6 Flink tables** for the document-to-response flow
-- **LLM models** for embeddings and text generation
-- **MongoDB sink connector** to stream embeddings to Atlas
-- **Vector search integration** for semantic similarity
+- **6 Flink tables** for the document-to-response flow (intentionally in alphabetical order from beginning to end of pipeline, to keep things tidy!):
+  - `documents` 
+  - `documents_embed`
+  - `documents_vectordb` 
+  - `queries`
+  - `queries_embed`
+  - `search_results`
+  - `search_results_response`
+
+- **LLM models** for embeddings and text generation: `llm_textgen_model` and `llm_embedding_model`
+- **MongoDB sink connector** to stream embeddings from `documents_embed` to Atlas
 
 ## Using the RAG Pipeline
 
@@ -154,7 +161,7 @@ The lab uses real Confluent Flink documentation as the knowledge base:
 ```bash
 cd aws/lab2-vector-search  # or azure/lab2-vector-search
 
-# Load 385 chunked documentation pages into the pipeline
+# Load 385 documents into the pipeline
 python publish_docs.py
 ```
 
@@ -166,14 +173,16 @@ This publishes pre-chunked Flink documentation that gets:
 ### Query the RAG System
 
 ```bash
-# Just publish queries (view results in Confluent Cloud UI)
+# Publish queries (view results in Confluent Cloud UI)
+python publish_queries.py # starts interactive mode, or:
 python publish_queries.py "How do I use window functions in Flink?"
 ```
 
-Output shows:
-- AI-generated response based on retrieved docs
-- Source documents with similarity scores
+The results can be found in the `search_results` (vector search results) and  `search_results_response` (RAG response based on `search_results`) Kafka topics. They contain:
+
+- Source document snippets with similarity scores comparing query to document text
 - Citations from the knowledge base
+- AI-generated response based on retrieved docs (`search_results_response` only)
 
 ### View Results in Confluent Cloud
 
@@ -208,10 +217,10 @@ SELECT query, response FROM search_results_response LIMIT 5;
 ### Pipeline Issues
 ```sql
 -- Debug data flow (run in Confluent Cloud SQL workspace)
-SELECT COUNT(*) FROM documents;        -- Should be 385 after publish_docs.py
-SELECT COUNT(*) FROM documents_embed;  -- Should match documents count
-SELECT COUNT(*) FROM queries;          -- Number of queries you sent
-SELECT COUNT(*) FROM search_results_response; -- Final RAG responses
+SELECT COUNT(*) FROM documents;                -- Should be 385 after publish_docs.py
+SELECT COUNT(*) FROM documents_embed;          -- Should match documents count
+SELECT COUNT(*) FROM queries;                  -- Number of queries you sent
+SELECT COUNT(*) FROM search_results_response;  -- Final RAG responses
 ```
 
 ### MongoDB Issues
