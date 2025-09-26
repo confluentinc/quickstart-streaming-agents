@@ -13,3 +13,7 @@ variable "confluent_flink_api_key_resource" {
   description = "The confluent_api_key resource for Flink API key to establish proper dependencies"
   type        = any
 }
+variable "confluent_role_binding_resource" {
+  description = "The confluent_role_binding resource to establish proper dependencies"
+  type        = any
+}

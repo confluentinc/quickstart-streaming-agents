@@ -56,7 +56,8 @@ resource "confluent_flink_connection" "bedrock_connection" {
 
   depends_on = [
     aws_iam_user_policy_attachment.bedrock_user_policy,
-    var.confluent_flink_api_key_resource
+    var.confluent_flink_api_key_resource,
+    var.confluent_role_binding_resource
   ]
 
   lifecycle {
@@ -91,7 +92,8 @@ resource "confluent_flink_connection" "bedrock_embedding_connection" {
 
   depends_on = [
     aws_iam_user_policy_attachment.bedrock_user_policy,
-    var.confluent_flink_api_key_resource
+    var.confluent_flink_api_key_resource,
+    var.confluent_role_binding_resource
   ]
 
   lifecycle {

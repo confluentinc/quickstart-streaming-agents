@@ -280,6 +280,7 @@ module "aws_ai_services" {
   confluent_flink_api_key_id       = confluent_api_key.app-manager-flink-api-key.id
   confluent_flink_api_key_secret   = confluent_api_key.app-manager-flink-api-key.secret
   confluent_flink_api_key_resource = confluent_api_key.app-manager-flink-api-key
+  confluent_role_binding_resource  = confluent_role_binding.app-manager-kafka-cluster-admin
 }
 
 
