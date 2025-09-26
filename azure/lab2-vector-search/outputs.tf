@@ -38,10 +38,6 @@ output "queries_embed_table_id" {
   description = "Flink statement ID for queries_embed table"
 }
 
-output "mongodb_commands_file" {
-  value       = local_file.mongodb_commands.filename
-  description = "Path to MongoDB setup commands file"
-}
 
 # MongoDB connector outputs
 output "mongodb_sink_connector_id" {

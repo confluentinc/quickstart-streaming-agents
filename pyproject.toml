@@ -135,3 +135,9 @@ addopts = [
     "--cov-report=term-missing",
     "--cov-report=html",
 ]
+
+[dependency-groups]
+dev = [
+    "detect-secrets>=1.5.0",
+    "pre-commit>=3.5.0",
+]

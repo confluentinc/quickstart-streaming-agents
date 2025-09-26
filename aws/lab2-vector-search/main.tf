@@ -508,37 +508,3 @@ resource "confluent_flink_statement" "search_results_response_create_table" {
     confluent_flink_statement.search_results_create_table
   ]
 }
-
-# Generate MongoDB setup commands file with CLI instructions
-resource "local_file" "mongodb_commands" {
-  filename = "${path.module}/mongodb_commands.txt"
-  content  = <<-EOT
-# Lab2 Vector Search - AWS Implementation Status
-#
-# 🎉 FULLY AUTOMATED BY TERRAFORM:
-# ✅ Core LLM infrastructure (deployed in core terraform)
-# ✅ LLM embedding model: llm_embedding_model (available in core)
-# ✅ LLM text generation model: llm_textgen_model (available in core)
-# ✅ MongoDB Flink connection: mongodb-connection (automated via Terraform)
-# ✅ Kafka tables: documents, documents_embed, queries, queries_embed
-# ✅ MongoDB sink connector for streaming embeddings
-# ✅ Sample data insertion for testing
-# ✅ Vector database table with MongoDB integration
-# ✅ Automated embedding population statements
-# ✅ Vector search results table creation
-# ✅ RAG response generation with LLM integration
-#
-# 🚀 READY TO USE:
-# The complete RAG pipeline is now fully automated and should work immediately
-# after terraform apply completes. No manual steps required!
-#
-# To test the pipeline:
-# 1. Run terraform apply to deploy all resources
-# 2. Query the search_results_response table in Confluent Cloud SQL workspace:
-#
-# SELECT * FROM search_results_response;
-#
-# This will show the end-to-end RAG responses based on your sample query.
-
-EOT
-}
