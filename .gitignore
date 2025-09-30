@@ -24,7 +24,7 @@ claude-*
 *.tfstate.backup
 .terraform/
 .terraform.lock.hcl
-*.tfvars
+# *.tfvars
 *.tfvars.json
 terraform.tfvars.backup
 terraform/providers-aws.tf
@@ -40,6 +40,12 @@ terraform/terraform.tfvars.reset-backup
 terraform/terraform.tfvars.backup
 **/terraform.tfvars.reset-backup
 **/terraform.tfvars.backup
+
+# Files with sensitive credentials
+confluent_api_keys.md
+mongodb_commands.txt
+.setup_config.json
+**/.setup_config.json
 
 # Python (if scripts are added)
 __pycache__/
@@ -60,3 +66,14 @@ logs/
 # Backup files
 *.bak
 *.backup
+
+# Processing artifacts
+processed_files.json
+chunks.json
+*_test.py
+*_batch.py
+
+# Virtual environments
+.venv/
+venv/
+env/

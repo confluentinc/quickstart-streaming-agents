@@ -1,0 +1,154 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "quickstart-streaming-agents"
+version = "0.1.0"
+description = "Cross-platform Python tooling for Confluent streaming agents quickstart tutorials"
+readme = "README.md"
+authors = [
+    {name = "Confluent", email = "support@confluent.io"},
+]
+license = {text = "Apache-2.0"}
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Distributed Computing",
+]
+keywords = ["confluent", "kafka", "flink", "streaming", "agents", "vector-search"]
+requires-python = ">=3.8.1"
+
+# Core dependencies from requirements.txt
+dependencies = [
+    "confluent-kafka[avro]>=2.3.0,<3.0",
+    "PyYAML>=6.0.1,<7.0",
+    "requests>=2.31.0,<3.0",
+]
+
+# Optional dependencies for enhanced functionality
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "flake8>=6.0.0",
+    "mypy>=1.0.0",
+]
+
+# Console script entry points for all workflows
+[project.scripts]
+deploy = "deploy:main"
+publish_docs = "scripts.lab2_publish_docs:main"
+publish_queries = "scripts.lab2_publish_queries:main"
+lab1_datagen = "scripts.lab1_datagen:main"
+lab1_mcp_setup = "scripts.lab1_mcp_setup:main"
+# Legacy aliases for backward compatibility (hyphens)
+publish-docs = "scripts.lab2_publish_docs:main"
+publish-queries = "scripts.lab2_publish_queries:main"
+lab1-datagen = "scripts.lab1_datagen:main"
+lab1-mcp-setup = "scripts.lab1_mcp_setup:main"
+# Additional aliases
+lab2_publish_docs = "scripts.lab2_publish_docs:main"
+lab2_publish_queries = "scripts.lab2_publish_queries:main"
+mcp_setup = "scripts.lab1_mcp_setup:main"
+
+[project.urls]
+Homepage = "https://github.com/confluentinc/quickstart-streaming-agents"
+Repository = "https://github.com/confluentinc/quickstart-streaming-agents"
+Documentation = "https://github.com/confluentinc/quickstart-streaming-agents#readme"
+Issues = "https://github.com/confluentinc/quickstart-streaming-agents/issues"
+
+# Hatchling build configuration
+[tool.hatch.build.targets.wheel]
+packages = ["scripts"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "scripts/",
+    "requirements.txt",
+    "README.md",
+    "LICENSE",
+]
+exclude = [
+    "/.git",
+    "/.github",
+    "/aws",
+    "/azure",
+    "/terraform",
+    "/assets",
+    "*.pyc",
+    "__pycache__",
+]
+
+# Development tools configuration
+[tool.black]
+line-length = 88
+target-version = ['py38']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+    \.git
+  | \.venv
+  | \.env
+  | venv
+  | env
+  | __pycache__
+  | \.pytest_cache
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 88
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--verbose",
+    "--cov=scripts",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+]
+
+[dependency-groups]
+dev = [
+    "detect-secrets>=1.5.0",
+    "pre-commit>=3.5.0",
+]

@@ -1,0 +1,117 @@
+---
+document_id: flink_reference_keywords_chunk_2
+source_file: flink_reference_keywords.md
+source_url: https://docs.confluent.io/cloud/current/flink/reference/keywords.html
+title: Flink SQL Keywords in Confluent Cloud for Apache Flink
+chunk_index: 2
+total_chunks: 3
+---
+
+| HOURS | | |
+
+## I¶
+
+**IDENTITY** | **IF** | IGNORE | IMMEDIATE | IMMEDIATELY
+---|---|---|---|---
+IMPLEMENTATION | ILIKE | **IMPORT** | **IN** | INCLUDE
+INCLUDING | INCREMENT | **INDICATOR** | **INITIAL** | INITIALLY
+**INNER** | **INOUT** | INPUT | **INSENSITIVE** | **INSERT**
+INSTANCE | INSTANTIABLE | **INT** | **INTEGER** | **INTERSECT**
+**INTERSECTION** | **INTERVAL** | **INTO** | INVOKER | **IS**
+ISODOW | ISOLATION | ISOYEAR |  |
+
+## J¶
+
+**JAR** | **JARS** | JAVA | **JOB**
+---|---|---|---
+**JOBS** | **JOIN** | JSON | **JSON_ARRAY**
+**JSON_ARRAYAGG** | **JSON_EXECUTION_PLAN** | **JSON_EXISTS** | **JSON_OBJECT**
+**JSON_OBJECTAGG** | **JSON_QUERY** | **JSON_SCOPE** | **JSON_VALUE**
+
+## K¶
+
+K | KEY | KEY_MEMBER | KEY_TYPE
+---|---|---|---
+
+## L¶
+
+LABEL | **LAG** | **LANGUAGE** | **LARGE** | LAST
+---|---|---|---|---
+**LAST_VALUE** | **LATERAL** | **LEAD** | **LEADING** | **LEFT**
+LENGTH | LEVEL | LIBRARY | **LIKE** | **LIKE_REGEX**
+**LIMIT** | **LN** | **LOAD** | **LOCAL** | **LOCALTIME**
+**LOCALTIMESTAMP** | LOCATOR | **LOWER** |  |
+
+## M¶
+
+M | MAP | **MATCH** | MATCHED | **MATCHES**
+---|---|---|---|---
+**MATCH_NUMBER** | **MATCH_RECOGNIZE** | **MATERIALIZED** | **MAX** | MAXVALUE
+**MEASURES** | **MEMBER** | **MERGE** | MESSAGE_LENGTH | MESSAGE_OCTET_LENGTH
+MESSAGE_TEXT | **METADATA** | **METHOD** | MICROSECOND | MILLENNIUM
+MILLISECOND | **MIN** | **MINUS** | **MINUTE** | MINUTES
+MINUTE | MINVALUE | ML_PREDICT | **MOD** | **MODEL**
+**MODELS** | **MODIFIES** | **MODIFY** | **MODULE** | **MODULES**
+**MONDAY** | **MONTH** | MONTHS | MORE | **MULTISET**
+MUMPS |  |  |  |
+
+## N¶
+
+NAME | NAMES | NANOSECOND | **NATIONAL** | **NATURAL** | **NCHAR**
+---|---|---|---|---|---
+**NCLOB** | NESTING | **NEW** | **NEXT** | **NO** | **NONE**
+**NORMALIZE** | NORMALIZED | **NOT** | **NTH_VALUE** | **NTILE** | **NULL**
+NULLABLE | **NULLIF** | NULLS | NUMBER | **NUMERIC** |
+
+## O¶
+
+OBJECT | **OCCURRENCES_REGEX** | OCTETS | **OCTET_LENGTH** | **OF**
+---|---|---|---|---
+**OFFSET** | **OLD** | **OMIT** | **ON** | **ONE**
+**ONLY** | **OPEN** | OPTION | OPTIONS | **OR**
+**ORDER** | ORDERING | **ORDINAL** | ORDINALITY | OTHERS
+**OUT** | **OUTER** | OUTPUT | **OVER** | **OVERLAPS**
+**OVERLAY** | OVERRIDING | **OVERWRITE** | **OVERWRITING** |
+
+## P¶
+
+PAD | **PARAMETER** | PARAMETER_MODE
+---|---|---
+PARAMETER_NAME | PARAMETER_ORDINAL_POSITION | PARAMETER_SPECIFIC_CATALOG
+PARAMETER_SPECIFIC_NAME | PARAMETER_SPECIFIC_SCHEMA | PARTIAL
+**PARTITION** | **PARTITIONED** | **PARTITIONS**
+PASCAL | PASSING | PASSTHROUGH
+PAST | PATH | **PATTERN**
+**PER** | **PERCENT** | **PERCENTILE_CONT**
+**PERCENTILE_DISC** | **PERCENT_RANK** | **PERIOD**
+**PERMUTE** | PIVOT | PLACING
+PLAN | **PLAN_ADVICE** | PLI
+**PORTION** | **POSITION** | **POSITION_REGEX**
+**POWER** | **PRECEDES** | PRECEDING
+**PRECISION** | **PREPARE** | PRESERVE
+**PREV** | **PRIMARY** | PRIOR
+PRIVILEGES | **PROCEDURE** | **PROCEDURES**
+PUBLIC | **PYTHON** |
+
+## Q¶
+
+**QUALIFY** | QUARTER | QUARTERS
+---|---|---
+
+## R¶
+
+**RANGE** | **RANK** | **RAW** | READ
+---|---|---|---
+**READS** | **REAL** | **RECURSIVE** | **REF**
+**REFERENCES** | **REFERENCING** | **REFRESH_MODE** | **REGR_AVGX**
+**REGR_AVGY** | **REGR_COUNT** | **REGR_INTERCEPT** | **REGR_R2**
+**REGR_SLOPE** | **REGR_SXX** | **REGR_SXY** | **REGR_SYY**
+RELATIVE | **RELEASE** | **REMOVE** | **RENAME**
+REPEATABLE | REPLACE | **RESET** | RESPECT
+RESTART | RESTRICT | **RESULT** | **RETURN**
+RETURNED_CARDINALITY | RETURNED_LENGTH | RETURNED_OCTET_LENGTH | RETURNED_SQLSTATE
+RETURNING | **RETURNS** | **REVOKE** | **RIGHT**
+RLIKE | ROLE | **ROLLBACK** | **ROLLUP**
+ROUTINE | ROUTINE_CATALOG | ROUTINE_NAME |
+ROUTINE_SCHEMA | **ROW** | **ROWS** | ROW_COUNT
+**ROW_NUMBER** | **RUNNING** |  |
