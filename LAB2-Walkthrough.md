@@ -130,7 +130,7 @@ pip install -r requirements.txt
 
 ### Step 2: Deploy Infrastructure
 
-Use the setup script to automatically deploy Lab2 infrastructure:
+Use the setup script and select "Lab2" when prompted to automatically deploy Lab2 infrastructure:
 
 ```bash
 uv run deploy

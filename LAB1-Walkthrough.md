@@ -206,10 +206,10 @@ Notice the new field `extracted_price`. This will be used by the next Agent.
 In this step, we'll notify the customer when a price match has been applied.
 We'll again use Confluent Cloud's tool-calling feature — this time connecting to the Zapier MCP server to trigger an email or message to the customer. For this agent, the tool is `gmail_send_email`.
 
-Start Agent 3 by running:
+⚠️ IMPORTANT: Replace <<YOUR-EMAIL-ADDRESS-HERE>> in the query below with the email address where you want the email to delivered to.
 
 ```sql
--- Create and send professional email notifications for price matches
+-- Create and send email notifications for price matches
 CREATE TABLE price_match_email_results AS
 SELECT
     scp.order_id,
@@ -220,7 +220,7 @@ SELECT
     CAST(CAST((scp.order_price - scp.competitor_price) AS DECIMAL(10, 2)) AS STRING) as savings,
     AI_TOOL_INVOKE('zapier_mcp_model',
                    CONCAT('Use the gmail_send_email tool to send an email. ',
-                          'Instructions: send yourself an email to your own email address, ',
+                          'Instructions: send an email to: <<YOUR-EMAIL-ADDRESS-HERE>>, ',
                           'subject "✅ Great News! Price Match Applied - Order #', scp.order_id, '", ',
                           'body "Subject: Your Price Match Has Been Applied - Order #', scp.order_id, '
 
@@ -269,7 +269,11 @@ With Agent 3 running, our real-time price matching pipeline is complete—orders
 
 Check out your email for price matched orders:
 
-![Price matched emails](./assets/lab1/email.png)
+<summary>Click to view screenshot</summary>
+
+<img src="./assets/lab1/email.png" alt="Price match email" width="50%" />
+
+</details>
 
 ## Verification Queries
 
@@ -305,9 +309,8 @@ SELECT
     product_name,
     order_price,
     competitor_price,
-    (order_price - competitor_price) as savings
-FROM price_match_email_results
-ORDER BY savings DESC;
+    (CAST(order_price AS DECIMAL(10,2)) - CAST(competitor_price AS DECIMAL(10,2))) as savings
+FROM price_match_email_results;
 ```
 
 

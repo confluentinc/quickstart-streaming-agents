@@ -84,11 +84,6 @@ pip install -r requirements.txt
 python deploy.py
 ```
 
-**Direct script execution:**
-```bash
-python deploy.py
-```
-
 </details>
 
 <details>
