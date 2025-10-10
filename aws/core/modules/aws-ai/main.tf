@@ -1,5 +1,16 @@
+locals {
+  common_tags = {
+    Owner       = var.owner_email
+    Project     = "https://github.com/confluentinc/quickstart-streaming-agents"
+    Environment = var.confluent_environment_id
+    ManagedBy   = "Terraform"
+    LocalPath   = var.project_root_path
+  }
+}
+
 resource "aws_iam_user" "bedrock_user" {
   name = "bedrock-user-${var.random_id}"
+  tags = local.common_tags
 }
 
 resource "aws_iam_access_key" "bedrock_user_key" {
@@ -8,6 +19,7 @@ resource "aws_iam_access_key" "bedrock_user_key" {
 
 resource "aws_iam_policy" "bedrock_policy" {
   name = "bedrock-policy-${var.random_id}"
+  tags = local.common_tags
 
   policy = jsonencode({
     Version = "2012-10-17"

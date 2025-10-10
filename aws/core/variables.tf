@@ -50,3 +50,9 @@ variable "confluent_cloud_api_secret" {
   type        = string
   sensitive   = true
 }
+
+variable "owner_email" {
+  description = "Email address of the resource owner for tagging purposes"
+  type        = string
+  default     = ""
+}

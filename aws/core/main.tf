@@ -26,8 +26,9 @@ locals {
     "centralindia"  = "centralindia"
   }
 
-  confluent_region = lookup(local.region_mapping, var.cloud_region, var.cloud_region)
-  cloud_provider   = upper(var.cloud_provider)
+  confluent_region    = lookup(local.region_mapping, var.cloud_region, var.cloud_region)
+  cloud_provider      = upper(var.cloud_provider)
+  project_root_path   = abspath("${path.root}/../..")
 }
 
 resource "confluent_environment" "staging" {
@@ -281,6 +282,8 @@ module "aws_ai_services" {
   confluent_flink_api_key_secret   = confluent_api_key.app-manager-flink-api-key.secret
   confluent_flink_api_key_resource = confluent_api_key.app-manager-flink-api-key
   confluent_role_binding_resource  = confluent_role_binding.app-manager-kafka-cluster-admin
+  owner_email                      = var.owner_email
+  project_root_path                = local.project_root_path
 }
 
 

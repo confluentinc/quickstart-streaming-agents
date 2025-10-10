@@ -706,6 +706,7 @@ cloud_region = "{config['cloud_region']}"
                 "confluent_cloud_api_key": "test-key",  # pragma: allowlist secret
                 "confluent_cloud_api_secret": "test-secret",  # pragma: allowlist secret
                 "ZAPIER_SSE_ENDPOINT": "https://mcp.zapier.com/api/mcp/s/test-api-key/sse",
+                "owner_email": "",
             }
             for key, default_value in defaults.items():
                 config[key] = existing_config.get(key, default_value)
@@ -813,6 +814,14 @@ cloud_region = "{config['cloud_region']}"
             self.ui.print_error(
                 "Invalid Zapier SSE endpoint format. Expected: https://mcp.zapier.com/api/mcp/s/<<API-key>>/sse"
             )
+
+        # Owner email (optional, for tagging cloud resources)
+        self.ui.print_info("For proper tagging of cloud resources (optional)")
+        default_email = existing_config.get("owner_email", "")
+        owner_email = self.ui.prompt("Email", default_email)
+        config["owner_email"] = owner_email
+        # Save config immediately after owner email
+        self.save_credentials_to_tfvars(config)
 
         return config
 
@@ -1353,6 +1362,9 @@ cloud_region = "{config['cloud_region']}"
 confluent_cloud_api_key = "{config['confluent_cloud_api_key']}"
 confluent_cloud_api_secret = "{config['confluent_cloud_api_secret']}"
 """
+        if "owner_email" in config and config["owner_email"]:
+            content += f'owner_email = "{config["owner_email"]}"\n'
+
         if "azure_subscription_id" in config:
             content += f'azure_subscription_id = "{config["azure_subscription_id"]}"\n'
 

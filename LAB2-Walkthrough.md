@@ -2,6 +2,8 @@
 
 In this lab, we'll create a Retrieval-Augmented Generation (RAG) pipeline using Confluent Cloud for Apache Flink's vector search capabilities. The pipeline processes documents, creates embeddings, and enables semantic search to power intelligent responses through retrieval of relevant context.
 
+<img src="./assets/lab2/mongodb/00_lab2_architecture.png" alt="Lab2 Architecture Diagram"/>
+
 ## Prerequisites
 
 - ⚠️ **IMPORTANT: For AWS Users: [Request access to Claude Sonnet 3.7 in Bedrock for your cloud region](https://console.aws.amazon.com/bedrock/home#/modelaccess)**. If you do not activate it, the LLM calls in this lab will not work. ⚠️

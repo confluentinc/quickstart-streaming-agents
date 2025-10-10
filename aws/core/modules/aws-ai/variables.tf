@@ -17,3 +17,14 @@ variable "confluent_role_binding_resource" {
   description = "The confluent_role_binding resource to establish proper dependencies"
   type        = any
 }
+
+variable "owner_email" {
+  description = "Email address of the resource owner for tagging purposes"
+  type        = string
+  default     = ""
+}
+
+variable "project_root_path" {
+  description = "Absolute path to the project root directory"
+  type        = string
+}
