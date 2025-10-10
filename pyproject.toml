@@ -34,6 +34,7 @@ dependencies = [
     "confluent-kafka[avro]>=2.3.0,<3.0",
     "PyYAML>=6.0.1,<7.0",
     "requests>=2.31.0,<3.0",
+    "urllib3>=1.26.18,<2.0",  # Pin to v1.x for LibreSSL compatibility on macOS
 ]
 
 # Optional dependencies for enhanced functionality

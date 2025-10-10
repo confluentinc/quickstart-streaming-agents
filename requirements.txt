@@ -9,4 +9,7 @@ PyYAML==6.0.2
 # HTTP requests for Flink SQL API
 requests==2.32.4
 
+# Pin urllib3 to v1.x for macOS LibreSSL compatibility
+urllib3>=1.26.18,<2.0
+
 # Add other project dependencies here as needed
