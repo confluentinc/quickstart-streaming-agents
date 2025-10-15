@@ -4,10 +4,10 @@
 
 Build real-time AI agents with [Confluent Cloud Streaming Agents](https://docs.confluent.io/cloud/current/ai/streaming-agents/overview.html). This quickstart includes two hands-on labs:
 
-| Lab | Description | Reqs |
-|---------|-------------|---------|
-| [**Lab1 - MCP Tool Calling**](./LAB1-Walkthrough.md) | Price matching agent that scrapes competitor websites and adjusts prices in real-time<br><br>![Lab1 Architecture](./assets/lab1/lab1-architecture.png) | Zapier MCP server            |
-| [**Lab2 - Vector Search - RAG**](./LAB2-Walkthrough.md) | Vector search pipeline with optional retrieval augmented generation (RAG) for intelligent document retrieval<br><br>![Lab2 Architecture](./assets/lab2/mongodb/00_lab2_architecture.png) | MongoDB Atlas (free M0 tier) |
+| Lab | Description |
+|----------|------------------------------|
+| [**Lab1 - MCP Tool Calling**](./LAB1-Walkthrough.md) | Price matching agent that scrapes competitor websites and adjusts prices in real-time<br><br>![Lab1 Architecture](./assets/lab1/lab1-architecture.png) |
+| [**Lab2 - Vector Search - RAG**](./LAB2-Walkthrough.md) | Vector search pipeline with optional retrieval augmented generation (RAG) for intelligent document retrieval<br><br>![Lab2 Architecture](./assets/lab2/mongodb/00_lab2_architecture.png) |
 
 ## Demo Video
 
