@@ -24,7 +24,7 @@ This lab implements a three-agent pipeline:
 
 Create a Zapier MCP server for tool calling:
 
-### 1. Create Zapier Account
+### 1. Create free Zapier Account
 
 Sign up at [zapier.com](https://zapier.com/sign-up) and verify your email.
 
@@ -84,7 +84,7 @@ LATERAL TABLE(ML_PREDICT('llm_textgen_model', question, MAP['debug', 'true'])) a
 
 #### Test Query 2: LLM Tool Calling Model
 
-Be sure to swap out `<<YOUR-EMAIL-ADDRESS-HERE>>` for the address where you want to send the email.
+⚠️ IMPORTANT: Replace `<<YOUR-EMAIL-ADDRESS-HERE>>` in the query below with the email address where you want the email to delivered to. ⚠️️️
 
 ```sql
 SELECT
@@ -102,20 +102,9 @@ SELECT
 
 ### Data Generation
 
-#### Recommended: Using uv (Cross-Platform)
-
-Run the automated data generator from the project root:
-
 ```bash
 uv run lab1_datagen
 ```
-
-The script automatically:
-- Auto-detects your cloud provider (AWS or Azure)
-- Downloads the ShadowTraffic license file
-- Extracts credentials from Terraform state
-- Generates connection files
-- Runs the Docker-based data generator
 
 <details>
 <summary>Alternative: Using Python directly</summary>
@@ -128,15 +117,11 @@ The Python script provides the same automation as the uv version.
 
 </details>
 
-#### What Data is Generated
-
 The data generator creates three interconnected data streams:
 
 - **Customers**: 100 customer records with realistic names, emails, addresses, and state information
 - **Products**: 17 product records including electronics, games, sports equipment, and household items with prices ranging from $5-$365
 - **Orders**: Continuous stream of orders linking customers to products with timestamps
-
-🎉 **Data is now flowing through your streaming pipeline! The agents will process this data in real-time.**
 
 ### Agent 1: URL Scraping Agent
 
@@ -201,7 +186,7 @@ In a new cell, check the output of `streaming_competitor_prices`
 SELECT * FROM streaming_competitor_prices;
 ```
 
-![Agent 2 Output Screenshot](./assets/lab1/agent2-flinkoutput.png)
+<img src="./assets/lab1/agent2-flinkoutput.png" alt="Agent 2 Output Screenshot" width="50%">
 
 Notice the new field `extracted_price`. This will be used by the next Agent.
 
