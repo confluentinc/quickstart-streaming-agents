@@ -1191,6 +1191,20 @@ class TerraformManager:
 
         return success
 
+    def destroy(self, cloud_provider: str = None) -> bool:
+        """Run terraform destroy."""
+        self.ui.print_info("Destroying infrastructure with Terraform...")
+        success, output = self.run_terraform_command(
+            ["destroy", "--auto-approve"], show_output=True, cloud_provider=cloud_provider
+        )
+
+        if success:
+            self.ui.print_success("Infrastructure destroyed successfully!")
+        else:
+            self.ui.print_error("Terraform destruction failed")
+
+        return success
+
 
 class StreamingAgentsSetup:
     """Main setup orchestrator."""
@@ -2523,6 +2537,106 @@ def main():
     success = setup.run()
 
     sys.exit(0 if success else 1)
+
+
+def destroy_main():
+    """Main entry point for destroy command."""
+    ui = SetupUI()
+    root_dir = Path(__file__).parent
+
+    ui.print_header("🗑️  Streaming Agents Infrastructure Destruction")
+    ui.print_warning(
+        "This will destroy Terraform infrastructure and cannot be undone!"
+    )
+
+    # Prompt for cloud provider
+    ui.print_info("\nSelect cloud provider:")
+    print("  1) AWS")
+    print("  2) Azure")
+
+    choice = ui.prompt("Enter choice (1-2)", "1").strip()
+    if choice == "1":
+        cloud_provider = "aws"
+    elif choice == "2":
+        cloud_provider = "azure"
+    else:
+        ui.print_error("Invalid choice. Exiting.")
+        sys.exit(1)
+
+    provider_dir = root_dir / cloud_provider
+    if not provider_dir.exists():
+        ui.print_error(f"Cloud provider directory not found: {provider_dir}")
+        sys.exit(1)
+
+    # Detect what's deployed by checking terraform.tfstate files
+    labs = ["lab2-vector-search", "lab1-tool-calling", "core"]
+    deployed_resources = []
+
+    for lab in labs:
+        lab_dir = provider_dir / lab
+        state_file = lab_dir / "terraform.tfstate"
+        if state_file.exists():
+            try:
+                with open(state_file, "r") as f:
+                    state_data = json.load(f)
+                    resources = state_data.get("resources", [])
+                    if resources:
+                        deployed_resources.append((lab, lab_dir))
+            except Exception:
+                # If we can't read the state, assume it's deployed
+                if state_file.stat().st_size > 0:
+                    deployed_resources.append((lab, lab_dir))
+
+    if not deployed_resources:
+        ui.print_info("No deployed resources found. Nothing to destroy.")
+        sys.exit(0)
+
+    # Show what will be destroyed
+    ui.print_info(f"\nFound {len(deployed_resources)} deployed resource(s):")
+    for lab, _ in deployed_resources:
+        print(f"  • {lab}")
+
+    # Final confirmation
+    if not ui.confirm("\nAre you sure you want to destroy all resources?", default=False):
+        ui.print_info("Destruction cancelled.")
+        sys.exit(0)
+
+    # Destroy in reverse order (labs first, then core)
+    terraform = TerraformManager(ui, root_dir)
+    all_success = True
+
+    for lab, lab_dir in deployed_resources:
+        ui.print_header(f"Destroying {lab}")
+
+        # Update terraform directory for this resource
+        terraform.terraform_dir = lab_dir
+
+        # Initialize terraform if needed
+        if not (lab_dir / ".terraform").exists():
+            ui.print_info("Initializing Terraform...")
+            if not terraform.initialize(cloud_provider=cloud_provider):
+                ui.print_error(f"Failed to initialize Terraform for {lab}")
+                all_success = False
+                continue
+
+        # Destroy
+        if not terraform.destroy(cloud_provider=cloud_provider):
+            ui.print_error(f"Failed to destroy {lab}")
+            all_success = False
+        else:
+            ui.print_success(f"Successfully destroyed {lab}")
+
+    if all_success:
+        ui.print_header("✅ All Resources Destroyed Successfully")
+        ui.print_info(
+            "\nYou can safely delete terraform.tfstate* files if you want a clean slate."
+        )
+        sys.exit(0)
+    else:
+        ui.print_header("⚠️  Destruction Completed with Errors")
+        ui.print_warning("Some resources may not have been destroyed successfully.")
+        ui.print_info("Check the output above for details.")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

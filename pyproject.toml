@@ -51,6 +51,7 @@ dev = [
 # Console script entry points for all workflows
 [project.scripts]
 deploy = "deploy:main"
+destroy = "deploy:destroy_main"
 publish_docs = "scripts.lab2_publish_docs:main"
 publish_queries = "scripts.lab2_publish_queries:main"
 lab1_datagen = "scripts.lab1_datagen:main"
