@@ -44,12 +44,11 @@ That's it! The script will guide you through setup, automatically create API key
 **Required tools:**
 
 - **uv** - `brew install uv` (Mac) or `winget install astral-sh.uv` (Windows)
-- **Docker** - for data generation
+- **Python**
+- **Docker** - for Lab1 data generation
 - **Terraform** - infrastructure deployment
 - **Confluent CLI** - cloud resource management
 - **AWS CLI** or **Azure CLI** - choose your cloud provider
-  - ***\*⚠️ AWS users:\**** [Enable Claude Sonnet 3.7 in Bedrock](https://console.aws.amazon.com/bedrock/home#/modelaccess) in your specific region before deploying.
-
 
 <details>
 <summary>📦 Platform-specific installation commands</summary>

@@ -7,9 +7,8 @@ In this lab, we'll create a Retrieval-Augmented Generation (RAG) pipeline using 
 ## Prerequisites
 
 
-- Core infrastructure deployed on either AWS or Azure by running `uv run deploy` (see [main README](./README.md))
+- Run `uv run deploy` to deploy core infrastructure (see [main README](./README.md))
 - MongoDB free account with Atlas cluster (M0 - Free Tier) with vector search enabled - directions below.
-- ⚠️ **IMPORTANT: For AWS Users: [Request access to Claude Sonnet 3.7 in Bedrock for your cloud region](https://console.aws.amazon.com/bedrock/home#/modelaccess)**. If you do not activate it, the LLM calls in this lab will not work. ⚠️
 
 ## MongoDB Atlas Setup
 <details>

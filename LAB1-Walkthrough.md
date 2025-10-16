@@ -14,9 +14,8 @@ This lab implements a three-agent pipeline:
 
 ## Prerequisites
 
-- Core infrastructure deployed via `uv run deploy` (see [main README](./README.md))
+- Run `uv run deploy` to deploy core infrastructure (see [main README](./README.md))
 - Zapier account and remote MCP server set up  (instructions below)
-- ⚠️ **IMPORTANT: For AWS Users: [Request access to Claude Sonnet 3.7 in Bedrock for your cloud region](https://console.aws.amazon.com/bedrock/home#/modelaccess)**. If you do not activate it, you will get ModelRuntime errors in Flink and the LLM calls in this lab will not work. ⚠️
 
 ## Zapier MCP Server Setup
 <details>
