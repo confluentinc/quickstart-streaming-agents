@@ -129,7 +129,7 @@ mongodb_password = "your-db-pass"  # Lab2  # pragma: allowlist secret
 
 ```bash
 # Automated
-uv run deploy  # Choose cleanup option
+uv run destroy  # Choose cleanup option
 
 # Manual
 cd aws/lab1-tool-calling && terraform destroy --auto-approve
