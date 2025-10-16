@@ -29,7 +29,7 @@ classifiers = [
 keywords = ["confluent", "kafka", "flink", "streaming", "agents", "vector-search"]
 requires-python = ">=3.8.1"
 
-# Core dependencies from requirements.txt
+# Core dependencies
 dependencies = [
     "confluent-kafka[avro]>=2.3.0,<3.0",
     "PyYAML>=6.0.1,<7.0",
@@ -79,7 +79,6 @@ packages = ["scripts"]
 [tool.hatch.build.targets.sdist]
 include = [
     "scripts/",
-    "requirements.txt",
     "README.md",
     "LICENSE",
 ]

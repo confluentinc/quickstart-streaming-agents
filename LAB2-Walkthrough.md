@@ -127,8 +127,7 @@ uv run deploy
 <summary>Manual alternative: Direct Python execution</summary>
 
 ```bash
-pip install -r requirements.txt
-python deploy.py
+pip install . && python deploy.py
 ```
 
 </details>
@@ -227,7 +226,7 @@ SELECT query, response FROM search_results_response LIMIT 5;
 ```bash
 # If publish_docs.py fails
 ✗ Missing required dependencies!
-→ Run: uv pip install -r requirements.txt
+→ Run: pip install .
 
 ✗ Terraform state not found!
 → Ensure you ran terraform apply successfully

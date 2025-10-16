@@ -90,8 +90,7 @@ quickstart-streaming-agents/
 
 **Traditional Python:**
 ```bash
-pip install -r requirements.txt
-python deploy.py
+pip install -e . && python deploy.py
 ```
 
 </details>
@@ -116,7 +115,7 @@ terraform init && terraform apply --auto-approve
 ```hcl
 prefix = "streaming-agents"
 cloud_provider = "aws"  # or "azure"
-cloud_region = "your-region"
+cloud_region = "your-region"  # must be a region supported by MongoDB free tier, otherwise Lab2 deployment will not succeed
 confluent_cloud_api_key = "your-key"
 confluent_cloud_api_secret = "your-secret"
 ZAPIER_SSE_ENDPOINT = "https://mcp.zapier.com/api/mcp/s/your-key/sse"  # Lab1
