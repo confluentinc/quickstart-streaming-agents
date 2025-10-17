@@ -120,7 +120,7 @@ confluent_cloud_api_secret = "your-secret"
 ZAPIER_SSE_ENDPOINT = "https://mcp.zapier.com/api/mcp/s/your-key/sse"  # Lab1
 MONGODB_CONNECTION_STRING = "mongodb+srv://cluster0.abc.mongodb.net"  # Lab2
 mongodb_username = "your-db-user"  # Lab2
-mongodb_password = "your-db-pass"  # Lab2  # pragma: allowlist secret
+mongodb_password = "your-db-pass"  # Lab2
 ```
 
 </details>
