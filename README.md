@@ -128,11 +128,9 @@ mongodb_password = "your-db-pass"  # Lab2
 cd aws/lab1-tool-calling && terraform destroy --auto-approve
 cd ../core && terraform destroy --auto-approve
 ```
-
 </details>
 
 ## Cleanup
-
 ```bash
 # Automated
 uv run destroy
