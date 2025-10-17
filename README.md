@@ -123,6 +123,12 @@ mongodb_username = "your-db-user"  # Lab2
 mongodb_password = "your-db-pass"  # Lab2
 ```
 
+### Tear down
+```bash
+cd aws/lab1-tool-calling && terraform destroy --auto-approve
+cd ../core && terraform destroy --auto-approve
+```
+
 </details>
 
 ## Cleanup
@@ -130,8 +136,4 @@ mongodb_password = "your-db-pass"  # Lab2
 ```bash
 # Automated
 uv run destroy
-
-# Manual
-cd aws/lab1-tool-calling && terraform destroy --auto-approve
-cd ../core && terraform destroy --auto-approve
 ```
