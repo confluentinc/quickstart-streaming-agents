@@ -7,11 +7,13 @@ Supports AWS, Azure, and terraform deployments with automatic credential extract
 and connection file generation.
 
 Usage:
-    uv run lab1_datagen                   # Auto-detect cloud provider
-    uv run lab1_datagen aws               # Generate data for AWS environment
-    uv run lab1_datagen azure             # Generate data for Azure environment
-    uv run lab1_datagen --dry-run         # Validate setup without running
-    uv run lab1_datagen --duration 300    # Run for 5 minutes
+    uv run lab1_datagen                      # Auto-detect cloud provider
+    uv run lab1_datagen aws                  # Generate data for AWS environment
+    uv run lab1_datagen azure                # Generate data for Azure environment
+    uv run lab1_datagen --dry-run            # Validate setup without running
+    uv run lab1_datagen --duration 300       # Run for 5 minutes
+    uv run lab1_datagen -m 10                # Generate 10 orders per minute
+    uv run lab1_datagen -m 30 --duration 120 # Generate 30 orders/min for 2 minutes
 
 Traditional Python:
     python scripts/lab1_datagen.py
@@ -341,6 +343,7 @@ def download_shadowtraffic_license(datagen_dir: Path) -> Optional[Path]:
 def run_shadowtraffic(
     paths: Dict[str, Path],
     duration: Optional[int] = None,
+    messages_per_minute: Optional[int] = None,
     dry_run: bool = False
 ) -> int:
     """
@@ -349,6 +352,7 @@ def run_shadowtraffic(
     Args:
         paths: Dictionary with relevant paths
         duration: Duration to run in seconds (optional)
+        messages_per_minute: Orders per minute to generate (optional)
         dry_run: If True, validate setup but don't run
 
     Returns:
@@ -360,6 +364,40 @@ def run_shadowtraffic(
     connections_dir = paths["connections_dir"]
     generators_dir = paths["generators_dir"]
     root_config = paths["root_config"]
+
+    # If messages_per_minute is specified, create modified root.json
+    if messages_per_minute:
+        throttle_ms = int(60000 / messages_per_minute)
+        logger.info(f"📊 Setting order rate to {messages_per_minute} messages/minute (throttle: {throttle_ms}ms)")
+
+        # Load original root.json
+        with open(root_config, 'r') as f:
+            root_json = json.load(f)
+
+        # Update the throttleMs in schedule overrides
+        if "schedule" in root_json and "stages" in root_json["schedule"]:
+            for stage in root_json["schedule"]["stages"]:
+                if "generators" in stage and "orders" in stage["generators"]:
+                    if "overrides" not in stage:
+                        stage["overrides"] = {}
+                    if "orders" not in stage["overrides"]:
+                        stage["overrides"]["orders"] = {}
+                    if "localConfigs" not in stage["overrides"]["orders"]:
+                        stage["overrides"]["orders"]["localConfigs"] = {}
+
+                    # Set fixed throttle (remove randomization for predictability)
+                    stage["overrides"]["orders"]["localConfigs"]["throttleMs"] = throttle_ms
+
+        # Create temp directory for modified config
+        temp_dir = tempfile.mkdtemp(prefix="shadowtraffic_")
+        temp_root_config = Path(temp_dir) / "root.json"
+
+        # Write modified root.json
+        with open(temp_root_config, 'w') as f:
+            json.dump(root_json, f, indent=2)
+
+        logger.debug(f"Created temporary root.json at: {temp_root_config}")
+        root_config = temp_root_config
 
     # Check for environment file, download if missing
     env_file = check_docker_env_file(datagen_dir)
@@ -442,6 +480,7 @@ def run_shadowtraffic(
 def run_datagen(
     cloud_provider: str,
     duration: Optional[int] = None,
+    messages_per_minute: Optional[int] = None,
     dry_run: bool = False,
     verbose: bool = False
 ) -> int:
@@ -451,6 +490,7 @@ def run_datagen(
     Args:
         cloud_provider: Target cloud provider (aws/azure/terraform)
         duration: Duration to run in seconds
+        messages_per_minute: Orders per minute to generate
         dry_run: If True, validate setup but don't run
         verbose: If True, show detailed output
 
@@ -482,7 +522,7 @@ def run_datagen(
             return 1
 
         # Run ShadowTraffic
-        return run_shadowtraffic(paths, duration, dry_run)
+        return run_shadowtraffic(paths, duration, messages_per_minute, dry_run)
 
     except Exception as e:
         logger.error(f"Data generation failed: {e}")
@@ -500,11 +540,13 @@ def create_argument_parser() -> argparse.ArgumentParser:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  uv run lab1_datagen                   # Auto-detect cloud provider
-  uv run lab1_datagen aws               # Generate data for AWS environment
-  uv run lab1_datagen azure             # Generate data for Azure environment
-  uv run lab1_datagen --duration 300    # Run for 5 minutes
-  uv run lab1_datagen --dry-run         # Validate setup only
+  uv run lab1_datagen                      # Auto-detect cloud provider
+  uv run lab1_datagen aws                  # Generate data for AWS environment
+  uv run lab1_datagen azure                # Generate data for Azure environment
+  uv run lab1_datagen --duration 300       # Run for 5 minutes
+  uv run lab1_datagen -m 10                # Generate 10 orders per minute
+  uv run lab1_datagen -m 30 --duration 120 # Generate 30 orders/min for 2 minutes
+  uv run lab1_datagen --dry-run            # Validate setup only
 
 Traditional Python:
   python scripts/lab1_datagen.py
@@ -527,6 +569,12 @@ Dependencies:
         "--duration",
         type=int,
         help="Duration to run data generation in seconds"
+    )
+
+    parser.add_argument(
+        "--messages-per-minute", "-m",
+        type=int,
+        help="Orders per minute to generate (default: ~0.65/min, roughly 1 per 90 seconds)"
     )
 
     parser.add_argument(
@@ -587,6 +635,7 @@ def main() -> None:
         exit_code = run_datagen(
             cloud_provider=cloud_provider,
             duration=args.duration,
+            messages_per_minute=args.messages_per_minute,
             dry_run=args.dry_run,
             verbose=args.verbose
         )

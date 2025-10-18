@@ -1490,11 +1490,11 @@ MONGODB_INDEX_NAME = "vector_index"
             return SetupState.CONFIGURATION_INVALID
 
         # Check if terraform is initialized
-        if not (self.terraform_dir / ".terraform").exists():
+        if not (self.core_terraform_dir / ".terraform").exists():
             return SetupState.TERRAFORM_NOT_INITIALIZED
 
         # Check if we have a terraform state (deployment completed)
-        terraform_state = self.terraform_dir / "terraform.tfstate"
+        terraform_state = self.core_terraform_dir / "terraform.tfstate"
         if terraform_state.exists():
             try:
                 with open(terraform_state, "r") as f:

@@ -9,18 +9,55 @@
             "topic": "customers",
             "path": []
         },
+        "product_index": {
+            "_gen": "cycle",
+            "sequence": {
+                "_gen": "repeatedly",
+                "n": 17,
+                "localVars": {
+                    "random_product_index": {
+                        "_gen": "uniformDistribution",
+                        "bounds": [0, 16],
+                        "decimals": 0
+                    }
+                },
+                "target": {
+                    "_gen": "var",
+                    "var": "random_product_index"
+                }
+            }
+        },
         "product": {
             "_gen": "lookup",
             "connection": "products-kafka",
             "topic": "products",
-            "path": []
+            "path": [],
+            "offset": {
+                "_gen": "var",
+                "var": "product_index"
+            }
+        },
+        "timestamp_suffix": {
+            "_gen": "math",
+            "expr": "floor(now / 10000) % 1000000",
+            "names": {
+                "now": {
+                    "_gen": "now"
+                }
+            },
+            "decimals": 0
         }
     },
     "value": {
         "order_id": {
-            "_gen": "sequentialString",
-            "startingFrom": 200000,
-            "expr": "O-~d"
+            "_gen": "string",
+            "expr": "O-#{suffix}",
+            "names": {
+                "suffix": {
+                    "_gen": "var",
+                    "var": "timestamp_suffix"
+                }
+            }
         },
         "customer_id": {
             "_gen": "var",
