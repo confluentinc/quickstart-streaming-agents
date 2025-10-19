@@ -131,3 +131,103 @@ WITH (
 
 EOT
 }
+
+# ------------------------------------------------------
+# CREATE KAFKA TABLES FOR LAB1 DATAGEN
+# ------------------------------------------------------
+
+# Create orders table
+resource "confluent_flink_statement" "orders_table" {
+  organization {
+    id = data.confluent_organization.main.id
+  }
+  environment {
+    id = data.terraform_remote_state.core.outputs.confluent_environment_id
+  }
+  compute_pool {
+    id = data.terraform_remote_state.core.outputs.confluent_flink_compute_pool_id
+  }
+  principal {
+    id = data.terraform_remote_state.core.outputs.app_manager_service_account_id
+  }
+  rest_endpoint = data.confluent_flink_region.lab1_flink_region.rest_endpoint
+  credentials {
+    key    = data.terraform_remote_state.core.outputs.app_manager_flink_api_key
+    secret = data.terraform_remote_state.core.outputs.app_manager_flink_api_secret
+  }
+
+  statement = "CREATE TABLE `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`orders` ( `key` VARBINARY(2147483647), `order_id` VARCHAR(2147483647) NOT NULL, `customer_id` VARCHAR(2147483647) NOT NULL, `product_id` VARCHAR(2147483647) NOT NULL, `price` DOUBLE NOT NULL, `order_ts` TIMESTAMP(3) WITH LOCAL TIME ZONE NOT NULL );"
+
+  properties = {
+    "sql.current-catalog"  = data.terraform_remote_state.core.outputs.confluent_environment_display_name
+    "sql.current-database" = data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name
+  }
+
+  depends_on = [
+    confluent_flink_statement.zapier_mcp_model
+  ]
+}
+
+# Create products table
+resource "confluent_flink_statement" "products_table" {
+  organization {
+    id = data.confluent_organization.main.id
+  }
+  environment {
+    id = data.terraform_remote_state.core.outputs.confluent_environment_id
+  }
+  compute_pool {
+    id = data.terraform_remote_state.core.outputs.confluent_flink_compute_pool_id
+  }
+  principal {
+    id = data.terraform_remote_state.core.outputs.app_manager_service_account_id
+  }
+  rest_endpoint = data.confluent_flink_region.lab1_flink_region.rest_endpoint
+  credentials {
+    key    = data.terraform_remote_state.core.outputs.app_manager_flink_api_key
+    secret = data.terraform_remote_state.core.outputs.app_manager_flink_api_secret
+  }
+
+  statement = "CREATE TABLE `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`products` ( `key` VARBINARY(2147483647), `product_id` VARCHAR(2147483647) NOT NULL, `product_name` VARCHAR(2147483647) NOT NULL, `price` DOUBLE NOT NULL, `department` VARCHAR(2147483647) NOT NULL, `updated_at` TIMESTAMP(3) WITH LOCAL TIME ZONE NOT NULL );"
+
+  properties = {
+    "sql.current-catalog"  = data.terraform_remote_state.core.outputs.confluent_environment_display_name
+    "sql.current-database" = data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name
+  }
+
+  depends_on = [
+    confluent_flink_statement.zapier_mcp_model
+  ]
+}
+
+# Create customers table
+resource "confluent_flink_statement" "customers_table" {
+  organization {
+    id = data.confluent_organization.main.id
+  }
+  environment {
+    id = data.terraform_remote_state.core.outputs.confluent_environment_id
+  }
+  compute_pool {
+    id = data.terraform_remote_state.core.outputs.confluent_flink_compute_pool_id
+  }
+  principal {
+    id = data.terraform_remote_state.core.outputs.app_manager_service_account_id
+  }
+  rest_endpoint = data.confluent_flink_region.lab1_flink_region.rest_endpoint
+  credentials {
+    key    = data.terraform_remote_state.core.outputs.app_manager_flink_api_key
+    secret = data.terraform_remote_state.core.outputs.app_manager_flink_api_secret
+  }
+
+  statement = "CREATE TABLE `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`customers` ( `key` VARBINARY(2147483647), `customer_id` VARCHAR(2147483647) NOT NULL, `customer_email` VARCHAR(2147483647) NOT NULL, `customer_name` VARCHAR(2147483647) NOT NULL, `state` VARCHAR(2147483647) NOT NULL, `updated_at` TIMESTAMP(3) WITH LOCAL TIME ZONE NOT NULL );"
+
+  properties = {
+    "sql.current-catalog"  = data.terraform_remote_state.core.outputs.confluent_environment_display_name
+    "sql.current-database" = data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name
+  }
+
+  depends_on = [
+    confluent_flink_statement.zapier_mcp_model
+  ]
+}
