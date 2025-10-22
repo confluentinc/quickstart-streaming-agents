@@ -18,6 +18,9 @@
 CLAUDE.md
 claude-*
 
+# Development tools
+tools/
+
 # detect-secrets
 .secrets.baseline
 
