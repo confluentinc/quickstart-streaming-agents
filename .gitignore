@@ -27,7 +27,7 @@ claude-*
 *.tfstate.backup
 .terraform/
 .terraform.lock.hcl
-# *.tfvars
+*.tfvars
 *.tfvars.json
 terraform.tfvars.backup
 terraform/providers-aws.tf

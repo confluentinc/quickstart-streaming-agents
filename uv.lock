@@ -1860,7 +1860,7 @@ wheels = [
 
 [[package]]
 name = "quickstart-streaming-agents"
-version = "0.1.0"
+version = "0.2.0"
 source = { editable = "." }
 dependencies = [
     { name = "confluent-kafka", extra = ["avro"] },
@@ -1874,32 +1874,30 @@ dependencies = [
 dev = [
     { name = "black", version = "24.8.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
     { name = "black", version = "25.9.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
+    { name = "detect-secrets" },
     { name = "flake8", version = "7.1.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
     { name = "flake8", version = "7.3.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
     { name = "isort", version = "5.13.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
     { name = "isort", version = "6.1.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
     { name = "mypy", version = "1.14.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
     { name = "mypy", version = "1.18.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
+    { name = "pre-commit", version = "3.5.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
+    { name = "pre-commit", version = "4.3.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
     { name = "pytest", version = "8.3.5", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
     { name = "pytest", version = "8.4.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
     { name = "pytest-cov", version = "5.0.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
     { name = "pytest-cov", version = "7.0.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
 ]
 
-[package.dev-dependencies]
-dev = [
-    { name = "detect-secrets" },
-    { name = "pre-commit", version = "3.5.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
-    { name = "pre-commit", version = "4.3.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
-]
-
 [package.metadata]
 requires-dist = [
     { name = "black", marker = "extra == 'dev'", specifier = ">=23.0.0" },
     { name = "confluent-kafka", extras = ["avro"], specifier = ">=2.3.0,<3.0" },
+    { name = "detect-secrets", marker = "extra == 'dev'", specifier = ">=1.5.0" },
     { name = "flake8", marker = "extra == 'dev'", specifier = ">=6.0.0" },
     { name = "isort", marker = "extra == 'dev'", specifier = ">=5.12.0" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.0.0" },
+    { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=3.5.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.0.0" },
     { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.0.0" },
     { name = "pyyaml", specifier = ">=6.0.1,<7.0" },
@@ -1907,12 +1905,6 @@ requires-dist = [
     { name = "urllib3", specifier = ">=1.26.18,<2.0" },
 ]
 provides-extras = ["dev"]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "detect-secrets", specifier = ">=1.5.0" },
-    { name = "pre-commit", specifier = ">=3.5.0" },
-]
 
 [[package]]
 name = "requests"

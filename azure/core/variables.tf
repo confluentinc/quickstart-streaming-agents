@@ -1,9 +1,3 @@
-variable "prefix" {
-  description = "Prefix for resource names"
-  type        = string
-  default     = "ai"
-}
-
 variable "cloud_region" {
   description = "Azure region for deployment (must support MongoDB Atlas M0 free tier)"
   type        = string

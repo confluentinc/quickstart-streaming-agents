@@ -391,9 +391,8 @@ class ConfigurationManager:
         config = self.load_existing_config()
 
         # Core required fields that indicate a real setup
+        # Note: prefix and cloud_provider are hardcoded in Terraform, not in tfvars
         core_fields = [
-            "prefix",
-            "cloud_provider",
             "confluent_cloud_api_key",
             "confluent_cloud_api_secret",
         ]
@@ -466,9 +465,8 @@ class ConfigurationManager:
         invalid_config = {}
 
         # Core required fields - always needed
+        # Note: prefix and cloud_provider are hardcoded in Terraform
         required_fields = [
-            "prefix",
-            "cloud_provider",
             "cloud_region",
             "confluent_cloud_api_key",
             "confluent_cloud_api_secret",
@@ -557,14 +555,13 @@ class ConfigurationManager:
 
             # Always save what we have so far to core terraform.tfvars
             # Only include fields that have values
+            # Note: prefix and cloud_provider are hardcoded in Terraform, never write them
             core_config = {}
             core_fields = [
-                "prefix",
-                "cloud_provider",
                 "cloud_region",
                 "confluent_cloud_api_key",
                 "confluent_cloud_api_secret",
-                "azure_subscription_id",
+                "azure_subscription_id",  # Only used for Azure, ignored for AWS
             ]
 
             for field in core_fields:
@@ -599,22 +596,24 @@ class ConfigurationManager:
         """Helper to write terraform.tfvars content."""
         try:
             # Generate content based on module type
+            # Generate content based on module type
+            # Note: prefix and cloud_provider are hardcoded in Terraform for both clouds
             if module_name == "Core":
                 content = f"""# Core Infrastructure Configuration
-prefix = "{config['prefix']}"
-cloud_provider = "{config['cloud_provider']}"
 cloud_region = "{config['cloud_region']}"
 confluent_cloud_api_key = "{config['confluent_cloud_api_key']}"
 confluent_cloud_api_secret = "{config['confluent_cloud_api_secret']}"
 """
-                if "azure_subscription_id" in config:
-                    content += (
-                        f'azure_subscription_id = "{config["azure_subscription_id"]}"\n'
-                    )
+                # Azure needs subscription ID
+                if "azure_subscription_id" in config and config["azure_subscription_id"]:
+                    content += f'azure_subscription_id = "{config["azure_subscription_id"]}"\n'
+
+                # Optional owner_email for tagging
+                if "owner_email" in config and config["owner_email"]:
+                    content += f'owner_email = "{config["owner_email"]}"\n'
             else:
-                # Lab-specific content would go here
+                # Lab-specific content - unified format for both clouds
                 content = f"""# {module_name} Configuration
-prefix = "{config['prefix']}"
 cloud_region = "{config['cloud_region']}"
 """
 
@@ -735,10 +734,10 @@ cloud_region = "{config['cloud_region']}"
                 config[key] = existing_config.get(key, default_value)
             return config
 
-        # Prefix (using default without prompting)
+        # Prefix is hardcoded in Terraform, set internally but don't write to tfvars
         config["prefix"] = "streaming-agents"
 
-        # Cloud provider
+        # Cloud provider (keep in config for internal use, but don't write to tfvars)
         default_provider = existing_config.get("cloud_provider", "azure").lower()
         while True:
             provider = self.ui.prompt(
@@ -800,7 +799,8 @@ cloud_region = "{config['cloud_region']}"
             if confluent_logged_in and self.ui.confirm(
                 "Auto-generate Confluent API keys using CLI?"
             ):
-                api_key, api_secret = self.generate_confluent_api_keys(config["prefix"])
+                # Use hardcoded prefix for API key generation
+                api_key, api_secret = self.generate_confluent_api_keys("streaming-agents")
                 if api_key and api_secret:
                     config["confluent_cloud_api_key"] = api_key
                     config["confluent_cloud_api_secret"] = api_secret
@@ -1313,9 +1313,9 @@ class StreamingAgentsSetup:
 
         # Write core terraform.tfvars
         core_tfvars_file = self.core_terraform_dir / "terraform.tfvars"
+
+        # Both clouds have prefix and cloud_provider hardcoded in Terraform
         core_config = {
-            "prefix": config["prefix"],
-            "cloud_provider": config["cloud_provider"],
             "cloud_region": config["cloud_region"],
             "confluent_cloud_api_key": config["confluent_cloud_api_key"],
             "confluent_cloud_api_secret": config["confluent_cloud_api_secret"],
@@ -1392,9 +1392,8 @@ class StreamingAgentsSetup:
 
     def generate_core_tfvars_content(self, config: Dict[str, str]) -> str:
         """Generate terraform.tfvars content for Core module."""
+        # Both clouds have prefix and cloud_provider hardcoded in Terraform
         content = f"""# Core Infrastructure Configuration
-prefix = "{config['prefix']}"
-cloud_provider = "{config['cloud_provider']}"
 cloud_region = "{config['cloud_region']}"
 confluent_cloud_api_key = "{config['confluent_cloud_api_key']}"
 confluent_cloud_api_secret = "{config['confluent_cloud_api_secret']}"
@@ -1402,15 +1401,15 @@ confluent_cloud_api_secret = "{config['confluent_cloud_api_secret']}"
         if "owner_email" in config and config["owner_email"]:
             content += f'owner_email = "{config["owner_email"]}"\n'
 
-        if "azure_subscription_id" in config:
+        if "azure_subscription_id" in config and config["azure_subscription_id"]:
             content += f'azure_subscription_id = "{config["azure_subscription_id"]}"\n'
 
         return content
 
     def generate_lab_tfvars_content(self, config: Dict[str, str], lab_type: str) -> str:
         """Generate terraform.tfvars content for lab modules."""
+        # Both clouds have prefix hardcoded in Terraform
         base_content = f"""# {lab_type} Configuration
-prefix = "{config['prefix']}"
 cloud_region = "{config['cloud_region']}"
 """
 
@@ -1451,8 +1450,9 @@ MONGODB_INDEX_NAME = "vector_index"
 
             # Write lab-specific terraform.tfvars
             lab_tfvars_file = lab_dir / "terraform.tfvars"
+
+            # Both clouds have prefix hardcoded in Terraform
             lab_config = {
-                "prefix": config["prefix"],
                 "cloud_region": config["cloud_region"],
             }
 
@@ -1567,7 +1567,13 @@ MONGODB_INDEX_NAME = "vector_index"
             azure_tfvars = self.config_manager.parse_tfvars_file(azure_config)
 
         # Determine which config is more complete and valid
-        aws_valid = aws_tfvars.get("cloud_provider") == "aws" and len(aws_tfvars) > 1
+        # For AWS, cloud_provider is hardcoded in Terraform so it won't be in tfvars
+        # Check for AWS by looking for cloud_region and at least one other field
+        aws_valid = (
+            aws_config.exists() and
+            "cloud_region" in aws_tfvars and
+            len(aws_tfvars) >= 2
+        )
         azure_valid = (
             azure_tfvars.get("cloud_provider") == "azure" and len(azure_tfvars) > 1
         )
@@ -1710,8 +1716,9 @@ MONGODB_INDEX_NAME = "vector_index"
         self.ui.print_info("Running in validation mode...")
         valid_config, invalid_config = self.config_manager.get_config_status()
 
-        # Core required fields are: prefix, cloud_provider, cloud_region, confluent_cloud_api_key, confluent_cloud_api_secret
-        core_required_count = 5
+        # Core required fields are: cloud_region, confluent_cloud_api_key, confluent_cloud_api_secret
+        # Note: prefix and cloud_provider are hardcoded in Terraform
+        core_required_count = 3
         if len(valid_config) >= core_required_count and len(invalid_config) == 0:
             self.ui.print_success("✅ All configuration is valid")
             return True
@@ -1896,9 +1903,8 @@ MONGODB_INDEX_NAME = "vector_index"
         config.update(env_creds)
 
         # Determine required fields based on lab selection
+        # Note: prefix and cloud_provider are hardcoded in Terraform
         core_fields = [
-            "prefix",
-            "cloud_provider",
             "cloud_region",
             "confluent_cloud_api_key",
             "confluent_cloud_api_secret",
@@ -1942,23 +1948,17 @@ MONGODB_INDEX_NAME = "vector_index"
             # Start completely fresh
             config = {}
             fix_invalid = {
-                "prefix": "",
-                "cloud_provider": "",
                 "cloud_region": "",
                 "confluent_cloud_api_key": "",
                 "confluent_cloud_api_secret": "",
-                "ZAPIER_SSE_ENDPOINT": "",
             }
         elif choice.startswith("edit_"):
             # Edit specific field
             field_num = int(choice.split("_")[1])
             config_fields = [
-                "prefix",
-                "cloud_provider",
                 "cloud_region",
                 "confluent_cloud_api_key",
                 "confluent_cloud_api_secret",
-                "ZAPIER_SSE_ENDPOINT",
             ]
             field_to_edit = config_fields[field_num - 1]
 
@@ -1989,9 +1989,8 @@ MONGODB_INDEX_NAME = "vector_index"
                 return None
 
         # Continue mode: Handle each required field that needs attention
+        # Note: prefix and cloud_provider are hardcoded in Terraform
         required_fields = [
-            "prefix",
-            "cloud_provider",
             "cloud_region",
             "confluent_cloud_api_key",
             "confluent_cloud_api_secret",
@@ -2050,13 +2049,7 @@ MONGODB_INDEX_NAME = "vector_index"
     ) -> str:
         """Prompt for a specific configuration field with existing value support."""
         existing_value = config.get(field, "")
-        if field == "prefix":
-            # Use default prefix without prompting
-            value = "streaming-agents"
-            self.config_manager.save_field_incrementally(field, value, lab_selection)
-            return value
-
-        elif field == "cloud_provider":
+        if field == "cloud_provider":
             default_value = (
                 existing_value
                 if existing_value and existing_value in ["aws", "azure"]
@@ -2179,8 +2172,9 @@ MONGODB_INDEX_NAME = "vector_index"
                     default=True,
                 ):
                     self.ui.print_info("🔑 Generating API keys...")
+                    # Use hardcoded prefix for API key generation
                     key, secret = self.config_manager.generate_confluent_api_keys(
-                        config.get("prefix", "streaming-agents")
+                        "streaming-agents"
                     )
                     if key and secret:
                         config[

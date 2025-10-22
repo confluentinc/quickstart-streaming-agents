@@ -1,6 +1,5 @@
 variable "cloud_region" {}
 variable "random_id" {}
-variable "prefix" {}
 variable "model_prefix" {}
 variable "confluent_organization_id" {}
 variable "confluent_environment_id" {}
