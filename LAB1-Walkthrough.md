@@ -101,6 +101,8 @@ SELECT
 
 ### Data Generation
 
+Make sure Docker is running, then begin generating data with the following command:
+
 ```bash
 uv run lab1_datagen
 ```

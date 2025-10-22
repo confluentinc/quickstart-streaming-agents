@@ -319,6 +319,8 @@ class ConfigurationManager:
         if self.cloud_provider:
             tfvars_configs = self.load_cloud_terraform_configs(self.cloud_provider)
             config.update(tfvars_configs)
+            # Add cloud_provider to config (it's not in tfvars, but needed for validation)
+            config["cloud_provider"] = self.cloud_provider
 
         return config
 
@@ -486,6 +488,25 @@ class ConfigurationManager:
                 valid_config[field] = value
             else:
                 invalid_config[field] = value
+
+        # Check for optional fields that may exist in terraform.tfvars
+        # These are optional and only validated if they exist
+        optional_fields = [
+            "owner_email",
+            "ZAPIER_SSE_ENDPOINT",
+            "MONGODB_CONNECTION_STRING",
+            "mongodb_username",
+            "mongodb_password",
+        ]
+
+        for field in optional_fields:
+            value = repaired_config.get(field, "")
+            if value:
+                # Optional fields are included in valid_config if they exist and are valid
+                if self.validate_config_value(field, value, repaired_config):
+                    valid_config[field] = value
+                else:
+                    invalid_config[field] = value
 
         return valid_config, invalid_config
 
@@ -1217,8 +1238,116 @@ class TerraformManager:
     def destroy(self, cloud_provider: str = None) -> bool:
         """Run terraform destroy."""
         self.ui.print_info("Destroying infrastructure with Terraform...")
+
+        # Build destroy command with dummy variables to avoid prompts
+        # Terraform destroy uses state file, not variables, so dummy values are fine
+        destroy_args = ["destroy", "--auto-approve"]
+
+        # Try to get cloud_region from various sources
+        cloud_region = None
+
+        # 1. Try current module's terraform output
+        try:
+            result = subprocess.run(
+                ["terraform", "output", "-raw", "cloud_region"],
+                cwd=self.terraform_dir,
+                capture_output=True,
+                text=True,
+                timeout=10
+            )
+            if result.returncode == 0 and result.stdout.strip():
+                cloud_region = result.stdout.strip()
+        except Exception:
+            pass
+
+        # 2. If not found, try to get from core module (for labs)
+        if not cloud_region:
+            core_dir = Path(self.terraform_dir).parent / "core"
+            if core_dir.exists():
+                try:
+                    result = subprocess.run(
+                        ["terraform", "output", "-raw", "cloud_region"],
+                        cwd=core_dir,
+                        capture_output=True,
+                        text=True,
+                        timeout=10
+                    )
+                    if result.returncode == 0 and result.stdout.strip():
+                        cloud_region = result.stdout.strip()
+                except Exception:
+                    pass
+
+        # 3. If still not found, try to read from state file
+        if not cloud_region:
+            state_file = Path(self.terraform_dir) / "terraform.tfstate"
+            if state_file.exists():
+                try:
+                    with open(state_file, 'r') as f:
+                        state_data = json.load(f)
+                        outputs = state_data.get('outputs', {})
+                        if 'cloud_region' in outputs:
+                            cloud_region = outputs['cloud_region'].get('value')
+                except Exception:
+                    pass
+
+        # 4. If all else fails, prompt the user
+        if not cloud_region:
+            self.ui.print_warning("Could not determine cloud region from Terraform state.")
+            cloud_region = self.ui.prompt("Please enter the cloud region (e.g., us-east-1)", "us-east-1")
+
+        # Determine which lab/module is being destroyed based on terraform_dir
+        terraform_dir_name = Path(self.terraform_dir).name
+
+        # Add variable flags based on which module is being destroyed
+        var_flags = [f"-var=cloud_region={cloud_region}"]
+
+        if terraform_dir_name == "core":
+            # Core needs REAL credentials to authenticate with Confluent Cloud API
+            # Try to load from terraform.tfvars
+            tfvars_file = Path(self.terraform_dir) / "terraform.tfvars"
+            confluent_api_key = None
+            confluent_api_secret = None
+
+            if tfvars_file.exists():
+                try:
+                    with open(tfvars_file, 'r') as f:
+                        for line in f:
+                            line = line.strip()
+                            if line.startswith('confluent_cloud_api_key'):
+                                confluent_api_key = line.split('=', 1)[1].strip(' "\'')
+                            elif line.startswith('confluent_cloud_api_secret'):
+                                confluent_api_secret = line.split('=', 1)[1].strip(' "\'')
+                except Exception:
+                    pass
+
+            # If we couldn't load from file, prompt user
+            if not confluent_api_key or not confluent_api_secret:
+                self.ui.print_warning("Core module requires Confluent Cloud credentials for destroy operation.")
+                confluent_api_key = self.ui.prompt("Confluent Cloud API Key", "")
+                confluent_api_secret = self.ui.prompt("Confluent Cloud API Secret", "")
+
+            var_flags.extend([
+                f"-var=confluent_cloud_api_key={confluent_api_key}",
+                f"-var=confluent_cloud_api_secret={confluent_api_secret}",
+            ])
+        elif terraform_dir_name == "lab1-tool-calling":
+            # Lab1 needs: cloud_region, ZAPIER_SSE_ENDPOINT (dummy is fine, uses remote state)
+            var_flags.extend([
+                "-var=ZAPIER_SSE_ENDPOINT=dummy",
+            ])
+        elif terraform_dir_name == "lab2-vector-search":
+            # Lab2 needs: cloud_region, MONGODB_CONNECTION_STRING, mongodb_username, mongodb_password
+            # Dummy values are fine since lab2 uses remote state for Confluent resources
+            var_flags.extend([
+                "-var=MONGODB_CONNECTION_STRING=mongodb://dummy",
+                "-var=mongodb_username=dummy",
+                "-var=mongodb_password=dummy",
+            ])
+
+        destroy_args.extend(var_flags)
+
         success, output = self.run_terraform_command(
-            ["destroy", "--auto-approve"], show_output=True, cloud_provider=cloud_provider
+            destroy_args, show_output=True, cloud_provider=cloud_provider
         )
 
         if success:
@@ -1260,6 +1389,8 @@ class StreamingAgentsSetup:
         # Update config manager paths
         self.config_manager.set_config_file_path(cloud_provider)
         self.config_manager.terraform_dir = self.terraform_dir
+        # Update terraform manager path
+        self.terraform.terraform_dir = self.core_terraform_dir
 
     def check_core_deployment(self) -> bool:
         """Check if Core Terraform infrastructure is deployed with required outputs."""
@@ -1853,11 +1984,69 @@ MONGODB_INDEX_NAME = "vector_index"
         """Handle already completed setup."""
         self.ui.print_success("🎉 Infrastructure is already deployed!")
 
-        if self.ui.confirm("Would you like to see the next steps?", default=True):
-            self.show_next_steps()
+        self.ui.print_info("\nWhat would you like to do?")
 
-        if self.ui.confirm("Redeploy infrastructure?", default=False):
+        deploy_options = {
+            "1": ("core", "(Re)deploy Core infrastructure"),
+            "2": ("lab1", "(Re)deploy Lab1"),
+            "3": ("lab2", "(Re)deploy Lab2"),
+            "4": ("all", "(Re)deploy All"),
+        }
+
+        for key, (_, description) in deploy_options.items():
+            print(f"  {key}. {description}")
+
+        choice = self.ui.prompt("Select option (1-4, or press Enter to exit)", "").strip()
+
+        if not choice:
+            return True
+
+        if choice not in deploy_options:
+            self.ui.print_error("Invalid selection")
+            return True
+
+        selection, description = deploy_options[choice]
+        self.ui.print_success(f"Selected: {description}")
+
+        # Load existing config
+        valid_config, _ = self.config_manager.get_config_status()
+
+        if selection == "core":
+            # Redeploy core only
             return self.handle_deployment()
+        elif selection in ["lab1", "lab2", "all"]:
+            # Load complete config including lab-specific credentials
+            complete_config = self.config_manager.load_existing_config()
+
+            # Check for missing lab-specific fields
+            missing_fields = []
+            if selection in ["lab1", "all"]:
+                if "ZAPIER_SSE_ENDPOINT" not in complete_config or not complete_config["ZAPIER_SSE_ENDPOINT"]:
+                    missing_fields.append("ZAPIER_SSE_ENDPOINT")
+            if selection in ["lab2", "all"]:
+                for field in ["MONGODB_CONNECTION_STRING", "mongodb_username", "mongodb_password"]:
+                    if field not in complete_config or not complete_config[field]:
+                        missing_fields.append(field)
+
+            # If missing fields, redirect to config flow
+            if missing_fields:
+                self.ui.print_warning(f"⚠️ Missing required configuration: {', '.join(missing_fields)}")
+                return self.handle_config_and_deploy(
+                    "🔧 Lab-specific configuration needed...",
+                    existing_valid=valid_config,
+                    lab_selection=selection,
+                )
+
+            # Deploy core if needed, then deploy selected labs
+            if not self.deploy_core_if_needed(complete_config):
+                return False
+
+            if not self.deploy_labs(selection, complete_config):
+                return False
+
+            self.ui.print_success("🎉 Deployment completed successfully!")
+            self.show_next_steps()
+            return True
 
         return True
 
@@ -1897,6 +2086,10 @@ MONGODB_INDEX_NAME = "vector_index"
 
         # Start with valid existing config
         config = existing_valid.copy()
+
+        # Ensure cloud_provider is in config (needed for region selection)
+        if self.config_manager.cloud_provider:
+            config["cloud_provider"] = self.config_manager.cloud_provider
 
         # Merge in environment credentials
         env_creds = self.config_manager.detect_environment_credentials()
@@ -2038,6 +2231,12 @@ MONGODB_INDEX_NAME = "vector_index"
                 self.ui.print_success(f"✅ {message}")
             else:
                 self.ui.print_warning(f"⚠️ {message} (continuing anyway)")
+
+        # Prompt for optional owner_email if not present (for cloud resource tagging)
+        if "owner_email" not in config:
+            value = self.prompt_for_field("owner_email", config, lab_selection)
+            if value:
+                config["owner_email"] = value
 
         # Save credentials to terraform.tfvars immediately once we have them
         self.config_manager.save_credentials_to_tfvars(config)
@@ -2472,6 +2671,30 @@ MONGODB_INDEX_NAME = "vector_index"
 
             default_value = existing_value if existing_value else ""
             value = self.ui.prompt("MongoDB Database User Password", default_value)
+            if value:
+                self.config_manager.save_field_incrementally(
+                    field, value, lab_selection
+                )
+            return value if value else ""
+
+        elif field == "owner_email":
+            # Optional field for cloud resource tagging
+            if existing_value:
+                prompt_text = f"Owner Email (optional, for cloud resource tagging) [current: {existing_value}] (press enter to keep, or type 'edit' to change)"
+                response = self.ui.prompt(prompt_text, "")
+                if not response:
+                    return existing_value
+                elif response.lower() != "edit":
+                    # User entered a new email directly
+                    if response.strip():
+                        self.config_manager.save_field_incrementally(
+                            field, response.strip(), lab_selection
+                        )
+                        return response.strip()
+
+            self.ui.print_info("Owner Email (optional, for tagging cloud resources)")
+            default_value = existing_value if existing_value else ""
+            value = self.ui.prompt("Email", default_value)
             if value:
                 self.config_manager.save_field_incrementally(
                     field, value, lab_selection

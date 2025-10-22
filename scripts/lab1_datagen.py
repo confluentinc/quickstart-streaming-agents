@@ -28,6 +28,7 @@ import subprocess
 import sys
 import tempfile
 import urllib.request
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, Optional
 
@@ -340,6 +341,58 @@ def download_shadowtraffic_license(datagen_dir: Path) -> Optional[Path]:
         return None
 
 
+def get_license_expiration(license_path: Path) -> Optional[datetime]:
+    """
+    Extract expiration date from ShadowTraffic license file.
+
+    Args:
+        license_path: Path to the license file
+
+    Returns:
+        Expiration datetime if found and valid, None otherwise
+    """
+    logger = logging.getLogger(__name__)
+
+    try:
+        with open(license_path, 'r') as f:
+            for line in f:
+                line = line.strip()
+                if line.startswith('LICENSE_EXPIRATION='):
+                    expiration_str = line.split('=', 1)[1]
+                    # Parse YYYY-MM-DD format
+                    return datetime.strptime(expiration_str, '%Y-%m-%d')
+
+        logger.debug(f"No LICENSE_EXPIRATION found in {license_path}")
+        return None
+
+    except Exception as e:
+        logger.debug(f"Failed to parse license expiration from {license_path}: {e}")
+        return None
+
+
+def is_license_expired(license_path: Path) -> bool:
+    """
+    Check if a ShadowTraffic license is expired.
+
+    Args:
+        license_path: Path to the license file
+
+    Returns:
+        True if license is expired or expiration cannot be determined, False otherwise
+    """
+    expiration = get_license_expiration(license_path)
+
+    if expiration is None:
+        # Cannot determine expiration, assume not expired
+        return False
+
+    # Compare with today's date (ignore time component)
+    today = datetime.now().date()
+    expiration_date = expiration.date()
+
+    return expiration_date < today
+
+
 def run_shadowtraffic(
     paths: Dict[str, Path],
     duration: Optional[int] = None,
@@ -399,9 +452,34 @@ def run_shadowtraffic(
         logger.debug(f"Created temporary root.json at: {temp_root_config}")
         root_config = temp_root_config
 
-    # Check for environment file, download if missing
+    # Check for environment file, download if missing or expired
     env_file = check_docker_env_file(datagen_dir)
-    if not env_file:
+
+    if env_file:
+        # Check if existing license is expired
+        if is_license_expired(env_file):
+            expiration = get_license_expiration(env_file)
+            expiration_str = expiration.strftime('%Y-%m-%d') if expiration else "unknown"
+
+            logger.warning(f"⚠️  ShadowTraffic license expired on {expiration_str}")
+            logger.info("📥 Attempting to download a fresh license file...")
+
+            # Try to download a new license
+            new_license = download_shadowtraffic_license(datagen_dir)
+            if new_license:
+                env_file = new_license
+                logger.info("✓ Updated to fresh license file")
+            else:
+                logger.error("✗ Failed to download a new license file")
+                logger.error("")
+                logger.error("Please download a fresh license manually:")
+                logger.error("  1. Visit: https://github.com/ShadowTraffic/shadowtraffic-examples")
+                logger.error("  2. Download: free-trial-license-docker.env")
+                logger.error(f"  3. Save to: {datagen_dir}/free-trial-license-docker.env")
+                logger.error("")
+                logger.error("Alternatively, get a full license at: https://shadowtraffic.io")
+                return 1
+    else:
         logger.info("📄 No ShadowTraffic license file found, attempting to download...")
         env_file = download_shadowtraffic_license(datagen_dir)
         if not env_file:

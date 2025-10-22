@@ -173,7 +173,32 @@ resource "confluent_flink_statement" "orders_table" {
     secret = data.terraform_remote_state.core.outputs.app_manager_flink_api_secret
   }
 
-  statement = "CREATE TABLE `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`orders` ( `key` VARBINARY(2147483647), `order_id` VARCHAR(2147483647) NOT NULL, `customer_id` VARCHAR(2147483647) NOT NULL, `product_id` VARCHAR(2147483647) NOT NULL, `price` DOUBLE NOT NULL, `order_ts` TIMESTAMP(3) WITH LOCAL TIME ZONE NOT NULL );"
+  statement_name = "orders-create-table"
+
+  statement = <<-EOT
+    CREATE TABLE `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`orders` (
+      `key` VARBINARY(2147483647),
+      `order_id` VARCHAR(2147483647) NOT NULL,
+      `customer_id` VARCHAR(2147483647) NOT NULL,
+      `product_id` VARCHAR(2147483647) NOT NULL,
+      `price` DOUBLE NOT NULL,
+      `order_ts` TIMESTAMP(3) WITH LOCAL TIME ZONE NOT NULL
+    )
+    DISTRIBUTED BY HASH(`key`) INTO 6 BUCKETS
+    WITH (
+      'changelog.mode' = 'append',
+      'connector' = 'confluent',
+      'kafka.cleanup-policy' = 'delete',
+      'kafka.compaction.time' = '0 ms',
+      'kafka.max-message-size' = '2097164 bytes',
+      'kafka.retention.size' = '0 bytes',
+      'kafka.retention.time' = '7 d',
+      'key.format' = 'raw',
+      'scan.bounded.mode' = 'unbounded',
+      'scan.startup.mode' = 'earliest-offset',
+      'value.format' = 'avro-registry'
+    );
+  EOT
 
   properties = {
     "sql.current-catalog"  = data.terraform_remote_state.core.outputs.confluent_environment_display_name
@@ -205,7 +230,32 @@ resource "confluent_flink_statement" "products_table" {
     secret = data.terraform_remote_state.core.outputs.app_manager_flink_api_secret
   }
 
-  statement = "CREATE TABLE `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`products` ( `key` VARBINARY(2147483647), `product_id` VARCHAR(2147483647) NOT NULL, `product_name` VARCHAR(2147483647) NOT NULL, `price` DOUBLE NOT NULL, `department` VARCHAR(2147483647) NOT NULL, `updated_at` TIMESTAMP(3) WITH LOCAL TIME ZONE NOT NULL );"
+  statement_name = "products-create-table"
+
+  statement = <<-EOT
+    CREATE TABLE `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`products` (
+      `key` VARBINARY(2147483647),
+      `product_id` VARCHAR(2147483647) NOT NULL,
+      `product_name` VARCHAR(2147483647) NOT NULL,
+      `price` DOUBLE NOT NULL,
+      `department` VARCHAR(2147483647) NOT NULL,
+      `updated_at` TIMESTAMP(3) WITH LOCAL TIME ZONE NOT NULL
+    )
+    DISTRIBUTED BY HASH(`key`) INTO 6 BUCKETS
+    WITH (
+      'changelog.mode' = 'append',
+      'connector' = 'confluent',
+      'kafka.cleanup-policy' = 'delete',
+      'kafka.compaction.time' = '0 ms',
+      'kafka.max-message-size' = '2097164 bytes',
+      'kafka.retention.size' = '0 bytes',
+      'kafka.retention.time' = '7 d',
+      'key.format' = 'raw',
+      'scan.bounded.mode' = 'unbounded',
+      'scan.startup.mode' = 'earliest-offset',
+      'value.format' = 'avro-registry'
+    );
+  EOT
 
   properties = {
     "sql.current-catalog"  = data.terraform_remote_state.core.outputs.confluent_environment_display_name
@@ -237,7 +287,32 @@ resource "confluent_flink_statement" "customers_table" {
     secret = data.terraform_remote_state.core.outputs.app_manager_flink_api_secret
   }
 
-  statement = "CREATE TABLE `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`customers` ( `key` VARBINARY(2147483647), `customer_id` VARCHAR(2147483647) NOT NULL, `customer_email` VARCHAR(2147483647) NOT NULL, `customer_name` VARCHAR(2147483647) NOT NULL, `state` VARCHAR(2147483647) NOT NULL, `updated_at` TIMESTAMP(3) WITH LOCAL TIME ZONE NOT NULL );"
+  statement_name = "customers-create-table"
+
+  statement = <<-EOT
+    CREATE TABLE `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`customers` (
+      `key` VARBINARY(2147483647),
+      `customer_id` VARCHAR(2147483647) NOT NULL,
+      `customer_email` VARCHAR(2147483647) NOT NULL,
+      `customer_name` VARCHAR(2147483647) NOT NULL,
+      `state` VARCHAR(2147483647) NOT NULL,
+      `updated_at` TIMESTAMP(3) WITH LOCAL TIME ZONE NOT NULL
+    )
+    DISTRIBUTED BY HASH(`key`) INTO 6 BUCKETS
+    WITH (
+      'changelog.mode' = 'append',
+      'connector' = 'confluent',
+      'kafka.cleanup-policy' = 'delete',
+      'kafka.compaction.time' = '0 ms',
+      'kafka.max-message-size' = '2097164 bytes',
+      'kafka.retention.size' = '0 bytes',
+      'kafka.retention.time' = '7 d',
+      'key.format' = 'raw',
+      'scan.bounded.mode' = 'unbounded',
+      'scan.startup.mode' = 'earliest-offset',
+      'value.format' = 'avro-registry'
+    );
+  EOT
 
   properties = {
     "sql.current-catalog"  = data.terraform_remote_state.core.outputs.confluent_environment_display_name
