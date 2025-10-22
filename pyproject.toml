@@ -4,18 +4,22 @@ build-backend = "hatchling.build"
 
 [project]
 name = "quickstart-streaming-agents"
-version = "0.1.0"
-description = "Cross-platform Python tooling for Confluent streaming agents quickstart tutorials"
+version = "0.2.0"
+description = "Confluent Streaming Agents Quickstart. Real-time data meets Agentic AI."
 readme = "README.md"
 authors = [
     {name = "Confluent", email = "support@confluent.io"},
+    {name = "Brenner Heintz", email = "200854174+column-oriented@users.noreply.github.com"}
 ]
 license = {text = "Apache-2.0"}
 classifiers = [
     "Development Status :: 4 - Beta",
     "Environment :: Console",
     "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Intended Audience :: Information Technology",
     "License :: OSI Approved :: Apache Software License",
+    "Natural Language :: English",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
@@ -23,10 +27,16 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Topic :: Database",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: System :: Distributed Computing",
 ]
-keywords = ["confluent", "kafka", "flink", "streaming", "agents", "vector-search"]
+keywords = [
+    "confluent", "kafka", "flink", "streaming", "agents", "vector-search",
+    "ai", "mcp", "inference", "embeddings", "bedrock", "openai",
+    "claude", "rag", "azure-ai", "llm", "agentic-framework", "agentic-ai"
+]
 requires-python = ">=3.8.1"
 
 # Core dependencies
@@ -46,6 +56,8 @@ dev = [
     "isort>=5.12.0",
     "flake8>=6.0.0",
     "mypy>=1.0.0",
+    "detect-secrets>=1.5.0",
+    "pre-commit>=3.5.0",
 ]
 
 # Console script entry points for all workflows
@@ -55,16 +67,13 @@ destroy = "deploy:destroy_main"
 publish_docs = "scripts.lab2_publish_docs:main"
 publish_queries = "scripts.lab2_publish_queries:main"
 lab1_datagen = "scripts.lab1_datagen:main"
-lab1_mcp_setup = "scripts.lab1_mcp_setup:main"
 # Legacy aliases for backward compatibility (hyphens)
 publish-docs = "scripts.lab2_publish_docs:main"
 publish-queries = "scripts.lab2_publish_queries:main"
 lab1-datagen = "scripts.lab1_datagen:main"
-lab1-mcp-setup = "scripts.lab1_mcp_setup:main"
 # Additional aliases
 lab2_publish_docs = "scripts.lab2_publish_docs:main"
 lab2_publish_queries = "scripts.lab2_publish_queries:main"
-mcp_setup = "scripts.lab1_mcp_setup:main"
 
 [project.urls]
 Homepage = "https://github.com/confluentinc/quickstart-streaming-agents"
@@ -148,8 +157,3 @@ addopts = [
     "--cov-report=html",
 ]
 
-[dependency-groups]
-dev = [
-    "detect-secrets>=1.5.0",
-    "pre-commit>=3.5.0",
-]

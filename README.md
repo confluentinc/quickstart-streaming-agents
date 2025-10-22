@@ -48,25 +48,27 @@ That's it! The script will guide you through setup, automatically create API key
 
 **Required tools:**
 
-- **uv** - `brew install uv` (Mac) or `winget install astral-sh.uv` (Windows)
-- **Python 3.8+**
-- **Terraform** - infrastructure deployment
-- **AWS CLI** or **Azure CLI**
-- **Confluent CLI** - cloud resource management
-- **Docker** - for Lab1 data generation
+- **[uv](https://github.com/astral-sh/uv)**
+- **[Python 3.8+](https://github.com/python/cpython)**
+- **[Terraform](https://github.com/hashicorp/terraform)** - infrastructure deployment
+- **[AWS CLI](https://github.com/aws/aws-cli)** or **[Azure CLI](https://github.com/Azure/azure-cli)**
+- **[Confluent CLI](https://docs.confluent.io/confluent-cli/current/overview.html)** - cloud resource management
+- **[Docker](https://github.com/docker)** - for Lab1 data generation
+- **[librdkafka](https://github.com/confluentinc/librdkafka)**
 
 <details>
 <summary>📦 Platform-specific installation commands</summary>
 
 **Mac:**
 ```bash
-brew install uv git && brew tap hashicorp/tap && brew install hashicorp/tap/terraform && brew install --cask confluent-cli docker-desktop  && brew install librdkafka && brew install awscli  # or azure-cli
+brew install uv git && brew tap hashicorp/tap && brew install hashicorp/tap/terraform && brew install --cask confluent-cli docker-desktop && brew install librdkafka && brew install awscli  # or azure-cli
 ```
 
 **Windows:**
 ```powershell
 winget install astral-sh.uv Git.Git Docker.DockerDesktop Hashicorp.Terraform ConfluentInc.Confluent-CLI Amazon.AWSCLI  # or Microsoft.AzureCLI
 ```
+> **Note:** librdkafka is bundled with confluent-kafka Python wheels on Windows - no separate installation needed.
 
 **Linux:**
 ```bash

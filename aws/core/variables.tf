@@ -16,7 +16,7 @@ variable "cloud_region" {
   default     = "us-east-1"
 
   validation {
-    condition = upper(var.cloud_provider) == "AWS" ? contains([
+    condition = contains([
       "us-east-1",
       "us-west-2",
       "sa-east-1",
@@ -26,16 +26,8 @@ variable "cloud_region" {
       "ap-east-1",
       "ap-northeast-1",
       "ap-northeast-2"
-      ], var.cloud_region) : contains([
-      "eastus2",
-      "westus",
-      "canadacentral",
-      "northeurope",
-      "westeurope",
-      "eastasia",
-      "centralindia"
     ], var.cloud_region)
-    error_message = "The selected region does not support MongoDB Atlas M0 free tier. For AWS, use: us-east-1, us-west-2, sa-east-1, ap-southeast-1, ap-southeast-2, ap-south-1, ap-east-1, ap-northeast-1, ap-northeast-2. For Azure, use: eastus2, westus, canadacentral, northeurope, westeurope, eastasia, centralindia."
+    error_message = "The selected AWS region does not support MongoDB Atlas M0 free tier. Use: us-east-1, us-west-2, sa-east-1, ap-southeast-1, ap-southeast-2, ap-south-1, ap-east-1, ap-northeast-1, ap-northeast-2."
   }
 }
 

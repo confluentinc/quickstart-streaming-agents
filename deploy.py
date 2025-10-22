@@ -100,6 +100,11 @@ class PrerequisiteManager:
             "macos_install": "brew install --cask docker-desktop",
             "windows_install": "winget install --id Docker.DockerDesktop -e",
         },
+        "librdkafka": {
+            "check_cmd": ["pkg-config", "--exists", "rdkafka"],
+            "macos_install": "brew install librdkafka",
+            "windows_install": "See https://github.com/confluentinc/confluent-kafka-python#prerequisites for Windows installation",
+        },
     }
 
     def __init__(self, ui: SetupUI):
@@ -174,6 +179,12 @@ class PrerequisiteManager:
                     self.ui.print_info(
                         f"  {tool}: {self.TOOLS[tool]['windows_install']}"
                     )
+            if "librdkafka" in missing_tools and self.system == "darwin":
+                self.ui.print_info(
+                    "\nNote: After installing librdkafka, if builds fail you may need to set:\n"
+                    "  export C_INCLUDE_PATH=/opt/homebrew/include\n"
+                    "  export LIBRARY_PATH=/opt/homebrew/lib"
+                )
             return False
 
         # Install missing tools
@@ -184,12 +195,24 @@ class PrerequisiteManager:
 
         if failed_installs:
             self.ui.print_error(f"Failed to install: {', '.join(failed_installs)}")
+            if "librdkafka" in failed_installs and self.system == "darwin":
+                self.ui.print_info(
+                    "\nNote: If librdkafka is installed but builds still fail, you may need to set:\n"
+                    "  export C_INCLUDE_PATH=/opt/homebrew/include\n"
+                    "  export LIBRARY_PATH=/opt/homebrew/lib"
+                )
             return False
 
         # Verify installations
         for tool in missing_tools:
             if not self.check_tool(tool):
                 self.ui.print_error(f"Installation verification failed for {tool}")
+                if tool == "librdkafka" and self.system == "darwin":
+                    self.ui.print_info(
+                        "\nNote: If librdkafka is installed but not detected, you may need to set:\n"
+                        "  export C_INCLUDE_PATH=/opt/homebrew/include\n"
+                        "  export LIBRARY_PATH=/opt/homebrew/lib"
+                    )
                 return False
 
         self.ui.print_success("All prerequisites installed successfully!")
@@ -2466,9 +2489,8 @@ MONGODB_INDEX_NAME = "vector_index"
     def show_next_steps(self):
         """Show next steps after successful deployment."""
         self.ui.print_info("Next steps:")
-        self.ui.print_info("1. Set up Flink MCP connection (see mcp_commands.txt)")
         self.ui.print_info(
-            "2. Generate sample data (cd terraform/data-gen && ./run.sh)"
+            "1. Lab1: Generate sample data (uv run lab1_datagen)"
         )
         self.ui.print_info("3. Proceed to Lab1: Price Matching Using Tool Calling")
 
@@ -2477,7 +2499,7 @@ def main():
     """Main entry point."""
     # Simple argument parsing - hidden advanced options
     parser = argparse.ArgumentParser(
-        description="🚀 Streaming Agents Quickstart Setup\n\nJust run 'python setup.py' - the script will intelligently detect what needs to be done!",
+        description="🚀 Streaming Agents Quickstart Setup\n\nJust run 'uv run deploy' - the script will intelligently detect what needs to be done!",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         add_help=False,  # Custom help to hide advanced options
     )
@@ -2501,20 +2523,20 @@ def main():
         print("🚀 Streaming Agents Quickstart Setup")
         print("\nUsage:")
         print(
-            "  python setup.py          # Intelligent setup - detects current state and continues"
+            "  uv run deploy          # Intelligent setup - detects current state and continues"
         )
         print("\nThe script will automatically:")
         print("  • Install missing prerequisites")
         print("  • Resume interrupted configurations")
         print("  • Only prompt for missing/invalid values")
         print("  • Deploy infrastructure when ready")
-        print("\nFor advanced options: python setup.py --advanced-help")
+        print("\nFor advanced options: uv run deploy --advanced-help")
         return
 
     if args.advanced_help:
         print("🚀 Streaming Agents Quickstart Setup - Advanced Options")
         print("\nBasic usage:")
-        print("  python setup.py          # Intelligent setup (recommended)")
+        print("  uv run deploy            # Intelligent setup (recommended)")
         print("\nAdvanced options:")
         print("  --reset                  # Clear all configuration and start fresh")
         print("  --dry-run                # Validate configuration without deploying")
