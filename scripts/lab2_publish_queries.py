@@ -117,7 +117,9 @@ class QueryPublisher:
             self.logger.info(f"✓ Query published successfully to topic '{topic}'")
             if self.environment_id and self.cluster_id:
                 url = f"https://confluent.cloud/environments/{self.environment_id}/clusters/{self.cluster_id}/topics/{topic}/message-viewer"
-                self.logger.info(f"   View messages: {url}")
+                self.logger.info(f"   View messages:  {url}")
+                response_url = f"https://confluent.cloud/environments/{self.environment_id}/clusters/{self.cluster_id}/topics/search_results_response/message-viewer"
+                self.logger.info(f"   View responses: {response_url}")
             return True
 
         except Exception as e:
@@ -251,7 +253,9 @@ def run_interactive_mode(cloud_provider: str) -> None:
                     print("✓ Query published to topic: 'queries'")
                     if publisher.environment_id and publisher.cluster_id:
                         url = f"https://confluent.cloud/environments/{publisher.environment_id}/clusters/{publisher.cluster_id}/topics/queries/message-viewer"
-                        print(f"   View messages: {url}")
+                        print(f"   View messages:  {url}")
+                        response_url = f"https://confluent.cloud/environments/{publisher.environment_id}/clusters/{publisher.cluster_id}/topics/search_results_response/message-viewer"
+                        print(f"   View responses: {response_url}")
                 else:
                     print("✗ Failed to publish query")
                 print()
