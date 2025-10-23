@@ -555,8 +555,92 @@ class ConfigurationManager:
     def save_field_incrementally(
         self, field: str, value: str, lab_selection: str = None
     ):
-        """Simplified - just pass through (removed incremental complexity)."""
-        pass
+        """Save a single field to the appropriate terraform.tfvars file(s)."""
+        try:
+            # Core fields go to core/terraform.tfvars
+            core_fields = ["cloud_region", "confluent_cloud_api_key", "confluent_cloud_api_secret", "azure_subscription_id", "owner_email"]
+
+            if field in core_fields:
+                # Load existing core config and update
+                core_tfvars_file = self.terraform_dir / "core/terraform.tfvars"
+                existing_config = {}
+                if core_tfvars_file.exists():
+                    existing_config = self._read_existing_tfvars(core_tfvars_file)
+                existing_config[field] = value
+                # Save back to core
+                self.save_credentials_to_tfvars(existing_config)
+
+            # Lab1 fields
+            if field == "ZAPIER_SSE_ENDPOINT":
+                lab1_tfvars = self.terraform_dir / "lab1-tool-calling/terraform.tfvars"
+                if lab1_tfvars.exists() or lab_selection in ["lab1", "all"]:
+                    existing_lab1 = {}
+                    if lab1_tfvars.exists():
+                        existing_lab1 = self._read_existing_tfvars(lab1_tfvars)
+                    existing_lab1[field] = value
+                    # Ensure cloud_region is also there
+                    if "cloud_region" not in existing_lab1:
+                        core_config = self.load_existing_config()
+                        if "cloud_region" in core_config:
+                            existing_lab1["cloud_region"] = core_config["cloud_region"]
+                    # Write lab1 tfvars
+                    self._write_lab_tfvars(lab1_tfvars, existing_lab1, "lab1")
+
+            # Lab2 fields
+            if field in ["MONGODB_CONNECTION_STRING", "mongodb_username", "mongodb_password"]:
+                lab2_tfvars = self.terraform_dir / "lab2-vector-search/terraform.tfvars"
+                if lab2_tfvars.exists() or lab_selection in ["lab2", "all"]:
+                    existing_lab2 = {}
+                    if lab2_tfvars.exists():
+                        existing_lab2 = self._read_existing_tfvars(lab2_tfvars)
+                    existing_lab2[field] = value
+                    # Ensure cloud_region is also there
+                    if "cloud_region" not in existing_lab2:
+                        core_config = self.load_existing_config()
+                        if "cloud_region" in core_config:
+                            existing_lab2["cloud_region"] = core_config["cloud_region"]
+                    # Write lab2 tfvars
+                    self._write_lab_tfvars(lab2_tfvars, existing_lab2, "lab2")
+        except Exception:
+            pass
+
+    def _write_lab_tfvars(self, tfvars_file: Path, config: Dict[str, str], lab_type: str):
+        """Write lab-specific terraform.tfvars file."""
+        try:
+            # Backup existing file
+            if tfvars_file.exists():
+                backup_path = tfvars_file.with_suffix(".tfvars.backup")
+                shutil.copy2(tfvars_file, backup_path)
+
+            # Generate content
+            content = f"""# {lab_type} Configuration
+cloud_region = "{config.get('cloud_region', '')}"
+"""
+
+            if lab_type == "lab1":
+                if "ZAPIER_SSE_ENDPOINT" in config:
+                    content += f'ZAPIER_SSE_ENDPOINT = "{config["ZAPIER_SSE_ENDPOINT"]}"\n'
+            elif lab_type == "lab2":
+                if "MONGODB_CONNECTION_STRING" in config:
+                    content += f'MONGODB_CONNECTION_STRING = "{config["MONGODB_CONNECTION_STRING"]}"\n'
+                if "mongodb_username" in config:
+                    content += f'mongodb_username = "{config["mongodb_username"]}"\n'
+                if "mongodb_password" in config:
+                    content += f'mongodb_password = "{config["mongodb_password"]}"\n'
+                # Add MongoDB defaults
+                content += """
+# Default MongoDB settings
+MONGODB_DATABASE = "vector_search"
+MONGODB_COLLECTION = "documents"
+MONGODB_INDEX_NAME = "vector_index"
+"""
+
+            # Write the file
+            tfvars_file.parent.mkdir(parents=True, exist_ok=True)
+            with open(tfvars_file, "w") as f:
+                f.write(content)
+        except Exception:
+            pass
 
     def save_credentials_to_tfvars(self, config: Dict[str, str]):
         """Save configuration (including credentials) to terraform.tfvars files immediately."""
@@ -1917,14 +2001,9 @@ MONGODB_INDEX_NAME = "vector_index"
         self.ui.print_info("🏗️  Setting up Terraform infrastructure...")
         self.ui.print_info("✅ Using existing valid configuration:")
 
-        # Show current config (masked)
+        # Show current config (unmasked)
         for key, value in valid_config.items():
-            if "api_" in key.lower() or "secret" in key.lower():
-                self.ui.print_success(
-                    f"  {key}: ***{value[-4:] if len(value) > 4 else '***'}"
-                )
-            else:
-                self.ui.print_success(f"  {key}: {value}")
+            self.ui.print_success(f"  {key}: {value}")
 
         # Get lab selection
         lab_selection = self.config_manager.prompt_for_lab_selection()
@@ -2008,35 +2087,78 @@ MONGODB_INDEX_NAME = "vector_index"
         selection, description = deploy_options[choice]
         self.ui.print_success(f"Selected: {description}")
 
-        # Load existing config
-        valid_config, _ = self.config_manager.get_config_status()
+        # Load complete config including lab-specific credentials
+        complete_config = self.config_manager.load_existing_config()
+        valid_config, invalid_config = self.config_manager.get_config_status()
+
+        # Check for missing lab-specific fields if labs are selected
+        missing_fields = []
+        if selection in ["lab1", "all"]:
+            if "ZAPIER_SSE_ENDPOINT" not in complete_config or not complete_config["ZAPIER_SSE_ENDPOINT"]:
+                missing_fields.append("ZAPIER_SSE_ENDPOINT")
+        if selection in ["lab2", "all"]:
+            for field in ["MONGODB_CONNECTION_STRING", "mongodb_username", "mongodb_password"]:
+                if field not in complete_config or not complete_config[field]:
+                    missing_fields.append(field)
+
+        # If missing fields, redirect to config flow (which shows the menu)
+        if missing_fields:
+            self.ui.print_warning(f"⚠️ Missing required configuration: {', '.join(missing_fields)}")
+            return self.handle_config_and_deploy(
+                "🔧 Lab-specific configuration needed...",
+                existing_valid=valid_config,
+                lab_selection=selection,
+            )
+
+        # Show configuration review menu before deploying
+        menu_choice = self.show_final_config_menu(valid_config, invalid_config)
+
+        if menu_choice == "quit":
+            return True
+        elif menu_choice == "reset":
+            # Reset and start fresh
+            self.config_manager.save_credentials_to_tfvars({})
+            if self.config_manager.config_file and self.config_manager.config_file.exists():
+                self.config_manager.config_file.unlink()
+            self.ui.print_success("Configuration reset. Please run deploy again.")
+            return True
+        elif menu_choice.startswith("edit_"):
+            # User wants to edit a field - extract field name and prompt for new value
+            field_to_edit = menu_choice[5:]  # Remove "edit_" prefix
+
+            self.ui.print_header("Edit Configuration", f"Editing: {field_to_edit}")
+            new_value = self.prompt_for_field(field_to_edit, complete_config, selection)
+
+            if new_value:
+                complete_config[field_to_edit] = new_value
+                # Save the updated field to appropriate tfvars file(s)
+                self.config_manager.save_field_incrementally(field_to_edit, new_value, selection)
+
+                # Test API keys if both are now present
+                if field_to_edit in ["confluent_cloud_api_key", "confluent_cloud_api_secret"]:
+                    api_key = complete_config.get("confluent_cloud_api_key")
+                    api_secret = complete_config.get("confluent_cloud_api_secret")
+                    if api_key and api_secret:
+                        valid, message = self.config_manager.test_confluent_api_keys(api_key, api_secret)
+                        if valid:
+                            self.ui.print_success(f"✅ {message}")
+                        else:
+                            self.ui.print_error(f"❌ {message}")
+
+                self.ui.print_success(f"Updated {field_to_edit}")
+            else:
+                self.ui.print_warning("No changes made")
+
+            # Show menu again with updated config
+            return self.handle_completed_setup()
+
+        # Reload config in case it was edited
+        complete_config = self.config_manager.load_existing_config()
 
         if selection == "core":
-            # Redeploy core only
+            # Redeploy core only with current config
             return self.handle_deployment()
         elif selection in ["lab1", "lab2", "all"]:
-            # Load complete config including lab-specific credentials
-            complete_config = self.config_manager.load_existing_config()
-
-            # Check for missing lab-specific fields
-            missing_fields = []
-            if selection in ["lab1", "all"]:
-                if "ZAPIER_SSE_ENDPOINT" not in complete_config or not complete_config["ZAPIER_SSE_ENDPOINT"]:
-                    missing_fields.append("ZAPIER_SSE_ENDPOINT")
-            if selection in ["lab2", "all"]:
-                for field in ["MONGODB_CONNECTION_STRING", "mongodb_username", "mongodb_password"]:
-                    if field not in complete_config or not complete_config[field]:
-                        missing_fields.append(field)
-
-            # If missing fields, redirect to config flow
-            if missing_fields:
-                self.ui.print_warning(f"⚠️ Missing required configuration: {', '.join(missing_fields)}")
-                return self.handle_config_and_deploy(
-                    "🔧 Lab-specific configuration needed...",
-                    existing_valid=valid_config,
-                    lab_selection=selection,
-                )
-
             # Deploy core if needed, then deploy selected labs
             if not self.deploy_core_if_needed(complete_config):
                 return False
@@ -2059,20 +2181,70 @@ MONGODB_INDEX_NAME = "vector_index"
     def show_configuration_status(
         self, valid_config: Dict[str, str], invalid_config: Dict[str, str]
     ):
-        """Simplified configuration status display."""
+        """Display configuration status with all values visible."""
+        self.ui.print_header("Current Configuration")
+
         if valid_config:
-            self.ui.print_success(f"✅ {len(valid_config)} fields configured")
+            self.ui.print_success(f"✅ {len(valid_config)} fields configured:")
+            for key, value in sorted(valid_config.items()):
+                if key not in ["prefix", "cloud_provider"]:  # Skip hardcoded fields
+                    self.ui.print_info(f"  {key}: {value}")
+
         if invalid_config:
-            self.ui.print_warning(f"⚠️ {len(invalid_config)} fields need attention")
+            self.ui.print_warning(f"\n⚠️ {len(invalid_config)} fields need attention:")
+            for key in sorted(invalid_config.keys()):
+                self.ui.print_error(f"  {key}")
 
     def show_final_config_menu(
         self, valid_config: Dict[str, str], invalid_config: Dict[str, str]
     ) -> str:
-        """Simplified configuration review."""
+        """Interactive configuration review and editing menu."""
         self.show_configuration_status(valid_config, invalid_config)
-        if self.ui.confirm("Continue with deployment?", default=True):
-            return "continue"
-        return "quit"
+
+        # Build menu of editable fields
+        all_config = {**valid_config, **invalid_config}
+        editable_fields = [k for k in sorted(all_config.keys()) if k not in ["prefix", "cloud_provider"]]
+
+        print("\n" + "="*50)
+        print("Options:")
+        print("  c) Continue with deployment")
+        print("  e) Edit a specific field")
+        print("  r) Reset all configuration and start fresh")
+        print("  q) Quit")
+        print("="*50)
+
+        while True:
+            choice = self.ui.prompt("Select an option", "c").lower().strip()
+
+            if choice == "c":
+                return "continue"
+            elif choice == "q":
+                return "quit"
+            elif choice == "r":
+                if self.ui.confirm("Are you sure you want to reset all configuration?", default=False):
+                    return "reset"
+            elif choice == "e":
+                # Show editable fields
+                print("\nEditable fields:")
+                for i, field in enumerate(editable_fields, 1):
+                    current_value = all_config.get(field, "")
+                    print(f"  {i}) {field}: {current_value}")
+
+                field_choice = self.ui.prompt("Enter field number to edit (or 'b' to go back)", "")
+                if field_choice.lower() == "b":
+                    continue
+
+                try:
+                    field_idx = int(field_choice) - 1
+                    if 0 <= field_idx < len(editable_fields):
+                        field_to_edit = editable_fields[field_idx]
+                        return f"edit_{field_to_edit}"
+                    else:
+                        self.ui.print_error("Invalid field number")
+                except ValueError:
+                    self.ui.print_error("Please enter a valid number")
+            else:
+                self.ui.print_error("Invalid option. Please choose c, e, r, or q")
 
     def smart_configuration_prompt(
         self,
@@ -2118,47 +2290,39 @@ MONGODB_INDEX_NAME = "vector_index"
         ]
         invalid_fields = list(fix_invalid.keys()) if fix_invalid else []
 
-        # If we have all fields valid, show the final review menu
-        if not missing_fields and not invalid_fields:
-            choice = self.show_final_config_menu(existing_valid, {})
-        elif len(missing_fields) + len(invalid_fields) == len(all_fields):
-            # All fields need attention - start fresh
-            choice = "continue"
+        # Always show the menu if we have any existing configuration
+        if existing_valid or invalid_fields:
+            # Build combined config for display
+            all_config_for_display = existing_valid.copy()
+            for field in invalid_fields:
+                all_config_for_display[field] = fix_invalid[field]
+
+            choice = self.show_final_config_menu(existing_valid, dict.fromkeys(missing_fields, ""))
         else:
-            # Some fields are valid, some need work - show current status and continue
-            self.ui.print_header(
-                "Configuration Status", "Continuing with missing/invalid values"
-            )
-            self.show_configuration_status(existing_valid, fix_invalid or {})
-            if self.ui.confirm("Continue to complete the configuration?", default=True):
-                choice = "continue"
-            else:
-                choice = "quit"
+            # First run with no config - just continue
+            choice = "continue"
 
         if choice == "quit":
             return None
         elif choice == "reset":
-            # Start completely fresh
-            config = {}
-            fix_invalid = {
-                "cloud_region": "",
-                "confluent_cloud_api_key": "",
-                "confluent_cloud_api_secret": "",
-            }
+            # Start completely fresh - clear config and recursively call
+            self.config_manager.save_credentials_to_tfvars({})
+            # Clear the config file too
+            if self.config_manager.config_file and self.config_manager.config_file.exists():
+                self.config_manager.config_file.unlink()
+            self.ui.print_success("Configuration reset. Starting fresh...")
+            return self.smart_configuration_prompt(lab_selection=lab_selection)
         elif choice.startswith("edit_"):
-            # Edit specific field
-            field_num = int(choice.split("_")[1])
-            config_fields = [
-                "cloud_region",
-                "confluent_cloud_api_key",
-                "confluent_cloud_api_secret",
-            ]
-            field_to_edit = config_fields[field_num - 1]
+            # Edit specific field - extract field name after "edit_"
+            field_to_edit = choice[5:]  # Remove "edit_" prefix
 
             self.ui.print_header("Edit Configuration", f"Editing: {field_to_edit}")
             new_value = self.prompt_for_field(field_to_edit, config, lab_selection)
             if new_value:
                 config[field_to_edit] = new_value
+                # Save the updated field
+                self.config_manager.save_field_incrementally(field_to_edit, new_value, lab_selection)
+
                 # Test API keys if both are now present
                 if field_to_edit in [
                     "confluent_cloud_api_key",
@@ -2176,10 +2340,20 @@ MONGODB_INDEX_NAME = "vector_index"
                             self.ui.print_error(f"❌ {message}")
 
                 self.ui.print_success(f"Updated {field_to_edit}")
-                return config
+                # Show menu again with updated config
+                return self.smart_configuration_prompt(
+                    lab_selection=lab_selection,
+                    existing_valid=config,
+                    fix_invalid={}
+                )
             else:
                 self.ui.print_error("❌ Invalid value entered")
-                return None
+                # Return to menu
+                return self.smart_configuration_prompt(
+                    lab_selection=lab_selection,
+                    existing_valid=existing_valid,
+                    fix_invalid=fix_invalid
+                )
 
         # Continue mode: Handle each required field that needs attention
         # Note: prefix and cloud_provider are hardcoded in Terraform
@@ -2196,14 +2370,7 @@ MONGODB_INDEX_NAME = "vector_index"
             )
             self.ui.print_info("✅ Using existing valid configuration:")
             for key, value in existing_valid.items():
-                if key not in [
-                    "confluent_cloud_api_key",
-                    "confluent_cloud_api_secret",
-                    "ZAPIER_SSE_ENDPOINT",
-                ]:
-                    self.ui.print_success(f"  {key}: {value}")
-                else:
-                    self.ui.print_success(f"  {key}: ***configured***")
+                self.ui.print_success(f"  {key}: {value}")
 
         for field in required_fields:
             if field not in config or field in fix_invalid:
@@ -2338,7 +2505,7 @@ MONGODB_INDEX_NAME = "vector_index"
             if existing_value and self.config_manager.validate_config_value(
                 field, existing_value, config
             ):
-                prompt_text = f"Confluent Cloud API Key [current: ***{existing_value[-4:]}] (press enter to keep, or type 'edit' to change)"
+                prompt_text = f"Confluent Cloud API Key [current: {existing_value}] (press enter to keep, or type 'edit' to change)"
                 response = self.ui.prompt(prompt_text, "")
                 if not response:
                     return existing_value
@@ -2417,7 +2584,7 @@ MONGODB_INDEX_NAME = "vector_index"
             if existing_value and self.config_manager.validate_config_value(
                 field, existing_value, config
             ):
-                prompt_text = f"Confluent Cloud API Secret [current: ***{existing_value[-4:]}] (press enter to keep, or type 'edit' to change)"
+                prompt_text = f"Confluent Cloud API Secret [current: {existing_value}] (press enter to keep, or type 'edit' to change)"
                 response = self.ui.prompt(prompt_text, "")
                 if not response:
                     return existing_value
@@ -2457,23 +2624,7 @@ MONGODB_INDEX_NAME = "vector_index"
             if existing_value and self.config_manager.validate_zapier_url(
                 existing_value
             ):
-                # Mask the API key portion for display
-                masked_url = existing_value
-                if "/s/" in existing_value and "/sse" in existing_value:
-                    start = existing_value.find("/s/") + 3
-                    end = existing_value.find("/sse")
-                    if start < end:
-                        api_key = existing_value[start:end]
-                        masked_key = (
-                            api_key[:4] + "***" + api_key[-4:]
-                            if len(api_key) > 8
-                            else "***"
-                        )
-                        masked_url = (
-                            existing_value[:start] + masked_key + existing_value[end:]
-                        )
-
-                prompt_text = f"Zapier SSE Endpoint [current: {masked_url}] (press enter to keep, or type 'edit' to change)"
+                prompt_text = f"Zapier SSE Endpoint [current: {existing_value}] (press enter to keep, or type 'edit' to change)"
                 response = self.ui.prompt(prompt_text, "")
                 if not response:
                     return existing_value
@@ -2538,23 +2689,7 @@ MONGODB_INDEX_NAME = "vector_index"
                 and existing_value.startswith("mongodb+srv://")
                 and "mongodb.net" in existing_value
             ):
-                # Mask part of the connection string for display
-                masked_url = existing_value
-                if ".mongodb.net" in existing_value:
-                    parts = existing_value.split(".")
-                    if len(parts) >= 2:
-                        cluster_part = parts[0].split("//")[
-                            -1
-                        ]  # Get cluster name after mongodb+srv://
-                        if len(cluster_part) > 8:
-                            masked_cluster = (
-                                cluster_part[:4] + "***" + cluster_part[-4:]
-                            )
-                            masked_url = existing_value.replace(
-                                cluster_part, masked_cluster
-                            )
-
-                prompt_text = f"MongoDB Connection String [current: {masked_url}] (press enter to keep, or type 'edit' to change)"
+                prompt_text = f"MongoDB Connection String [current: {existing_value}] (press enter to keep, or type 'edit' to change)"
                 response = self.ui.prompt(prompt_text, "")
                 if not response:
                     return existing_value
@@ -2641,10 +2776,7 @@ MONGODB_INDEX_NAME = "vector_index"
         elif field == "mongodb_password":
             # Check if we have an existing MongoDB password
             if existing_value:
-                masked_password = (
-                    "***" + existing_value[-3:] if len(existing_value) > 3 else "***"
-                )
-                prompt_text = f"MongoDB Database Password [current: {masked_password}] (press enter to keep, or type 'edit' to change)"
+                prompt_text = f"MongoDB Database Password [current: {existing_value}] (press enter to keep, or type 'edit' to change)"
                 response = self.ui.prompt(prompt_text, "")
                 if not response:
                     return existing_value
