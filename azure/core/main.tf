@@ -5,17 +5,6 @@ resource "random_id" "resource_suffix" {
 locals {
   # Only include regions that support MongoDB Atlas M0 free tier
   region_mapping = {
-    # AWS Regions - MongoDB M0 Free Tier Supported
-    "us-east-1"      = "us-east-1"
-    "us-west-2"      = "us-west-2"
-    "sa-east-1"      = "sa-east-1"
-    "ap-southeast-1" = "ap-southeast-1"
-    "ap-southeast-2" = "ap-southeast-2"
-    "ap-south-1"     = "ap-south-1"
-    "ap-east-1"      = "ap-east-1"
-    "ap-northeast-1" = "ap-northeast-1"
-    "ap-northeast-2" = "ap-northeast-2"
-
     # Azure Regions - MongoDB M0 Free Tier Supported
     "eastus2"       = "eastus2"
     "westus"        = "westus"
@@ -28,10 +17,11 @@ locals {
 
   confluent_region = lookup(local.region_mapping, var.cloud_region, var.cloud_region)
   cloud_provider   = "AZURE"
+  prefix           = "streaming-agents"
 }
 
 resource "confluent_environment" "staging" {
-  display_name = "${var.prefix}-env-${random_id.resource_suffix.hex}"
+  display_name = "${local.prefix}-env-${random_id.resource_suffix.hex}"
 
   stream_governance {
     package = "ADVANCED"
@@ -53,7 +43,7 @@ data "confluent_schema_registry_cluster" "sr-cluster" {
 }
 
 resource "confluent_kafka_cluster" "standard" {
-  display_name = "${var.prefix}-cluster-${random_id.resource_suffix.hex}"
+  display_name = "${local.prefix}-cluster-${random_id.resource_suffix.hex}"
   availability = "SINGLE_ZONE"
   cloud        = local.cloud_provider
   region       = local.confluent_region
@@ -68,7 +58,7 @@ resource "confluent_kafka_cluster" "standard" {
 }
 
 resource "confluent_service_account" "app-manager" {
-  display_name = "${var.prefix}-app-manager-${random_id.resource_suffix.hex}"
+  display_name = "${local.prefix}-app-manager-${random_id.resource_suffix.hex}"
   description  = "Service account to manage 'inventory' Kafka cluster"
 
   # lifecycle {
@@ -83,7 +73,7 @@ resource "confluent_role_binding" "app-manager-kafka-cluster-admin" {
 }
 
 resource "confluent_flink_compute_pool" "flinkpool-main" {
-  display_name = "${var.prefix}_standard_compute_pool_${random_id.resource_suffix.hex}"
+  display_name = "${local.prefix}_standard_compute_pool_${random_id.resource_suffix.hex}"
   cloud        = local.cloud_provider
   region       = local.confluent_region
   max_cfu      = 20
@@ -268,7 +258,6 @@ resource "confluent_kafka_acl" "app-manager-read-on-group" {
 module "azure_ai_services" {
   source = "./modules/azure-ai"
 
-  prefix                         = var.prefix
   cloud_region                   = var.cloud_region
   random_id                      = random_id.resource_suffix.hex
   confluent_organization_id      = data.confluent_organization.main.id

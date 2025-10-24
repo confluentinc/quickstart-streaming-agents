@@ -100,6 +100,16 @@ class PrerequisiteManager:
             "macos_install": "brew install --cask docker-desktop",
             "windows_install": "winget install --id Docker.DockerDesktop -e",
         },
+        "pkg-config": {
+            "check_cmd": ["pkg-config", "--version"],
+            "macos_install": "brew install pkg-config",
+            "windows_install": "winget install --id pkgconf -e",
+        },
+        "librdkafka": {
+            "check_cmd": ["pkg-config", "--exists", "rdkafka"],
+            "macos_install": "brew install librdkafka",
+            "windows_install": "See https://github.com/confluentinc/confluent-kafka-python#prerequisites for Windows installation",
+        },
     }
 
     def __init__(self, ui: SetupUI):
@@ -174,6 +184,12 @@ class PrerequisiteManager:
                     self.ui.print_info(
                         f"  {tool}: {self.TOOLS[tool]['windows_install']}"
                     )
+            if "librdkafka" in missing_tools and self.system == "darwin":
+                self.ui.print_info(
+                    "\nNote: After installing librdkafka, if builds fail you may need to set:\n"
+                    "  export C_INCLUDE_PATH=/opt/homebrew/include\n"
+                    "  export LIBRARY_PATH=/opt/homebrew/lib"
+                )
             return False
 
         # Install missing tools
@@ -184,12 +200,24 @@ class PrerequisiteManager:
 
         if failed_installs:
             self.ui.print_error(f"Failed to install: {', '.join(failed_installs)}")
+            if "librdkafka" in failed_installs and self.system == "darwin":
+                self.ui.print_info(
+                    "\nNote: If librdkafka is installed but builds still fail, you may need to set:\n"
+                    "  export C_INCLUDE_PATH=/opt/homebrew/include\n"
+                    "  export LIBRARY_PATH=/opt/homebrew/lib"
+                )
             return False
 
         # Verify installations
         for tool in missing_tools:
             if not self.check_tool(tool):
                 self.ui.print_error(f"Installation verification failed for {tool}")
+                if tool == "librdkafka" and self.system == "darwin":
+                    self.ui.print_info(
+                        "\nNote: If librdkafka is installed but not detected, you may need to set:\n"
+                        "  export C_INCLUDE_PATH=/opt/homebrew/include\n"
+                        "  export LIBRARY_PATH=/opt/homebrew/lib"
+                    )
                 return False
 
         self.ui.print_success("All prerequisites installed successfully!")
@@ -296,6 +324,8 @@ class ConfigurationManager:
         if self.cloud_provider:
             tfvars_configs = self.load_cloud_terraform_configs(self.cloud_provider)
             config.update(tfvars_configs)
+            # Add cloud_provider to config (it's not in tfvars, but needed for validation)
+            config["cloud_provider"] = self.cloud_provider
 
         return config
 
@@ -368,9 +398,8 @@ class ConfigurationManager:
         config = self.load_existing_config()
 
         # Core required fields that indicate a real setup
+        # Note: prefix and cloud_provider are hardcoded in Terraform, not in tfvars
         core_fields = [
-            "prefix",
-            "cloud_provider",
             "confluent_cloud_api_key",
             "confluent_cloud_api_secret",
         ]
@@ -443,9 +472,8 @@ class ConfigurationManager:
         invalid_config = {}
 
         # Core required fields - always needed
+        # Note: prefix and cloud_provider are hardcoded in Terraform
         required_fields = [
-            "prefix",
-            "cloud_provider",
             "cloud_region",
             "confluent_cloud_api_key",
             "confluent_cloud_api_secret",
@@ -465,6 +493,25 @@ class ConfigurationManager:
                 valid_config[field] = value
             else:
                 invalid_config[field] = value
+
+        # Check for optional fields that may exist in terraform.tfvars
+        # These are optional and only validated if they exist
+        optional_fields = [
+            "owner_email",
+            "ZAPIER_SSE_ENDPOINT",
+            "MONGODB_CONNECTION_STRING",
+            "mongodb_username",
+            "mongodb_password",
+        ]
+
+        for field in optional_fields:
+            value = repaired_config.get(field, "")
+            if value:
+                # Optional fields are included in valid_config if they exist and are valid
+                if self.validate_config_value(field, value, repaired_config):
+                    valid_config[field] = value
+                else:
+                    invalid_config[field] = value
 
         return valid_config, invalid_config
 
@@ -513,8 +560,92 @@ class ConfigurationManager:
     def save_field_incrementally(
         self, field: str, value: str, lab_selection: str = None
     ):
-        """Simplified - just pass through (removed incremental complexity)."""
-        pass
+        """Save a single field to the appropriate terraform.tfvars file(s)."""
+        try:
+            # Core fields go to core/terraform.tfvars
+            core_fields = ["cloud_region", "confluent_cloud_api_key", "confluent_cloud_api_secret", "azure_subscription_id", "owner_email"]
+
+            if field in core_fields:
+                # Load existing core config and update
+                core_tfvars_file = self.terraform_dir / "core/terraform.tfvars"
+                existing_config = {}
+                if core_tfvars_file.exists():
+                    existing_config = self._read_existing_tfvars(core_tfvars_file)
+                existing_config[field] = value
+                # Save back to core
+                self.save_credentials_to_tfvars(existing_config)
+
+            # Lab1 fields
+            if field == "ZAPIER_SSE_ENDPOINT":
+                lab1_tfvars = self.terraform_dir / "lab1-tool-calling/terraform.tfvars"
+                if lab1_tfvars.exists() or lab_selection in ["lab1", "all"]:
+                    existing_lab1 = {}
+                    if lab1_tfvars.exists():
+                        existing_lab1 = self._read_existing_tfvars(lab1_tfvars)
+                    existing_lab1[field] = value
+                    # Ensure cloud_region is also there
+                    if "cloud_region" not in existing_lab1:
+                        core_config = self.load_existing_config()
+                        if "cloud_region" in core_config:
+                            existing_lab1["cloud_region"] = core_config["cloud_region"]
+                    # Write lab1 tfvars
+                    self._write_lab_tfvars(lab1_tfvars, existing_lab1, "lab1")
+
+            # Lab2 fields
+            if field in ["MONGODB_CONNECTION_STRING", "mongodb_username", "mongodb_password"]:
+                lab2_tfvars = self.terraform_dir / "lab2-vector-search/terraform.tfvars"
+                if lab2_tfvars.exists() or lab_selection in ["lab2", "all"]:
+                    existing_lab2 = {}
+                    if lab2_tfvars.exists():
+                        existing_lab2 = self._read_existing_tfvars(lab2_tfvars)
+                    existing_lab2[field] = value
+                    # Ensure cloud_region is also there
+                    if "cloud_region" not in existing_lab2:
+                        core_config = self.load_existing_config()
+                        if "cloud_region" in core_config:
+                            existing_lab2["cloud_region"] = core_config["cloud_region"]
+                    # Write lab2 tfvars
+                    self._write_lab_tfvars(lab2_tfvars, existing_lab2, "lab2")
+        except Exception:
+            pass
+
+    def _write_lab_tfvars(self, tfvars_file: Path, config: Dict[str, str], lab_type: str):
+        """Write lab-specific terraform.tfvars file."""
+        try:
+            # Backup existing file
+            if tfvars_file.exists():
+                backup_path = tfvars_file.with_suffix(".tfvars.backup")
+                shutil.copy2(tfvars_file, backup_path)
+
+            # Generate content
+            content = f"""# {lab_type} Configuration
+cloud_region = "{config.get('cloud_region', '')}"
+"""
+
+            if lab_type == "lab1":
+                if "ZAPIER_SSE_ENDPOINT" in config:
+                    content += f'ZAPIER_SSE_ENDPOINT = "{config["ZAPIER_SSE_ENDPOINT"]}"\n'
+            elif lab_type == "lab2":
+                if "MONGODB_CONNECTION_STRING" in config:
+                    content += f'MONGODB_CONNECTION_STRING = "{config["MONGODB_CONNECTION_STRING"]}"\n'
+                if "mongodb_username" in config:
+                    content += f'mongodb_username = "{config["mongodb_username"]}"\n'
+                if "mongodb_password" in config:
+                    content += f'mongodb_password = "{config["mongodb_password"]}"\n'
+                # Add MongoDB defaults
+                content += """
+# Default MongoDB settings
+MONGODB_DATABASE = "vector_search"
+MONGODB_COLLECTION = "documents"
+MONGODB_INDEX_NAME = "vector_index"
+"""
+
+            # Write the file
+            tfvars_file.parent.mkdir(parents=True, exist_ok=True)
+            with open(tfvars_file, "w") as f:
+                f.write(content)
+        except Exception:
+            pass
 
     def save_credentials_to_tfvars(self, config: Dict[str, str]):
         """Save configuration (including credentials) to terraform.tfvars files immediately."""
@@ -534,14 +665,13 @@ class ConfigurationManager:
 
             # Always save what we have so far to core terraform.tfvars
             # Only include fields that have values
+            # Note: prefix and cloud_provider are hardcoded in Terraform, never write them
             core_config = {}
             core_fields = [
-                "prefix",
-                "cloud_provider",
                 "cloud_region",
                 "confluent_cloud_api_key",
                 "confluent_cloud_api_secret",
-                "azure_subscription_id",
+                "azure_subscription_id",  # Only used for Azure, ignored for AWS
             ]
 
             for field in core_fields:
@@ -576,22 +706,24 @@ class ConfigurationManager:
         """Helper to write terraform.tfvars content."""
         try:
             # Generate content based on module type
+            # Generate content based on module type
+            # Note: prefix and cloud_provider are hardcoded in Terraform for both clouds
             if module_name == "Core":
                 content = f"""# Core Infrastructure Configuration
-prefix = "{config['prefix']}"
-cloud_provider = "{config['cloud_provider']}"
 cloud_region = "{config['cloud_region']}"
 confluent_cloud_api_key = "{config['confluent_cloud_api_key']}"
 confluent_cloud_api_secret = "{config['confluent_cloud_api_secret']}"
 """
-                if "azure_subscription_id" in config:
-                    content += (
-                        f'azure_subscription_id = "{config["azure_subscription_id"]}"\n'
-                    )
+                # Azure needs subscription ID
+                if "azure_subscription_id" in config and config["azure_subscription_id"]:
+                    content += f'azure_subscription_id = "{config["azure_subscription_id"]}"\n'
+
+                # Optional owner_email for tagging
+                if "owner_email" in config and config["owner_email"]:
+                    content += f'owner_email = "{config["owner_email"]}"\n'
             else:
-                # Lab-specific content would go here
+                # Lab-specific content - unified format for both clouds
                 content = f"""# {module_name} Configuration
-prefix = "{config['prefix']}"
 cloud_region = "{config['cloud_region']}"
 """
 
@@ -706,15 +838,16 @@ cloud_region = "{config['cloud_region']}"
                 "confluent_cloud_api_key": "test-key",  # pragma: allowlist secret
                 "confluent_cloud_api_secret": "test-secret",  # pragma: allowlist secret
                 "ZAPIER_SSE_ENDPOINT": "https://mcp.zapier.com/api/mcp/s/test-api-key/sse",
+                "owner_email": "",
             }
             for key, default_value in defaults.items():
                 config[key] = existing_config.get(key, default_value)
             return config
 
-        # Prefix (using default without prompting)
+        # Prefix is hardcoded in Terraform, set internally but don't write to tfvars
         config["prefix"] = "streaming-agents"
 
-        # Cloud provider
+        # Cloud provider (keep in config for internal use, but don't write to tfvars)
         default_provider = existing_config.get("cloud_provider", "azure").lower()
         while True:
             provider = self.ui.prompt(
@@ -776,7 +909,8 @@ cloud_region = "{config['cloud_region']}"
             if confluent_logged_in and self.ui.confirm(
                 "Auto-generate Confluent API keys using CLI?"
             ):
-                api_key, api_secret = self.generate_confluent_api_keys(config["prefix"])
+                # Use hardcoded prefix for API key generation
+                api_key, api_secret = self.generate_confluent_api_keys("streaming-agents")
                 if api_key and api_secret:
                     config["confluent_cloud_api_key"] = api_key
                     config["confluent_cloud_api_secret"] = api_secret
@@ -813,6 +947,14 @@ cloud_region = "{config['cloud_region']}"
             self.ui.print_error(
                 "Invalid Zapier SSE endpoint format. Expected: https://mcp.zapier.com/api/mcp/s/<<API-key>>/sse"
             )
+
+        # Owner email (optional, for tagging cloud resources)
+        self.ui.print_info("For proper tagging of cloud resources (optional)")
+        default_email = existing_config.get("owner_email", "")
+        owner_email = self.ui.prompt("Email", default_email)
+        config["owner_email"] = owner_email
+        # Save config immediately after owner email
+        self.save_credentials_to_tfvars(config)
 
         return config
 
@@ -1182,6 +1324,128 @@ class TerraformManager:
 
         return success
 
+    def destroy(self, cloud_provider: str = None) -> bool:
+        """Run terraform destroy."""
+        self.ui.print_info("Destroying infrastructure with Terraform...")
+
+        # Build destroy command with dummy variables to avoid prompts
+        # Terraform destroy uses state file, not variables, so dummy values are fine
+        destroy_args = ["destroy", "--auto-approve"]
+
+        # Try to get cloud_region from various sources
+        cloud_region = None
+
+        # 1. Try current module's terraform output
+        try:
+            result = subprocess.run(
+                ["terraform", "output", "-raw", "cloud_region"],
+                cwd=self.terraform_dir,
+                capture_output=True,
+                text=True,
+                timeout=10
+            )
+            if result.returncode == 0 and result.stdout.strip():
+                cloud_region = result.stdout.strip()
+        except Exception:
+            pass
+
+        # 2. If not found, try to get from core module (for labs)
+        if not cloud_region:
+            core_dir = Path(self.terraform_dir).parent / "core"
+            if core_dir.exists():
+                try:
+                    result = subprocess.run(
+                        ["terraform", "output", "-raw", "cloud_region"],
+                        cwd=core_dir,
+                        capture_output=True,
+                        text=True,
+                        timeout=10
+                    )
+                    if result.returncode == 0 and result.stdout.strip():
+                        cloud_region = result.stdout.strip()
+                except Exception:
+                    pass
+
+        # 3. If still not found, try to read from state file
+        if not cloud_region:
+            state_file = Path(self.terraform_dir) / "terraform.tfstate"
+            if state_file.exists():
+                try:
+                    with open(state_file, 'r') as f:
+                        state_data = json.load(f)
+                        outputs = state_data.get('outputs', {})
+                        if 'cloud_region' in outputs:
+                            cloud_region = outputs['cloud_region'].get('value')
+                except Exception:
+                    pass
+
+        # 4. If all else fails, prompt the user
+        if not cloud_region:
+            self.ui.print_warning("Could not determine cloud region from Terraform state.")
+            cloud_region = self.ui.prompt("Please enter the cloud region (e.g., us-east-1)", "us-east-1")
+
+        # Determine which lab/module is being destroyed based on terraform_dir
+        terraform_dir_name = Path(self.terraform_dir).name
+
+        # Add variable flags based on which module is being destroyed
+        var_flags = [f"-var=cloud_region={cloud_region}"]
+
+        if terraform_dir_name == "core":
+            # Core needs REAL credentials to authenticate with Confluent Cloud API
+            # Try to load from terraform.tfvars
+            tfvars_file = Path(self.terraform_dir) / "terraform.tfvars"
+            confluent_api_key = None
+            confluent_api_secret = None
+
+            if tfvars_file.exists():
+                try:
+                    with open(tfvars_file, 'r') as f:
+                        for line in f:
+                            line = line.strip()
+                            if line.startswith('confluent_cloud_api_key'):
+                                confluent_api_key = line.split('=', 1)[1].strip(' "\'')
+                            elif line.startswith('confluent_cloud_api_secret'):
+                                confluent_api_secret = line.split('=', 1)[1].strip(' "\'')
+                except Exception:
+                    pass
+
+            # If we couldn't load from file, prompt user
+            if not confluent_api_key or not confluent_api_secret:
+                self.ui.print_warning("Core module requires Confluent Cloud credentials for destroy operation.")
+                confluent_api_key = self.ui.prompt("Confluent Cloud API Key", "")
+                confluent_api_secret = self.ui.prompt("Confluent Cloud API Secret", "")
+
+            var_flags.extend([
+                f"-var=confluent_cloud_api_key={confluent_api_key}",
+                f"-var=confluent_cloud_api_secret={confluent_api_secret}",
+            ])
+        elif terraform_dir_name == "lab1-tool-calling":
+            # Lab1 needs: cloud_region, ZAPIER_SSE_ENDPOINT (dummy is fine, uses remote state)
+            var_flags.extend([
+                "-var=ZAPIER_SSE_ENDPOINT=dummy",
+            ])
+        elif terraform_dir_name == "lab2-vector-search":
+            # Lab2 needs: cloud_region, MONGODB_CONNECTION_STRING, mongodb_username, mongodb_password
+            # Dummy values are fine since lab2 uses remote state for Confluent resources
+            var_flags.extend([
+                "-var=MONGODB_CONNECTION_STRING=mongodb://dummy",
+                "-var=mongodb_username=dummy",
+                "-var=mongodb_password=dummy",
+            ])
+
+        destroy_args.extend(var_flags)
+
+        success, output = self.run_terraform_command(
+            destroy_args, show_output=True, cloud_provider=cloud_provider
+        )
+
+        if success:
+            self.ui.print_success("Infrastructure destroyed successfully!")
+        else:
+            self.ui.print_error("Terraform destruction failed")
+
+        return success
+
 
 class StreamingAgentsSetup:
     """Main setup orchestrator."""
@@ -1214,6 +1478,8 @@ class StreamingAgentsSetup:
         # Update config manager paths
         self.config_manager.set_config_file_path(cloud_provider)
         self.config_manager.terraform_dir = self.terraform_dir
+        # Update terraform manager path
+        self.terraform.terraform_dir = self.core_terraform_dir
 
     def check_core_deployment(self) -> bool:
         """Check if Core Terraform infrastructure is deployed with required outputs."""
@@ -1267,9 +1533,9 @@ class StreamingAgentsSetup:
 
         # Write core terraform.tfvars
         core_tfvars_file = self.core_terraform_dir / "terraform.tfvars"
+
+        # Both clouds have prefix and cloud_provider hardcoded in Terraform
         core_config = {
-            "prefix": config["prefix"],
-            "cloud_provider": config["cloud_provider"],
             "cloud_region": config["cloud_region"],
             "confluent_cloud_api_key": config["confluent_cloud_api_key"],
             "confluent_cloud_api_secret": config["confluent_cloud_api_secret"],
@@ -1346,22 +1612,24 @@ class StreamingAgentsSetup:
 
     def generate_core_tfvars_content(self, config: Dict[str, str]) -> str:
         """Generate terraform.tfvars content for Core module."""
+        # Both clouds have prefix and cloud_provider hardcoded in Terraform
         content = f"""# Core Infrastructure Configuration
-prefix = "{config['prefix']}"
-cloud_provider = "{config['cloud_provider']}"
 cloud_region = "{config['cloud_region']}"
 confluent_cloud_api_key = "{config['confluent_cloud_api_key']}"
 confluent_cloud_api_secret = "{config['confluent_cloud_api_secret']}"
 """
-        if "azure_subscription_id" in config:
+        if "owner_email" in config and config["owner_email"]:
+            content += f'owner_email = "{config["owner_email"]}"\n'
+
+        if "azure_subscription_id" in config and config["azure_subscription_id"]:
             content += f'azure_subscription_id = "{config["azure_subscription_id"]}"\n'
 
         return content
 
     def generate_lab_tfvars_content(self, config: Dict[str, str], lab_type: str) -> str:
         """Generate terraform.tfvars content for lab modules."""
+        # Both clouds have prefix hardcoded in Terraform
         base_content = f"""# {lab_type} Configuration
-prefix = "{config['prefix']}"
 cloud_region = "{config['cloud_region']}"
 """
 
@@ -1402,8 +1670,9 @@ MONGODB_INDEX_NAME = "vector_index"
 
             # Write lab-specific terraform.tfvars
             lab_tfvars_file = lab_dir / "terraform.tfvars"
+
+            # Both clouds have prefix hardcoded in Terraform
             lab_config = {
-                "prefix": config["prefix"],
                 "cloud_region": config["cloud_region"],
             }
 
@@ -1464,11 +1733,11 @@ MONGODB_INDEX_NAME = "vector_index"
             return SetupState.CONFIGURATION_INVALID
 
         # Check if terraform is initialized
-        if not (self.terraform_dir / ".terraform").exists():
+        if not (self.core_terraform_dir / ".terraform").exists():
             return SetupState.TERRAFORM_NOT_INITIALIZED
 
         # Check if we have a terraform state (deployment completed)
-        terraform_state = self.terraform_dir / "terraform.tfstate"
+        terraform_state = self.core_terraform_dir / "terraform.tfstate"
         if terraform_state.exists():
             try:
                 with open(terraform_state, "r") as f:
@@ -1518,7 +1787,13 @@ MONGODB_INDEX_NAME = "vector_index"
             azure_tfvars = self.config_manager.parse_tfvars_file(azure_config)
 
         # Determine which config is more complete and valid
-        aws_valid = aws_tfvars.get("cloud_provider") == "aws" and len(aws_tfvars) > 1
+        # For AWS, cloud_provider is hardcoded in Terraform so it won't be in tfvars
+        # Check for AWS by looking for cloud_region and at least one other field
+        aws_valid = (
+            aws_config.exists() and
+            "cloud_region" in aws_tfvars and
+            len(aws_tfvars) >= 2
+        )
         azure_valid = (
             azure_tfvars.get("cloud_provider") == "azure" and len(azure_tfvars) > 1
         )
@@ -1661,8 +1936,9 @@ MONGODB_INDEX_NAME = "vector_index"
         self.ui.print_info("Running in validation mode...")
         valid_config, invalid_config = self.config_manager.get_config_status()
 
-        # Core required fields are: prefix, cloud_provider, cloud_region, confluent_cloud_api_key, confluent_cloud_api_secret
-        core_required_count = 5
+        # Core required fields are: cloud_region, confluent_cloud_api_key, confluent_cloud_api_secret
+        # Note: prefix and cloud_provider are hardcoded in Terraform
+        core_required_count = 3
         if len(valid_config) >= core_required_count and len(invalid_config) == 0:
             self.ui.print_success("✅ All configuration is valid")
             return True
@@ -1730,14 +2006,9 @@ MONGODB_INDEX_NAME = "vector_index"
         self.ui.print_info("🏗️  Setting up Terraform infrastructure...")
         self.ui.print_info("✅ Using existing valid configuration:")
 
-        # Show current config (masked)
+        # Show current config (unmasked)
         for key, value in valid_config.items():
-            if "api_" in key.lower() or "secret" in key.lower():
-                self.ui.print_success(
-                    f"  {key}: ***{value[-4:] if len(value) > 4 else '***'}"
-                )
-            else:
-                self.ui.print_success(f"  {key}: {value}")
+            self.ui.print_success(f"  {key}: {value}")
 
         # Get lab selection
         lab_selection = self.config_manager.prompt_for_lab_selection()
@@ -1797,11 +2068,112 @@ MONGODB_INDEX_NAME = "vector_index"
         """Handle already completed setup."""
         self.ui.print_success("🎉 Infrastructure is already deployed!")
 
-        if self.ui.confirm("Would you like to see the next steps?", default=True):
-            self.show_next_steps()
+        self.ui.print_info("\nWhat would you like to do?")
 
-        if self.ui.confirm("Redeploy infrastructure?", default=False):
+        deploy_options = {
+            "1": ("core", "(Re)deploy Core infrastructure"),
+            "2": ("lab1", "(Re)deploy Lab1"),
+            "3": ("lab2", "(Re)deploy Lab2"),
+            "4": ("all", "(Re)deploy All"),
+        }
+
+        for key, (_, description) in deploy_options.items():
+            print(f"  {key}. {description}")
+
+        choice = self.ui.prompt("Select option (1-4, or press Enter to exit)", "").strip()
+
+        if not choice:
+            return True
+
+        if choice not in deploy_options:
+            self.ui.print_error("Invalid selection")
+            return True
+
+        selection, description = deploy_options[choice]
+        self.ui.print_success(f"Selected: {description}")
+
+        # Load complete config including lab-specific credentials
+        complete_config = self.config_manager.load_existing_config()
+        valid_config, invalid_config = self.config_manager.get_config_status()
+
+        # Check for missing lab-specific fields if labs are selected
+        missing_fields = []
+        if selection in ["lab1", "all"]:
+            if "ZAPIER_SSE_ENDPOINT" not in complete_config or not complete_config["ZAPIER_SSE_ENDPOINT"]:
+                missing_fields.append("ZAPIER_SSE_ENDPOINT")
+        if selection in ["lab2", "all"]:
+            for field in ["MONGODB_CONNECTION_STRING", "mongodb_username", "mongodb_password"]:
+                if field not in complete_config or not complete_config[field]:
+                    missing_fields.append(field)
+
+        # If missing fields, redirect to config flow (which shows the menu)
+        if missing_fields:
+            self.ui.print_warning(f"⚠️ Missing required configuration: {', '.join(missing_fields)}")
+            return self.handle_config_and_deploy(
+                "🔧 Lab-specific configuration needed...",
+                existing_valid=valid_config,
+                lab_selection=selection,
+            )
+
+        # Show configuration review menu before deploying
+        menu_choice = self.show_final_config_menu(valid_config, invalid_config)
+
+        if menu_choice == "quit":
+            return True
+        elif menu_choice == "reset":
+            # Reset and start fresh
+            self.config_manager.save_credentials_to_tfvars({})
+            if self.config_manager.config_file and self.config_manager.config_file.exists():
+                self.config_manager.config_file.unlink()
+            self.ui.print_success("Configuration reset. Please run deploy again.")
+            return True
+        elif menu_choice.startswith("edit_"):
+            # User wants to edit a field - extract field name and prompt for new value
+            field_to_edit = menu_choice[5:]  # Remove "edit_" prefix
+
+            self.ui.print_header("Edit Configuration", f"Editing: {field_to_edit}")
+            new_value = self.prompt_for_field(field_to_edit, complete_config, selection)
+
+            if new_value:
+                complete_config[field_to_edit] = new_value
+                # Save the updated field to appropriate tfvars file(s)
+                self.config_manager.save_field_incrementally(field_to_edit, new_value, selection)
+
+                # Test API keys if both are now present
+                if field_to_edit in ["confluent_cloud_api_key", "confluent_cloud_api_secret"]:
+                    api_key = complete_config.get("confluent_cloud_api_key")
+                    api_secret = complete_config.get("confluent_cloud_api_secret")
+                    if api_key and api_secret:
+                        valid, message = self.config_manager.test_confluent_api_keys(api_key, api_secret)
+                        if valid:
+                            self.ui.print_success(f"✅ {message}")
+                        else:
+                            self.ui.print_error(f"❌ {message}")
+
+                self.ui.print_success(f"Updated {field_to_edit}")
+            else:
+                self.ui.print_warning("No changes made")
+
+            # Show menu again with updated config
+            return self.handle_completed_setup()
+
+        # Reload config in case it was edited
+        complete_config = self.config_manager.load_existing_config()
+
+        if selection == "core":
+            # Redeploy core only with current config
             return self.handle_deployment()
+        elif selection in ["lab1", "lab2", "all"]:
+            # Deploy core if needed, then deploy selected labs
+            if not self.deploy_core_if_needed(complete_config):
+                return False
+
+            if not self.deploy_labs(selection, complete_config):
+                return False
+
+            self.ui.print_success("🎉 Deployment completed successfully!")
+            self.show_next_steps()
+            return True
 
         return True
 
@@ -1814,20 +2186,70 @@ MONGODB_INDEX_NAME = "vector_index"
     def show_configuration_status(
         self, valid_config: Dict[str, str], invalid_config: Dict[str, str]
     ):
-        """Simplified configuration status display."""
+        """Display configuration status with all values visible."""
+        self.ui.print_header("Current Configuration")
+
         if valid_config:
-            self.ui.print_success(f"✅ {len(valid_config)} fields configured")
+            self.ui.print_success(f"✅ {len(valid_config)} fields configured:")
+            for key, value in sorted(valid_config.items()):
+                if key not in ["prefix", "cloud_provider"]:  # Skip hardcoded fields
+                    self.ui.print_info(f"  {key}: {value}")
+
         if invalid_config:
-            self.ui.print_warning(f"⚠️ {len(invalid_config)} fields need attention")
+            self.ui.print_warning(f"\n⚠️ {len(invalid_config)} fields need attention:")
+            for key in sorted(invalid_config.keys()):
+                self.ui.print_error(f"  {key}")
 
     def show_final_config_menu(
         self, valid_config: Dict[str, str], invalid_config: Dict[str, str]
     ) -> str:
-        """Simplified configuration review."""
+        """Interactive configuration review and editing menu."""
         self.show_configuration_status(valid_config, invalid_config)
-        if self.ui.confirm("Continue with deployment?", default=True):
-            return "continue"
-        return "quit"
+
+        # Build menu of editable fields
+        all_config = {**valid_config, **invalid_config}
+        editable_fields = [k for k in sorted(all_config.keys()) if k not in ["prefix", "cloud_provider"]]
+
+        print("\n" + "="*50)
+        print("Options:")
+        print("  c) Continue with deployment")
+        print("  e) Edit a specific field")
+        print("  r) Reset all configuration and start fresh")
+        print("  q) Quit")
+        print("="*50)
+
+        while True:
+            choice = self.ui.prompt("Select an option", "c").lower().strip()
+
+            if choice == "c":
+                return "continue"
+            elif choice == "q":
+                return "quit"
+            elif choice == "r":
+                if self.ui.confirm("Are you sure you want to reset all configuration?", default=False):
+                    return "reset"
+            elif choice == "e":
+                # Show editable fields
+                print("\nEditable fields:")
+                for i, field in enumerate(editable_fields, 1):
+                    current_value = all_config.get(field, "")
+                    print(f"  {i}) {field}: {current_value}")
+
+                field_choice = self.ui.prompt("Enter field number to edit (or 'b' to go back)", "")
+                if field_choice.lower() == "b":
+                    continue
+
+                try:
+                    field_idx = int(field_choice) - 1
+                    if 0 <= field_idx < len(editable_fields):
+                        field_to_edit = editable_fields[field_idx]
+                        return f"edit_{field_to_edit}"
+                    else:
+                        self.ui.print_error("Invalid field number")
+                except ValueError:
+                    self.ui.print_error("Please enter a valid number")
+            else:
+                self.ui.print_error("Invalid option. Please choose c, e, r, or q")
 
     def smart_configuration_prompt(
         self,
@@ -1842,14 +2264,17 @@ MONGODB_INDEX_NAME = "vector_index"
         # Start with valid existing config
         config = existing_valid.copy()
 
+        # Ensure cloud_provider is in config (needed for region selection)
+        if self.config_manager.cloud_provider:
+            config["cloud_provider"] = self.config_manager.cloud_provider
+
         # Merge in environment credentials
         env_creds = self.config_manager.detect_environment_credentials()
         config.update(env_creds)
 
         # Determine required fields based on lab selection
+        # Note: prefix and cloud_provider are hardcoded in Terraform
         core_fields = [
-            "prefix",
-            "cloud_provider",
             "cloud_region",
             "confluent_cloud_api_key",
             "confluent_cloud_api_secret",
@@ -1870,53 +2295,39 @@ MONGODB_INDEX_NAME = "vector_index"
         ]
         invalid_fields = list(fix_invalid.keys()) if fix_invalid else []
 
-        # If we have all fields valid, show the final review menu
-        if not missing_fields and not invalid_fields:
-            choice = self.show_final_config_menu(existing_valid, {})
-        elif len(missing_fields) + len(invalid_fields) == len(all_fields):
-            # All fields need attention - start fresh
-            choice = "continue"
+        # Always show the menu if we have any existing configuration
+        if existing_valid or invalid_fields:
+            # Build combined config for display
+            all_config_for_display = existing_valid.copy()
+            for field in invalid_fields:
+                all_config_for_display[field] = fix_invalid[field]
+
+            choice = self.show_final_config_menu(existing_valid, dict.fromkeys(missing_fields, ""))
         else:
-            # Some fields are valid, some need work - show current status and continue
-            self.ui.print_header(
-                "Configuration Status", "Continuing with missing/invalid values"
-            )
-            self.show_configuration_status(existing_valid, fix_invalid or {})
-            if self.ui.confirm("Continue to complete the configuration?", default=True):
-                choice = "continue"
-            else:
-                choice = "quit"
+            # First run with no config - just continue
+            choice = "continue"
 
         if choice == "quit":
             return None
         elif choice == "reset":
-            # Start completely fresh
-            config = {}
-            fix_invalid = {
-                "prefix": "",
-                "cloud_provider": "",
-                "cloud_region": "",
-                "confluent_cloud_api_key": "",
-                "confluent_cloud_api_secret": "",
-                "ZAPIER_SSE_ENDPOINT": "",
-            }
+            # Start completely fresh - clear config and recursively call
+            self.config_manager.save_credentials_to_tfvars({})
+            # Clear the config file too
+            if self.config_manager.config_file and self.config_manager.config_file.exists():
+                self.config_manager.config_file.unlink()
+            self.ui.print_success("Configuration reset. Starting fresh...")
+            return self.smart_configuration_prompt(lab_selection=lab_selection)
         elif choice.startswith("edit_"):
-            # Edit specific field
-            field_num = int(choice.split("_")[1])
-            config_fields = [
-                "prefix",
-                "cloud_provider",
-                "cloud_region",
-                "confluent_cloud_api_key",
-                "confluent_cloud_api_secret",
-                "ZAPIER_SSE_ENDPOINT",
-            ]
-            field_to_edit = config_fields[field_num - 1]
+            # Edit specific field - extract field name after "edit_"
+            field_to_edit = choice[5:]  # Remove "edit_" prefix
 
             self.ui.print_header("Edit Configuration", f"Editing: {field_to_edit}")
             new_value = self.prompt_for_field(field_to_edit, config, lab_selection)
             if new_value:
                 config[field_to_edit] = new_value
+                # Save the updated field
+                self.config_manager.save_field_incrementally(field_to_edit, new_value, lab_selection)
+
                 # Test API keys if both are now present
                 if field_to_edit in [
                     "confluent_cloud_api_key",
@@ -1934,15 +2345,24 @@ MONGODB_INDEX_NAME = "vector_index"
                             self.ui.print_error(f"❌ {message}")
 
                 self.ui.print_success(f"Updated {field_to_edit}")
-                return config
+                # Show menu again with updated config
+                return self.smart_configuration_prompt(
+                    lab_selection=lab_selection,
+                    existing_valid=config,
+                    fix_invalid={}
+                )
             else:
                 self.ui.print_error("❌ Invalid value entered")
-                return None
+                # Return to menu
+                return self.smart_configuration_prompt(
+                    lab_selection=lab_selection,
+                    existing_valid=existing_valid,
+                    fix_invalid=fix_invalid
+                )
 
         # Continue mode: Handle each required field that needs attention
+        # Note: prefix and cloud_provider are hardcoded in Terraform
         required_fields = [
-            "prefix",
-            "cloud_provider",
             "cloud_region",
             "confluent_cloud_api_key",
             "confluent_cloud_api_secret",
@@ -1955,14 +2375,7 @@ MONGODB_INDEX_NAME = "vector_index"
             )
             self.ui.print_info("✅ Using existing valid configuration:")
             for key, value in existing_valid.items():
-                if key not in [
-                    "confluent_cloud_api_key",
-                    "confluent_cloud_api_secret",
-                    "ZAPIER_SSE_ENDPOINT",
-                ]:
-                    self.ui.print_success(f"  {key}: {value}")
-                else:
-                    self.ui.print_success(f"  {key}: ***configured***")
+                self.ui.print_success(f"  {key}: {value}")
 
         for field in required_fields:
             if field not in config or field in fix_invalid:
@@ -1991,6 +2404,12 @@ MONGODB_INDEX_NAME = "vector_index"
             else:
                 self.ui.print_warning(f"⚠️ {message} (continuing anyway)")
 
+        # Prompt for optional owner_email if not present (for cloud resource tagging)
+        if "owner_email" not in config:
+            value = self.prompt_for_field("owner_email", config, lab_selection)
+            if value:
+                config["owner_email"] = value
+
         # Save credentials to terraform.tfvars immediately once we have them
         self.config_manager.save_credentials_to_tfvars(config)
 
@@ -2001,13 +2420,7 @@ MONGODB_INDEX_NAME = "vector_index"
     ) -> str:
         """Prompt for a specific configuration field with existing value support."""
         existing_value = config.get(field, "")
-        if field == "prefix":
-            # Use default prefix without prompting
-            value = "streaming-agents"
-            self.config_manager.save_field_incrementally(field, value, lab_selection)
-            return value
-
-        elif field == "cloud_provider":
+        if field == "cloud_provider":
             default_value = (
                 existing_value
                 if existing_value and existing_value in ["aws", "azure"]
@@ -2097,7 +2510,7 @@ MONGODB_INDEX_NAME = "vector_index"
             if existing_value and self.config_manager.validate_config_value(
                 field, existing_value, config
             ):
-                prompt_text = f"Confluent Cloud API Key [current: ***{existing_value[-4:]}] (press enter to keep, or type 'edit' to change)"
+                prompt_text = f"Confluent Cloud API Key [current: {existing_value}] (press enter to keep, or type 'edit' to change)"
                 response = self.ui.prompt(prompt_text, "")
                 if not response:
                     return existing_value
@@ -2130,8 +2543,9 @@ MONGODB_INDEX_NAME = "vector_index"
                     default=True,
                 ):
                     self.ui.print_info("🔑 Generating API keys...")
+                    # Use hardcoded prefix for API key generation
                     key, secret = self.config_manager.generate_confluent_api_keys(
-                        config.get("prefix", "streaming-agents")
+                        "streaming-agents"
                     )
                     if key and secret:
                         config[
@@ -2175,7 +2589,7 @@ MONGODB_INDEX_NAME = "vector_index"
             if existing_value and self.config_manager.validate_config_value(
                 field, existing_value, config
             ):
-                prompt_text = f"Confluent Cloud API Secret [current: ***{existing_value[-4:]}] (press enter to keep, or type 'edit' to change)"
+                prompt_text = f"Confluent Cloud API Secret [current: {existing_value}] (press enter to keep, or type 'edit' to change)"
                 response = self.ui.prompt(prompt_text, "")
                 if not response:
                     return existing_value
@@ -2215,23 +2629,7 @@ MONGODB_INDEX_NAME = "vector_index"
             if existing_value and self.config_manager.validate_zapier_url(
                 existing_value
             ):
-                # Mask the API key portion for display
-                masked_url = existing_value
-                if "/s/" in existing_value and "/sse" in existing_value:
-                    start = existing_value.find("/s/") + 3
-                    end = existing_value.find("/sse")
-                    if start < end:
-                        api_key = existing_value[start:end]
-                        masked_key = (
-                            api_key[:4] + "***" + api_key[-4:]
-                            if len(api_key) > 8
-                            else "***"
-                        )
-                        masked_url = (
-                            existing_value[:start] + masked_key + existing_value[end:]
-                        )
-
-                prompt_text = f"Zapier SSE Endpoint [current: {masked_url}] (press enter to keep, or type 'edit' to change)"
+                prompt_text = f"Zapier SSE Endpoint [current: {existing_value}] (press enter to keep, or type 'edit' to change)"
                 response = self.ui.prompt(prompt_text, "")
                 if not response:
                     return existing_value
@@ -2296,23 +2694,7 @@ MONGODB_INDEX_NAME = "vector_index"
                 and existing_value.startswith("mongodb+srv://")
                 and "mongodb.net" in existing_value
             ):
-                # Mask part of the connection string for display
-                masked_url = existing_value
-                if ".mongodb.net" in existing_value:
-                    parts = existing_value.split(".")
-                    if len(parts) >= 2:
-                        cluster_part = parts[0].split("//")[
-                            -1
-                        ]  # Get cluster name after mongodb+srv://
-                        if len(cluster_part) > 8:
-                            masked_cluster = (
-                                cluster_part[:4] + "***" + cluster_part[-4:]
-                            )
-                            masked_url = existing_value.replace(
-                                cluster_part, masked_cluster
-                            )
-
-                prompt_text = f"MongoDB Connection String [current: {masked_url}] (press enter to keep, or type 'edit' to change)"
+                prompt_text = f"MongoDB Connection String [current: {existing_value}] (press enter to keep, or type 'edit' to change)"
                 response = self.ui.prompt(prompt_text, "")
                 if not response:
                     return existing_value
@@ -2399,10 +2781,7 @@ MONGODB_INDEX_NAME = "vector_index"
         elif field == "mongodb_password":
             # Check if we have an existing MongoDB password
             if existing_value:
-                masked_password = (
-                    "***" + existing_value[-3:] if len(existing_value) > 3 else "***"
-                )
-                prompt_text = f"MongoDB Database Password [current: {masked_password}] (press enter to keep, or type 'edit' to change)"
+                prompt_text = f"MongoDB Database Password [current: {existing_value}] (press enter to keep, or type 'edit' to change)"
                 response = self.ui.prompt(prompt_text, "")
                 if not response:
                     return existing_value
@@ -2435,14 +2814,37 @@ MONGODB_INDEX_NAME = "vector_index"
                 )
             return value if value else ""
 
+        elif field == "owner_email":
+            # Optional field for cloud resource tagging
+            if existing_value:
+                prompt_text = f"Owner Email (optional, for cloud resource tagging) [current: {existing_value}] (press enter to keep, or type 'edit' to change)"
+                response = self.ui.prompt(prompt_text, "")
+                if not response:
+                    return existing_value
+                elif response.lower() != "edit":
+                    # User entered a new email directly
+                    if response.strip():
+                        self.config_manager.save_field_incrementally(
+                            field, response.strip(), lab_selection
+                        )
+                        return response.strip()
+
+            self.ui.print_info("Owner Email (optional, for tagging cloud resources)")
+            default_value = existing_value if existing_value else ""
+            value = self.ui.prompt("Email", default_value)
+            if value:
+                self.config_manager.save_field_incrementally(
+                    field, value, lab_selection
+                )
+            return value if value else ""
+
         return ""
 
     def show_next_steps(self):
         """Show next steps after successful deployment."""
         self.ui.print_info("Next steps:")
-        self.ui.print_info("1. Set up Flink MCP connection (see mcp_commands.txt)")
         self.ui.print_info(
-            "2. Generate sample data (cd terraform/data-gen && ./run.sh)"
+            "1. Lab1: Generate sample data (uv run lab1_datagen)"
         )
         self.ui.print_info("3. Proceed to Lab1: Price Matching Using Tool Calling")
 
@@ -2451,7 +2853,7 @@ def main():
     """Main entry point."""
     # Simple argument parsing - hidden advanced options
     parser = argparse.ArgumentParser(
-        description="🚀 Streaming Agents Quickstart Setup\n\nJust run 'python setup.py' - the script will intelligently detect what needs to be done!",
+        description="🚀 Streaming Agents Quickstart Setup\n\nJust run 'uv run deploy' - the script will intelligently detect what needs to be done!",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         add_help=False,  # Custom help to hide advanced options
     )
@@ -2475,20 +2877,20 @@ def main():
         print("🚀 Streaming Agents Quickstart Setup")
         print("\nUsage:")
         print(
-            "  python setup.py          # Intelligent setup - detects current state and continues"
+            "  uv run deploy          # Intelligent setup - detects current state and continues"
         )
         print("\nThe script will automatically:")
         print("  • Install missing prerequisites")
         print("  • Resume interrupted configurations")
         print("  • Only prompt for missing/invalid values")
         print("  • Deploy infrastructure when ready")
-        print("\nFor advanced options: python setup.py --advanced-help")
+        print("\nFor advanced options: uv run deploy --advanced-help")
         return
 
     if args.advanced_help:
         print("🚀 Streaming Agents Quickstart Setup - Advanced Options")
         print("\nBasic usage:")
-        print("  python setup.py          # Intelligent setup (recommended)")
+        print("  uv run deploy            # Intelligent setup (recommended)")
         print("\nAdvanced options:")
         print("  --reset                  # Clear all configuration and start fresh")
         print("  --dry-run                # Validate configuration without deploying")
@@ -2511,6 +2913,106 @@ def main():
     success = setup.run()
 
     sys.exit(0 if success else 1)
+
+
+def destroy_main():
+    """Main entry point for destroy command."""
+    ui = SetupUI()
+    root_dir = Path(__file__).parent
+
+    ui.print_header("🗑️  Streaming Agents Infrastructure Destruction")
+    ui.print_warning(
+        "This will destroy Terraform infrastructure and cannot be undone!"
+    )
+
+    # Prompt for cloud provider
+    ui.print_info("\nSelect cloud provider:")
+    print("  1) AWS")
+    print("  2) Azure")
+
+    choice = ui.prompt("Enter choice (1-2)", "1").strip()
+    if choice == "1":
+        cloud_provider = "aws"
+    elif choice == "2":
+        cloud_provider = "azure"
+    else:
+        ui.print_error("Invalid choice. Exiting.")
+        sys.exit(1)
+
+    provider_dir = root_dir / cloud_provider
+    if not provider_dir.exists():
+        ui.print_error(f"Cloud provider directory not found: {provider_dir}")
+        sys.exit(1)
+
+    # Detect what's deployed by checking terraform.tfstate files
+    labs = ["lab2-vector-search", "lab1-tool-calling", "core"]
+    deployed_resources = []
+
+    for lab in labs:
+        lab_dir = provider_dir / lab
+        state_file = lab_dir / "terraform.tfstate"
+        if state_file.exists():
+            try:
+                with open(state_file, "r") as f:
+                    state_data = json.load(f)
+                    resources = state_data.get("resources", [])
+                    if resources:
+                        deployed_resources.append((lab, lab_dir))
+            except Exception:
+                # If we can't read the state, assume it's deployed
+                if state_file.stat().st_size > 0:
+                    deployed_resources.append((lab, lab_dir))
+
+    if not deployed_resources:
+        ui.print_info("No deployed resources found. Nothing to destroy.")
+        sys.exit(0)
+
+    # Show what will be destroyed
+    ui.print_info(f"\nFound {len(deployed_resources)} deployed resource(s):")
+    for lab, _ in deployed_resources:
+        print(f"  • {lab}")
+
+    # Final confirmation
+    if not ui.confirm("\nAre you sure you want to destroy all resources?", default=False):
+        ui.print_info("Destruction cancelled.")
+        sys.exit(0)
+
+    # Destroy in reverse order (labs first, then core)
+    terraform = TerraformManager(ui, root_dir)
+    all_success = True
+
+    for lab, lab_dir in deployed_resources:
+        ui.print_header(f"Destroying {lab}")
+
+        # Update terraform directory for this resource
+        terraform.terraform_dir = lab_dir
+
+        # Initialize terraform if needed
+        if not (lab_dir / ".terraform").exists():
+            ui.print_info("Initializing Terraform...")
+            if not terraform.initialize(cloud_provider=cloud_provider):
+                ui.print_error(f"Failed to initialize Terraform for {lab}")
+                all_success = False
+                continue
+
+        # Destroy
+        if not terraform.destroy(cloud_provider=cloud_provider):
+            ui.print_error(f"Failed to destroy {lab}")
+            all_success = False
+        else:
+            ui.print_success(f"Successfully destroyed {lab}")
+
+    if all_success:
+        ui.print_header("✅ All Resources Destroyed Successfully")
+        ui.print_info(
+            "\nYou can safely delete terraform.tfstate* files if you want a clean slate."
+        )
+        sys.exit(0)
+    else:
+        ui.print_header("⚠️  Destruction Completed with Errors")
+        ui.print_warning("Some resources may not have been destroyed successfully.")
+        ui.print_info("Check the output above for details.")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

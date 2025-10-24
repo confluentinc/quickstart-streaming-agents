@@ -1,14 +1,18 @@
-# Lab2: Vector Search RAG Walkthrough
+# Lab2: Vector Search / RAG Walkthrough
 
 In this lab, we'll create a Retrieval-Augmented Generation (RAG) pipeline using Confluent Cloud for Apache Flink's vector search capabilities. The pipeline processes documents, creates embeddings, and enables semantic search to power intelligent responses through retrieval of relevant context.
 
+<img src="./assets/lab2/mongodb/00_lab2_architecture.png" alt="Lab2 Architecture Diagram"/>
+
 ## Prerequisites
 
-- ⚠️ **IMPORTANT: For AWS Users: [Request access to Claude Sonnet 3.7 in Bedrock for your cloud region](https://console.aws.amazon.com/bedrock/home#/modelaccess)**. If you do not activate it, the LLM calls in this lab will not work. ⚠️
-- Core infrastructure deployed on either AWS or Azure by running `uv run deploy` (see [main README](./README.md))
+
+- Run `uv run deploy` to deploy core infrastructure (see [main README](./README.md))
 - MongoDB free account with Atlas cluster (M0 - Free Tier) with vector search enabled - directions below.
 
 ## MongoDB Atlas Setup
+<details>
+<summary>MongoDB Atlas Setup (Click to expand)</summary>
 
 ### Step 1: Create MongoDB Atlas Account and Cluster
 
@@ -16,8 +20,8 @@ If running Lab2, set up a free MongoDB Atlas cluster:
 
 #### 1. Create a **Project.**
 
-<details>
-<summary>Click to view screenshot</summary>
+<details open>
+<summary>Click to collapse</summary>
 
 <img src="./assets/lab2/mongodb/01_create_project.png" alt="Create Project" width="50%" />
 
@@ -25,8 +29,8 @@ If running Lab2, set up a free MongoDB Atlas cluster:
 
 #### 2. Create a **Cluster.**
 
-<details>
-<summary>Click to view screenshot</summary>
+<details open>
+<summary>Click to collapse</summary>
 
 <img src="./assets/lab2/mongodb/02_create_cluster.png" alt="Create Cluster" width="50%" />
 
@@ -34,8 +38,8 @@ If running Lab2, set up a free MongoDB Atlas cluster:
 
 #### 3. Choose the **Free Tier (M0).** Then choose your cloud provider (AWS or Azure) and region. Make sure this is the same region that your Confluent Cloud deployment is in. Click **Create Cluster.**
 
-<details>
-<summary>Click to view screenshot</summary>
+<details open>
+<summary>Click to collapse</summary>
 
 <img src="./assets/lab2/mongodb/03_choose_free_tier_and_region.png" alt="Choose Free Tier" width="50%" />
 
@@ -45,8 +49,8 @@ If running Lab2, set up a free MongoDB Atlas cluster:
 
    **Note:** the username and password you set up to access your database are the credentials you'll need to save for later, NOT the separate login you use for mongodb.com.
 
-<details>
-<summary>Click to view screenshot</summary>
+<details open>
+<summary>Click to collapse</summary>
 
 <img src="./assets/lab2/mongodb/04_create_database_user.png" alt="Create Database User" width="50%" />
 
@@ -58,8 +62,8 @@ If running Lab2, set up a free MongoDB Atlas cluster:
 
  ⚠️ **NOTE:** Important step! Confluent Cloud will not be able to connect to MongoDB without this rule. ⚠️
 
-<details>
-<summary>Click to view screenshot</summary>
+<details open>
+<summary>Click to collapse</summary>
 
 <img src="./assets/lab2/mongodb/05_network_access_allow_all.png" alt="Network Access" width="50%" />
 
@@ -71,8 +75,8 @@ If running Lab2, set up a free MongoDB Atlas cluster:
 
    Collection name: `documents`
 
-<details>
-<summary>Click to view screenshot</summary>
+<details open>
+<summary>Click to collapse</summary>
 
 <img src="./assets/lab2/mongodb/06_add_data_collection.png" alt="Add Data Collection" width="50%" />
 
@@ -80,8 +84,8 @@ If running Lab2, set up a free MongoDB Atlas cluster:
 
 #### 8. Next, click **Create Search Index.** Choose **Vector Search index, and name it `vector_search`
 
-<details>
-<summary>Click to view screenshot</summary>
+<details open>
+<summary>Click to collapse</summary>
 <img src="./assets/lab2/mongodb/07_create_vector_search_index.png" alt="Create Vector Index" width="50%" />
 
 </details>
@@ -101,34 +105,16 @@ If running Lab2, set up a free MongoDB Atlas cluster:
    }
    ```
 
-<details>
-<summary>Click to view screenshot</summary>
+<details open>
+<summary>Click to collapse</summary>
 
 <img src="./assets/lab2/mongodb/08_json_editor_config.png" alt="JSON Config" width="50%" />
 
 </details>
 
-## Deployment
-
-### Step 1: Install Dependencies
-
-Install the required Python dependencies from the project root:
-
-```bash
-# Using uv (recommended)
-uv pip install -r requirements.txt
-```
-
-<details>
-<summary>Alternative: Using pip</summary>
-
-```bash
-pip install -r requirements.txt
-```
-
 </details>
 
-### Step 2: Deploy Infrastructure
+## Deployment
 
 Use the setup script and select "Lab2" when prompted to automatically deploy Lab2 infrastructure:
 
@@ -140,7 +126,7 @@ uv run deploy
 <summary>Manual alternative: Direct Python execution</summary>
 
 ```bash
-python deploy.py
+pip install . && python deploy.py
 ```
 
 </details>
@@ -192,7 +178,7 @@ This publishes pre-chunked Flink documentation that gets:
 
 ```bash
 # Publish queries (run from anywhere in repo)
-uv run publish_queries # starts interactive mode, or:
+uv run publish_queries # starts interactive mode (recommended), or:
 uv run publish_queries "How do I use window functions in Flink?"
 ```
 
@@ -206,7 +192,7 @@ python scripts/lab2_publish_queries.py "How do I use window functions in Flink?"
 
 </details>
 
-The results can be found in the `search_results` (vector search results) and  `search_results_response` (RAG response based on `search_results`) Kafka topics. They contain:
+The vector search results can be found in the `search_results` table, and the RAG (retrieval-augmented generation) results can be found in the  `search_results_response` table. They contain:
 
 - Source document snippets with similarity scores comparing query to document text
 - Citations from the knowledge base
@@ -232,11 +218,14 @@ SELECT query, response FROM search_results_response LIMIT 5;
 
 ## Troubleshooting
 
+<details>
+<summary>Click to expand</summary>
+
 ### Script Issues
 ```bash
 # If publish_docs.py fails
 ✗ Missing required dependencies!
-→ Run: uv pip install -r requirements.txt
+→ Run: pip install .
 
 ✗ Terraform state not found!
 → Ensure you ran terraform apply successfully
@@ -260,6 +249,8 @@ SELECT COUNT(*) FROM search_results_response;  -- Final RAG responses
 1. **Pipeline not processing**: Wait 30-60 seconds after publishing documents
 2. **No query responses**: Check that LLM models are deployed in core infrastructure
 3. **Empty results**: Verify MongoDB connector status in Confluent Cloud
+
+</details>
 
 ## Navigation
 

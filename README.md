@@ -1,58 +1,66 @@
 # Streaming Agents on Confluent Cloud Quickstart
 
+[![Sign up for Confluent Cloud](https://img.shields.io/badge/Sign%20up%20for%20Confluent%20Cloud-007BFF?style=for-the-badge&logo=apachekafka&logoColor=white)](https://www.confluent.io/get-started/?utm_campaign=tm.pmm_cd.q4fy25-quickstart-streaming-agents&utm_source=github&utm_medium=demo)
+
 ![Streaming Agents Intro Slide](./assets/streaming-agents-intro-slide.png)
+
+
+
 
 Build real-time AI agents with [Confluent Cloud Streaming Agents](https://docs.confluent.io/cloud/current/ai/streaming-agents/overview.html). This quickstart includes two hands-on labs:
 
-| Lab | Description | Requirements |
-|-----|-------------|--------------|
-| [**Lab1 - MCP Tool Calling**](./LAB1-Walkthrough.md) | Price matching agent that scrapes competitor websites and adjusts prices in real-time | Zapier MCP server |
-| [**Lab2 - Vector Search - RAG**](./LAB2-Walkthrough.md) | Vector search pipeline with optional retrieval augmented generation (RAG) for intelligent document retrieval | MongoDB Atlas (free M0 tier) |
+<table>
+<tr>
+<th width="25%">Lab</th>
+<th width="75%">Description</th>
+</tr>
+<tr>
+<td><a href="./LAB1-Walkthrough.md"><strong>Lab1 - MCP Tool Calling</strong></a></td>
+<td>Price matching agent that scrapes competitor websites and adjusts prices in real-time<br><br><img src="./assets/lab1/lab1-architecture.png" alt="Lab1 Architecture"></td>
+</tr>
+<tr>
+<td><a href="./LAB2-Walkthrough.md"><strong>Lab2 - Vector Search - RAG</strong></a></td>
+<td>Vector search pipeline with optional retrieval augmented generation (RAG) for intelligent document retrieval<br><br><img src="./assets/lab2/mongodb/00_lab2_architecture.png" alt="Lab2 Architecture"></td>
+</tr>
+</table>
 
 ## Demo Video
 
 [![Watch on YouTube](https://img.youtube.com/vi/F4bUUsVDBVE/hqdefault.jpg)](https://www.youtube.com/watch?v=F4bUUsVDBVE "Watch on YouTube")
 
-## 🚀 Quick Start
-
-**One command deployment:**
-
-```bash
-uv run deploy
-```
-
-That's it! The script will guide you through setup, automatically create API keys, and deploy your chosen lab(s).
-
 ## Prerequisites
 
 **Required accounts & credentials:**
 
-- [![Sign up for Confluent Cloud](https://img.shields.io/badge/Sign%20up%20for%20Confluent%20Cloud-007BFF?style=for-the-badge&logo=apachekafka&logoColor=white)](https://confluent.cloud/signup)
+- [![Sign up for Confluent Cloud](https://img.shields.io/badge/Sign%20up%20for%20Confluent%20Cloud-007BFF?style=for-the-badge&logo=apachekafka&logoColor=white)](https://www.confluent.io/get-started/?utm_campaign=tm.pmm_cd.q4fy25-quickstart-streaming-agents&utm_source=github&utm_medium=demo)
 - **Lab1:** Zapier account + SSE endpoint URL → [Setup guide](./LAB1-Walkthrough.md#zapier-mcp-server-setup)
 - **Lab2:** MongoDB Atlas + connection string, database-specific user credentials → [Setup guide](./LAB2-Walkthrough.md#mongodb-atlas-setup)
 
 **Required tools:**
 
-- **uv** - `brew install uv` (Mac) or `winget install astral-sh.uv` (Windows)
-- **Docker** - for data generation
-- **Terraform** - infrastructure deployment
-- **Confluent CLI** - cloud resource management
-- **AWS CLI** or **Azure CLI** - choose your cloud provider
-  - ***\*⚠️ AWS users:\**** [Enable Claude Sonnet 3.7 in Bedrock](https://console.aws.amazon.com/bedrock/home#/modelaccess) in your specific region before deploying.
-
+- **[Git](https://github.com/git/git)**
+- **[uv](https://github.com/astral-sh/uv)**
+- **[Python 3.8+](https://github.com/python/cpython)**
+- **[Terraform](https://github.com/hashicorp/terraform)** - infrastructure deployment
+- **[AWS CLI](https://github.com/aws/aws-cli)** or **[Azure CLI](https://github.com/Azure/azure-cli)**
+- **[Confluent CLI](https://docs.confluent.io/confluent-cli/current/overview.html)** - cloud resource management
+- **[Docker](https://github.com/docker)** - for Lab1 data generation
+- **[pkg-config](https://github.com/pkgconf/pkgconf)** - build configuration tool
+- **[librdkafka](https://github.com/confluentinc/librdkafka)**
 
 <details>
 <summary>📦 Platform-specific installation commands</summary>
 
 **Mac:**
 ```bash
-brew install uv git && brew tap hashicorp/tap && brew install hashicorp/tap/terraform && brew install --cask confluent-cli docker-desktop  && brew install awscli  # or azure-cli
+brew install uv git python pkg-config && brew tap hashicorp/tap && brew install hashicorp/tap/terraform && brew install --cask confluent-cli docker-desktop && brew install librdkafka && brew install awscli  # or azure-cli
 ```
 
 **Windows:**
 ```powershell
-winget install astral-sh.uv Git.Git Docker.DockerDesktop Hashicorp.Terraform ConfluentInc.Confluent-CLI Amazon.AWSCLI  # or Microsoft.AzureCLI
+winget install astral-sh.uv Git.Git Docker.DockerDesktop Hashicorp.Terraform ConfluentInc.Confluent-CLI pkgconf Python.Python Amazon.AWSCLI # or Microsoft.AzureCLI
 ```
+> **Note:** librdkafka is bundled with confluent-kafka Python wheels on Windows - no separate installation needed.
 
 **Linux:**
 ```bash
@@ -62,15 +70,31 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 </details>
 
+## 🚀 Quick Start
+
+**Clone the repository and navigate to the Quickstart directory:**
+
+```bash
+git clone https://github.com/confluentinc/quickstart-streaming-agents.git
+cd quickstart-streaming-agents
+```
+**One command deployment:**
+
+```bash
+uv run deploy
+```
+
+That's it! The script will guide you through setup, automatically create API keys, and deploy your chosen lab(s).
+
 
 ## Directory Structure
 
 ```
 quickstart-streaming-agents/
 ├── aws|azure/               # Choose a cloud
-│   ├── core/                # Shared infrastructure
-│   ├── lab1-tool-calling/  
-│   └── lab2-vector-search/ 
+│   ├── core/                # Shared Terraform infrastructure
+│   ├── lab1-tool-calling/   # Lab-specific infra
+│   └── lab2-vector-search/  # Lab-specific infra
 ├── deploy.py                # 🚀 Start here
 └── scripts/                 # Python utilities
 ```
@@ -80,8 +104,7 @@ quickstart-streaming-agents/
 
 **Traditional Python:**
 ```bash
-pip install -r requirements.txt
-python deploy.py
+pip install -e . && python deploy.py
 ```
 
 </details>
@@ -91,7 +114,7 @@ python deploy.py
 
 ### Prerequisites
 - All tools installed and authenticated
-- Confluent Cloud account with API keys
+- Confluent Cloud API keys (Cloud Resource Management keys with EnvironmentAdmin role)
 
 ### Deploy
 ```bash
@@ -106,24 +129,24 @@ terraform init && terraform apply --auto-approve
 ```hcl
 prefix = "streaming-agents"
 cloud_provider = "aws"  # or "azure"
-cloud_region = "your-region"
+cloud_region = "your-region"  # must be a region supported by MongoDB free tier, otherwise Lab2 deployment will not succeed
 confluent_cloud_api_key = "your-key"
 confluent_cloud_api_secret = "your-secret"
 ZAPIER_SSE_ENDPOINT = "https://mcp.zapier.com/api/mcp/s/your-key/sse"  # Lab1
 MONGODB_CONNECTION_STRING = "mongodb+srv://cluster0.abc.mongodb.net"  # Lab2
 mongodb_username = "your-db-user"  # Lab2
-mongodb_password = "your-db-pass"  # Lab2  # pragma: allowlist secret
+mongodb_password = "your-db-pass"  # Lab2
 ```
 
+### Tear down
+```bash
+cd aws/lab1-tool-calling && terraform destroy --auto-approve
+cd ../core && terraform destroy --auto-approve
+```
 </details>
 
 ## Cleanup
-
 ```bash
 # Automated
-uv run deploy  # Choose cleanup option
-
-# Manual
-cd aws/lab1-tool-calling && terraform destroy --auto-approve
-cd ../core && terraform destroy --auto-approve
+uv run destroy
 ```

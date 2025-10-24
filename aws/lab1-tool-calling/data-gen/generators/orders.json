@@ -2,6 +2,18 @@
     "connection": "orders-kafka",
     "name": "orders",
     "topic": "orders",
+    "varsOnce": {
+        "shuffled_sequence": {
+            "_gen": "oneOf",
+            "choices": [
+                [7, 2, 14, 9, 3, 16, 5, 11, 0, 13, 8, 4, 15, 1, 10, 6, 12],
+                [11, 5, 1, 15, 8, 3, 12, 0, 9, 16, 4, 7, 13, 2, 10, 14, 6],
+                [4, 13, 9, 1, 16, 6, 11, 3, 14, 7, 0, 12, 5, 10, 2, 15, 8],
+                [15, 8, 3, 10, 5, 12, 1, 14, 7, 4, 16, 2, 9, 0, 11, 6, 13],
+                [2, 9, 15, 6, 11, 0, 13, 4, 10, 1, 7, 14, 3, 8, 16, 12, 5]
+            ]
+        }
+    },
     "vars": {
         "customer": {
             "_gen": "lookup",
@@ -9,18 +21,44 @@
             "topic": "customers",
             "path": []
         },
+        "product_index": {
+            "_gen": "cycle",
+            "sequence": {
+                "_gen": "var",
+                "var": "shuffled_sequence"
+            }
+        },
         "product": {
             "_gen": "lookup",
             "connection": "products-kafka",
             "topic": "products",
-            "path": []
+            "path": [],
+            "offset": {
+                "_gen": "var",
+                "var": "product_index"
+            }
+        },
+        "timestamp_suffix": {
+            "_gen": "math",
+            "expr": "floor(now / 10000) % 1000000",
+            "names": {
+                "now": {
+                    "_gen": "now"
+                }
+            },
+            "decimals": 0
         }
     },
     "value": {
         "order_id": {
-            "_gen": "sequentialString",
-            "startingFrom": 200000,
-            "expr": "O-~d"
+            "_gen": "string",
+            "expr": "O-#{suffix}",
+            "names": {
+                "suffix": {
+                    "_gen": "var",
+                    "var": "timestamp_suffix"
+                }
+            }
         },
         "customer_id": {
             "_gen": "var",
@@ -42,6 +80,7 @@
         }
     },
     "localConfigs": {
+        "maxEvents": 17,
         "throttleMs": {
             "_gen": "uniformDistribution",
             "bounds": [10000, 15000]

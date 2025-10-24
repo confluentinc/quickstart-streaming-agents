@@ -289,9 +289,7 @@ def test_dependencies() -> bool:
         logger.error("✗ Missing required dependencies!")
         logger.error(f"Import test failed: {e}")
         logger.error("To install required packages:")
-        logger.error("  uv pip install -r requirements.txt")
-        logger.error("  # Or with traditional Python:")
-        logger.error("  pip install -r requirements.txt")
+        logger.error("  pip install .")
         return False
 
 

@@ -1,9 +1,3 @@
-variable "prefix" {
-  description = "Resource name prefix"
-  type        = string
-  default     = "streaming-agents"
-}
-
 variable "MONGODB_CONNECTION_STRING" {
   description = "MongoDB connection string for vector database"
   type        = string

@@ -32,18 +32,31 @@ data "confluent_flink_region" "lab1_flink_region" {
   region = local.cloud_region
 }
 
-# Automatically create MCP connection using Python script
-resource "null_resource" "create_mcp_connection" {
-  # This runs the Python script to create the MCP connection via Confluent CLI
-  provisioner "local-exec" {
-    command     = "uv run mcp_setup azure"
-    working_dir = "${path.module}/../.."
+# Create MCP connection using Flink SQL
+resource "confluent_flink_statement" "zapier_mcp_connection" {
+  organization {
+    id = data.confluent_organization.main.id
+  }
+  environment {
+    id = data.terraform_remote_state.core.outputs.confluent_environment_id
+  }
+  compute_pool {
+    id = data.terraform_remote_state.core.outputs.confluent_flink_compute_pool_id
+  }
+  principal {
+    id = data.terraform_remote_state.core.outputs.app_manager_service_account_id
+  }
+  rest_endpoint = data.confluent_flink_region.lab1_flink_region.rest_endpoint
+  credentials {
+    key    = data.terraform_remote_state.core.outputs.app_manager_flink_api_key
+    secret = data.terraform_remote_state.core.outputs.app_manager_flink_api_secret
   }
 
-  # Re-run if the Zapier endpoint changes
-  triggers = {
-    zapier_endpoint = var.ZAPIER_SSE_ENDPOINT
-    environment_id  = data.terraform_remote_state.core.outputs.confluent_environment_id
+  statement = "CREATE CONNECTION `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`zapier-mcp-connection` WITH ( 'type' = 'MCP_SERVER', 'endpoint' = '${var.ZAPIER_SSE_ENDPOINT}', 'api-key' = 'api_key' );"
+
+  properties = {
+    "sql.current-catalog"  = data.terraform_remote_state.core.outputs.confluent_environment_display_name
+    "sql.current-database" = data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name
   }
 
   depends_on = [
@@ -80,41 +93,37 @@ resource "confluent_flink_statement" "zapier_mcp_model" {
 
   # Ensure MCP connection is created first
   depends_on = [
-    null_resource.create_mcp_connection
+    confluent_flink_statement.zapier_mcp_connection
   ]
 }
 
-# Generate MCP commands file with CLI instructions (kept for reference/manual fallback)
+# Generate MCP commands file with SQL reference
 resource "local_file" "mcp_commands" {
   filename = "${path.module}/mcp_commands.txt"
   content  = <<-EOT
 # Lab1 Tool Calling - Setup Status
 #
-# 🎉 FULLY AUTOMATED BY TERRAFORM:
+# 🎉 FULLY AUTOMATED BY TERRAFORM (SQL-Based):
 # ✅ Core LLM infrastructure (deployed in core terraform)
 # ✅ LLM connection: ${data.terraform_remote_state.core.outputs.llm_connection_name}
 # ✅ LLM model: llm_textgen_model (available in core)
-# ✅ MCP connection: zapier-mcp-connection (created automatically via uv script)
-# ✅ MCP model: zapier_mcp_model (created automatically via Terraform)
+# ✅ MCP connection: zapier-mcp-connection (created via Terraform SQL statement)
+# ✅ MCP model: zapier_mcp_model (created via Terraform SQL statement)
 #
 # ℹ️ NO MANUAL STEPS REQUIRED
 # All setup is handled automatically during 'terraform apply'
 #
-# 📋 MANUAL COMMANDS (for reference only, if you need to recreate manually):
+# 📋 MANUAL SQL COMMANDS (for reference only, if you need to recreate manually):
 
-# Step 1: Create Zapier MCP Connection (automated via: uv run mcp_setup azure)
-confluent flink connection create zapier-mcp-connection \
-  --cloud AZURE \
-  --region ${local.cloud_region} \
-  --type mcp_server \
-  --endpoint ${replace(var.ZAPIER_SSE_ENDPOINT, "/sse", "")} \
-  --api-key api_key \
-  --environment ${data.terraform_remote_state.core.outputs.confluent_environment_id} \
-  --sse-endpoint ${var.ZAPIER_SSE_ENDPOINT}
+# Step 1: Create Zapier MCP Connection (automated via Terraform)
+CREATE CONNECTION `zapier-mcp-connection`
+WITH (
+  'type' = 'MCP_SERVER',
+  'endpoint' = '${var.ZAPIER_SSE_ENDPOINT}',
+  'api-key' = 'api_key'
+);
 
-# Step 2: Create Flink SQL Models (automated via Terraform confluent_flink_statement)
-
-# Agent 1 and 3: Flink SQL CREATE MODEL Command (with MCP)
+# Step 2: Create Zapier MCP Model (automated via Terraform)
 CREATE MODEL `zapier_mcp_model`
 INPUT (prompt STRING)
 OUTPUT (response STRING)
@@ -128,5 +137,188 @@ WITH (
 # Agent 2: Use the shared llm_textgen_model (already created in core terraform)
 # No need to create this model - it's available as 'llm_textgen_model'
 
+# 📌 NOTE: Old CLI approach (deprecated):
+# The previous approach used Python script + Confluent CLI which required:
+# - Python + uv installation
+# - Confluent CLI installation
+# - Two separate endpoint parameters (--endpoint and --sse-endpoint)
+#
+# New SQL approach is simpler, fully declarative, and requires only Terraform.
+
 EOT
 }
+
+# ------------------------------------------------------
+# CREATE KAFKA TABLES FOR LAB1 DATAGEN
+# ------------------------------------------------------
+
+# Create orders table
+# resource "confluent_flink_statement" "orders_table" {
+#   organization {
+#     id = data.confluent_organization.main.id
+#   }
+#   environment {
+#     id = data.terraform_remote_state.core.outputs.confluent_environment_id
+#   }
+#   compute_pool {
+#     id = data.terraform_remote_state.core.outputs.confluent_flink_compute_pool_id
+#   }
+#   principal {
+#     id = data.terraform_remote_state.core.outputs.app_manager_service_account_id
+#   }
+#   rest_endpoint = data.confluent_flink_region.lab1_flink_region.rest_endpoint
+#   credentials {
+#     key    = data.terraform_remote_state.core.outputs.app_manager_flink_api_key
+#     secret = data.terraform_remote_state.core.outputs.app_manager_flink_api_secret
+#   }
+# 
+#   statement_name = "orders-create-table"
+# 
+#   statement = <<-EOT
+#     CREATE TABLE `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`orders` (
+#       `key` VARBINARY(2147483647),
+#       `order_id` VARCHAR(2147483647) NOT NULL,
+#       `customer_id` VARCHAR(2147483647) NOT NULL,
+#       `product_id` VARCHAR(2147483647) NOT NULL,
+#       `price` DOUBLE NOT NULL,
+#       `order_ts` TIMESTAMP(3) WITH LOCAL TIME ZONE NOT NULL
+#     )
+#     DISTRIBUTED BY HASH(`key`) INTO 6 BUCKETS
+#     WITH (
+#       'changelog.mode' = 'append',
+#       'connector' = 'confluent',
+#       'kafka.cleanup-policy' = 'delete',
+#       'kafka.compaction.time' = '0 ms',
+#       'kafka.max-message-size' = '2097164 bytes',
+#       'kafka.retention.size' = '0 bytes',
+#       'kafka.retention.time' = '7 d',
+#       'key.format' = 'raw',
+#       'scan.bounded.mode' = 'unbounded',
+#       'scan.startup.mode' = 'earliest-offset',
+#       'value.format' = 'avro-registry'
+#     );
+#   EOT
+# 
+#   properties = {
+#     "sql.current-catalog"  = data.terraform_remote_state.core.outputs.confluent_environment_display_name
+#     "sql.current-database" = data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name
+#   }
+# 
+#   depends_on = [
+#     confluent_flink_statement.zapier_mcp_model
+#   ]
+# }
+
+# Create products table
+# resource "confluent_flink_statement" "products_table" {
+#   organization {
+#     id = data.confluent_organization.main.id
+#   }
+#   environment {
+#     id = data.terraform_remote_state.core.outputs.confluent_environment_id
+#   }
+#   compute_pool {
+#     id = data.terraform_remote_state.core.outputs.confluent_flink_compute_pool_id
+#   }
+#   principal {
+#     id = data.terraform_remote_state.core.outputs.app_manager_service_account_id
+#   }
+#   rest_endpoint = data.confluent_flink_region.lab1_flink_region.rest_endpoint
+#   credentials {
+#     key    = data.terraform_remote_state.core.outputs.app_manager_flink_api_key
+#     secret = data.terraform_remote_state.core.outputs.app_manager_flink_api_secret
+#   }
+# 
+#   statement_name = "products-create-table"
+# 
+#   statement = <<-EOT
+#     CREATE TABLE `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`products` (
+#       `key` VARBINARY(2147483647),
+#       `product_id` VARCHAR(2147483647) NOT NULL,
+#       `product_name` VARCHAR(2147483647) NOT NULL,
+#       `price` DOUBLE NOT NULL,
+#       `department` VARCHAR(2147483647) NOT NULL,
+#       `updated_at` TIMESTAMP(3) WITH LOCAL TIME ZONE NOT NULL
+#     )
+#     DISTRIBUTED BY HASH(`key`) INTO 6 BUCKETS
+#     WITH (
+#       'changelog.mode' = 'append',
+#       'connector' = 'confluent',
+#       'kafka.cleanup-policy' = 'delete',
+#       'kafka.compaction.time' = '0 ms',
+#       'kafka.max-message-size' = '2097164 bytes',
+#       'kafka.retention.size' = '0 bytes',
+#       'kafka.retention.time' = '7 d',
+#       'key.format' = 'raw',
+#       'scan.bounded.mode' = 'unbounded',
+#       'scan.startup.mode' = 'earliest-offset',
+#       'value.format' = 'avro-registry'
+#     );
+#   EOT
+# 
+#   properties = {
+#     "sql.current-catalog"  = data.terraform_remote_state.core.outputs.confluent_environment_display_name
+#     "sql.current-database" = data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name
+#   }
+# 
+#   depends_on = [
+#     confluent_flink_statement.zapier_mcp_model
+#   ]
+# }
+
+# Create customers table
+# resource "confluent_flink_statement" "customers_table" {
+#   organization {
+#     id = data.confluent_organization.main.id
+#   }
+#   environment {
+#     id = data.terraform_remote_state.core.outputs.confluent_environment_id
+#   }
+#   compute_pool {
+#     id = data.terraform_remote_state.core.outputs.confluent_flink_compute_pool_id
+#   }
+#   principal {
+#     id = data.terraform_remote_state.core.outputs.app_manager_service_account_id
+#   }
+#   rest_endpoint = data.confluent_flink_region.lab1_flink_region.rest_endpoint
+#   credentials {
+#     key    = data.terraform_remote_state.core.outputs.app_manager_flink_api_key
+#     secret = data.terraform_remote_state.core.outputs.app_manager_flink_api_secret
+#   }
+# 
+#   statement_name = "customers-create-table"
+# 
+#   statement = <<-EOT
+#     CREATE TABLE `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`customers` (
+#       `key` VARBINARY(2147483647),
+#       `customer_id` VARCHAR(2147483647) NOT NULL,
+#       `customer_email` VARCHAR(2147483647) NOT NULL,
+#       `customer_name` VARCHAR(2147483647) NOT NULL,
+#       `state` VARCHAR(2147483647) NOT NULL,
+#       `updated_at` TIMESTAMP(3) WITH LOCAL TIME ZONE NOT NULL
+#     )
+#     DISTRIBUTED BY HASH(`key`) INTO 6 BUCKETS
+#     WITH (
+#       'changelog.mode' = 'append',
+#       'connector' = 'confluent',
+#       'kafka.cleanup-policy' = 'delete',
+#       'kafka.compaction.time' = '0 ms',
+#       'kafka.max-message-size' = '2097164 bytes',
+#       'kafka.retention.size' = '0 bytes',
+#       'kafka.retention.time' = '7 d',
+#       'key.format' = 'raw',
+#       'scan.bounded.mode' = 'unbounded',
+#       'scan.startup.mode' = 'earliest-offset',
+#       'value.format' = 'avro-registry'
+#     );
+#   EOT
+# 
+#   properties = {
+#     "sql.current-catalog"  = data.terraform_remote_state.core.outputs.confluent_environment_display_name
+#     "sql.current-database" = data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name
+#   }
+# 
+#   depends_on = [
+#     confluent_flink_statement.zapier_mcp_model
+#   ]
+# }

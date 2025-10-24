@@ -1,9 +1,3 @@
-variable "prefix" {
-  description = "Resource name prefix"
-  type        = string
-  default     = "streaming-agents"
-}
-
 variable "cloud_region" {
   description = "AWS region for deployment"
   type        = string

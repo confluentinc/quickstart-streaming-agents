@@ -1,20 +1,29 @@
 # Lab1: Tool Calling Agent Walkthrough
 
-![Architecture Diagram](./assets/arch.png)
+In this lab, we'll use Apache Flink for Confluent Cloud's MCP tool calling feature to "price match" products in customer orders in real-time. The LLM, through tool calling, uses a Zapier remote MCP server to retrieve competitor prices, and if a competitor offers a better price, the agent automatically applies a price match and uses tool calling again to email the customer a summary.
 
-In this lab, we'll use Confluent Cloud's Apache Flink tool calling feature to look up products in real-time orders. The LLM, through tool calling, uses a Zapier remote MCP server to retrieve competitor prices, and if a competitor offers a better price, the agent automatically applies a price match and uses tool calling again to email the customer a summary.
+![Architecture Diagram](./assets/lab1/lab1-architecture.png)
+
+## Lab Architecture
+
+This lab implements a three-agent pipeline:
+
+1. **Agent 1: URL Scraping Agent** - Enriches orders with product names and scrapes competitor websites
+2. **Agent 2: Price Extractor Agent** - Extracts competitor prices from scraped page content
+3. **Agent 3: Price Match Notification Agent** - Compares our product price to competitor's price, and sends email notifications for price matches
 
 ## Prerequisites
 
-- ⚠️ **IMPORTANT: For AWS Users: [Request access to Claude Sonnet 3.7 in Bedrock for your cloud region](https://console.aws.amazon.com/bedrock/home#/modelaccess)**. If you do not activate it, you will get ModelRuntime errors in Flink and the LLM calls in this lab will not work. ⚠️
-- Core infrastructure deployed via `uv run deploy` (see [main README](./README.md))
+- Run `uv run deploy` to deploy core infrastructure (see [main README](./README.md))
 - Zapier account and remote MCP server set up  (instructions below)
 
 ## Zapier MCP Server Setup
+<details>
+<summary>Zapier MCP Server Setup (Click to expand)</summary>
 
 Create a Zapier MCP server for tool calling:
 
-### 1. Create Zapier Account
+### 1. Create free Zapier Account
 
 Sign up at [zapier.com](https://zapier.com/sign-up) and verify your email.
 
@@ -23,7 +32,7 @@ Sign up at [zapier.com](https://zapier.com/sign-up) and verify your email.
 Visit [mcp.zapier.com](https://mcp.zapier.com/mcp/servers), choose "Other" as MCP Client, and create your server.
 
 <details open>
-<summary>Click to view screenshot</summary>
+<summary>Click to collapse</summary>
 
 <img src="./assets/lab1/zapier/3.png" alt="Create MCP Server" width="50%" />
 
@@ -37,7 +46,7 @@ Add these tools to your MCP server:
 - **Gmail: Send Email** tool (authenticate via SSO)
 
 <details open>
-<summary>Click to view screenshot</summary>
+<summary>Click to collapse</summary>
 
 <img src="./assets/lab1/zapier/4.png" alt="Add Tools" width="50%" />
 
@@ -48,25 +57,19 @@ Add these tools to your MCP server:
 Click **"Connect",** choose **"Other"** for your client, then change transport to **"SSE Endpoint"**, and **copy the URL.** This is the `ZAPIER_SSE_ENDPOINT` you will need to enter when deploying the lab with `uv run deploy`.
 
 <details open>
-<summary>Click to view screenshot</summary>
+<summary>Click to collapse</summary>
 
 <img src="./assets/lab1/zapier/7.png" alt="SSE Endpoint" width="50%" />
 
 </details>
 
-## Lab Architecture
-
-This lab implements a three-agent pipeline:
-
-1. **Agent 1: URL Scraping Agent** - Enriches orders with product names and scrapes competitor websites
-2. **Agent 2: Price Extractor Agent** - Extracts competitor prices from scraped page content
-3. **Agent 3: Price Match Notification Agent** - Sends email notifications for price matches
+</details>
 
 ## Getting Started
 
 ### Test the LLM models before continuing
 
-Run the following queries:
+Once you've deployed Lab1 via `uv run deploy`, run the following queries in the SQL Workspace to make sure your models are working as expected:
 
 #### Test Query 1: Base LLM model
 
@@ -80,7 +83,7 @@ LATERAL TABLE(ML_PREDICT('llm_textgen_model', question, MAP['debug', 'true'])) a
 
 #### Test Query 2: LLM Tool Calling Model
 
-Be sure to swap out `<<YOUR-EMAIL-ADDRESS-HERE>>` for the address where you want to send the email.
+⚠️ IMPORTANT: Replace `<<YOUR-EMAIL-ADDRESS-HERE>>` in the query below with the email address where you want the email to delivered to. ⚠️️️
 
 ```sql
 SELECT
@@ -98,20 +101,11 @@ SELECT
 
 ### Data Generation
 
-#### Recommended: Using uv (Cross-Platform)
-
-Run the automated data generator from the project root:
+Make sure Docker is running, then begin generating data with the following command:
 
 ```bash
 uv run lab1_datagen
 ```
-
-The script automatically:
-- Auto-detects your cloud provider (AWS or Azure)
-- Downloads the ShadowTraffic license file
-- Extracts credentials from Terraform state
-- Generates connection files
-- Runs the Docker-based data generator
 
 <details>
 <summary>Alternative: Using Python directly</summary>
@@ -124,15 +118,11 @@ The Python script provides the same automation as the uv version.
 
 </details>
 
-#### What Data is Generated
-
 The data generator creates three interconnected data streams:
 
 - **Customers**: 100 customer records with realistic names, emails, addresses, and state information
 - **Products**: 17 product records including electronics, games, sports equipment, and household items with prices ranging from $5-$365
 - **Orders**: Continuous stream of orders linking customers to products with timestamps
-
-🎉 **Data is now flowing through your streaming pipeline! The agents will process this data in real-time.**
 
 ### Agent 1: URL Scraping Agent
 
@@ -197,7 +187,7 @@ In a new cell, check the output of `streaming_competitor_prices`
 SELECT * FROM streaming_competitor_prices;
 ```
 
-![Agent 2 Output Screenshot](./assets/lab1/agent2-flinkoutput.png)
+<img src="./assets/lab1/agent2-flinkoutput.png" alt="Agent 2 Output Screenshot" width="50%">
 
 Notice the new field `extracted_price`. This will be used by the next Agent.
 
@@ -206,7 +196,7 @@ Notice the new field `extracted_price`. This will be used by the next Agent.
 In this step, we'll notify the customer when a price match has been applied.
 We'll again use Confluent Cloud's tool-calling feature — this time connecting to the Zapier MCP server to trigger an email or message to the customer. For this agent, the tool is `gmail_send_email`.
 
-⚠️ IMPORTANT: Replace <<YOUR-EMAIL-ADDRESS-HERE>> in the query below with the email address where you want the email to delivered to.
+⚠️ IMPORTANT: Replace `<<YOUR-EMAIL-ADDRESS-HERE>>` in the query below with the email address where you want the email to delivered to. ⚠️️️
 
 ```sql
 -- Create and send email notifications for price matches
@@ -269,7 +259,8 @@ With Agent 3 running, our real-time price matching pipeline is complete—orders
 
 Check out your email for price matched orders:
 
-<summary>Click to view screenshot</summary>
+<details open>
+<summary>Click to collapse</summary>
 
 <img src="./assets/lab1/email.png" alt="Price match email" width="50%" />
 
@@ -322,5 +313,5 @@ By chaining these agents together, we've built a real-time data pipeline that re
 ## Navigation
 
 - **← Back to Overview**: [Main README](./README.md)
-- **→ Next Lab**: [Lab2: Vector Search RAG](./LAB2-Walkthrough.md)
-- ** Cleanup**: [Cleanup Instructions](./README.md#cleanup)
+- **→ Next Lab**: [Lab2: Vector Search / RAG](./LAB2-Walkthrough.md)
+- **Cleanup**: [Cleanup Instructions](./README.md#cleanup)
