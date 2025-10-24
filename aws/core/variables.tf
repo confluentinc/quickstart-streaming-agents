@@ -1,7 +1,7 @@
 variable "prefix" {
   description = "Prefix for resource names"
   type        = string
-  default     = "ai"
+  default     = "streaming-agents"
 }
 
 variable "cloud_provider" {

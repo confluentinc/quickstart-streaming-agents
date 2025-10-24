@@ -37,6 +37,7 @@ terraform/providers-azure.tf
 .env
 .env.*
 *.env
+!credentials.env.example
 
 # Terraform credential backups and sensitive files
 terraform/terraform.tfvars.reset-backup

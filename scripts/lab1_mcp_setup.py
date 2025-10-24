@@ -23,6 +23,8 @@ import sys
 from pathlib import Path
 from typing import Dict, Optional
 
+from dotenv import dotenv_values
+
 from .common.cloud_detection import auto_detect_cloud_provider, suggest_cloud_provider
 from .common.terraform import extract_kafka_credentials, get_project_root
 
@@ -37,24 +39,71 @@ def setup_logging(verbose: bool = False) -> logging.Logger:
     return logging.getLogger(__name__)
 
 
-def read_tfvars(tfvars_path: Path) -> Dict[str, str]:
+def read_credentials_env(credentials_path: Path) -> Dict[str, str]:
+    """
+    Read credentials.env file and extract variables.
+
+    Args:
+        credentials_path: Path to credentials.env file
+
+    Returns:
+        Dictionary of variable names to values (with TF_VAR_ prefix stripped)
+    """
+    logger = logging.getLogger(__name__)
+
+    if not credentials_path.exists():
+        return {}
+
+    logger.info(f"Reading credentials from {credentials_path}...")
+    raw_values = dotenv_values(credentials_path)
+
+    # Strip TF_VAR_ prefix from keys and normalize
+    variables = {}
+    for key, value in raw_values.items():
+        if value:  # Only include non-empty values
+            # Remove TF_VAR_ prefix if present
+            normalized_key = key.replace("TF_VAR_", "") if key.startswith("TF_VAR_") else key
+            variables[normalized_key] = value
+
+    logger.debug(f"Read variables from {credentials_path}: {list(variables.keys())}")
+    return variables
+
+
+def read_tfvars(tfvars_path: Path, project_root: Path) -> Dict[str, str]:
     """
     Read terraform.tfvars file and extract variables.
+    Falls back to credentials.env in project root if tfvars doesn't exist.
 
     Args:
         tfvars_path: Path to terraform.tfvars file
+        project_root: Path to project root directory
 
     Returns:
         Dictionary of variable names to values
 
     Raises:
-        FileNotFoundError: If tfvars file doesn't exist
+        FileNotFoundError: If neither tfvars nor credentials.env exist
         ValueError: If required variables are missing
     """
     logger = logging.getLogger(__name__)
 
     if not tfvars_path.exists():
-        raise FileNotFoundError(f"terraform.tfvars not found: {tfvars_path}")
+        logger.warning(f"terraform.tfvars not found: {tfvars_path}")
+
+        # Try to read from credentials.env in project root
+        credentials_path = project_root / "credentials.env"
+        logger.info(f"Attempting to read from {credentials_path} instead...")
+
+        variables = read_credentials_env(credentials_path)
+
+        if not variables:
+            raise FileNotFoundError(
+                f"Neither terraform.tfvars nor credentials.env found.\n"
+                f"  Tried: {tfvars_path}\n"
+                f"  Tried: {credentials_path}"
+            )
+
+        return variables
 
     variables = {}
 
@@ -183,14 +232,15 @@ def run_mcp_setup(
             logger.error(f"Lab1 directory not found: {lab1_dir}")
             return 1
 
-        # Read terraform.tfvars
+        # Read terraform.tfvars (with fallback to credentials.env)
         tfvars_path = lab1_dir / "terraform.tfvars"
         logger.info(f"Reading configuration from {tfvars_path}...")
-        tfvars = read_tfvars(tfvars_path)
+        tfvars = read_tfvars(tfvars_path, project_root)
 
         # Extract ZAPIER_SSE_ENDPOINT
         if "ZAPIER_SSE_ENDPOINT" not in tfvars:
-            logger.error("ZAPIER_SSE_ENDPOINT not found in terraform.tfvars")
+            logger.error("ZAPIER_SSE_ENDPOINT not found in configuration")
+            logger.error("Please ensure TF_VAR_ZAPIER_SSE_ENDPOINT is set in credentials.env or ZAPIER_SSE_ENDPOINT is in terraform.tfvars")
             return 1
 
         sse_endpoint = tfvars["ZAPIER_SSE_ENDPOINT"]
@@ -204,7 +254,10 @@ def run_mcp_setup(
         credentials = extract_kafka_credentials(cloud_provider, project_root)
 
         environment_id = credentials["environment_id"]
-        region = tfvars.get("cloud_region", "us-east-1")
+
+        # Get region with cloud-specific default
+        default_region = "us-east-1" if cloud_provider == "aws" else "eastus2"
+        region = tfvars.get("cloud_region", default_region)
 
         logger.info(f"Environment: {credentials['environment_name']} ({environment_id})")
         logger.info(f"Region: {region}")
