@@ -38,6 +38,7 @@ Build real-time AI agents with [Confluent Cloud Streaming Agents](https://docs.c
 
 **Required tools:**
 
+- **[Git](https://github.com/git/git)**
 - **[uv](https://github.com/astral-sh/uv)**
 - **[Python 3.8+](https://github.com/python/cpython)**
 - **[Terraform](https://github.com/hashicorp/terraform)** - infrastructure deployment
@@ -52,12 +53,12 @@ Build real-time AI agents with [Confluent Cloud Streaming Agents](https://docs.c
 
 **Mac:**
 ```bash
-brew install uv git pkg-config && brew tap hashicorp/tap && brew install hashicorp/tap/terraform && brew install --cask confluent-cli docker-desktop && brew install librdkafka && brew install awscli  # or azure-cli
+brew install uv git python pkg-config && brew tap hashicorp/tap && brew install hashicorp/tap/terraform && brew install --cask confluent-cli docker-desktop && brew install librdkafka && brew install awscli  # or azure-cli
 ```
 
 **Windows:**
 ```powershell
-winget install astral-sh.uv Git.Git Docker.DockerDesktop Hashicorp.Terraform ConfluentInc.Confluent-CLI pkgconf Amazon.AWSCLI # or Microsoft.AzureCLI
+winget install astral-sh.uv Git.Git Docker.DockerDesktop Hashicorp.Terraform ConfluentInc.Confluent-CLI pkgconf Python.Python Amazon.AWSCLI # or Microsoft.AzureCLI
 ```
 > **Note:** librdkafka is bundled with confluent-kafka Python wheels on Windows - no separate installation needed.
 
