@@ -100,6 +100,11 @@ class PrerequisiteManager:
             "macos_install": "brew install --cask docker-desktop",
             "windows_install": "winget install --id Docker.DockerDesktop -e",
         },
+        "pkg-config": {
+            "check_cmd": ["pkg-config", "--version"],
+            "macos_install": "brew install pkg-config",
+            "windows_install": "winget install --id pkgconf -e",
+        },
         "librdkafka": {
             "check_cmd": ["pkg-config", "--exists", "rdkafka"],
             "macos_install": "brew install librdkafka",
