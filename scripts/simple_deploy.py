@@ -96,6 +96,103 @@ def prompt_with_default(prompt_text, default=""):
         return value
 
 
+def get_credential_value(creds, key):
+    """Get credential value, checking both TF_VAR_ prefixed and non-prefixed keys."""
+    return creds.get(key) or creds.get(f"TF_VAR_{key}")
+
+
+def write_tfvars_file(tfvars_path, content):
+    """Write terraform.tfvars file with backup of existing file."""
+    try:
+        # Backup existing file
+        if tfvars_path.exists():
+            backup_path = tfvars_path.with_suffix(".tfvars.backup")
+            shutil.copy2(tfvars_path, backup_path)
+
+        # Ensure parent directory exists
+        tfvars_path.parent.mkdir(parents=True, exist_ok=True)
+
+        # Write new content
+        with open(tfvars_path, 'w') as f:
+            f.write(content)
+
+        return True
+    except Exception as e:
+        print(f"Error writing {tfvars_path}: {e}")
+        return False
+
+
+def generate_core_tfvars_content(cloud, region, api_key, api_secret, azure_sub_id=None, owner_email=None):
+    """Generate terraform.tfvars content for Core module."""
+    content = f"""# Core Infrastructure Configuration
+cloud_region = "{region}"
+confluent_cloud_api_key = "{api_key}"
+confluent_cloud_api_secret = "{api_secret}"
+"""
+
+    if owner_email:
+        content += f'owner_email = "{owner_email}"\n'
+
+    if cloud == "azure" and azure_sub_id:
+        content += f'azure_subscription_id = "{azure_sub_id}"\n'
+
+    return content
+
+
+def generate_lab1_tfvars_content(zapier_endpoint):
+    """Generate terraform.tfvars content for Lab1 module."""
+    return f"""# Lab1 Configuration
+ZAPIER_SSE_ENDPOINT = "{zapier_endpoint}"
+"""
+
+
+def generate_lab2_tfvars_content(mongo_conn, mongo_user, mongo_pass):
+    """Generate terraform.tfvars content for Lab2 module."""
+    return f"""# Lab2 Configuration
+MONGODB_CONNECTION_STRING = "{mongo_conn}"
+mongodb_username = "{mongo_user}"
+mongodb_password = "{mongo_pass}"
+"""
+
+
+def write_tfvars_for_deployment(root, cloud, region, creds, envs_to_deploy):
+    """Write terraform.tfvars files for all environments being deployed."""
+
+    # Core terraform.tfvars
+    if "core" in envs_to_deploy:
+        api_key = get_credential_value(creds, "confluent_cloud_api_key")
+        api_secret = get_credential_value(creds, "confluent_cloud_api_secret")
+        azure_sub_id = get_credential_value(creds, "azure_subscription_id") if cloud == "azure" else None
+        owner_email = get_credential_value(creds, "owner_email")
+
+        if api_key and api_secret:
+            core_tfvars_path = root / cloud / "core" / "terraform.tfvars"
+            content = generate_core_tfvars_content(cloud, region, api_key, api_secret, azure_sub_id, owner_email)
+            if write_tfvars_file(core_tfvars_path, content):
+                print(f"✓ Wrote {core_tfvars_path}")
+
+    # Lab1 terraform.tfvars
+    if "lab1-tool-calling" in envs_to_deploy:
+        zapier_endpoint = get_credential_value(creds, "ZAPIER_SSE_ENDPOINT")
+        if zapier_endpoint:
+            lab1_tfvars_path = root / cloud / "lab1-tool-calling" / "terraform.tfvars"
+            content = generate_lab1_tfvars_content(zapier_endpoint)
+            if write_tfvars_file(lab1_tfvars_path, content):
+                print(f"✓ Wrote {lab1_tfvars_path}")
+
+    # Lab2 terraform.tfvars
+    if "lab2-vector-search" in envs_to_deploy:
+        mongo_conn = get_credential_value(creds, "MONGODB_CONNECTION_STRING")
+        mongo_user = get_credential_value(creds, "mongodb_username")
+        mongo_pass = get_credential_value(creds, "mongodb_password")
+
+        if mongo_conn and mongo_user and mongo_pass:
+            lab2_tfvars_path = root / cloud / "lab2-vector-search" / "terraform.tfvars"
+            content = generate_lab2_tfvars_content(mongo_conn, mongo_user, mongo_pass)
+            if write_tfvars_file(lab2_tfvars_path, content):
+                print(f"✓ Wrote {lab2_tfvars_path}")
+
+
 def load_or_create_credentials_file(root):
     """Load existing credentials.env or create from example."""
     creds_file = root / "credentials.env"
@@ -306,6 +403,9 @@ def main():
         print(f"  Deploying: {', '.join(envs_to_deploy)}")
         print()
 
+        # Write terraform.tfvars files
+        write_tfvars_for_deployment(root, cloud, region, creds, envs_to_deploy)
+
         # Load into environment
         for key, value in env_vars.items():
             os.environ[key] = value
@@ -399,6 +499,10 @@ def main():
         if confirm != "y":
             print("Deployment cancelled.")
             sys.exit(0)
+
+        # Step 6.5: Write terraform.tfvars files
+        print()
+        write_tfvars_for_deployment(root, cloud, region, final_creds, envs_to_deploy)
 
         # Step 7: Load credentials into environment and deploy
         for key, value in final_creds.items():

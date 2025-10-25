@@ -88,3 +88,7 @@ chunks.json
 .venv/
 venv/
 env/
+
+# Testing infrastructure (contains sensitive credentials)
+tests/
+credentials.json

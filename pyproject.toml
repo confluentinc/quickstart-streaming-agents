@@ -68,13 +68,20 @@ destroy = "deploy:destroy_main"
 publish_docs = "scripts.lab2_publish_docs:main"
 publish_queries = "scripts.lab2_publish_queries:main"
 lab1_datagen = "scripts.lab1_datagen:main"
+# CLI-based versions (no librdkafka dependency)
+publish_docs_cli = "scripts.lab2_publish_docs_cli:main"
+publish_queries_cli = "scripts.lab2_publish_queries_cli:main"
 # Legacy aliases for backward compatibility (hyphens)
 publish-docs = "scripts.lab2_publish_docs:main"
 publish-queries = "scripts.lab2_publish_queries:main"
 lab1-datagen = "scripts.lab1_datagen:main"
+publish-docs-cli = "scripts.lab2_publish_docs_cli:main"
+publish-queries-cli = "scripts.lab2_publish_queries_cli:main"
 # Additional aliases
 lab2_publish_docs = "scripts.lab2_publish_docs:main"
 lab2_publish_queries = "scripts.lab2_publish_queries:main"
+lab2_publish_docs_cli = "scripts.lab2_publish_docs_cli:main"
+lab2_publish_queries_cli = "scripts.lab2_publish_queries_cli:main"
 
 [project.urls]
 Homepage = "https://github.com/confluentinc/quickstart-streaming-agents"
