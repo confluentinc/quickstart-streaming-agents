@@ -52,7 +52,7 @@ resource "confluent_flink_statement" "zapier_mcp_connection" {
     secret = data.terraform_remote_state.core.outputs.app_manager_flink_api_secret
   }
 
-  statement = "CREATE CONNECTION `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`zapier-mcp-connection` WITH ( 'type' = 'MCP_SERVER', 'endpoint' = '${var.ZAPIER_SSE_ENDPOINT}', 'api-key' = 'api_key' );"
+  statement = "CREATE CONNECTION `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`zapier-mcp-connection` WITH ( 'type' = 'MCP_SERVER', 'endpoint' = '${var.zapier_sse_endpoint}', 'api-key' = 'api_key' );"
 
   properties = {
     "sql.current-catalog"  = data.terraform_remote_state.core.outputs.confluent_environment_display_name
@@ -119,7 +119,7 @@ resource "local_file" "mcp_commands" {
 CREATE CONNECTION `zapier-mcp-connection`
 WITH (
   'type' = 'MCP_SERVER',
-  'endpoint' = '${var.ZAPIER_SSE_ENDPOINT}',
+  'endpoint' = '${var.zapier_sse_endpoint}',
   'api-key' = 'api_key'
 );
 

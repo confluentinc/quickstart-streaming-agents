@@ -132,7 +132,7 @@ pip install . && python deploy.py
 </details>
 
 During deployment, you'll be prompted to provide 3 MongoDB variables:
-- `MONGODB_CONNECTION_STRING`: The connection URL from [Step 5](#step-1-create-mongodb-atlas-account-and-cluster) of MongoDB setup (e.g., `mongodb+srv://cluster0.abc123.mongodb.net`)
+- `mongodb_connection_string`: The connection URL from [Step 5](#step-1-create-mongodb-atlas-account-and-cluster) of MongoDB setup (e.g., `mongodb+srv://cluster0.abc123.mongodb.net`)
 - `mongodb_username`: The database-specific username you created in [Step 4](#step-1-create-mongodb-atlas-account-and-cluster) (*different* from what you use to login to MongoDB)
 - `mongodb_password`: The database-specific password you created in [Step 4](#step-1-create-mongodb-atlas-account-and-cluster)
 

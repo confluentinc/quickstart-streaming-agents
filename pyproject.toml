@@ -71,12 +71,17 @@ lab1_datagen = "scripts.lab1_datagen:main"
 # CLI-based versions (no librdkafka dependency)
 publish_docs_cli = "scripts.lab2_publish_docs_cli:main"
 publish_queries_cli = "scripts.lab2_publish_queries_cli:main"
+# Simple deployment tools
+simple_deploy = "scripts.simple_deploy:main"
+simple_destroy = "scripts.simple_destroy:main"
 # Legacy aliases for backward compatibility (hyphens)
 publish-docs = "scripts.lab2_publish_docs:main"
 publish-queries = "scripts.lab2_publish_queries:main"
 lab1-datagen = "scripts.lab1_datagen:main"
 publish-docs-cli = "scripts.lab2_publish_docs_cli:main"
 publish-queries-cli = "scripts.lab2_publish_queries_cli:main"
+simple-deploy = "scripts.simple_deploy:main"
+simple-destroy = "scripts.simple_destroy:main"
 # Additional aliases
 lab2_publish_docs = "scripts.lab2_publish_docs:main"
 lab2_publish_queries = "scripts.lab2_publish_queries:main"

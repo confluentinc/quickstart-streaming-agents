@@ -450,7 +450,7 @@ class ConfigurationManager:
                     return True
             return True
 
-        elif key == "ZAPIER_SSE_ENDPOINT":
+        elif key == "zapier_sse_endpoint":
             return self.validate_zapier_url(value)
         elif key == "cloud_provider":
             return value.lower() in ["aws", "azure"]
@@ -498,8 +498,8 @@ class ConfigurationManager:
         # These are optional and only validated if they exist
         optional_fields = [
             "owner_email",
-            "ZAPIER_SSE_ENDPOINT",
-            "MONGODB_CONNECTION_STRING",
+            "zapier_sse_endpoint",
+            "mongodb_connection_string",
             "mongodb_username",
             "mongodb_password",
         ]
@@ -545,7 +545,7 @@ class ConfigurationManager:
             not in [
                 "confluent_cloud_api_key",
                 "confluent_cloud_api_secret",
-                "ZAPIER_SSE_ENDPOINT",
+                "zapier_sse_endpoint",
             ]
         }
         # Add a marker to indicate configuration was completed at least once
@@ -576,7 +576,7 @@ class ConfigurationManager:
                 self.save_credentials_to_tfvars(existing_config)
 
             # Lab1 fields
-            if field == "ZAPIER_SSE_ENDPOINT":
+            if field == "zapier_sse_endpoint":
                 lab1_tfvars = self.terraform_dir / "lab1-tool-calling/terraform.tfvars"
                 if lab1_tfvars.exists() or lab_selection in ["lab1", "all"]:
                     existing_lab1 = {}
@@ -592,7 +592,7 @@ class ConfigurationManager:
                     self._write_lab_tfvars(lab1_tfvars, existing_lab1, "lab1")
 
             # Lab2 fields
-            if field in ["MONGODB_CONNECTION_STRING", "mongodb_username", "mongodb_password"]:
+            if field in ["mongodb_connection_string", "mongodb_username", "mongodb_password"]:
                 lab2_tfvars = self.terraform_dir / "lab2-vector-search/terraform.tfvars"
                 if lab2_tfvars.exists() or lab_selection in ["lab2", "all"]:
                     existing_lab2 = {}
@@ -623,11 +623,11 @@ cloud_region = "{config.get('cloud_region', '')}"
 """
 
             if lab_type == "lab1":
-                if "ZAPIER_SSE_ENDPOINT" in config:
-                    content += f'ZAPIER_SSE_ENDPOINT = "{config["ZAPIER_SSE_ENDPOINT"]}"\n'
+                if "zapier_sse_endpoint" in config:
+                    content += f'zapier_sse_endpoint = "{config["zapier_sse_endpoint"]}"\n'
             elif lab_type == "lab2":
-                if "MONGODB_CONNECTION_STRING" in config:
-                    content += f'MONGODB_CONNECTION_STRING = "{config["MONGODB_CONNECTION_STRING"]}"\n'
+                if "mongodb_connection_string" in config:
+                    content += f'mongodb_connection_string = "{config["mongodb_connection_string"]}"\n'
                 if "mongodb_username" in config:
                     content += f'mongodb_username = "{config["mongodb_username"]}"\n'
                 if "mongodb_password" in config:
@@ -837,7 +837,7 @@ cloud_region = "{config['cloud_region']}"
                 "cloud_region": "East US",
                 "confluent_cloud_api_key": "test-key",  # pragma: allowlist secret
                 "confluent_cloud_api_secret": "test-secret",  # pragma: allowlist secret
-                "ZAPIER_SSE_ENDPOINT": "https://mcp.zapier.com/api/mcp/s/test-api-key/sse",
+                "zapier_sse_endpoint": "https://mcp.zapier.com/api/mcp/s/test-api-key/sse",
                 "owner_email": "",
             }
             for key, default_value in defaults.items():
@@ -934,13 +934,13 @@ cloud_region = "{config['cloud_region']}"
                 self.save_credentials_to_tfvars(config)
 
         # Zapier SSE endpoint
-        default_zapier_url = existing_config.get("ZAPIER_SSE_ENDPOINT", "")
+        default_zapier_url = existing_config.get("zapier_sse_endpoint", "")
         while True:
             zapier_url = self.ui.prompt(
                 "Zapier SSE Endpoint (from Zapier MCP server)", default_zapier_url
             )
             if self.validate_zapier_url(zapier_url):
-                config["ZAPIER_SSE_ENDPOINT"] = zapier_url
+                config["zapier_sse_endpoint"] = zapier_url
                 # Save config immediately after Zapier endpoint
                 self.save_credentials_to_tfvars(config)
                 break
@@ -1420,15 +1420,15 @@ class TerraformManager:
                 f"-var=confluent_cloud_api_secret={confluent_api_secret}",
             ])
         elif terraform_dir_name == "lab1-tool-calling":
-            # Lab1 needs: cloud_region, ZAPIER_SSE_ENDPOINT (dummy is fine, uses remote state)
+            # Lab1 needs: cloud_region, zapier_sse_endpoint (dummy is fine, uses remote state)
             var_flags.extend([
-                "-var=ZAPIER_SSE_ENDPOINT=dummy",
+                "-var=zapier_sse_endpoint=dummy",
             ])
         elif terraform_dir_name == "lab2-vector-search":
-            # Lab2 needs: cloud_region, MONGODB_CONNECTION_STRING, mongodb_username, mongodb_password
+            # Lab2 needs: cloud_region, mongodb_connection_string, mongodb_username, mongodb_password
             # Dummy values are fine since lab2 uses remote state for Confluent resources
             var_flags.extend([
-                "-var=MONGODB_CONNECTION_STRING=mongodb://dummy",
+                "-var=mongodb_connection_string=mongodb://dummy",
                 "-var=mongodb_username=dummy",
                 "-var=mongodb_password=dummy",
             ])
@@ -1634,9 +1634,9 @@ cloud_region = "{config['cloud_region']}"
 """
 
         if lab_type == "Lab1":
-            base_content += f'ZAPIER_SSE_ENDPOINT = "{config["ZAPIER_SSE_ENDPOINT"]}"\n'
+            base_content += f'zapier_sse_endpoint = "{config["zapier_sse_endpoint"]}"\n'
         elif lab_type == "Lab2":
-            base_content += f"""MONGODB_CONNECTION_STRING = "{config["MONGODB_CONNECTION_STRING"]}"
+            base_content += f"""mongodb_connection_string = "{config["mongodb_connection_string"]}"
 mongodb_username = "{config["mongodb_username"]}"
 mongodb_password = "{config["mongodb_password"]}"
 
@@ -1678,14 +1678,14 @@ MONGODB_INDEX_NAME = "vector_index"
 
             # Add lab-specific credentials
             if "lab1" in lab_name:
-                if "ZAPIER_SSE_ENDPOINT" not in config:
-                    self.ui.print_error("❌ ZAPIER_SSE_ENDPOINT is required for Lab1 deployment but not found in configuration.")
+                if "zapier_sse_endpoint" not in config:
+                    self.ui.print_error("❌ zapier_sse_endpoint is required for Lab1 deployment but not found in configuration.")
                     self.ui.print_info("Please run the setup again to configure the Zapier SSE endpoint.")
                     return False
-                lab_config["ZAPIER_SSE_ENDPOINT"] = config["ZAPIER_SSE_ENDPOINT"]
+                lab_config["zapier_sse_endpoint"] = config["zapier_sse_endpoint"]
             elif "lab2" in lab_name:
                 for key in [
-                    "MONGODB_CONNECTION_STRING",
+                    "mongodb_connection_string",
                     "mongodb_username",
                     "mongodb_password",
                 ]:
@@ -2019,10 +2019,10 @@ MONGODB_INDEX_NAME = "vector_index"
         # Validate that lab-specific required fields exist
         missing_lab_fields = []
         if lab_selection in ["lab1", "all"]:
-            if "ZAPIER_SSE_ENDPOINT" not in complete_config or not complete_config["ZAPIER_SSE_ENDPOINT"]:
-                missing_lab_fields.append("ZAPIER_SSE_ENDPOINT")
+            if "zapier_sse_endpoint" not in complete_config or not complete_config["zapier_sse_endpoint"]:
+                missing_lab_fields.append("zapier_sse_endpoint")
         if lab_selection in ["lab2", "all"]:
-            for field in ["MONGODB_CONNECTION_STRING", "mongodb_username", "mongodb_password"]:
+            for field in ["mongodb_connection_string", "mongodb_username", "mongodb_password"]:
                 if field not in complete_config or not complete_config[field]:
                     missing_lab_fields.append(field)
 
@@ -2099,10 +2099,10 @@ MONGODB_INDEX_NAME = "vector_index"
         # Check for missing lab-specific fields if labs are selected
         missing_fields = []
         if selection in ["lab1", "all"]:
-            if "ZAPIER_SSE_ENDPOINT" not in complete_config or not complete_config["ZAPIER_SSE_ENDPOINT"]:
-                missing_fields.append("ZAPIER_SSE_ENDPOINT")
+            if "zapier_sse_endpoint" not in complete_config or not complete_config["zapier_sse_endpoint"]:
+                missing_fields.append("zapier_sse_endpoint")
         if selection in ["lab2", "all"]:
-            for field in ["MONGODB_CONNECTION_STRING", "mongodb_username", "mongodb_password"]:
+            for field in ["mongodb_connection_string", "mongodb_username", "mongodb_password"]:
                 if field not in complete_config or not complete_config[field]:
                     missing_fields.append(field)
 
@@ -2282,10 +2282,10 @@ MONGODB_INDEX_NAME = "vector_index"
 
         lab_fields = []
         if lab_selection in ["lab1", "all"]:
-            lab_fields.append("ZAPIER_SSE_ENDPOINT")
+            lab_fields.append("zapier_sse_endpoint")
         if lab_selection in ["lab2", "all"]:
             lab_fields.extend(
-                ["MONGODB_CONNECTION_STRING", "mongodb_username", "mongodb_password"]
+                ["mongodb_connection_string", "mongodb_username", "mongodb_password"]
             )
 
         all_fields = core_fields + lab_fields
@@ -2624,7 +2624,7 @@ MONGODB_INDEX_NAME = "vector_index"
                     )
             return ""
 
-        elif field == "ZAPIER_SSE_ENDPOINT":
+        elif field == "zapier_sse_endpoint":
             # Check if we have an existing valid Zapier URL
             if existing_value and self.config_manager.validate_zapier_url(
                 existing_value
@@ -2687,7 +2687,7 @@ MONGODB_INDEX_NAME = "vector_index"
             return ""
 
         # MongoDB credentials with detailed context
-        elif field == "MONGODB_CONNECTION_STRING":
+        elif field == "mongodb_connection_string":
             # Check if we have an existing valid MongoDB connection string
             if (
                 existing_value
