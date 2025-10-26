@@ -53,6 +53,7 @@ confluent_api_keys.md
 mongodb_commands.txt
 .setup_config.json
 **/.setup_config.json
+**/DEPLOYED_RESOURCES.md
 
 # Python (if scripts are added)
 __pycache__/
