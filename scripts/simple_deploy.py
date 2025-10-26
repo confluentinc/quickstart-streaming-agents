@@ -129,12 +129,23 @@ def main():
 
         # Step 4: Select what to deploy
         envs_to_deploy = []
-        env_choice = prompt_choice("What to deploy?", ["core", "lab1-tool-calling", "lab2-vector-search", "all"])
+        deploy_options = [
+            "Lab 1: MCP Tool Calling",
+            "Lab 2: Vector Search / RAG",
+            "Both Labs",
+            "Core Infrastructure Only (advanced)"
+        ]
+        env_choice = prompt_choice("What would you like to deploy?", deploy_options)
 
-        if env_choice == "all":
+        # Map user-friendly choice to deployment targets (core auto-included for labs)
+        if env_choice == "Lab 1: MCP Tool Calling":
+            envs_to_deploy = ["core", "lab1-tool-calling"]
+        elif env_choice == "Lab 2: Vector Search / RAG":
+            envs_to_deploy = ["core", "lab2-vector-search"]
+        elif env_choice == "Both Labs":
             envs_to_deploy = ["core", "lab1-tool-calling", "lab2-vector-search"]
-        else:
-            envs_to_deploy = [env_choice]
+        else:  # Core Infrastructure Only (advanced)
+            envs_to_deploy = ["core"]
 
         # Step 5: Prompt for required credentials
         print("\n--- Credential Configuration ---")

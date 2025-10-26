@@ -9,7 +9,7 @@ description = "Confluent Streaming Agents Quickstart. Real-time data meets Agent
 readme = "README.md"
 authors = [
     {name = "Confluent", email = "support@confluent.io"},
-    {name = "Brenner Heintz", email = "200854174+column-oriented@users.noreply.github.com"}
+    {name = "Brenner Heintz", email = "bheintz@confluent.io"}
 ]
 license = {text = "Apache-2.0"}
 classifiers = [
