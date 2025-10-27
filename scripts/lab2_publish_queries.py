@@ -32,11 +32,16 @@ from .common.terraform import extract_kafka_credentials, validate_terraform_stat
 
 def setup_logging(verbose: bool = False) -> logging.Logger:
     """Set up logging configuration."""
-    level = logging.DEBUG if verbose else logging.INFO
+    level = logging.DEBUG if verbose else logging.ERROR
     logging.basicConfig(
         level=level,
         format="%(asctime)s - %(levelname)s - %(message)s"
     )
+
+    # Suppress noisy modules
+    logging.getLogger("scripts.common.terraform").setLevel(logging.ERROR)
+    logging.getLogger("scripts.common.cloud_detection").setLevel(logging.ERROR)
+
     return logging.getLogger(__name__)
 
 
@@ -138,23 +143,16 @@ class QueryPublisherCLI:
             )
 
             if result.returncode != 0:
-                self.logger.error(f"Failed to publish query: {result.stderr}")
+                print(f"❌ Failed to publish query: {result.stderr}")
                 return False
-
-            self.logger.info(f"✓ Query published successfully to topic '{topic}'")
-            if self.environment_id and self.cluster_id:
-                url = f"https://confluent.cloud/environments/{self.environment_id}/clusters/{self.cluster_id}/topics/{topic}/message-viewer"
-                self.logger.info(f"   View messages:  {url}")
-                response_url = f"https://confluent.cloud/environments/{self.environment_id}/clusters/{self.cluster_id}/topics/search_results_response/message-viewer"
-                self.logger.info(f"   View responses: {response_url}")
 
             return True
 
         except subprocess.TimeoutExpired:
-            self.logger.error("Timeout while publishing query (30s)")
+            print("❌ Timeout while publishing query (30s)")
             return False
         except Exception as e:
-            self.logger.error(f"Failed to publish query: {e}")
+            print(f"❌ Failed to publish query: {e}")
             return False
 
     def close(self):
@@ -225,42 +223,45 @@ Examples:
                     logger.info(f"Auto-detected cloud provider: {suggestion}")
                     cloud_provider = suggestion
                 else:
-                    logger.error("Could not auto-detect cloud provider. Please specify 'aws' or 'azure'.")
+                    print("❌ Could not auto-detect cloud provider. Please specify 'aws' or 'azure'.")
                     return 1
 
     # Validate cloud provider
     if not validate_cloud_provider(cloud_provider):
-        logger.error(f"Invalid cloud provider: {cloud_provider}")
+        print(f"❌ Invalid cloud provider: {cloud_provider}")
         return 1
 
     # Get project root
     try:
         project_root = get_project_root()
     except Exception as e:
-        logger.error(f"Could not find project root: {e}")
+        print(f"❌ Could not find project root: {e}")
         return 1
 
     # Validate terraform state
     try:
         validate_terraform_state(cloud_provider, project_root)
     except Exception as e:
-        logger.error(f"Terraform validation failed: {e}")
+        print(f"❌ Terraform validation failed: {e}")
         return 1
 
     # Extract Kafka credentials
     try:
         credentials = extract_kafka_credentials(cloud_provider, project_root)
     except Exception as e:
-        logger.error(f"Failed to extract Kafka credentials: {e}")
+        print(f"❌ Failed to extract Kafka credentials: {e}")
         return 1
 
     # Get query from user if not provided
     query = args.query
     if not query:
-        print("\nEnter your query (press Ctrl+D or Ctrl+Z when done):")
-        query = sys.stdin.read().strip()
-        if not query:
-            logger.error("No query provided")
+        try:
+            query = input("\nEnter your query: ").strip()
+            if not query:
+                print("❌ No query provided")
+                return 1
+        except (EOFError, KeyboardInterrupt):
+            print("\n❌ Query input cancelled")
             return 1
 
     # Initialize publisher
@@ -276,7 +277,7 @@ Examples:
             cluster_id=credentials.get("cluster_id")
         )
     except Exception as e:
-        logger.error(f"Failed to initialize publisher: {e}")
+        print(f"❌ Failed to initialize publisher: {e}")
         return 1
 
     # Publish query
@@ -286,8 +287,14 @@ Examples:
             return 1
 
         print(f"\n✓ Query published successfully!")
-        print(f"  Topic: {args.topic}")
         print(f"  Query: {query[:100]}{'...' if len(query) > 100 else ''}")
+
+        # Show URLs if we have environment and cluster IDs
+        if credentials.get("environment_id") and credentials.get("cluster_id"):
+            env_id = credentials["environment_id"]
+            cluster_id = credentials["cluster_id"]
+            print(f"\n  View messages:  https://confluent.cloud/environments/{env_id}/clusters/{cluster_id}/topics/{args.topic}/message-viewer")
+            print(f"  View responses: https://confluent.cloud/environments/{env_id}/clusters/{cluster_id}/topics/search_results_response/message-viewer")
 
         return 0
     finally:
