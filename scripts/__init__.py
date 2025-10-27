@@ -10,5 +10,5 @@ All tools support both UV and traditional Python environments with
 automatic cloud provider detection and robust error handling.
 """
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 __author__ = "Confluent"

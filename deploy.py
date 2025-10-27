@@ -157,7 +157,7 @@ def main():
         set_key(creds_file, "TF_VAR_confluent_cloud_api_secret", api_secret)
 
         # Owner email (optional, for resource tagging)
-        owner_email = prompt_with_default("Owner Email (optional, for AWS/Azure resource tagging)", creds.get("TF_VAR_owner_email", ""))
+        owner_email = prompt_with_default("Owner Email (for AWS/Azure resource tagging)", creds.get("TF_VAR_owner_email", ""))
         if owner_email:
             set_key(creds_file, "TF_VAR_owner_email", owner_email)
 

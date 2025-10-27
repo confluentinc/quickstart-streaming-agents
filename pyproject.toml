@@ -76,6 +76,8 @@ lab2_publish_queries = "scripts.lab2_publish_queries:main"
 publish_queries = "scripts.lab2_publish_queries:main"
 publish-queries = "scripts.lab2_publish_queries:main"
 #
+generate_deployment_summary = "scripts.common.generate_deployment_summary:main"
+generate-deployment-summary = "scripts.common.generate_deployment_summary:main"
 deployment_summary = "scripts.common.generate_deployment_summary:main"
 deployment-summary = "scripts.common.generate_deployment_summary:main"
 
