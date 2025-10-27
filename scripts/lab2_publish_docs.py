@@ -51,11 +51,13 @@ class FlinkDocsPublisherCLI:
         "fields": [
             {
                 "name": "document_id",
-                "type": "string",
+                "type": ["null", "string"],
+                "default": None,
             },
             {
                 "name": "document_text",
-                "type": "string",
+                "type": ["null", "string"],
+                "default": None,
             },
         ],
     }
@@ -159,10 +161,11 @@ class FlinkDocsPublisherCLI:
             True if successful, False otherwise
         """
         try:
-            # Create Avro record
+            # Create Avro record with union type formatting
+            # For union types ["null", "string"], values must be wrapped as {"string": "value"}
             value = {
-                "document_id": document["document_id"],
-                "document_text": document["document_text"],
+                "document_id": {"string": document["document_id"]},
+                "document_text": {"string": document["document_text"]},
             }
 
             if self.dry_run:
