@@ -15,9 +15,10 @@ locals {
     "centralindia"  = "centralindia"
   }
 
-  confluent_region = lookup(local.region_mapping, var.cloud_region, var.cloud_region)
-  cloud_provider   = "AZURE"
-  prefix           = "streaming-agents"
+  confluent_region  = lookup(local.region_mapping, var.cloud_region, var.cloud_region)
+  cloud_provider    = "AZURE"
+  prefix            = "streaming-agents"
+  project_root_path = abspath("${path.root}/../..")
 }
 
 resource "confluent_environment" "staging" {
@@ -267,6 +268,8 @@ module "azure_ai_services" {
   confluent_flink_rest_endpoint  = data.confluent_flink_region.demo_flink_region.rest_endpoint
   confluent_flink_api_key_id     = confluent_api_key.app-manager-flink-api-key.id
   confluent_flink_api_key_secret = confluent_api_key.app-manager-flink-api-key.secret
+  owner_email                    = var.owner_email
+  project_root_path              = local.project_root_path
 }
 
 # Core LLM Model - Text Generation (Azure)

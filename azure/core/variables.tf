@@ -33,3 +33,9 @@ variable "azure_subscription_id" {
   description = "Azure Subscription ID"
   type        = string
 }
+
+variable "owner_email" {
+  description = "Email address of the resource owner for tagging purposes"
+  type        = string
+  default     = ""
+}
