@@ -241,14 +241,14 @@ Examples:
 
     # Validate terraform state
     try:
-        validate_terraform_state(project_root, cloud_provider)
+        validate_terraform_state(cloud_provider, project_root)
     except Exception as e:
         logger.error(f"Terraform validation failed: {e}")
         return 1
 
     # Extract Kafka credentials
     try:
-        credentials = extract_kafka_credentials(project_root, cloud_provider)
+        credentials = extract_kafka_credentials(cloud_provider, project_root)
     except Exception as e:
         logger.error(f"Failed to extract Kafka credentials: {e}")
         return 1
