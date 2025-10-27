@@ -51,13 +51,11 @@ class FlinkDocsPublisherCLI:
         "fields": [
             {
                 "name": "document_id",
-                "type": ["null", "string"],
-                "default": None,
+                "type": "string",
             },
             {
                 "name": "document_text",
-                "type": ["null", "string"],
-                "default": None,
+                "type": "string",
             },
         ],
     }
@@ -281,12 +279,22 @@ def find_flink_docs_directory(project_root: Path, cloud_provider: str) -> Option
     Returns:
         Path to Flink docs directory or None if not found
     """
-    # Try cloud-specific path first
+    # Standard location for docs
+    standard_path = project_root / "assets" / "lab2" / "flink_docs" / "markdown_chunks"
+    if standard_path.exists():
+        return standard_path
+
+    # Alternative without markdown_chunks subdirectory
+    alt_path = project_root / "assets" / "lab2" / "flink_docs"
+    if alt_path.exists():
+        return alt_path
+
+    # Try cloud-specific path (legacy)
     cloud_path = project_root / cloud_provider / "lab2-vector-search" / "flink_docs"
     if cloud_path.exists():
         return cloud_path
 
-    # Try generic path
+    # Try generic path (legacy)
     generic_path = project_root / "flink_docs"
     if generic_path.exists():
         return generic_path
