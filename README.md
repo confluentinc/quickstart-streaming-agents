@@ -5,8 +5,6 @@
 ![Streaming Agents Intro Slide](./assets/streaming-agents-intro-slide.png)
 
 
-
-
 Build real-time AI agents with [Confluent Cloud Streaming Agents](https://docs.confluent.io/cloud/current/ai/streaming-agents/overview.html). This quickstart includes two hands-on labs:
 
 <table>
@@ -42,7 +40,7 @@ Build real-time AI agents with [Confluent Cloud Streaming Agents](https://docs.c
 - **[uv](https://github.com/astral-sh/uv)**
 - **[Python 3.8+](https://github.com/python/cpython)**
 - **[Terraform](https://github.com/hashicorp/terraform)** - infrastructure deployment
-- **[AWS CLI](https://github.com/aws/aws-cli)** or **[Azure CLI](https://github.com/Azure/azure-cli)**
+- **[AWS CLI](https://github.com/aws/aws-cli)** or **[Azure CLI](https://github.com/Azure/azure-cli)** - must be logged in
 - **[Confluent CLI](https://docs.confluent.io/confluent-cli/current/overview.html)** - cloud resource management
 - **[Docker](https://github.com/docker)** - for Lab1 data generation
 

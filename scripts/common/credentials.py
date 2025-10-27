@@ -83,14 +83,14 @@ def load_credentials_json(root: Path) -> Dict[str, str]:
     return creds
 
 
-def generate_confluent_api_keys(prefix: str = "ai") -> Tuple[Optional[str], Optional[str]]:
+def generate_confluent_api_keys(prefix: str = "streaming-agents") -> Tuple[Optional[str], Optional[str]]:
     """
     Generate Confluent API keys using CLI.
 
     Creates a service account and generates API keys with OrganizationAdmin role.
 
     Args:
-        prefix: Prefix for service account name (default: "ai")
+        prefix: Prefix for service account name (default: "streaming-agents")
 
     Returns:
         Tuple of (api_key, api_secret) or (None, None) if generation fails

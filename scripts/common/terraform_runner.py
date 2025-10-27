@@ -12,7 +12,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from .credentials_markdown import generate_credentials_markdown
+from .generate_deployment_summary import generate_credentials_markdown
 
 
 def run_terraform(env_path: Path, auto_approve: bool = True) -> bool:

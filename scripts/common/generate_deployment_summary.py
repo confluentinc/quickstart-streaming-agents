@@ -9,8 +9,8 @@ Usage:
     generate_credentials_markdown(cloud_provider, tf_outputs, output_path)
 
     # Standalone (manual)
-    uv run scripts/common/credentials_markdown.py aws/core
-    uv run scripts/common/credentials_markdown.py azure/core
+    uv run deployment-summary aws/core
+    uv run deployment-summary azure/core
 """
 
 import json
@@ -312,13 +312,13 @@ def main():
     Main entry point for standalone script execution.
 
     Usage:
-        uv run scripts/common/credentials_markdown.py aws/core
-        uv run scripts/common/credentials_markdown.py azure/core
+        uv run deployment-summary aws/core
+        uv run deployment-summary azure/core
     """
     if len(sys.argv) != 2:
-        print("Usage: uv run scripts/common/credentials_markdown.py <terraform-core-path>")
-        print("Example: uv run scripts/common/credentials_markdown.py aws/core")
-        print("Example: uv run scripts/common/credentials_markdown.py azure/core")
+        print("Usage: uv run deployment-summary <terraform-core-path>")
+        print("Example: uv run deployment-summary aws/core")
+        print("Example: uv run deployment-summary azure/core")
         sys.exit(1)
 
     # Parse arguments
