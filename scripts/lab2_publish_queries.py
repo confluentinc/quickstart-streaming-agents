@@ -32,7 +32,7 @@ from .common.terraform import extract_kafka_credentials, validate_terraform_stat
 
 def setup_logging(verbose: bool = False) -> logging.Logger:
     """Set up logging configuration."""
-    level = logging.DEBUG if verbose else logging.WARNING
+    level = logging.DEBUG if verbose else logging.INFO
     logging.basicConfig(
         level=level,
         format="%(asctime)s - %(levelname)s - %(message)s"
@@ -103,8 +103,9 @@ class QueryPublisherCLI:
             True if successful, False otherwise
         """
         try:
-            # Create Avro record
-            value = {"query": query}
+            # Create Avro record with union type formatting
+            # For union types ["null", "string"], values must be wrapped as {"string": "value"}
+            value = {"query": {"string": query}}
 
             # Prepare confluent CLI command
             cmd = [

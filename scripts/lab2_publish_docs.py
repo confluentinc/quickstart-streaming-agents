@@ -21,8 +21,10 @@ import logging
 import subprocess
 import sys
 import tempfile
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Tuple
 
 import yaml
 
@@ -72,7 +74,8 @@ class FlinkDocsPublisherCLI:
         schema_registry_api_secret: str,
         environment_id: str = None,
         cluster_id: str = None,
-        dry_run: bool = False
+        dry_run: bool = False,
+        max_workers: int = 10
     ):
         """Initialize the publisher with Kafka and Schema Registry configuration."""
         self.bootstrap_servers = bootstrap_servers
@@ -84,6 +87,7 @@ class FlinkDocsPublisherCLI:
         self.environment_id = environment_id
         self.cluster_id = cluster_id
         self.dry_run = dry_run
+        self.max_workers = max_workers
         self.logger = logging.getLogger(__name__)
 
         # Create temporary schema file
@@ -225,9 +229,38 @@ class FlinkDocsPublisherCLI:
             )
             return False
 
+    def _process_single_file(self, file_path: Path, topic: str) -> Tuple[str, bool, Optional[str]]:
+        """
+        Process a single markdown file: parse and publish.
+
+        Args:
+            file_path: Path to the markdown file
+            topic: Kafka topic name
+
+        Returns:
+            Tuple of (file_name, success, error_message)
+        """
+        file_name = file_path.name
+        try:
+            # Parse document
+            document = self.parse_markdown_file(file_path)
+            if not document:
+                return (file_name, False, "Failed to parse markdown file")
+
+            # Publish document
+            if self.publish_document(document, topic):
+                return (file_name, True, None)
+            else:
+                return (file_name, False, "Failed to publish document")
+
+        except Exception as e:
+            error_msg = f"Unexpected error: {e}"
+            self.logger.error(f"Error processing {file_name}: {error_msg}")
+            return (file_name, False, error_msg)
+
     def publish_directory(self, docs_dir: Path, topic: str) -> Dict[str, int]:
         """
-        Publish all markdown files in a directory to Kafka.
+        Publish all markdown files in a directory to Kafka using parallel workers.
 
         Args:
             docs_dir: Directory containing markdown files
@@ -237,27 +270,43 @@ class FlinkDocsPublisherCLI:
             Dictionary with success/failure counts
         """
         results = {"success": 0, "failed": 0, "total": 0}
+        results_lock = threading.Lock()
 
         # Find all markdown files
         md_files = list(docs_dir.glob("*.md"))
         results["total"] = len(md_files)
 
         self.logger.info(f"Found {len(md_files)} markdown files to process")
+        self.logger.info(f"Publishing with {self.max_workers} parallel workers")
 
-        for file_path in md_files:
-            self.logger.info(f"Processing: {file_path.name}")
+        # Process files in parallel
+        with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
+            # Submit all files as tasks
+            future_to_file = {
+                executor.submit(self._process_single_file, file_path, topic): file_path
+                for file_path in md_files
+            }
 
-            # Parse document
-            document = self.parse_markdown_file(file_path)
-            if not document:
-                results["failed"] += 1
-                continue
+            # Process results as they complete
+            completed = 0
+            for future in as_completed(future_to_file):
+                file_path = future_to_file[future]
+                file_name, success, error_msg = future.result()
 
-            # Publish document
-            if self.publish_document(document, topic):
-                results["success"] += 1
-            else:
-                results["failed"] += 1
+                # Update results with thread safety
+                with results_lock:
+                    if success:
+                        results["success"] += 1
+                    else:
+                        results["failed"] += 1
+                    completed += 1
+
+                    # Show progress
+                    if completed % 10 == 0 or completed == results["total"]:
+                        self.logger.info(
+                            f"Progress: {completed}/{results['total']} documents "
+                            f"({results['success']} succeeded, {results['failed']} failed)"
+                        )
 
         return results
 
@@ -344,6 +393,12 @@ Examples:
         action="store_true",
         help="Enable verbose logging"
     )
+    parser.add_argument(
+        "--workers",
+        type=int,
+        default=10,
+        help="Number of parallel workers for publishing (default: 10)"
+    )
 
     args = parser.parse_args()
 
@@ -413,7 +468,8 @@ Examples:
             schema_registry_api_secret=credentials["schema_registry_api_secret"],
             environment_id=credentials.get("environment_id"),
             cluster_id=credentials.get("cluster_id"),
-            dry_run=args.dry_run
+            dry_run=args.dry_run,
+            max_workers=args.workers
         )
     except Exception as e:
         logger.error(f"Failed to initialize publisher: {e}")
