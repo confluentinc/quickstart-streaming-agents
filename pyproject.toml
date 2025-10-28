@@ -9,7 +9,7 @@ description = "Confluent Streaming Agents Quickstart. Real-time data meets Agent
 readme = "README.md"
 authors = [
     {name = "Confluent", email = "support@confluent.io"},
-    {name = "Brenner Heintz", email = "200854174+column-oriented@users.noreply.github.com"}
+    {name = "Brenner Heintz", email = "bheintz@confluent.io"}
 ]
 license = {text = "Apache-2.0"}
 classifiers = [
@@ -41,9 +41,9 @@ requires-python = ">=3.8.1"
 
 # Core dependencies
 dependencies = [
-    "confluent-kafka[avro]>=2.3.0,<3.0",
     "PyYAML>=6.0.1,<7.0",
     "requests>=2.31.0,<3.0",
+    "python-dotenv>=1.0.0,<2.0",
     "urllib3>=1.26.18,<2.0",  # Pin to v1.x for LibreSSL compatibility on macOS
 ]
 
@@ -60,20 +60,27 @@ dev = [
     "pre-commit>=3.5.0",
 ]
 
-# Console script entry points for all workflows
+
 [project.scripts]
 deploy = "deploy:main"
-destroy = "deploy:destroy_main"
-publish_docs = "scripts.lab2_publish_docs:main"
-publish_queries = "scripts.lab2_publish_queries:main"
+destroy = "scripts.common.destroy:main"
+#
 lab1_datagen = "scripts.lab1_datagen:main"
-# Legacy aliases for backward compatibility (hyphens)
-publish-docs = "scripts.lab2_publish_docs:main"
-publish-queries = "scripts.lab2_publish_queries:main"
 lab1-datagen = "scripts.lab1_datagen:main"
-# Additional aliases
+#
 lab2_publish_docs = "scripts.lab2_publish_docs:main"
+publish_docs = "scripts.lab2_publish_docs:main"
+publish-docs = "scripts.lab2_publish_docs:main"
+#
 lab2_publish_queries = "scripts.lab2_publish_queries:main"
+publish_queries = "scripts.lab2_publish_queries:main"
+publish-queries = "scripts.lab2_publish_queries:main"
+#
+generate_deployment_summary = "scripts.common.generate_deployment_summary:main"
+generate-deployment-summary = "scripts.common.generate_deployment_summary:main"
+deployment_summary = "scripts.common.generate_deployment_summary:main"
+deployment-summary = "scripts.common.generate_deployment_summary:main"
+
 
 [project.urls]
 Homepage = "https://github.com/confluentinc/quickstart-streaming-agents"

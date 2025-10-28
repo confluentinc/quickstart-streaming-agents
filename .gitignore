@@ -40,6 +40,7 @@ terraform/providers-azure.tf
 .env
 .env.*
 *.env
+!credentials.env.example
 
 # Terraform credential backups and sensitive files
 terraform/terraform.tfvars.reset-backup
@@ -52,6 +53,7 @@ confluent_api_keys.md
 mongodb_commands.txt
 .setup_config.json
 **/.setup_config.json
+**/DEPLOYED_RESOURCES.md
 
 # Python (if scripts are added)
 __pycache__/
@@ -87,3 +89,7 @@ chunks.json
 .venv/
 venv/
 env/
+
+# Testing infrastructure (contains sensitive credentials)
+tests/
+credentials.json

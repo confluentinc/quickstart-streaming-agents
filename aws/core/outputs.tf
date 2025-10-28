@@ -114,3 +114,13 @@ output "aws_secret_access_key" {
   sensitive   = true
   description = "AWS secret access key for Bedrock user"
 }
+
+output "random_id" {
+  value       = random_id.resource_suffix.hex
+  description = "Random ID suffix used for resource naming"
+}
+
+output "owner_email" {
+  value       = var.owner_email
+  description = "Owner email for resource tagging"
+}

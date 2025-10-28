@@ -15,9 +15,10 @@ locals {
     "centralindia"  = "centralindia"
   }
 
-  confluent_region = lookup(local.region_mapping, var.cloud_region, var.cloud_region)
-  cloud_provider   = "AZURE"
-  prefix           = "streaming-agents"
+  confluent_region  = lookup(local.region_mapping, var.cloud_region, var.cloud_region)
+  cloud_provider    = "AZURE"
+  prefix            = "streaming-agents"
+  project_root_path = abspath("${path.root}/../..")
 }
 
 resource "confluent_environment" "staging" {
@@ -267,6 +268,8 @@ module "azure_ai_services" {
   confluent_flink_rest_endpoint  = data.confluent_flink_region.demo_flink_region.rest_endpoint
   confluent_flink_api_key_id     = confluent_api_key.app-manager-flink-api-key.id
   confluent_flink_api_key_secret = confluent_api_key.app-manager-flink-api-key.secret
+  owner_email                    = var.owner_email
+  project_root_path              = local.project_root_path
 }
 
 # Core LLM Model - Text Generation (Azure)
@@ -289,7 +292,7 @@ resource "confluent_flink_statement" "llm_textgen_model" {
     secret = confluent_api_key.app-manager-flink-api-key.secret
   }
 
-  statement = "CREATE MODEL `${confluent_environment.staging.display_name}`.`${confluent_kafka_cluster.standard.display_name}`.`llm_textgen_model` INPUT (prompt STRING) OUTPUT (response STRING) WITH( 'provider' = 'azureopenai', 'task' = 'text_generation', 'azureopenai.connection' = 'llm-textgen-connection', 'azureopenai.model_version' = '2024-08-06', 'azureopenai.PARAMS.max_tokens' = '50000' );"
+  statement = "CREATE MODEL `${confluent_environment.staging.display_name}`.`${confluent_kafka_cluster.standard.display_name}`.`llm_textgen_model` INPUT (prompt STRING) OUTPUT (response STRING) WITH( 'provider' = 'azureopenai', 'task' = 'text_generation', 'azureopenai.connection' = 'llm-textgen-connection', 'azureopenai.model_version' = '2024-08-06', 'azureopenai.PARAMS.max_tokens' = '16384' );"
 
   properties = {
     "sql.current-catalog"  = confluent_environment.staging.display_name
@@ -323,7 +326,7 @@ resource "confluent_flink_statement" "llm_embedding_model" {
     secret = confluent_api_key.app-manager-flink-api-key.secret
   }
 
-  statement = "CREATE MODEL `${confluent_environment.staging.display_name}`.`${confluent_kafka_cluster.standard.display_name}`.`llm_embedding_model` INPUT (text STRING) OUTPUT (embedding ARRAY<FLOAT>) WITH( 'provider' = 'azureopenai', 'task' = 'embedding', 'azureopenai.connection' = 'llm-embedding-connection', 'azureopenai.PARAMS.max_tokens' = '50000' );"
+  statement = "CREATE MODEL `${confluent_environment.staging.display_name}`.`${confluent_kafka_cluster.standard.display_name}`.`llm_embedding_model` INPUT (text STRING) OUTPUT (embedding ARRAY<FLOAT>) WITH( 'provider' = 'azureopenai', 'task' = 'embedding', 'azureopenai.connection' = 'llm-embedding-connection', 'azureopenai.PARAMS.max_tokens' = '16384' );"
 
   properties = {
     "sql.current-catalog"  = confluent_environment.staging.display_name

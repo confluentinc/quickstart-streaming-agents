@@ -188,15 +188,27 @@ def get_project_root() -> Path:
     """
     Find the project root directory by looking for pyproject.toml.
 
+    First checks the current working directory and its parents,
+    then falls back to the script location if not found.
+
     Returns:
         Path to project root
 
     Raises:
         FileNotFoundError: If project root cannot be found
     """
+    # First try current working directory and its parents
+    cwd = Path.cwd().resolve()
+    for parent in [cwd] + list(cwd.parents):
+        if (parent / "pyproject.toml").exists():
+            logger.debug(f"Found project root in cwd: {parent}")
+            return parent
+
+    # Fall back to script location
     current = Path(__file__).resolve()
     for parent in [current] + list(current.parents):
         if (parent / "pyproject.toml").exists():
+            logger.debug(f"Found project root from script location: {parent}")
             return parent
 
     raise FileNotFoundError(

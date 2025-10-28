@@ -3,7 +3,7 @@ variable "cloud_region" {
   type        = string
 }
 
-variable "MONGODB_CONNECTION_STRING" {
+variable "mongodb_connection_string" {
   description = "MongoDB connection string for vector database"
   type        = string
   sensitive   = true

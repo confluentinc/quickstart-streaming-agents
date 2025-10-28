@@ -1,6 +1,17 @@
+locals {
+  common_tags = {
+    Owner       = var.owner_email
+    Project     = "https://github.com/confluentinc/quickstart-streaming-agents"
+    Environment = var.confluent_environment_id
+    ManagedBy   = "Terraform"
+    LocalPath   = var.project_root_path
+  }
+}
+
 resource "azurerm_resource_group" "openai_rg" {
   name     = "rg-openai-${var.random_id}"
   location = var.cloud_region
+  tags     = local.common_tags
 }
 
 resource "azurerm_cognitive_account" "openai_account" {
@@ -11,6 +22,7 @@ resource "azurerm_cognitive_account" "openai_account" {
   sku_name                      = "S0"
   public_network_access_enabled = true
   custom_subdomain_name         = "openai-${var.random_id}"
+  tags                          = local.common_tags
 }
 
 resource "azurerm_cognitive_deployment" "openai_deployment" {

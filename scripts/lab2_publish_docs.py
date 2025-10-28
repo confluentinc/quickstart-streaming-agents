@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Unified document publisher for quickstart-streaming-agents.
+CLI-based document publisher for quickstart-streaming-agents.
 
-Cross-platform tool for publishing Flink documentation to Kafka topics.
-Supports both AWS and Azure deployments with automatic cloud provider detection.
+Uses Confluent CLI instead of confluent-kafka Python library to eliminate
+librdkafka and pkg-config dependencies.
 
 Usage:
     uv run publish_docs              # Auto-detect cloud provider
@@ -18,82 +18,93 @@ Traditional Python:
 import argparse
 import json
 import logging
-import os
 import subprocess
 import sys
+import tempfile
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Tuple
 
 import yaml
-from confluent_kafka import avro
-from confluent_kafka.avro import AvroProducer
 
 from .common.cloud_detection import auto_detect_cloud_provider, validate_cloud_provider, suggest_cloud_provider
 from .common.terraform import extract_kafka_credentials, validate_terraform_state, get_project_root
 
 
-class FlinkDocsPublisher:
-    """Publisher for Flink documentation to Kafka using Avro format."""
+def setup_logging(verbose: bool = False) -> logging.Logger:
+    """Set up logging configuration."""
+    level = logging.DEBUG if verbose else logging.INFO
+    logging.basicConfig(
+        level=level,
+        format="%(asctime)s - %(levelname)s - %(message)s"
+    )
+    return logging.getLogger(__name__)
+
+
+class FlinkDocsPublisherCLI:
+    """Publisher for Flink documentation to Kafka using Confluent CLI."""
+
+    # Avro schema for documents
+    DOCUMENT_VALUE_SCHEMA = {
+        "type": "record",
+        "name": "documents_value",
+        "namespace": "org.apache.flink.avro.generated.record",
+        "fields": [
+            {
+                "name": "document_id",
+                "type": ["null", "string"],
+                "default": None,
+            },
+            {
+                "name": "document_text",
+                "type": ["null", "string"],
+                "default": None,
+            },
+        ],
+    }
 
     def __init__(
-        self, kafka_config: Dict[str, Any], schema_registry_config: Dict[str, Any]
+        self,
+        bootstrap_servers: str,
+        kafka_api_key: str,
+        kafka_api_secret: str,
+        schema_registry_url: str,
+        schema_registry_api_key: str,
+        schema_registry_api_secret: str,
+        environment_id: str = None,
+        cluster_id: str = None,
+        dry_run: bool = False,
+        max_workers: int = 10
     ):
-        """
-        Initialize the publisher with Kafka and Schema Registry configuration.
+        """Initialize the publisher with Kafka and Schema Registry configuration."""
+        self.bootstrap_servers = bootstrap_servers
+        self.kafka_api_key = kafka_api_key
+        self.kafka_api_secret = kafka_api_secret
+        self.schema_registry_url = schema_registry_url
+        self.schema_registry_api_key = schema_registry_api_key
+        self.schema_registry_api_secret = schema_registry_api_secret
+        self.environment_id = environment_id
+        self.cluster_id = cluster_id
+        self.dry_run = dry_run
+        self.max_workers = max_workers
+        self.logger = logging.getLogger(__name__)
 
-        Args:
-            kafka_config: Kafka client configuration
-            schema_registry_config: Schema Registry configuration
-        """
-        self.kafka_config = kafka_config
-        self.schema_registry_config = schema_registry_config
+        # Create temporary schema file
+        self.schema_file = None
+        self._create_schema_file()
 
-        # Define Avro schema for documents (compatible with existing schema)
-        self.value_schema = avro.loads(
-            json.dumps(
-                {
-                    "type": "record",
-                    "name": "documents_value",
-                    "namespace": "org.apache.flink.avro.generated.record",
-                    "fields": [
-                        {
-                            "name": "document_id",
-                            "type": ["null", "string"],
-                            "default": None,
-                        },
-                        {
-                            "name": "document_text",
-                            "type": ["null", "string"],
-                            "default": None,
-                        },
-                    ],
-                }
-            )
+    def _create_schema_file(self) -> None:
+        """Create temporary Avro schema file."""
+        self.schema_file = tempfile.NamedTemporaryFile(
+            mode='w',
+            suffix='.avsc',
+            delete=False,
+            prefix='documents_schema_'
         )
-
-        # Define Avro schema for keys (simple string)
-        self.key_schema = avro.loads('"string"')
-
-        # Initialize producer
-        self.producer = None
-
-    def _init_producer(self) -> None:
-        """Initialize the Avro producer."""
-        try:
-            self.producer = AvroProducer(
-                self.kafka_config,
-                default_key_schema=self.key_schema,
-                default_value_schema=self.value_schema,
-                schema_registry=avro.CachedSchemaRegistryClient(
-                    self.schema_registry_config
-                ),
-            )
-            logger = logging.getLogger(__name__)
-            logger.info("Avro producer initialized successfully")
-        except Exception as e:
-            logger = logging.getLogger(__name__)
-            logger.error(f"Failed to initialize Avro producer: {e}")
-            raise
+        json.dump(self.DOCUMENT_VALUE_SCHEMA, self.schema_file)
+        self.schema_file.flush()
+        self.logger.debug(f"Created schema file: {self.schema_file.name}")
 
     def parse_markdown_file(self, file_path: Path) -> Optional[Dict[str, Any]]:
         """
@@ -105,7 +116,6 @@ class FlinkDocsPublisher:
         Returns:
             Dictionary with parsed content or None if parsing fails
         """
-        logger = logging.getLogger(__name__)
         try:
             with open(file_path, "r", encoding="utf-8") as f:
                 content = f.read()
@@ -140,12 +150,12 @@ class FlinkDocsPublisher:
             }
 
         except Exception as e:
-            logger.error(f"Failed to parse file {file_path}: {e}")
+            self.logger.error(f"Failed to parse file {file_path}: {e}")
             return None
 
     def publish_document(self, document: Dict[str, Any], topic: str) -> bool:
         """
-        Publish a single document to Kafka.
+        Publish a single document to Kafka using Confluent CLI.
 
         Args:
             document: Document data with document_id and document_text
@@ -154,32 +164,103 @@ class FlinkDocsPublisher:
         Returns:
             True if successful, False otherwise
         """
-        logger = logging.getLogger(__name__)
         try:
-            if not self.producer:
-                self._init_producer()
-
-            # Create Avro record
+            # Create Avro record with union type formatting
+            # For union types ["null", "string"], values must be wrapped as {"string": "value"}
             value = {
-                "document_id": document["document_id"],
-                "document_text": document["document_text"],
+                "document_id": {"string": document["document_id"]},
+                "document_text": {"string": document["document_text"]},
             }
 
-            # Produce message
-            self.producer.produce(topic=topic, value=value, key=document["document_id"])
+            if self.dry_run:
+                self.logger.info(f"[DRY RUN] Would publish document: {document['document_id']}")
+                self.logger.debug(f"[DRY RUN] Content length: {len(document['document_text'])} chars")
+                return True
 
-            logger.info(f"Published document: {document['document_id']}")
+            # Prepare confluent CLI command
+            cmd = [
+                "confluent", "kafka", "topic", "produce", topic,
+                "--value-format", "avro",
+                "--schema", self.schema_file.name,
+                "--parse-key",
+                "--delimiter", ":",
+                "--bootstrap", self.bootstrap_servers,
+                "--api-key", self.kafka_api_key,
+                "--api-secret", self.kafka_api_secret,
+                "--schema-registry-endpoint", self.schema_registry_url,
+                "--schema-registry-api-key", self.schema_registry_api_key,
+                "--schema-registry-api-secret", self.schema_registry_api_secret,
+            ]
+
+            # Add environment and cluster if provided
+            if self.environment_id:
+                cmd.extend(["--environment", self.environment_id])
+            if self.cluster_id:
+                cmd.extend(["--cluster", self.cluster_id])
+
+            # Create message with key:value format
+            # Key is the document_id, value is the JSON record
+            message = f"{document['document_id']}:{json.dumps(value)}\n"
+
+            self.logger.debug(f"Publishing document: {document['document_id']}")
+
+            # Run command with message as input
+            result = subprocess.run(
+                cmd,
+                input=message,
+                capture_output=True,
+                text=True,
+                timeout=60
+            )
+
+            if result.returncode != 0:
+                self.logger.error(f"Failed to publish document {document['document_id']}: {result.stderr}")
+                return False
+
+            self.logger.info(f"Published document: {document['document_id']}")
             return True
 
+        except subprocess.TimeoutExpired:
+            self.logger.error(f"Timeout while publishing document {document.get('document_id', 'unknown')} (60s)")
+            return False
         except Exception as e:
-            logger.error(
+            self.logger.error(
                 f"Failed to publish document {document.get('document_id', 'unknown')}: {e}"
             )
             return False
 
+    def _process_single_file(self, file_path: Path, topic: str) -> Tuple[str, bool, Optional[str]]:
+        """
+        Process a single markdown file: parse and publish.
+
+        Args:
+            file_path: Path to the markdown file
+            topic: Kafka topic name
+
+        Returns:
+            Tuple of (file_name, success, error_message)
+        """
+        file_name = file_path.name
+        try:
+            # Parse document
+            document = self.parse_markdown_file(file_path)
+            if not document:
+                return (file_name, False, "Failed to parse markdown file")
+
+            # Publish document
+            if self.publish_document(document, topic):
+                return (file_name, True, None)
+            else:
+                return (file_name, False, "Failed to publish document")
+
+        except Exception as e:
+            error_msg = f"Unexpected error: {e}"
+            self.logger.error(f"Error processing {file_name}: {error_msg}")
+            return (file_name, False, error_msg)
+
     def publish_directory(self, docs_dir: Path, topic: str) -> Dict[str, int]:
         """
-        Publish all markdown files in a directory to Kafka.
+        Publish all markdown files in a directory to Kafka using parallel workers.
 
         Args:
             docs_dir: Directory containing markdown files
@@ -188,299 +269,235 @@ class FlinkDocsPublisher:
         Returns:
             Dictionary with success/failure counts
         """
-        logger = logging.getLogger(__name__)
-        if not self.producer:
-            self._init_producer()
-
         results = {"success": 0, "failed": 0, "total": 0}
+        results_lock = threading.Lock()
 
         # Find all markdown files
         md_files = list(docs_dir.glob("*.md"))
         results["total"] = len(md_files)
 
-        logger.info(f"Found {len(md_files)} markdown files to process")
+        self.logger.info(f"Found {len(md_files)} markdown files to process")
+        self.logger.info(f"Publishing with {self.max_workers} parallel workers")
 
-        for file_path in md_files:
-            logger.info(f"Processing: {file_path.name}")
+        # Process files in parallel
+        with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
+            # Submit all files as tasks
+            future_to_file = {
+                executor.submit(self._process_single_file, file_path, topic): file_path
+                for file_path in md_files
+            }
 
-            # Parse document
-            document = self.parse_markdown_file(file_path)
-            if not document:
-                results["failed"] += 1
-                continue
+            # Process results as they complete
+            completed = 0
+            for future in as_completed(future_to_file):
+                file_path = future_to_file[future]
+                file_name, success, error_msg = future.result()
 
-            # Publish document
-            if self.publish_document(document, topic):
-                results["success"] += 1
-            else:
-                results["failed"] += 1
+                # Update results with thread safety
+                with results_lock:
+                    if success:
+                        results["success"] += 1
+                    else:
+                        results["failed"] += 1
+                    completed += 1
 
-        # Flush all messages
-        try:
-            self.producer.flush(timeout=30)
-            logger.info("All messages flushed successfully")
-        except Exception as e:
-            logger.error(f"Failed to flush messages: {e}")
+                    # Show progress
+                    if completed % 10 == 0 or completed == results["total"]:
+                        self.logger.info(
+                            f"Progress: {completed}/{results['total']} documents "
+                            f"({results['success']} succeeded, {results['failed']} failed)"
+                        )
 
         return results
 
     def close(self):
-        """Close the producer connection."""
-        if self.producer:
-            self.producer.flush()
+        """Clean up temporary files."""
+        if self.schema_file:
+            try:
+                Path(self.schema_file.name).unlink(missing_ok=True)
+                self.logger.debug("Temporary schema file cleaned up")
+            except Exception as e:
+                self.logger.debug(f"Could not clean up schema file: {e}")
 
 
-def create_kafka_config(
-    bootstrap_servers: str, api_key: str, api_secret: str
-) -> Dict[str, Any]:
-    """Create Kafka client configuration."""
-    return {
-        "bootstrap.servers": bootstrap_servers,
-        "security.protocol": "SASL_SSL",
-        "sasl.mechanisms": "PLAIN",
-        "sasl.username": api_key,
-        "sasl.password": api_secret,
-        "client.id": "flink-docs-publisher",
-    }
-
-
-def create_schema_registry_config(
-    schema_registry_url: str, api_key: str, api_secret: str
-) -> Dict[str, Any]:
-    """Create Schema Registry client configuration."""
-    return {
-        "url": schema_registry_url,
-        "basic.auth.credentials.source": "USER_INFO",
-        "basic.auth.user.info": f"{api_key}:{api_secret}",
-    }
-
-
-def setup_logging(verbose: bool = False) -> logging.Logger:
-    """Set up logging configuration."""
-    level = logging.DEBUG if verbose else logging.INFO
-    logging.basicConfig(
-        level=level,
-        format="%(asctime)s - %(levelname)s - %(message)s"
-    )
-    return logging.getLogger(__name__)
-
-
-
-
-def test_dependencies() -> bool:
+def find_flink_docs_directory(project_root: Path, cloud_provider: str) -> Optional[Path]:
     """
-    Test that all required dependencies are available.
-
-    Returns:
-        True if dependencies are available, False otherwise
-    """
-    logger = logging.getLogger(__name__)
-    logger.info("Testing required dependencies...")
-
-    try:
-        # Test imports directly since we're in the same process
-        import yaml
-        import confluent_kafka.avro
-        import requests
-
-        logger.info("✓ All required dependencies are available")
-        return True
-    except ImportError as e:
-        logger.error("✗ Missing required dependencies!")
-        logger.error(f"Import test failed: {e}")
-        logger.error("To install required packages:")
-        logger.error("  pip install .")
-        return False
-
-
-
-
-def run_publisher(
-    cloud_provider: str,
-    project_root: Path,
-    dry_run: bool = False,
-    verbose: bool = False
-) -> int:
-    """
-    Run the document publisher with extracted credentials.
+    Find the Flink documentation directory.
 
     Args:
-        cloud_provider: Target cloud provider (aws/azure)
         project_root: Project root directory
-        dry_run: If True, validate setup but don't publish
-        verbose: If True, show detailed output
+        cloud_provider: Cloud provider (aws or azure)
 
     Returns:
-        Exit code (0 for success)
+        Path to Flink docs directory or None if not found
     """
-    logger = logging.getLogger(__name__)
+    # Standard location for docs
+    standard_path = project_root / "assets" / "lab2" / "flink_docs" / "markdown_chunks"
+    if standard_path.exists():
+        return standard_path
 
-    try:
-        # Extract credentials from terraform state
-        credentials = extract_kafka_credentials(cloud_provider, project_root)
+    # Alternative without markdown_chunks subdirectory
+    alt_path = project_root / "assets" / "lab2" / "flink_docs"
+    if alt_path.exists():
+        return alt_path
 
-        # Test dependencies first
-        if not test_dependencies():
-            return 1
+    # Try cloud-specific path (legacy)
+    cloud_path = project_root / cloud_provider / "lab2-vector-search" / "flink_docs"
+    if cloud_path.exists():
+        return cloud_path
 
-        if dry_run:
-            logger.info("✓ Dry run successful - all dependencies and credentials are ready")
-            logger.info(f"Would publish to topic 'documents' in cluster '{credentials['cluster_name']}'")
-            logger.info(f"Environment: {credentials['environment_name']}")
-            logger.info(f"Bootstrap servers: {credentials['bootstrap_servers']}")
-            return 0
+    # Try generic path (legacy)
+    generic_path = project_root / "flink_docs"
+    if generic_path.exists():
+        return generic_path
 
-        # Create Kafka and Schema Registry configurations
-        kafka_config = create_kafka_config(
-            credentials["bootstrap_servers"],
-            credentials["kafka_api_key"],
-            credentials["kafka_api_secret"]
-        )
-
-        schema_registry_config = create_schema_registry_config(
-            credentials["schema_registry_url"],
-            credentials["schema_registry_api_key"],
-            credentials["schema_registry_api_secret"]
-        )
-
-        logger.info(f"Publishing to topic 'documents' in cluster '{credentials['cluster_name']}'")
-
-        # Initialize publisher
-        publisher = FlinkDocsPublisher(kafka_config, schema_registry_config)
-
-        try:
-            # Use markdown_chunks directory instead of full docs
-            docs_dir = project_root / "assets/lab2/flink_docs/markdown_chunks"
-
-            if not docs_dir.exists():
-                logger.error(f"Markdown chunks directory not found: {docs_dir}")
-                return 1
-
-            logger.info(f"Publishing document chunks from {docs_dir} to topic 'documents'")
-
-            # Publish all documents
-            results = publisher.publish_directory(docs_dir, "documents")
-
-            logger.info(
-                f"Publishing complete: {results['success']} successful, {results['failed']} failed out of {results['total']} total"
-            )
-
-            if results["failed"] > 0:
-                logger.error("✗ Some documents failed to publish")
-                return 1
-            else:
-                logger.info("✓ Document publishing completed successfully")
-                return 0
-
-        finally:
-            publisher.close()
-
-    except Exception as e:
-        logger.error(f"Publisher failed: {e}")
-        if verbose:
-            import traceback
-            logger.error(f"Stack trace: {traceback.format_exc()}")
-        return 1
+    return None
 
 
-def create_argument_parser() -> argparse.ArgumentParser:
-    """Create and configure argument parser."""
+def main():
+    """Main entry point for the document publisher CLI."""
     parser = argparse.ArgumentParser(
-        prog="publish_docs",
-        description="Publish Flink documentation to Kafka topics",
+        description="Publish Flink documentation to Kafka using Confluent CLI (no librdkafka dependency)",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  uv run publish_docs              # Auto-detect cloud provider
-  uv run publish_docs aws          # Publish to AWS environment
-  uv run publish_docs azure        # Publish to Azure environment
-  uv run publish_docs --dry-run --verbose
-
-Traditional Python:
-  python scripts/lab2_publish_docs.py
-        """.strip()
+  %(prog)s
+  %(prog)s aws
+  %(prog)s azure --dry-run
+        """
     )
 
     parser.add_argument(
         "cloud_provider",
         nargs="?",
         choices=["aws", "azure"],
-        help="Target cloud provider (auto-detected if not specified)"
+        help="Cloud provider (aws or azure). If not specified, will auto-detect."
     )
-
+    parser.add_argument(
+        "--topic",
+        default="documents",
+        help="Kafka topic name (default: documents)"
+    )
+    parser.add_argument(
+        "--docs-dir",
+        type=Path,
+        help="Directory containing markdown files (auto-detected if not specified)"
+    )
     parser.add_argument(
         "--dry-run",
         action="store_true",
-        help="Validate setup and credentials without publishing documents"
+        help="Test without actually publishing"
     )
-
     parser.add_argument(
-        "--verbose", "-v",
+        "--verbose",
         action="store_true",
-        help="Show detailed output and debug information"
+        help="Enable verbose logging"
+    )
+    parser.add_argument(
+        "--workers",
+        type=int,
+        default=10,
+        help="Number of parallel workers for publishing (default: 10)"
     )
 
-    return parser
-
-
-def main() -> None:
-    """Main entry point."""
-    parser = create_argument_parser()
     args = parser.parse_args()
 
+    # Set up logging
     logger = setup_logging(args.verbose)
-    logger.info("Quickstart Streaming Agents - Document Publisher")
 
-    try:
-        # Get project root
-        project_root = get_project_root()
-        logger.debug(f"Project root: {project_root}")
-
-        # Determine cloud provider
-        cloud_provider = args.cloud_provider
+    # Determine cloud provider
+    cloud_provider = args.cloud_provider
+    if not cloud_provider:
+        cloud_provider = auto_detect_cloud_provider()
         if not cloud_provider:
-            cloud_provider = auto_detect_cloud_provider()
-            if not cloud_provider:
-                logger.error("Could not auto-detect cloud provider")
-                suggest_cloud_provider(project_root)
-                sys.exit(1)
-        else:
-            if not validate_cloud_provider(cloud_provider):
-                sys.exit(1)
+            suggestion = suggest_cloud_provider()
+            if suggestion:
+                logger.info(f"Auto-detected cloud provider: {suggestion}")
+                cloud_provider = suggestion
+            else:
+                logger.error("Could not auto-detect cloud provider. Please specify 'aws' or 'azure'.")
+                return 1
 
-        logger.info(f"Target cloud provider: {cloud_provider.upper()}")
+    # Validate cloud provider
+    if not validate_cloud_provider(cloud_provider):
+        logger.error(f"Invalid cloud provider: {cloud_provider}")
+        return 1
 
-        # Validate terraform state
-        if not validate_terraform_state(cloud_provider, project_root):
-            logger.error(f"Terraform state validation failed for {cloud_provider}")
-            logger.error(f"Please run 'terraform apply' in {cloud_provider}/core/ and {cloud_provider}/lab2-vector-search/")
-            sys.exit(1)
+    # Get project root
+    try:
+        project_root = get_project_root()
+    except Exception as e:
+        logger.error(f"Could not find project root: {e}")
+        return 1
 
-        # Run the publisher
-        exit_code = run_publisher(
-            cloud_provider=cloud_provider,
-            project_root=project_root,
+    # Find docs directory
+    docs_dir = args.docs_dir
+    if not docs_dir:
+        docs_dir = find_flink_docs_directory(project_root, cloud_provider)
+        if not docs_dir:
+            logger.error(f"Could not find Flink documentation directory. Please specify --docs-dir")
+            return 1
+        logger.info(f"Found documentation directory: {docs_dir}")
+
+    if not docs_dir.exists():
+        logger.error(f"Documentation directory does not exist: {docs_dir}")
+        return 1
+
+    # Validate terraform state
+    try:
+        validate_terraform_state(cloud_provider, project_root)
+    except Exception as e:
+        logger.error(f"Terraform validation failed: {e}")
+        return 1
+
+    # Extract Kafka credentials
+    try:
+        credentials = extract_kafka_credentials(cloud_provider, project_root)
+    except Exception as e:
+        logger.error(f"Failed to extract Kafka credentials: {e}")
+        return 1
+
+    # Initialize publisher
+    try:
+        publisher = FlinkDocsPublisherCLI(
+            bootstrap_servers=credentials["bootstrap_servers"],
+            kafka_api_key=credentials["kafka_api_key"],
+            kafka_api_secret=credentials["kafka_api_secret"],
+            schema_registry_url=credentials["schema_registry_url"],
+            schema_registry_api_key=credentials["schema_registry_api_key"],
+            schema_registry_api_secret=credentials["schema_registry_api_secret"],
+            environment_id=credentials.get("environment_id"),
+            cluster_id=credentials.get("cluster_id"),
             dry_run=args.dry_run,
-            verbose=args.verbose
+            max_workers=args.workers
         )
+    except Exception as e:
+        logger.error(f"Failed to initialize publisher: {e}")
+        return 1
+
+    # Publish documents
+    try:
+        logger.info(f"Publishing documents from {docs_dir} to topic '{args.topic}'")
+        if args.dry_run:
+            logger.info("[DRY RUN MODE - No actual publishing will occur]")
+
+        results = publisher.publish_directory(docs_dir, args.topic)
+
+        print(f"\n{'=' * 60}")
+        print("PUBLISHING SUMMARY")
+        print(f"{'=' * 60}")
+        print(f"Total files:      {results['total']}")
+        print(f"Published:        {results['success']}")
+        print(f"Failed:           {results['failed']}")
+        print(f"{'=' * 60}")
 
         if args.dry_run:
-            logger.info("Dry run completed")
-        else:
-            logger.info(f"Document publishing completed with exit code {exit_code}")
+            print("\n[DRY RUN COMPLETE - No messages were actually published]")
 
-        sys.exit(exit_code)
-
-    except KeyboardInterrupt:
-        logger.info("Operation cancelled by user")
-        sys.exit(130)
-    except Exception as e:
-        logger.error(f"Document publisher failed: {e}")
-        if args.verbose:
-            import traceback
-            logger.error(f"Stack trace: {traceback.format_exc()}")
-        sys.exit(1)
+        return 0 if results['failed'] == 0 else 1
+    finally:
+        publisher.close()
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

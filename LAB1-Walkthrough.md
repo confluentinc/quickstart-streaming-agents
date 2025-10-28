@@ -4,6 +4,11 @@ In this lab, we'll use Apache Flink for Confluent Cloud's MCP tool calling featu
 
 ![Architecture Diagram](./assets/lab1/lab1-architecture.png)
 
+## Prerequisites
+- Run `uv run deploy` to deploy Lab1 (see [main README](./README.md))
+- Zapier account and remote MCP server set up  (instructions below)
+- ⚠️ **IMPORTANT: AWS Users Only:** To access Claude Sonnet 3.7 you must request access to the model by filling out an Anthropic use case form (or someone in your org must have previously done so) for your cloud region. To do so, visit the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog)**, select Claude 3.7 Sonnet and open it it in the Playground, then send a message in the chat - the form will appear automatically. ⚠️
+
 ## Lab Architecture
 
 This lab implements a three-agent pipeline:
@@ -12,12 +17,8 @@ This lab implements a three-agent pipeline:
 2. **Agent 2: Price Extractor Agent** - Extracts competitor prices from scraped page content
 3. **Agent 3: Price Match Notification Agent** - Compares our product price to competitor's price, and sends email notifications for price matches
 
-## Prerequisites
-
-- Run `uv run deploy` to deploy core infrastructure (see [main README](./README.md))
-- Zapier account and remote MCP server set up  (instructions below)
-
 ## Zapier MCP Server Setup
+
 <details>
 <summary>Zapier MCP Server Setup (Click to expand)</summary>
 
@@ -54,7 +55,7 @@ Add these tools to your MCP server:
 
 ### 4. Get SSE Endpoint URL
 
-Click **"Connect",** choose **"Other"** for your client, then change transport to **"SSE Endpoint"**, and **copy the URL.** This is the `ZAPIER_SSE_ENDPOINT` you will need to enter when deploying the lab with `uv run deploy`.
+Click **"Connect",** choose **"Other"** for your client, then change transport to **"SSE Endpoint"**, and **copy the URL.** This is the `zapier_sse_endpoint` you will need to enter when deploying the lab with `uv run deploy`.
 
 <details open>
 <summary>Click to collapse</summary>
@@ -210,7 +211,7 @@ SELECT
     CAST(CAST((scp.order_price - scp.competitor_price) AS DECIMAL(10, 2)) AS STRING) as savings,
     AI_TOOL_INVOKE('zapier_mcp_model',
                    CONCAT('Use the gmail_send_email tool to send an email. ',
-                          'Instructions: send an email to: <<YOUR-EMAIL-ADDRESS-HERE>>, ',
+                          'Instructions: send an email to: <<⚠️️YOUR-EMAIL-ADDRESS-HERE⚠️️️>>, ',
                           'subject "✅ Great News! Price Match Applied - Order #', scp.order_id, '", ',
                           'body "Subject: Your Price Match Has Been Applied - Order #', scp.order_id, '
 

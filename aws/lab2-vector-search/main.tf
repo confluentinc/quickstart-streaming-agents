@@ -16,7 +16,7 @@ locals {
   # Use cloud_region from core infrastructure
   cloud_region = data.terraform_remote_state.core.outputs.cloud_region
   # Extract hostname from mongodb+srv://hostname
-  mongodb_host = split("//", var.MONGODB_CONNECTION_STRING)[1]
+  mongodb_host = split("//", var.mongodb_connection_string)[1]
 }
 
 # ------------------------------------------------------
@@ -48,7 +48,7 @@ resource "confluent_flink_connection" "mongodb_connection" {
 
   display_name = "mongodb-connection"
   type         = "MONGODB"
-  endpoint     = var.MONGODB_CONNECTION_STRING
+  endpoint     = var.mongodb_connection_string
   username     = var.mongodb_username
   password     = var.mongodb_password
 
