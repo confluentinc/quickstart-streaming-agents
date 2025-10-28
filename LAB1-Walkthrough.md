@@ -211,7 +211,7 @@ SELECT
     CAST(CAST((scp.order_price - scp.competitor_price) AS DECIMAL(10, 2)) AS STRING) as savings,
     AI_TOOL_INVOKE('zapier_mcp_model',
                    CONCAT('Use the gmail_send_email tool to send an email. ',
-                          'Instructions: send an email to: <<YOUR-EMAIL-ADDRESS-HERE>>, ',
+                          'Instructions: send an email to: <<⚠️️YOUR-EMAIL-ADDRESS-HERE⚠️️️>>, ',
                           'subject "✅ Great News! Price Match Applied - Order #', scp.order_id, '", ',
                           'body "Subject: Your Price Match Has Been Applied - Order #', scp.order_id, '
 

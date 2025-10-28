@@ -2,7 +2,11 @@
 
 [![Sign up for Confluent Cloud](https://img.shields.io/badge/Sign%20up%20for%20Confluent%20Cloud-007BFF?style=for-the-badge&logo=apachekafka&logoColor=white)](https://www.confluent.io/get-started/?utm_campaign=tm.pmm_cd.q4fy25-quickstart-streaming-agents&utm_source=github&utm_medium=demo)
 
-![Streaming Agents Intro Slide](./assets/streaming-agents-intro-slide.png)
+<div align="center">
+  <a href="https://www.youtube.com/watch?v=F4bUUsVDBVE">
+    <img src="https://img.youtube.com/vi/F4bUUsVDBVE/maxresdefault.jpg" alt="Watch Demo Video" style="width:100%;max-width:800px;">
+  </a>
+</div>
 
 
 Build real-time AI agents with [Confluent Cloud Streaming Agents](https://docs.confluent.io/cloud/current/ai/streaming-agents/overview.html). This quickstart includes two hands-on labs:
@@ -21,10 +25,6 @@ Build real-time AI agents with [Confluent Cloud Streaming Agents](https://docs.c
 <td>Vector search pipeline with optional retrieval augmented generation (RAG) for intelligent document retrieval<br><br><img src="./assets/lab2/mongodb/00_lab2_architecture.png" alt="Lab2 Architecture"></td>
 </tr>
 </table>
-
-## Demo Video
-
-[![Watch on YouTube](https://img.youtube.com/vi/F4bUUsVDBVE/hqdefault.jpg)](https://www.youtube.com/watch?v=F4bUUsVDBVE "Watch on YouTube")
 
 ## Prerequisites
 
