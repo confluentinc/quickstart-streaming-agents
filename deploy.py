@@ -76,6 +76,10 @@ def main():
             env_vars["TF_VAR_mongodb_username"] = creds["mongodb_username"]
         if "mongodb_password" in creds and creds["mongodb_password"]:
             env_vars["TF_VAR_mongodb_password"] = creds["mongodb_password"]
+        if cloud == "aws" and "aws_bedrock_access_key" in creds:
+            env_vars["TF_VAR_aws_bedrock_access_key"] = creds["aws_bedrock_access_key"]
+        if cloud == "aws" and "aws_bedrock_secret_key" in creds:
+            env_vars["TF_VAR_aws_bedrock_secret_key"] = creds["aws_bedrock_secret_key"]
         if cloud == "azure" and "azure_subscription_id" in creds:
             env_vars["TF_VAR_azure_subscription_id"] = creds["azure_subscription_id"]
 
@@ -104,11 +108,15 @@ def main():
         # Step 1: Select cloud provider
         cloud = prompt_choice("Select cloud provider:", ["aws", "azure"])
 
-        if not check_cloud_cli_login(cloud):
-            print(f"\nError: Not logged into {cloud.upper()} CLI.")
-            print(f"Please login using: {'aws configure' if cloud == 'aws' else 'az login'}")
-            sys.exit(1)
-        print(f"✓ {cloud.upper()} CLI logged in")
+        # For Azure, check CLI login. For AWS, skip login check (using provided Bedrock keys)
+        if cloud == "azure":
+            if not check_cloud_cli_login(cloud):
+                print(f"\nError: Not logged into {cloud.upper()} CLI.")
+                print(f"Please login using: az login")
+                sys.exit(1)
+            print(f"✓ {cloud.upper()} CLI logged in")
+        else:
+            print("✓ Using provided AWS Bedrock credentials (no AWS CLI login required)")
 
         # Step 2: Select cloud region
         regions = AWS_REGIONS if cloud == "aws" else AZURE_REGIONS
@@ -160,6 +168,13 @@ def main():
         owner_email = prompt_with_default("Owner Email (for AWS/Azure resource tagging)", creds.get("TF_VAR_owner_email", ""))
         if owner_email:
             set_key(creds_file, "TF_VAR_owner_email", owner_email)
+
+        # AWS Bedrock credentials (if AWS core)
+        if cloud == "aws" and "core" in envs_to_deploy:
+            aws_access_key = prompt_with_default("AWS Bedrock Access Key", creds.get("TF_VAR_aws_bedrock_access_key", ""))
+            aws_secret_key = prompt_with_default("AWS Bedrock Secret Key", creds.get("TF_VAR_aws_bedrock_secret_key", ""))
+            set_key(creds_file, "TF_VAR_aws_bedrock_access_key", aws_access_key)
+            set_key(creds_file, "TF_VAR_aws_bedrock_secret_key", aws_secret_key)
 
         # Azure subscription ID (if Azure core)
         if cloud == "azure" and "core" in envs_to_deploy:

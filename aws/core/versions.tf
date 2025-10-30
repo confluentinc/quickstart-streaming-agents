@@ -9,10 +9,6 @@ terraform {
       source  = "hashicorp/random"
       version = "~> 3.1"
     }
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 6.12"
-    }
   }
 }
 
@@ -24,8 +20,3 @@ provider "confluent" {
 
 # Random Provider Configuration
 provider "random" {}
-
-# AWS Provider Configuration
-provider "aws" {
-  region = var.cloud_region
-}

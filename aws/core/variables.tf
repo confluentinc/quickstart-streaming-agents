@@ -36,3 +36,15 @@ variable "owner_email" {
   type        = string
   default     = ""
 }
+
+variable "aws_bedrock_access_key" {
+  description = "AWS Access Key ID for Bedrock (pre-created for hackathon)"
+  type        = string
+  sensitive   = true
+}
+
+variable "aws_bedrock_secret_key" {
+  description = "AWS Secret Access Key for Bedrock (pre-created for hackathon)"
+  type        = string
+  sensitive   = true
+}

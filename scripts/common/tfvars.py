@@ -62,7 +62,9 @@ def generate_core_tfvars_content(
     api_key: str,
     api_secret: str,
     azure_sub_id: Optional[str] = None,
-    owner_email: Optional[str] = None
+    owner_email: Optional[str] = None,
+    aws_bedrock_access_key: Optional[str] = None,
+    aws_bedrock_secret_key: Optional[str] = None
 ) -> str:
     """
     Generate terraform.tfvars content for Core module.
@@ -74,6 +76,8 @@ def generate_core_tfvars_content(
         api_secret: Confluent Cloud API secret
         azure_sub_id: Azure subscription ID (required for Azure)
         owner_email: Owner email for resource tagging (optional)
+        aws_bedrock_access_key: AWS Bedrock access key (required for AWS)
+        aws_bedrock_secret_key: AWS Bedrock secret key (required for AWS)
 
     Returns:
         Formatted terraform.tfvars content
@@ -86,6 +90,10 @@ confluent_cloud_api_secret = "{api_secret}"
 
     if owner_email:
         content += f'owner_email = "{owner_email}"\n'
+
+    if cloud == "aws" and aws_bedrock_access_key and aws_bedrock_secret_key:
+        content += f'aws_bedrock_access_key = "{aws_bedrock_access_key}"\n'
+        content += f'aws_bedrock_secret_key = "{aws_bedrock_secret_key}"\n'
 
     if cloud == "azure" and azure_sub_id:
         content += f'azure_subscription_id = "{azure_sub_id}"\n'
@@ -161,10 +169,15 @@ def write_tfvars_for_deployment(
         api_secret = get_credential_value(creds, "confluent_cloud_api_secret")
         azure_sub_id = get_credential_value(creds, "azure_subscription_id") if cloud == "azure" else None
         owner_email = get_credential_value(creds, "owner_email")
+        aws_bedrock_access_key = get_credential_value(creds, "aws_bedrock_access_key") if cloud == "aws" else None
+        aws_bedrock_secret_key = get_credential_value(creds, "aws_bedrock_secret_key") if cloud == "aws" else None
 
         if api_key and api_secret:
             core_tfvars_path = root / cloud / "core" / "terraform.tfvars"
-            content = generate_core_tfvars_content(cloud, region, api_key, api_secret, azure_sub_id, owner_email)
+            content = generate_core_tfvars_content(
+                cloud, region, api_key, api_secret, azure_sub_id, owner_email,
+                aws_bedrock_access_key, aws_bedrock_secret_key
+            )
             if write_tfvars_file(core_tfvars_path, content):
                 print(f"✓ Wrote {core_tfvars_path}")
 
