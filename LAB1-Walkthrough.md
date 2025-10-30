@@ -84,20 +84,21 @@ LATERAL TABLE(ML_PREDICT('llm_textgen_model', question, MAP['debug', 'true'])) a
 
 #### Test Query 2: LLM Tool Calling Model
 
-⚠️ IMPORTANT: Replace `<<YOUR-EMAIL-ADDRESS-HERE>>` in the query below with the email address where you want the email to delivered to. ⚠️️️
+⚠️ IMPORTANT: Replace `<<⚠️️YOUR-EMAIL-ADDRESS-HERE⚠️️>>` in the query below with the email address where you want the email to delivered to. ⚠️️️
 
 ```sql
-SELECT
-    AI_TOOL_INVOKE(
-        'zapier_mcp_model',
-        'Use the gmail_send_email tool to send an email. 
-         Instructions: send an email address to <<YOUR-EMAIL-ADDRESS-HERE>>, 
-         subject "Direct Query Test", 
-         body "This email was sent directly from Confluent Cloud!"',
-        MAP[],
-        MAP['gmail_send_email', 'Create and send a new email message'],
-        MAP['debug', 'true']
-    ) as response;
+ SELECT
+      AI_TOOL_INVOKE(
+          'zapier_mcp_model',
+          'Use the gmail_send_email tool to send an email. 
+           The "to" parameter must be a single string value: <<⚠️️YOUR-EMAIL-ADDRESS-HERE⚠️️>>
+           The "subject" parameter is: Direct Query Test
+           The "body" parameter is: This email was sent directly from Confluent Cloud!
+           Important: pass the to address as a string, not an array.',
+          MAP[],
+          MAP['gmail_send_email', 'Create and send a new email message'],
+          MAP['debug', 'true']
+      ) as response;
 ```
 
 ### Data Generation
@@ -210,10 +211,10 @@ SELECT
     CAST(CAST(scp.competitor_price AS DECIMAL(10, 2)) AS STRING) as competitor_price,
     CAST(CAST((scp.order_price - scp.competitor_price) AS DECIMAL(10, 2)) AS STRING) as savings,
     AI_TOOL_INVOKE('zapier_mcp_model',
-                   CONCAT('Use the gmail_send_email tool to send an email. ',
-                          'Instructions: send an email to: <<⚠️️YOUR-EMAIL-ADDRESS-HERE⚠️️️>>, ',
-                          'subject "✅ Great News! Price Match Applied - Order #', scp.order_id, '", ',
-                          'body "Subject: Your Price Match Has Been Applied - Order #', scp.order_id, '
+                   CONCAT('IMPORTANT: The to parameter MUST be a string, NOT an array. Use the gmail_send_email tool. ',
+                          'Send to (as string): <<⚠️️YOUR-EMAIL-ADDRESS-HERE⚠️️️>> ',
+                          'Subject: ✅ Great News! Price Match Applied - Order #', scp.order_id, ' ',
+                          'Body text: Subject: Your Price Match Has Been Applied - Order #', scp.order_id, '
 
 Dear Valued Customer,
 
@@ -242,7 +243,7 @@ River Retail Customer Success Team
 📧 support@riverretail.com | 📞 1-800-RIVER-HELP
 
 ---
-This is an automated message from our price matching system."'),
+This is an automated message from our price matching system.'),
                    MAP[],
                    MAP['gmail_send_email', 'Create and send a new email message'],
                    MAP['debug', 'true', 'on_error', 'continue']) as email_response
