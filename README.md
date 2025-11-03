@@ -144,3 +144,7 @@ cd ../core && terraform destroy --auto-approve
 # Automated
 uv run destroy
 ```
+
+## Sign up for early access to Flink AI features
+
+For early access to exciting new Flink AI features, [fill out this form and we'll add you to our early access previews.](https://events.confluent.io/early-access-flink-features)
