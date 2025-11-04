@@ -3,8 +3,7 @@
     "topic": "ride_requests",
     "varsOnce": {
         "startingTime": {
-        "_gen": "constant",
-        "x": 1761742800000  
+            "_gen": "now"
         },
         "steadyStateMean": {
             "_gen": "uniformDistribution",
@@ -44,8 +43,12 @@
         }
     },
     "key": {
-        "_gen": "var",
-        "var": "email"
+        "key": {
+            "string": {
+                "_gen": "var",
+                "var": "email"
+            }
+        }
     },
     "value": {
         "request_id": {
@@ -91,9 +94,18 @@
             "path": ["throttle"]
         },
         "avroSchemaHint": {
+            "key": {
+                "type": "record",
+                "name": "ride_requests_key",
+                "namespace": "org.apache.flink.avro.generated.record",
+                "fields": [
+                    {"name": "key", "type": ["null", "string"], "default": null}
+                ]
+            },
             "value": {
                 "type": "record",
-                "name": "RideRequest",
+                "name": "ride_requests_value",
+                "namespace": "org.apache.flink.avro.generated.record",
                 "fields": [
                     {"name": "request_id", "type": "string"},
                     {"name": "customer_email", "type": "string"},
@@ -101,7 +113,7 @@
                     {"name": "drop_off_zone", "type": "string"},
                     {"name": "price", "type": "double"},
                     {"name": "number_of_passengers", "type": "int"},
-                    {"name": "request_ts", "type": "long", "logicalType": "timestamp-millis"}
+                    {"name": "request_ts", "type": {"type": "long", "logicalType": "timestamp-millis"}}
                 ]
             }
         }

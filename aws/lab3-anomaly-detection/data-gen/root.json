@@ -1,15 +1,6 @@
 {
     "generators": [
         {
-            "name": "vesselcatalog",
-            "connection": "vessel-catalog-kafka",
-            "topic": "vessel_catalog",
-            "value": {
-                "_gen": "loadJsonFile",
-                "file": "/home/generators/vesselcatalog.json"
-            }
-        },
-        {
             "_gen": "loadJsonFile",
             "files": [
                 "/home/generators/base-rides.json",
@@ -27,53 +18,11 @@
     "schedule": {
         "stages": [
             {
-                "generators": [ "vesselcatalog" ],
-                "overrides": {
-                    "vesselcatalog": {
-                        "localConfigs": {
-                            "maxEvents": 30,
-                            "avroSchemaHint": {
-                                "value": {
-                                    "type": "record",
-                                    "name": "VesselCatalog",
-                                    "fields": [
-                                        {
-                                            "name": "vessel_id",
-                                            "type": "string"
-                                        },
-                                        {
-                                            "name": "vessel_name",
-                                            "type": "string"
-                                        },
-                                        {
-                                            "name": "base_zone",
-                                            "type": "string"
-                                        },
-                                        {
-                                            "name": "availability",
-                                            "type": "string"
-                                        },
-                                        {
-                                            "name": "capacity",
-                                            "type": "int"
-                                        }
-                                    ]
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            {
                 "generators": [ "steadyState", "surge"]
             }
         ]
     },
     "connections": {
-        "vessel-catalog-kafka": {
-            "_gen": "loadJsonFile",
-            "file": "/home/connections/vessel-catalog-kafka.json"
-        },
         "ride-requests-kafka": {
             "_gen": "loadJsonFile",
             "file": "/home/connections/ride-requests-kafka.json"
