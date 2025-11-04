@@ -65,7 +65,7 @@
                         },
                         "offset": {
                             "_gen": "constant",
-                            "x": 1795743000
+                            "x": 0
                         }
                     }
                 },
@@ -131,30 +131,6 @@
             "_gen": "var",
             "var": "delta",
             "path": ["throttle"]
-        },
-        "avroSchemaHint": {
-            "key": {
-                "type": "record",
-                "name": "ride_requests_key",
-                "namespace": "org.apache.flink.avro.generated.record",
-                "fields": [
-                    {"name": "key", "type": ["null", "string"], "default": null}
-                ]
-            },
-            "value": {
-                "type": "record",
-                "name": "ride_requests_value",
-                "namespace": "org.apache.flink.avro.generated.record",
-                "fields": [
-                    {"name": "request_id", "type": "string"},
-                    {"name": "customer_email", "type": "string"},
-                    {"name": "pickup_zone", "type": "string"},
-                    {"name": "drop_off_zone", "type": "string"},
-                    {"name": "price", "type": "double"},
-                    {"name": "number_of_passengers", "type": "int"},
-                    {"name": "request_ts", "type": {"type": "long", "logicalType": "timestamp-millis"}}
-                ]
-            }
         }
     }
 }
