@@ -1,0 +1,37 @@
+{
+    "vessel_id": {
+        "_gen": "sequentialString",
+        "startingFrom": 10,
+        "expr": "VESSEL-~d"
+    },
+    "vessel_name": {
+        "_gen": "string",
+        "expr": "#{Dog.name}"
+    },
+    "base_zone": {
+        "_gen": "oneOf",
+        "choices": [
+            "French Quarter",
+            "Marigny",
+            "Bywater",
+            "Warehouse District",
+            "Uptown",
+            "Garden District",
+            "Central Business District (CBD)"
+        ]
+    },
+    "availability": {
+        "_gen": "oneOf",
+        "choices": [
+            "available",
+            "hired",
+            "in_dock"
+        ]
+    },
+    "capacity": {
+        "_gen": "uniformDistribution",
+        "bounds": [5, 10],
+        "decimals": 0
+    }
+}
+

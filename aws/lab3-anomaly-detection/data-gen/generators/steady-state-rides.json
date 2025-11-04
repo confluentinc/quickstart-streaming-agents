@@ -1,0 +1,74 @@
+{
+    "name": "steadyState",
+    "fork": {
+        "key": {
+            "_gen": "loadJsonFile",
+            "file": "/home/zones/steady-zones.json"
+        }
+    },
+    "vars": {
+        "email": {
+            "_gen": "string",
+            "expr": "#{Internet.emailAddress}"
+        },
+        "steadyStateThrottle": {
+            "_gen": "weightedOneOf",
+            "choices": [
+                {
+                    "weight": 4,
+                    "value": {
+                        "_gen": "normalDistribution",
+                        "mean": {
+                            "_gen": "var",
+                            "var": "steadyStateMean"
+                        },
+                        "sd": 10000,
+                        "clamp": [1000, 50000],
+                        "decimals": 0
+                    }
+                },
+                {
+                    "weight": 1,
+                    "value": {
+                        "_gen": "uniformDistribution",
+                        "bounds": [2000, 3500],
+                        "decimals": 0
+                    }
+                }
+            ]
+        },
+        "delta": {
+            "_gen": "customFunction",
+            "language": "python",
+            "file": "/home/functions/advance_time.py",
+            "function": "advance_time",
+            "args": {
+                "startingTime": {
+                    "_gen": "var",
+                    "var": "startingTime"
+                },
+                "now": {
+                    "_gen": "math",
+                    "expr": "timestamp + offset",
+                    "names": {
+                        "timestamp": {
+                            "_gen": "now"
+                        },
+                        "offset": {
+                            "_gen": "constant",
+                            "x": 1795743000
+                        }
+                    }
+                },
+                "historicalDelta": {
+                    "_gen": "var",
+                    "var": "steadyStateThrottle"
+                },
+                "realtimeDelta": {
+                    "_gen": "var",
+                    "var": "steadyStateThrottle"
+                }
+            }
+        }
+    }
+}
