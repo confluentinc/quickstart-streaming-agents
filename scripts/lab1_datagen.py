@@ -209,9 +209,9 @@ def generate_connection_file(
 
     connection_config = {
         "kind": "kafka",
-        # "topicPolicy": {
-        #     "policy": "manual"
-        # },
+        "topicPolicy": {
+            "policy": "manual"
+        },
         "producerConfigs": {
             "bootstrap.servers": bootstrap_endpoint,
             "security.protocol": "SASL_SSL",
@@ -509,7 +509,7 @@ def run_shadowtraffic(
         shadowtraffic_args.extend(["--duration", str(duration)])
 
     docker_cmd.extend([
-        "shadowtraffic/shadowtraffic:1.1.9"
+        "shadowtraffic/shadowtraffic:1.11.3"
     ] + shadowtraffic_args)
 
     logger.info(f"🚀 Starting ShadowTraffic data generation...")

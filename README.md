@@ -121,6 +121,7 @@ terraform init && terraform apply --auto-approve
 ```
 
 ### Required terraform.tfvars
+
 ```hcl
 cloud_provider = "aws"  # or "azure"
 cloud_region = "your-region"  # must be a region supported by MongoDB free tier, otherwise Lab2 deployment will not succeed

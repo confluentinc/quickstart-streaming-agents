@@ -70,13 +70,15 @@
                     }
                 },
                 "historicalDelta": {
-                    "_gen": "var",
-                    "var": "steadyStateThrottle"
+                    "_gen": "normalDistribution",
+                    "mean": 5000,
+                    "sd": 500
                 },
                 "realtimeDelta": {
                     "_gen": "normalDistribution",
                     "mean": 5000,
                     "sd": 500
+                }
                 }
             }
         }
