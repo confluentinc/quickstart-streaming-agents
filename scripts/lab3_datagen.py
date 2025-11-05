@@ -94,7 +94,10 @@ def run_lab3_datagen(
         credentials = extract_kafka_credentials(cloud_provider, project_root)
 
         # Generate connection files
-        generate_all_connections(credentials, connections_dir, LAB3_CONNECTION_NAMES)
+        # - ride_requests: manual policy (pre-created with WATERMARK, accumulates data)
+        # - vessel_catalog: dropAndCreate policy (reset on each run)
+        generate_all_connections(credentials, connections_dir, ["ride-requests-kafka"], topic_policy="manual")
+        generate_all_connections(credentials, connections_dir, ["vessel-catalog-kafka"], topic_policy="dropAndCreate")
 
         # Check ShadowTraffic configuration
         if not check_shadowtraffic_config(generators_dir, LAB3_REQUIRED_GENERATORS):

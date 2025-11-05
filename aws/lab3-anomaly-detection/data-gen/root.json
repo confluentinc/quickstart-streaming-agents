@@ -13,12 +13,16 @@
                 "/home/generators/base-rides.json",
                 "/home/generators/surge-rides.json"
             ]
+        },
+        {
+            "_gen": "loadJsonFile",
+            "file": "/home/generators/vesselcatalog.json"
         }
     ],
     "schedule": {
         "stages": [
             {
-                "generators": [ "steadyState", "surge"]
+                "generators": [ "steadyState", "surge", "vessel_catalog"]
             }
         ]
     },
@@ -26,6 +30,10 @@
         "ride-requests-kafka": {
             "_gen": "loadJsonFile",
             "file": "/home/connections/ride-requests-kafka.json"
+        },
+        "vessel-catalog-kafka": {
+            "_gen": "loadJsonFile",
+            "file": "/home/connections/vessel-catalog-kafka.json"
         }
     }
 }

@@ -40,21 +40,35 @@
                     }
                 }
             ]
-        }
-    },
-    "key": {
-        "key": {
-            "string": {
-                "_gen": "var",
-                "var": "email"
-            }
+        },
+        "request_id_value": {
+            "_gen": "math",
+            "expr": "100000000 + ((ts % 100000) * 1000) + rand",
+            "names": {
+                "ts": {
+                    "_gen": "var",
+                    "var": "delta",
+                    "path": ["ts"]
+                },
+                "rand": {
+                    "_gen": "uniformDistribution",
+                    "bounds": [0, 999],
+                    "decimals": 0
+                }
+            },
+            "decimals": 0
         }
     },
     "value": {
         "request_id": {
-            "_gen": "sequentialString",
-            "startingFrom": 2000000,
-            "expr": "REQ-~d"
+            "_gen": "string",
+            "expr": "REQ-#{id}",
+            "names": {
+                "id": {
+                    "_gen": "var",
+                    "var": "request_id_value"
+                }
+            }
         },
         "customer_email": {
             "_gen": "var",
@@ -92,6 +106,22 @@
             "_gen": "var",
             "var": "delta",
             "path": ["throttle"]
+        },
+        "avroSchemaHint": {
+            "value": {
+                "type": "record",
+                "name": "ride_requests_value",
+                "namespace": "org.apache.flink.avro.generated.record",
+                "fields": [
+                    {"name": "request_id", "type": "string"},
+                    {"name": "customer_email", "type": "string"},
+                    {"name": "pickup_zone", "type": "string"},
+                    {"name": "drop_off_zone", "type": "string"},
+                    {"name": "price", "type": "double"},
+                    {"name": "number_of_passengers", "type": "int"},
+                    {"name": "request_ts", "type": {"type": "long", "logicalType": "timestamp-millis"}}
+                ]
+            }
         }
     }
 }

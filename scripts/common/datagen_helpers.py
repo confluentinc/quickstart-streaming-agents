@@ -99,7 +99,8 @@ def validate_dependencies(dependencies: Dict[str, bool]) -> bool:
 def generate_connection_file(
     credentials: Dict[str, str],
     connection_name: str,
-    output_path: Path
+    output_path: Path,
+    topic_policy: str = None
 ) -> None:
     """
     Generate a ShadowTraffic connection file.
@@ -108,6 +109,7 @@ def generate_connection_file(
         credentials: Extracted Kafka credentials
         connection_name: Name of the connection (for logging)
         output_path: Path to write the connection file
+        topic_policy: Topic policy to use ("manual", "create", "dropAndCreate", or None for default)
     """
     logger = logging.getLogger(__name__)
 
@@ -118,9 +120,6 @@ def generate_connection_file(
 
     connection_config = {
         "kind": "kafka",
-        "topicPolicy": {
-            "policy": "manual"
-        },
         "producerConfigs": {
             "bootstrap.servers": bootstrap_endpoint,
             "security.protocol": "SASL_SSL",
@@ -134,6 +133,12 @@ def generate_connection_file(
         }
     }
 
+    # Add topicPolicy if specified
+    if topic_policy:
+        connection_config["topicPolicy"] = {
+            "policy": topic_policy
+        }
+
     with open(output_path, 'w') as f:
         json.dump(connection_config, f, indent=2)
 
@@ -143,7 +148,8 @@ def generate_connection_file(
 def generate_all_connections(
     credentials: Dict[str, str],
     connections_dir: Path,
-    connection_names: List[str]
+    connection_names: List[str],
+    topic_policy: str = None
 ) -> None:
     """
     Generate all required ShadowTraffic connection files.
@@ -152,6 +158,7 @@ def generate_all_connections(
         credentials: Extracted Kafka credentials
         connections_dir: Directory to write connection files
         connection_names: List of connection file names (without .json extension)
+        topic_policy: Topic policy to use ("manual", "create", "dropAndCreate", or None for default)
     """
     logger = logging.getLogger(__name__)
 
@@ -162,8 +169,9 @@ def generate_all_connections(
 
     for connection_name in connection_names:
         output_path = connections_dir / f"{connection_name}.json"
-        generate_connection_file(credentials, connection_name, output_path)
-        logger.info(f"✓ Created {connection_name}.json")
+        generate_connection_file(credentials, connection_name, output_path, topic_policy)
+        policy_info = f" (policy: {topic_policy})" if topic_policy else ""
+        logger.info(f"✓ Created {connection_name}.json{policy_info}")
 
     logger.info(f"🎉 Successfully generated all connection files in: {connections_dir}")
 

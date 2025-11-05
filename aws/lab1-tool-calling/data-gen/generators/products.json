@@ -137,6 +137,19 @@
         }
     },
     "localConfigs": {
-        "maxEvents": 17
+        "maxEvents": 17,
+        "avroSchemaHint": {
+            "value": {
+                "type": "record",
+                "name": "Product",
+                "fields": [
+                    {"name": "product_id", "type": "string"},
+                    {"name": "product_name", "type": "string"},
+                    {"name": "price", "type": "double"},
+                    {"name": "department", "type": "string"},
+                    {"name": "updated_at", "type": "long", "logicalType": "timestamp-millis"}
+                ]
+            }
+        }
     }
 }

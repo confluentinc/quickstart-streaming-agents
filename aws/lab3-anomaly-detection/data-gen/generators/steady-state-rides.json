@@ -80,20 +80,7 @@
             }
         }
     },
-    "key": {
-        "key": {
-            "string": {
-                "_gen": "var",
-                "var": "email"
-            }
-        }
-    },
     "value": {
-        "request_id": {
-            "_gen": "sequentialString",
-            "startingFrom": 2000000,
-            "expr": "REQ-~d"
-        },
         "customer_email": {
             "_gen": "var",
             "var": "email"
