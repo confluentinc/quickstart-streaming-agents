@@ -137,37 +137,6 @@
         }
     },
     "localConfigs": {
-        "maxEvents": 17,
-        "kafkaValueAvroSchemaHint": {
-            "type": "record",
-            "name": "products",
-            "fields": [
-                {
-                    "name": "product_id",
-                    "type": "string"
-                },
-                {
-                    "name": "product_name",
-                    "type": "string"
-                },
-                {
-                    "name": "price",
-                    "type": "double"
-                },
-                {
-                    "name": "department",
-                    "type": "string"
-                },
-                {
-                    "name": "updated_at",
-                    "type": {
-                        "type": "long",
-                        "flink.precision": 3,
-                        "flink.version": "1",
-                        "logicalType": "timestamp-millis"
-                    }
-                }
-            ]
-        }
+        "maxEvents": 17
     }
 }

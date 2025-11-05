@@ -1,0 +1,18 @@
+{
+    "name": "sampleRide",
+    "connection": "ride-requests-kafka",
+    "topic": "ride_requests_backup",
+    "key": { "_gen": "constant", "x": "jay@gmail.com" },
+    "value": {
+        "request_id": { "_gen": "constant", "x": "REQ-3000001" },
+        "customer_email": { "_gen": "constant", "x": "jay@gmail.com" },
+        "pickup_zone": { "_gen": "constant", "x": "French Quarter" },
+        "drop_off_zone": { "_gen": "constant", "x": "Marrero" },
+        "price": { "_gen": "constant", "x": 55.59 },
+        "number_of_passengers": { "_gen": "constant", "x": 2 },
+        "request_ts": { "_gen": "constant", "x": 1761742800000 }
+    },
+    "localConfigs": {
+        "maxEvents": 1
+    }
+}

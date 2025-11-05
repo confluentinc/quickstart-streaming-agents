@@ -121,6 +121,7 @@ terraform init && terraform apply --auto-approve
 ```
 
 ### Required terraform.tfvars
+
 ```hcl
 cloud_provider = "aws"  # or "azure"
 cloud_region = "your-region"  # must be a region supported by MongoDB free tier, otherwise Lab2 deployment will not succeed
@@ -144,3 +145,7 @@ cd ../core && terraform destroy --auto-approve
 # Automated
 uv run destroy
 ```
+
+## Sign up for early access to Flink AI features
+
+For early access to exciting new Flink AI features, [fill out this form and we'll add you to our early access previews.](https://events.confluent.io/early-access-flink-features)

@@ -1,49 +1,18 @@
 #!/usr/bin/env python3
 """
-Unified data generation tool for quickstart-streaming-agents.
+Common helper functions for data generation scripts.
 
-Cross-platform tool for generating streaming data with ShadowTraffic and Docker.
-Supports AWS, Azure, and terraform deployments with automatic credential extraction
-and connection file generation.
-
-Usage:
-    uv run lab1_datagen                      # Auto-detect cloud provider
-    uv run lab1_datagen aws                  # Generate data for AWS environment
-    uv run lab1_datagen azure                # Generate data for Azure environment
-    uv run lab1_datagen --dry-run            # Validate setup without running
-    uv run lab1_datagen --duration 300       # Run for 5 minutes
-    uv run lab1_datagen -m 10                # Generate 10 orders per minute
-    uv run lab1_datagen -m 30 --duration 120 # Generate 30 orders/min for 2 minutes
-
-Traditional Python:
-    python scripts/lab1_datagen.py
+Provides reusable functionality for ShadowTraffic data generation across multiple labs.
 """
 
-import argparse
 import json
 import logging
-import os
-import shutil
 import subprocess
-import sys
 import tempfile
 import urllib.request
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Optional
-
-from .common.cloud_detection import auto_detect_cloud_provider, validate_cloud_provider, suggest_cloud_provider
-from .common.terraform import extract_kafka_credentials, validate_terraform_state, get_project_root
-
-
-def setup_logging(verbose: bool = False) -> logging.Logger:
-    """Set up logging configuration."""
-    level = logging.DEBUG if verbose else logging.INFO
-    logging.basicConfig(
-        level=level,
-        format="%(asctime)s - %(levelname)s - %(message)s"
-    )
-    return logging.getLogger(__name__)
+from typing import Dict, List, Optional
 
 
 def check_dependencies() -> Dict[str, bool]:
@@ -127,66 +96,6 @@ def validate_dependencies(dependencies: Dict[str, bool]) -> bool:
     return False
 
 
-def find_datagen_directories(cloud_provider: str, project_root: Path) -> Dict[str, Path]:
-    """
-    Find the relevant directories for data generation.
-
-    Args:
-        cloud_provider: Target cloud provider (aws/azure/terraform)
-        project_root: Project root directory
-
-    Returns:
-        Dictionary with relevant paths
-
-    Raises:
-        FileNotFoundError: If required directories are not found
-    """
-    paths = {}
-
-    if cloud_provider in ["aws", "azure"]:
-        base_dir = project_root / cloud_provider
-        core_dir = base_dir / "core"
-        lab1_dir = base_dir / "lab1-tool-calling"
-        datagen_dir = lab1_dir / "data-gen"
-
-        if not core_dir.exists():
-            raise FileNotFoundError(f"Core directory not found: {core_dir}")
-        if not datagen_dir.exists():
-            raise FileNotFoundError(f"Data generation directory not found: {datagen_dir}")
-
-        paths.update({
-            "core_dir": core_dir,
-            "lab1_dir": lab1_dir,
-            "datagen_dir": datagen_dir,
-            "connections_dir": datagen_dir / "connections",
-            "generators_dir": datagen_dir / "generators",
-            "root_config": datagen_dir / "root.json",
-        })
-
-    elif cloud_provider == "terraform":
-        terraform_dir = project_root / "terraform"
-        core_dir = terraform_dir / "core"
-        datagen_dir = terraform_dir / "data-gen"
-
-        if not terraform_dir.exists():
-            raise FileNotFoundError(f"Terraform directory not found: {terraform_dir}")
-        if not datagen_dir.exists():
-            raise FileNotFoundError(f"Terraform data generation directory not found: {datagen_dir}")
-
-        paths.update({
-            "core_dir": core_dir,
-            "datagen_dir": datagen_dir,
-            "connections_dir": datagen_dir / "connections",
-            "generators_dir": datagen_dir / "generators",
-            "root_config": datagen_dir / "root.json",
-        })
-
-    else:
-        raise ValueError(f"Unsupported cloud provider: {cloud_provider}")
-
-    return paths
-
-
 def generate_connection_file(
     credentials: Dict[str, str],
     connection_name: str,
@@ -197,7 +106,7 @@ def generate_connection_file(
 
     Args:
         credentials: Extracted Kafka credentials
-        connection_name: Name of the connection (customers/products/orders)
+        connection_name: Name of the connection (for logging)
         output_path: Path to write the connection file
     """
     logger = logging.getLogger(__name__)
@@ -231,24 +140,27 @@ def generate_connection_file(
     logger.debug(f"Generated connection file: {output_path}")
 
 
-def generate_all_connections(credentials: Dict[str, str], connections_dir: Path) -> None:
+def generate_all_connections(
+    credentials: Dict[str, str],
+    connections_dir: Path,
+    connection_names: List[str]
+) -> None:
     """
     Generate all required ShadowTraffic connection files.
 
     Args:
         credentials: Extracted Kafka credentials
         connections_dir: Directory to write connection files
+        connection_names: List of connection file names (without .json extension)
     """
     logger = logging.getLogger(__name__)
 
     # Ensure connections directory exists
     connections_dir.mkdir(parents=True, exist_ok=True)
 
-    connection_files = ["customers.json", "products.json", "orders.json"]
-
     logger.info("📝 Generating ShadowTraffic connection files...")
 
-    for connection_name in ["customers", "products", "orders"]:
+    for connection_name in connection_names:
         output_path = connections_dir / f"{connection_name}.json"
         generate_connection_file(credentials, connection_name, output_path)
         logger.info(f"✓ Created {connection_name}.json")
@@ -256,25 +168,20 @@ def generate_all_connections(credentials: Dict[str, str], connections_dir: Path)
     logger.info(f"🎉 Successfully generated all connection files in: {connections_dir}")
 
 
-def check_shadowtraffic_config(paths: Dict[str, Path]) -> bool:
+def check_shadowtraffic_config(generators_dir: Path, required_generators: List[str]) -> bool:
     """
     Check that ShadowTraffic configuration files exist.
 
     Args:
-        paths: Dictionary with relevant paths
+        generators_dir: Directory containing generator files
+        required_generators: List of required generator filenames
 
     Returns:
         True if all config files exist, False otherwise
     """
     logger = logging.getLogger(__name__)
 
-    required_files = [
-        paths["root_config"],
-        paths["generators_dir"] / "customers.json",
-        paths["generators_dir"] / "products.json",
-        paths["generators_dir"] / "orders.json",
-    ]
-
+    required_files = [generators_dir / gen for gen in required_generators]
     missing_files = [f for f in required_files if not f.exists()]
 
     if missing_files:
@@ -396,8 +303,13 @@ def is_license_expired(license_path: Path) -> bool:
     return expiration_date < today
 
 
-def run_shadowtraffic(
-    paths: Dict[str, Path],
+def run_shadowtraffic_docker(
+    datagen_dir: Path,
+    connections_dir: Path,
+    generators_dir: Path,
+    root_config: Path,
+    zones_dir: Optional[Path] = None,
+    functions_dir: Optional[Path] = None,
     duration: Optional[int] = None,
     messages_per_minute: Optional[int] = None,
     dry_run: bool = False
@@ -406,9 +318,14 @@ def run_shadowtraffic(
     Run ShadowTraffic data generation with Docker.
 
     Args:
-        paths: Dictionary with relevant paths
+        datagen_dir: Data generation directory
+        connections_dir: Connections directory
+        generators_dir: Generators directory
+        root_config: Path to root.json configuration
+        zones_dir: Optional zones directory (for lab3)
+        functions_dir: Optional functions directory (for lab3)
         duration: Duration to run in seconds (optional)
-        messages_per_minute: Orders per minute to generate (optional)
+        messages_per_minute: Messages per minute to generate (optional)
         dry_run: If True, validate setup but don't run
 
     Returns:
@@ -416,15 +333,10 @@ def run_shadowtraffic(
     """
     logger = logging.getLogger(__name__)
 
-    datagen_dir = paths["datagen_dir"]
-    connections_dir = paths["connections_dir"]
-    generators_dir = paths["generators_dir"]
-    root_config = paths["root_config"]
-
     # If messages_per_minute is specified, create modified root.json
     if messages_per_minute:
         throttle_ms = int(60000 / messages_per_minute)
-        logger.info(f"📊 Setting order rate to {messages_per_minute} messages/minute (throttle: {throttle_ms}ms)")
+        logger.info(f"📊 Setting message rate to {messages_per_minute} messages/minute (throttle: {throttle_ms}ms)")
 
         # Load original root.json
         with open(root_config, 'r') as f:
@@ -499,6 +411,14 @@ def run_shadowtraffic(
         "-v", f"{connections_dir}:/home/connections",
     ]
 
+    # Add zones directory if it exists
+    if zones_dir and zones_dir.exists():
+        docker_cmd.extend(["-v", f"{zones_dir}:/home/zones"])
+
+    # Add functions directory if it exists (for lab3)
+    if functions_dir and functions_dir.exists():
+        docker_cmd.extend(["-v", f"{functions_dir}:/home/functions"])
+
     # Add environment file if found
     if env_file:
         docker_cmd.extend(["--env-file", str(env_file)])
@@ -509,7 +429,7 @@ def run_shadowtraffic(
         shadowtraffic_args.extend(["--duration", str(duration)])
 
     docker_cmd.extend([
-        "shadowtraffic/shadowtraffic:1.11.3"
+        "shadowtraffic/shadowtraffic:1.11.3"  # pinned for stability
     ] + shadowtraffic_args)
 
     logger.info(f"🚀 Starting ShadowTraffic data generation...")
@@ -517,6 +437,10 @@ def run_shadowtraffic(
     logger.info(f"   Connections: {connections_dir}")
     logger.info(f"   Generators: {generators_dir}")
 
+    if zones_dir and zones_dir.exists():
+        logger.info(f"   Zones: {zones_dir}")
+    if functions_dir and functions_dir.exists():
+        logger.info(f"   Functions: {functions_dir}")
     if env_file:
         logger.info(f"   Environment: {env_file}")
 
@@ -556,188 +480,3 @@ def run_shadowtraffic(
     except KeyboardInterrupt:
         logger.info("⏹️  Data generation interrupted by user")
         return 130
-
-
-def run_datagen(
-    cloud_provider: str,
-    duration: Optional[int] = None,
-    messages_per_minute: Optional[int] = None,
-    dry_run: bool = False,
-    verbose: bool = False
-) -> int:
-    """
-    Run the complete data generation workflow.
-
-    Args:
-        cloud_provider: Target cloud provider (aws/azure/terraform)
-        duration: Duration to run in seconds
-        messages_per_minute: Orders per minute to generate
-        dry_run: If True, validate setup but don't run
-        verbose: If True, show detailed output
-
-    Returns:
-        Exit code (0 for success)
-    """
-    logger = logging.getLogger(__name__)
-
-    try:
-        # Get project root and find directories
-        project_root = get_project_root()
-        paths = find_datagen_directories(cloud_provider, project_root)
-
-        # Check dependencies
-        logger.info("🔧 Checking dependencies...")
-        deps = check_dependencies()
-        if not validate_dependencies(deps):
-            return 1
-
-        # Extract credentials from terraform
-        logger.info(f"📡 Extracting {cloud_provider.upper()} credentials...")
-        credentials = extract_kafka_credentials(cloud_provider, project_root)
-
-        # Generate connection files
-        generate_all_connections(credentials, paths["connections_dir"])
-
-        # Check ShadowTraffic configuration
-        if not check_shadowtraffic_config(paths):
-            return 1
-
-        # Run ShadowTraffic
-        return run_shadowtraffic(paths, duration, messages_per_minute, dry_run)
-
-    except Exception as e:
-        logger.error(f"Data generation failed: {e}")
-        if verbose:
-            import traceback
-            logger.error(f"Stack trace: {traceback.format_exc()}")
-        return 1
-
-
-def create_argument_parser() -> argparse.ArgumentParser:
-    """Create and configure argument parser."""
-    parser = argparse.ArgumentParser(
-        prog="datagen",
-        description="Generate streaming data with ShadowTraffic and Docker",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-Examples:
-  uv run lab1_datagen                      # Auto-detect cloud provider
-  uv run lab1_datagen aws                  # Generate data for AWS environment
-  uv run lab1_datagen azure                # Generate data for Azure environment
-  uv run lab1_datagen --duration 300       # Run for 5 minutes
-  uv run lab1_datagen -m 10                # Generate 10 orders per minute
-  uv run lab1_datagen -m 30 --duration 120 # Generate 30 orders/min for 2 minutes
-  uv run lab1_datagen --dry-run            # Validate setup only
-
-Traditional Python:
-  python scripts/lab1_datagen.py
-
-Dependencies:
-  - Docker: https://docs.docker.com/get-docker/
-  - jq: https://jqlang.github.io/jq/download/
-  - Terraform: https://developer.hashicorp.com/terraform/install
-        """.strip()
-    )
-
-    parser.add_argument(
-        "cloud_provider",
-        nargs="?",
-        choices=["aws", "azure", "terraform"],
-        help="Target cloud provider (auto-detected if not specified)"
-    )
-
-    parser.add_argument(
-        "--duration",
-        type=int,
-        help="Duration to run data generation in seconds"
-    )
-
-    parser.add_argument(
-        "--messages-per-minute", "-m",
-        type=int,
-        help="Orders per minute to generate (default: ~0.65/min, roughly 1 per 90 seconds)"
-    )
-
-    parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="Validate setup and generate connection files without running ShadowTraffic"
-    )
-
-    parser.add_argument(
-        "--verbose", "-v",
-        action="store_true",
-        help="Show detailed output and debug information"
-    )
-
-    return parser
-
-
-def main() -> None:
-    """Main entry point."""
-    parser = create_argument_parser()
-    args = parser.parse_args()
-
-    logger = setup_logging(args.verbose)
-    logger.info("Quickstart Streaming Agents - Data Generation")
-
-    try:
-        # Get project root
-        project_root = get_project_root()
-        logger.debug(f"Project root: {project_root}")
-
-        # Determine cloud provider
-        cloud_provider = args.cloud_provider
-        if not cloud_provider:
-            cloud_provider = auto_detect_cloud_provider()
-            if not cloud_provider:
-                logger.error("Could not auto-detect cloud provider")
-                suggest_cloud_provider(project_root)
-                # For datagen, also suggest terraform option
-                logger.info("  ✓ terraform (if using terraform/data-gen directory)")
-                sys.exit(1)
-        else:
-            # For datagen, validate includes terraform option
-            if cloud_provider not in ["aws", "azure", "terraform"]:
-                logger.error(f"Unsupported cloud provider: {cloud_provider}")
-                logger.error("Supported providers: aws, azure, terraform")
-                sys.exit(1)
-
-        logger.info(f"Target cloud provider: {cloud_provider.upper()}")
-
-        # For aws/azure, validate terraform state
-        if cloud_provider in ["aws", "azure"]:
-            if not validate_terraform_state(cloud_provider, project_root):
-                logger.error(f"Terraform state validation failed for {cloud_provider}")
-                logger.error(f"Please run 'terraform apply' in {cloud_provider}/core/ and {cloud_provider}/lab1-tool-calling/")
-                sys.exit(1)
-
-        # Run data generation
-        exit_code = run_datagen(
-            cloud_provider=cloud_provider,
-            duration=args.duration,
-            messages_per_minute=args.messages_per_minute,
-            dry_run=args.dry_run,
-            verbose=args.verbose
-        )
-
-        if args.dry_run:
-            logger.info("Dry run completed")
-        else:
-            logger.info(f"Data generation completed with exit code {exit_code}")
-
-        sys.exit(exit_code)
-
-    except KeyboardInterrupt:
-        logger.info("Operation cancelled by user")
-        sys.exit(130)
-    except Exception as e:
-        logger.error(f"Data generation failed: {e}")
-        if args.verbose:
-            import traceback
-            logger.error(f"Stack trace: {traceback.format_exc()}")
-        sys.exit(1)
-
-
-if __name__ == "__main__":
-    main()
