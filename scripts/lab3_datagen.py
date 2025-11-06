@@ -30,7 +30,7 @@ from .common.datagen_helpers import (
 
 
 # Lab3-Specific Configuration
-LAB3_CONNECTION_NAMES = ["ride-requests-kafka", "vessel-catalog-kafka"]
+LAB3_CONNECTION_NAMES = ["ride-requests", "vessel-catalog"]
 LAB3_REQUIRED_GENERATORS = ["base-rides.json", "steady-state-rides.json", "surge-rides.json", "vesselcatalog.json"]
 LAB3_DIR_NAME = "lab3-anomaly-detection"
 
@@ -94,10 +94,7 @@ def run_lab3_datagen(
         credentials = extract_kafka_credentials(cloud_provider, project_root)
 
         # Generate connection files
-        # - ride_requests: manual policy (pre-created with WATERMARK, accumulates data)
-        # - vessel_catalog: dropAndCreate policy (reset on each run)
-        generate_all_connections(credentials, connections_dir, ["ride-requests-kafka"], topic_policy="manual")
-        generate_all_connections(credentials, connections_dir, ["vessel-catalog-kafka"], topic_policy="dropAndCreate")
+        generate_all_connections(credentials, connections_dir, ["ride-requests", "vessel-telemetry"])
 
         # Check ShadowTraffic configuration
         if not check_shadowtraffic_config(generators_dir, LAB3_REQUIRED_GENERATORS):

@@ -2,6 +2,10 @@
     "generators": [
         {
             "_gen": "loadJsonFile",
+            "file": "/home/generators/vesselcatalog.json"
+        },
+        {
+            "_gen": "loadJsonFile",
             "files": [
                 "/home/generators/base-rides.json",
                 "/home/generators/steady-state-rides.json"
@@ -13,27 +17,19 @@
                 "/home/generators/base-rides.json",
                 "/home/generators/surge-rides.json"
             ]
-        },
-        {
-            "_gen": "loadJsonFile",
-            "file": "/home/generators/vesselcatalog.json"
         }
     ],
     "schedule": {
         "stages": [
             {
-                "generators": [ "steadyState", "surge", "vessel_catalog"]
+                "generators": [ "vessel_catalog", "steadyState", "surge"]
             }
         ]
     },
     "connections": {
-        "ride-requests-kafka": {
+        "ride-requests": {
             "_gen": "loadJsonFile",
-            "file": "/home/connections/ride-requests-kafka.json"
-        },
-        "vessel-catalog-kafka": {
-            "_gen": "loadJsonFile",
-            "file": "/home/connections/vessel-catalog-kafka.json"
+            "file": "/home/connections/ride-requests.json"
         }
     }
 }

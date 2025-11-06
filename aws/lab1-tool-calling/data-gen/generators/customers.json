@@ -1,5 +1,5 @@
 {
-    "connection": "customers-kafka",
+    "connection": "customers",
     "name": "customers",
     "topic": "customers",
     "value": {
@@ -53,13 +53,14 @@
         "avroSchemaHint": {
             "value": {
                 "type": "record",
-                "name": "Customer",
+                "name": "customers_value",
+                "namespace": "org.apache.flink.avro.generated.record",
                 "fields": [
                     {"name": "customer_id", "type": "string"},
                     {"name": "customer_email", "type": "string"},
                     {"name": "customer_name", "type": "string"},
                     {"name": "state", "type": "string"},
-                    {"name": "updated_at", "type": "long", "logicalType": "timestamp-millis"}
+                    {"name": "updated_at", "type": {"type": "long", "logicalType": "timestamp-millis"}}
                 ]
             }
         }

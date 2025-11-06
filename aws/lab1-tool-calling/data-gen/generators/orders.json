@@ -1,5 +1,5 @@
 {
-    "connection": "orders-kafka",
+    "connection": "orders",
     "name": "orders",
     "topic": "orders",
     "varsOnce": {
@@ -17,7 +17,7 @@
     "vars": {
         "customer": {
             "_gen": "lookup",
-            "connection": "customers-kafka",
+            "connection": "customers",
             "topic": "customers",
             "path": []
         },
@@ -30,7 +30,7 @@
         },
         "product": {
             "_gen": "lookup",
-            "connection": "products-kafka",
+            "connection": "products",
             "topic": "products",
             "path": [],
             "offset": {
@@ -80,7 +80,7 @@
         }
     },
     "localConfigs": {
-        "maxEvents": 100,
+        "maxEvents": 15,
         "throttleMs": {
             "_gen": "uniformDistribution",
             "bounds": [10000, 15000]
@@ -88,13 +88,14 @@
         "avroSchemaHint": {
             "value": {
                 "type": "record",
-                "name": "Order",
+                "name": "orders_value",
+                "namespace": "org.apache.flink.avro.generated.record",
                 "fields": [
                     {"name": "order_id", "type": "string"},
                     {"name": "customer_id", "type": "string"},
                     {"name": "product_id", "type": "string"},
                     {"name": "price", "type": "double"},
-                    {"name": "order_ts", "type": "long", "logicalType": "timestamp-millis"}
+                    {"name": "order_ts", "type": {"type": "long", "logicalType": "timestamp-millis"}}
                 ]
             }
         }

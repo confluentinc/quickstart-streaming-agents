@@ -1,35 +1,54 @@
 {
-    "connection": "vessel-catalog-kafka",
+    "connection": "ride-requests",
     "name": "vessel_catalog",
     "topic": "vessel_catalog",
-    "value": {
+    "vars": {
         "vessel_id": {
             "_gen": "sequentialString",
             "startingFrom": 10,
             "expr": "VESSEL-~d"
+        }
+    },
+    "key": {
+        "_gen": "var",
+        "var": "vessel_id"
+    },
+    "value": {
+        "vessel_id": {
+            "_gen": "var",
+            "var": "vessel_id"
         },
         "vessel_name": {
             "_gen": "string",
             "expr": "#{Dog.name}"
         },
         "base_zone": {
-            "_gen": "oneOf",
+            "_gen": "weightedOneOf",
             "choices": [
-                "French Quarter",
-                "Marigny",
-                "Bywater",
-                "Warehouse District",
-                "Uptown",
-                "Garden District",
-                "Central Business District (CBD)"
+                { "weight": 1, "value": "French Quarter" },
+                { "weight": 5, "value": "Marigny" },
+                { "weight": 5, "value": "Bywater" },
+                { "weight": 5, "value": "Warehouse District" },
+                { "weight": 5, "value": "Uptown" },
+                { "weight": 5, "value": "Garden District" },
+                { "weight": 5, "value": "Central Business District (CBD)" }
             ]
         },
         "availability": {
-            "_gen": "oneOf",
+            "_gen": "weightedOneOf",
             "choices": [
-                "available",
-                "hired",
-                "in_dock"
+                {
+                    "weight": 1,
+                    "value": "available"
+                },
+                {
+                    "weight": 2,
+                    "value": "hired"
+                },
+                {
+                    "weight": 3,
+                    "value": "in_dock"
+                }
             ]
         },
         "capacity": {

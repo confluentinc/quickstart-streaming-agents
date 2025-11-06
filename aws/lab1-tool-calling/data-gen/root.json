@@ -50,15 +50,15 @@
         ]
     },
     "connections": {
-        "orders-kafka": {
+        "orders": {
             "_gen": "loadJsonFile",
             "file": "/home/connections/orders.json"
         },
-        "customers-kafka": {
+        "customers": {
             "_gen": "loadJsonFile",
             "file": "/home/connections/customers.json"
         },
-        "products-kafka": {
+        "products": {
             "_gen": "loadJsonFile",
             "file": "/home/connections/products.json"
         }

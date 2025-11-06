@@ -23,7 +23,7 @@ CREATE TABLE `ride_requests` (
 
 ## Generate Data
 
-To begin generating data in real-time, make sure Docker Desktop is running, then execute the following command to begin generating data:
+Make sure **Docker Desktop** is running, then execute the following command to begin generating data:
 ```sh
 uv run deploy lab3_datagen
 ```
@@ -72,7 +72,7 @@ anomaly_detection AS (
             JSON_OBJECT(
                 'minTrainingSize' VALUE 287,
                 'maxTrainingSize' VALUE 7000,
-                'confidencePercentage' VALUE 99.0,
+                'confidencePercentage' VALUE 99.999,
                 'enableStl' VALUE FALSE           
             )
         ) OVER (

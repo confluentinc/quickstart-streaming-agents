@@ -1,6 +1,6 @@
 # Lab1: Tool Calling Agent Walkthrough
 
-In this lab, we'll use Apache Flink for Confluent Cloud's MCP tool calling feature to "price match" products in customer orders in real-time. The LLM, through tool calling, uses a Zapier remote MCP server to retrieve competitor prices, and if a competitor offers a better price, the agent automatically applies a price match and uses tool calling again to email the customer a summary.
+In this lab, we'll use Apache Flink for Confluent Cloud's MCP tool calling feature to "price match" customer orders in real-time. Flink, through tool calling, uses a remote MCP server to retrieve competitor prices, and if a competitor offers a better price, the agent automatically applies a price match and uses tool calling again to email the customer a summary.
 
 ![Architecture Diagram](./assets/lab1/lab1-architecture.png)
 
@@ -9,15 +9,7 @@ In this lab, we'll use Apache Flink for Confluent Cloud's MCP tool calling featu
 - Zapier account and remote MCP server set up  (instructions below)
 - ⚠️ **IMPORTANT: AWS Users Only:** To access Claude Sonnet 3.7 you must request access to the model by filling out an Anthropic use case form (or someone in your org must have previously done so) for your cloud region. To do so, visit the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog), select Claude 3.7 Sonnet and open it it in the Playground, then send a message in the chat - the form will appear automatically. ⚠️
 
-## Lab Architecture
-
-This lab implements a three-agent pipeline:
-
-1. **Agent 1: URL Scraping Agent** - Enriches orders with product names and scrapes competitor websites
-2. **Agent 2: Price Extractor Agent** - Extracts competitor prices from scraped page content
-3. **Agent 3: Price Match Notification Agent** - Compares our product price to competitor's price, and sends email notifications for price matches
-
-## Zapier MCP Server Setup
+## Zapier Remote MCP Server Setup
 
 <details>
 <summary>Zapier MCP Server Setup (Click to expand)</summary>
@@ -43,12 +35,11 @@ Visit [mcp.zapier.com](https://mcp.zapier.com/mcp/servers), choose "Other" as MC
 
 Add these tools to your MCP server:
 
-- **Webhooks by Zapier: GET** tool
+- **Webhooks by Zapier: GET** and **Custom Request** tools
 - **Gmail: Send Email** tool (authenticate via SSO)
 
 <details open>
 <summary>Click to collapse</summary>
-
 <img src="./assets/lab1/zapier/4.png" alt="Add Tools" width="50%" />
 
 </details>
@@ -66,9 +57,7 @@ Click **"Connect",** choose **"Other"** for your client, then change transport t
 
 </details>
 
-## Getting Started
-
-### Test the LLM models before continuing
+## Test the LLM models before continuing
 
 Once you've deployed Lab1 via `uv run deploy`, run the following queries in the SQL Workspace to make sure your models are working as expected:
 
@@ -101,7 +90,7 @@ LATERAL TABLE(ML_PREDICT('llm_textgen_model', question, MAP['debug', 'true'])) a
       ) as response;
 ```
 
-### Data Generation
+## Generate Data
 
 Make sure Docker is running, then begin generating data with the following command:
 
@@ -120,118 +109,84 @@ The Python script provides the same automation as the uv version.
 
 </details>
 
-The data generator creates three interconnected data streams:
+The data generator creates three typical ecommerce data streams:
 
-- **Customers**: 100 customer records with realistic names, emails, addresses, and state information
-- **Products**: 17 product records including electronics, games, sports equipment, and household items with prices ranging from $5-$365
-- **Orders**: Continuous stream of orders linking customers to products with timestamps
+- **`customers`**: 100 customer records with realistic names, emails, addresses, and state information
+- **`products`**: 17 product records including electronics, games, sports equipment, and household items with prices ranging from $5-$365
+- **`orders`**: Continuous stream of orders linking customers to products with timestamps
 
-### Agent 1: URL Scraping Agent
+## SQL Queries
 
-First, we need to enrich incoming Orders with product names, then search for and scrape these products from competitors' websites. We'll achieve this using Flink's Tool Calling feature, which will enable Flink to invoke the Zapier MCP server we previously created.
-
-Run this in Flink Workspace UI to start the first agent:
+## Run  `CREATE TOOL` and `CREATE AGENT`
 
 ```sql
--- Get recent orders, scrape competitor website for same product
-SET 'sql.state-ttl' = '1 HOURS';
-CREATE TABLE recent_orders_scraped AS
-SELECT
-    o.order_id,
-    p.product_name,
-    c.customer_email,
-    o.price as order_price,
-    (AI_TOOL_INVOKE(
-        'zapier_mcp_model',
-        CONCAT('Use the webhooks_by_zapier_get tool to extract page contents. ',
-               'Instructions: Extract the page contents from the following URL: ',
-               'https://www.walmart.com/search?q="',
-               p.product_name, '"'),
-        MAP[],
-        MAP['webhooks_by_zapier_get', 'Fire off a single GET request with optional querystrings.'],
-        MAP['debug', 'true', 'on_error', 'continue']
-    ))['webhooks_by_zapier_get']['response'] as page_content
-FROM orders o
-JOIN customers c ON o.customer_id = c.customer_id
-JOIN products p ON o.product_id = p.product_id;
+CREATE TOOL zapier
+USING CONNECTION `zapier-mcp-connection`
+WITH (
+  'type' = 'mcp',
+  'allowed_tools' = 'webhooks_by_zapier_get, gmail_send_email',
+  'request_timeout' = '30'
+);
 ```
-
-### Agent 2: Price Extractor Agent
-
-Start **Agent 2** to extract the competitor's price from `page_content` and output it as a new field: `extracted_price`.
 
 ```sql
--- Extract prices from scraped webpages using AI_COMPLETE
-CREATE TABLE streaming_competitor_prices AS
-SELECT
-    ros.order_id,
-    ros.product_name,
-    ros.customer_email,
-    ros.order_price,
-    llm.response as extracted_price
-FROM recent_orders_scraped ros
-CROSS JOIN LATERAL TABLE(
-    AI_COMPLETE('llm_textgen_model',
-        CONCAT('Analyze this search results page for the following product name: "', ros.product_name,
-               '", and extract the price of the product that most closely matches the product name. ',
-               'Return only the price in format: XX.XX. For example, return only: 29.95. ',
-               'Page content: ', ros.page_content)
-    )
-) AS llm
-WHERE ros.page_content IS NOT NULL
-  AND ros.page_content NOT LIKE 'MCP error%'
-  AND ros.page_content <> '';
+CREATE AGENT price_match_agent
+USING MODEL llm_textgen_model
+USING PROMPT 'You are a price matching assistant that performs the following steps:
+
+1. SCRAPE COMPETITOR PRICE: Use the webhooks_by_zapier_get tool to extract page contents from the competitor URL provided in the prompt. The URL will be in the format: https://www.walmart.com/search?q="PRODUCT_NAME"
+
+2. EXTRACT PRICE: Analyze the scraped page content to find the product that most closely matches the product name. Extract only the price in format: XX.XX (for example: 29.95). If you cannot find a valid price, stop here.
+
+3. COMPARE AND NOTIFY: Compare the extracted competitor price with our order price. If the competitor price is lower than our price, use the gmail_send_email tool to send a price match notification email. Use the exact format provided in the prompt for the email subject and body.
+
+Return a summary of actions taken and results.'
+USING TOOLS zapier
+COMMENT 'Consolidated agent for scraping competitor prices and sending price match notifications'
+WITH (
+  'max_consecutive_failures' = '2',
+  'MAX_ITERATIONS' = '5'
+);
 ```
 
-In a new cell, check the output of `streaming_competitor_prices`
-
-```sql
-SELECT * FROM streaming_competitor_prices;
-```
-
-<img src="./assets/lab1/agent2-flinkoutput.png" alt="Agent 2 Output Screenshot" width="50%">
-
-Notice the new field `extracted_price`. This will be used by the next Agent.
-
-### Agent 3: Price Match Notification Agent
+## Create `price_match_input` table for the agent to use
 
 In this step, we'll notify the customer when a price match has been applied.
 We'll again use Confluent Cloud's tool-calling feature — this time connecting to the Zapier MCP server to trigger an email or message to the customer. For this agent, the tool is `gmail_send_email`.
 
 ⚠️ IMPORTANT: Replace `<<YOUR-EMAIL-ADDRESS-HERE>>` in the query below with the email address where you want the email to delivered to. ⚠️️️
-
 ```sql
--- Create and send email notifications for price matches
-CREATE TABLE price_match_email_results AS
+SET 'sql.state-ttl' = '1 HOURS';
+CREATE TABLE price_match_input AS
 SELECT
-    scp.order_id,
-    scp.customer_email,
-    scp.product_name,
-    CAST(CAST(scp.order_price AS DECIMAL(10, 2)) AS STRING) as order_price,
-    CAST(CAST(scp.competitor_price AS DECIMAL(10, 2)) AS STRING) as competitor_price,
-    CAST(CAST((scp.order_price - scp.competitor_price) AS DECIMAL(10, 2)) AS STRING) as savings,
-    AI_TOOL_INVOKE('zapier_mcp_model',
-                   CONCAT('IMPORTANT: The to parameter MUST be a string, NOT an array. Use the gmail_send_email tool. ',
-                          'Send to (as string): <<⚠️️YOUR-EMAIL-ADDRESS-HERE⚠️️️>> ',
-                          'Subject: ✅ Great News! Price Match Applied - Order #', scp.order_id, ' ',
-                          'Body text: Subject: Your Price Match Has Been Applied - Order #', scp.order_id, '
+    o.order_id,
+    p.product_name,
+    c.customer_email,
+    o.price as order_price,
+    CONCAT(
+        'COMPETITOR URL: https://www.walmart.com/search?q="', p.product_name, '"',
+        '\n\nPRODUCT NAME: ', p.product_name,
+        '\n\nOUR ORDER PRICE: $', CAST(CAST(o.price AS DECIMAL(10, 2)) AS STRING),
+        '\n\nEMAIL RECIPIENT: <<YOUR-EMAIL-ADDRESS-HERE>>',
+        '\n\nEMAIL SUBJECT: ✅ Great News! Price Match Applied - Order #', o.order_id,
+        '\n\nEMAIL BODY TEMPLATE:',
+        '\nSubject: Your Price Match Has Been Applied - Order #', o.order_id, '
 
 Dear Valued Customer,
 
 We have great news! We found a better price for your recent purchase and have automatically applied a price match.
 
 📦 ORDER DETAILS:
-   • Order Number: #', scp.order_id, '
-   • Product: ', scp.product_name, '
+   • Order Number: #', o.order_id, '
+   • Product: ', p.product_name, '
 
 💰 PRICE MATCH DETAILS:
-   • Original Price: $', CAST(CAST(scp.order_price AS DECIMAL(10, 2)) AS STRING), '
-   • Competitor Price Found: $', CAST(CAST(scp.competitor_price AS DECIMAL(10, 2)) AS STRING), '
-   • Your Savings: $', CAST(CAST((scp.order_price - scp.competitor_price) AS DECIMAL(10, 2)) AS STRING), '
+   • Original Price: $', CAST(CAST(o.price AS DECIMAL(10, 2)) AS STRING), '
+   • Competitor Price Found: $[INSERT_COMPETITOR_PRICE]
+   • Your Savings: $[INSERT_SAVINGS]
 
 ✅ ACTION TAKEN:
-We have processed a price match refund of $', CAST(CAST((scp.order_price - scp.competitor_price) AS DECIMAL(10, 2)) AS STRING),
-' back to your original payment method. You should see this credit within 3-5 business days.
+We have processed a price match refund of $[INSERT_SAVINGS] back to your original payment method. You should see this credit within 3-5 business days.
 
 🛒 WHY WE DO THIS:
 We are committed to offering you the best prices. Our automated price matching system continuously monitors competitor prices to ensure you always get the best deal.
@@ -243,19 +198,41 @@ River Retail Customer Success Team
 📧 support@riverretail.com | 📞 1-800-RIVER-HELP
 
 ---
-This is an automated message from our price matching system.'),
-                   MAP[],
-                   MAP['gmail_send_email', 'Create and send a new email message'],
-                   MAP['debug', 'true', 'on_error', 'continue']) as email_response
-FROM (
-    SELECT *,
-           TRY_CAST(extracted_price AS DECIMAL(10,2)) as competitor_price
-    FROM streaming_competitor_prices
-) scp
-WHERE scp.competitor_price IS NOT NULL
-  AND scp.competitor_price > 0
-  AND scp.order_price > scp.competitor_price;
+This is an automated message from our price matching system.'
+    ) as agent_prompt
+FROM orders o
+JOIN customers c ON o.customer_id = c.customer_id
+JOIN products p ON o.product_id = p.product_id;
 ```
+
+## Run the Agent
+
+
+```sql
+CREATE TABLE price_match_results AS
+SELECT
+    pmi.order_id,
+    pmi.product_name,
+    pmi.customer_email,
+    CAST(CAST(pmi.order_price AS DECIMAL(10, 2)) AS STRING) as order_price,
+    agent_result.status as agent_status,
+    agent_result.response as agent_response
+FROM price_match_input pmi,
+LATERAL TABLE(
+    AI_RUN_AGENT(
+        'price_match_agent',
+        pmi.agent_prompt,
+        pmi.order_id,
+        MAP['debug', 'true']
+    )
+) as agent_result(status, response);
+```
+
+In a new cell, check the output of `price_match_results`.
+
+###
+
+
 
 With Agent 3 running, our real-time price matching pipeline is complete—orders stream in, competitor prices are fetched and analyzed, and customers are instantly notified when they get the best deal.
 
@@ -267,6 +244,8 @@ Check out your email for price matched orders:
 <img src="./assets/lab1/email.png" alt="Price match email" width="50%" />
 
 </details>
+
+
 
 ## Verification Queries
 

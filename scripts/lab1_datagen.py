@@ -527,11 +527,8 @@ def run_datagen(
         logger.info(f"📡 Extracting {cloud_provider.upper()} credentials...")
         credentials = extract_kafka_credentials(cloud_provider, project_root)
 
-        # Generate connection files
-        # - orders: create policy (accumulates over time)
-        # - customers & products: dropAndCreate policy (reset on each run)
-        generate_all_connections(credentials, paths["connections_dir"], ["orders-kafka"], topic_policy="create")
-        generate_all_connections(credentials, paths["connections_dir"], ["customers-kafka", "products-kafka"], topic_policy="dropAndCreate")
+        # Generate connection files with manual topic policy
+        generate_all_connections(credentials, paths["connections_dir"], ["orders", "customers", "products"])
 
         # Check ShadowTraffic configuration
         if not check_shadowtraffic_config(paths):

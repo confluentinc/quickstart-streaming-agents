@@ -1,9 +1,9 @@
 {
-    "connection": "ride-requests-kafka",
+    "connection": "ride-requests",
     "topic": "ride_requests",
     "varsOnce": {
         "startingTime": {
-            "_gen": "now"
+        "_gen": "now"
         },
         "steadyStateMean": {
             "_gen": "uniformDistribution",
@@ -52,12 +52,16 @@
                 },
                 "rand": {
                     "_gen": "uniformDistribution",
-                    "bounds": [0, 999],
+                    "bounds": [0, 9999],
                     "decimals": 0
                 }
             },
             "decimals": 0
         }
+    },
+    "key": {
+        "_gen": "var",
+        "var": "email"
     },
     "value": {
         "request_id": {

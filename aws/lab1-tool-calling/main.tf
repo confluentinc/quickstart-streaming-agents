@@ -54,7 +54,14 @@ resource "confluent_flink_statement" "zapier_mcp_connection" {
 
   statement_name = "zapier-mcp-connection-create"
 
-  statement = "CREATE CONNECTION IF NOT EXISTS `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`zapier-mcp-connection` WITH ( 'type' = 'MCP_SERVER', 'endpoint' = '${var.zapier_sse_endpoint}', 'api-key' = 'api_key' );"
+  statement = <<-EOT
+    CREATE CONNECTION IF NOT EXISTS `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`zapier-mcp-connection`
+    WITH (
+      'type' = 'MCP_SERVER',
+      'endpoint' = '${var.zapier_sse_endpoint}',
+      'api-key' = 'api_key'
+    );
+  EOT
 
   properties = {
     "sql.current-catalog"  = data.terraform_remote_state.core.outputs.confluent_environment_display_name

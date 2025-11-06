@@ -6,46 +6,7 @@
             "file": "/home/zones/steady-zones.json"
         }
     },
-    "varsOnce": {
-        "startingTime": {
-            "_gen": "now"
-        },
-        "steadyStateMean": {
-            "_gen": "uniformDistribution",
-            "bounds": [15000, 35000]
-        }
-    },
     "vars": {
-        "email": {
-            "_gen": "string",
-            "expr": "#{Internet.emailAddress}"
-        },
-        "steadyStateThrottle": {
-            "_gen": "weightedOneOf",
-            "choices": [
-                {
-                    "weight": 4,
-                    "value": {
-                        "_gen": "normalDistribution",
-                        "mean": {
-                            "_gen": "var",
-                            "var": "steadyStateMean"
-                        },
-                        "sd": 10000,
-                        "clamp": [1000, 50000],
-                        "decimals": 0
-                    }
-                },
-                {
-                    "weight": 1,
-                    "value": {
-                        "_gen": "uniformDistribution",
-                        "bounds": [2000, 3500],
-                        "decimals": 0
-                    }
-                }
-            ]
-        },
         "delta": {
             "_gen": "customFunction",
             "language": "python",
@@ -78,45 +39,6 @@
                     "var": "steadyStateThrottle"
                 }
             }
-        }
-    },
-    "value": {
-        "customer_email": {
-            "_gen": "var",
-            "var": "email"
-        },
-        "pickup_zone": {
-            "_gen": "var",
-            "var": "forkKey"
-        },
-        "drop_off_zone": {
-            "_gen": "oneOf",
-            "choices": {
-                "_gen": "loadJsonFile",
-                "file": "/home/zones/all-zones.json"
-            }
-        },
-        "price": {
-            "_gen": "uniformDistribution",
-            "bounds": [50, 150],
-            "decimals": 2
-        },
-        "number_of_passengers": {
-            "_gen": "uniformDistribution",
-            "bounds": [1, 5],
-            "decimals": 0
-        },
-        "request_ts": {
-            "_gen": "var",
-            "var": "delta",
-            "path": ["ts"]
-        }
-    },
-    "localConfigs": {
-        "throttleMs": {
-            "_gen": "var",
-            "var": "delta",
-            "path": ["throttle"]
         }
     }
 }
