@@ -68,25 +68,21 @@ If running Lab2, set up a free MongoDB Atlas cluster:
 
 </details>
 
-#### 7. Next, from **Clusters** page, choose "Atlas Search" then click **Add my own data.** Enter
+#### 7. Next, from Clusters page, choose "Atlas Search" then click "Add my own data." Enter "database name" and "collection name". Then, click Create Search Index, Choose Vector Search index and enter the "index name" below.
 
-   Database name: `vector_search`
-
-   Collection name: `documents`
+- Database name: `vector_search`
+- Collection name: `documents`
+- Vector search index name: `vector_index`
 
 <details open>
 <summary>Click to collapse</summary>
-
 <img src="./assets/lab2/mongodb/06_add_data_collection.png" alt="Add Data Collection" width="50%" />
 
 </details>
 
-#### 8. Next, click **Create Search Index.** Choose **Vector Search index, and name it `vector_search`
-
 <details open>
 <summary>Click to collapse</summary>
 <img src="./assets/lab2/mongodb/07_create_vector_search_index.png" alt="Create Vector Index" width="50%" />
-
 </details>
 
 #### 9. Scroll down to the bottom and choose **JSON Editor.** Enter the following
