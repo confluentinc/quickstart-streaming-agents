@@ -114,3 +114,22 @@ resource "confluent_flink_statement" "vessel_catalog_table" {
     confluent_flink_statement.ride_requests_table
   ]
 }
+
+# Generate Flink SQL command summary
+resource "null_resource" "generate_flink_sql_summary" {
+  # Trigger regeneration when key resources change
+  triggers = {
+    ride_requests_table = confluent_flink_statement.ride_requests_table.id
+    vessel_catalog_table = confluent_flink_statement.vessel_catalog_table.id
+  }
+
+  provisioner "local-exec" {
+    command     = "python ${path.module}/../../scripts/generate_lab_flink_summary.py lab3 aws ${path.module} || true"
+    working_dir = path.module
+  }
+
+  depends_on = [
+    confluent_flink_statement.ride_requests_table,
+    confluent_flink_statement.vessel_catalog_table
+  ]
+}

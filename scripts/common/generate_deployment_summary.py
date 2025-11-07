@@ -368,5 +368,96 @@ def main():
     print(f"\nSuccess! Deployment summary generated at: {output_file}")
 
 
+def generate_flink_sql_summary(
+    lab_name: str,
+    cloud_provider: str,
+    tf_outputs: Dict[str, Any],
+    output_path: Path,
+    automated_commands: list[dict] = None,
+    manual_commands: list[dict] = None
+) -> None:
+    """
+    Generate a Flink SQL command summary markdown file for a lab.
+
+    Args:
+        lab_name: Name of the lab (e.g., "lab1-tool-calling")
+        cloud_provider: Cloud provider ("aws" or "azure")
+        tf_outputs: Dictionary of terraform outputs
+        output_path: Path where the markdown file should be saved
+        automated_commands: List of dicts with 'title' and 'sql' keys for Terraform-created resources
+        manual_commands: List of dicts with 'title' and 'sql' keys for manual walkthrough steps
+    """
+    try:
+        # Helper function to get terraform outputs
+        def get_output(key: str, default: str = "") -> str:
+            """Extract value from terraform output."""
+            if key not in tf_outputs:
+                return default
+            output = tf_outputs[key]
+            if isinstance(output, dict) and 'value' in output:
+                return str(output['value']) if output['value'] is not None else default
+            return str(output) if output is not None else default
+
+        # Build markdown content
+        content = f"""# {lab_name.replace('-', ' ').title()} - Flink SQL Commands
+
+This file contains the Flink SQL commands used in {lab_name.replace('-', ' ').title()}.
+
+**Environment**: {get_output("confluent_environment_display_name")}
+**Cluster**: {get_output("confluent_kafka_cluster_display_name")}
+**Cloud Provider**: {cloud_provider.upper()}
+**Region**: {get_output("cloud_region")}
+
+---
+
+## Automated Commands (Created by Terraform)
+
+The following Flink SQL commands were automatically executed during Terraform deployment:
+
+"""
+
+        # Add automated commands
+        if automated_commands:
+            for idx, cmd in enumerate(automated_commands, 1):
+                content += f"### {idx}. {cmd['title']}\n\n"
+                content += f"```sql\n{cmd['sql']}\n```\n\n"
+        else:
+            content += "_No automated SQL commands for this lab._\n\n"
+
+        content += "---\n\n## Manual Commands (From Walkthrough)\n\n"
+        content += "The following commands are meant to be run manually as part of the lab walkthrough:\n\n"
+
+        # Add manual commands
+        if manual_commands:
+            for idx, cmd in enumerate(manual_commands, 1):
+                content += f"### {idx}. {cmd['title']}\n\n"
+                content += f"```sql\n{cmd['sql']}\n```\n\n"
+        else:
+            content += "_No manual SQL commands for this lab._\n\n"
+
+        # Add footer
+        content += f"""---
+
+## Notes
+
+- This file is auto-generated during Terraform deployment
+- Commands shown without full table qualification for readability
+- Refer to the lab walkthrough for complete usage instructions and context
+- This file will be automatically removed when running `uv run destroy`
+
+**Generated**: {datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")}
+"""
+
+        # Write to file
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_text(content)
+
+        print(f"Flink SQL summary saved to: {output_path}")
+
+    except Exception as e:
+        # Don't fail the deployment if markdown generation fails
+        print(f"Warning: Failed to generate Flink SQL summary: {e}")
+
+
 if __name__ == "__main__":
     main()

@@ -56,6 +56,7 @@ updated-queries.md
 .setup_config.json
 **/.setup_config.json
 **/DEPLOYED_RESOURCES.md
+**/FLINK_SQL_COMMANDS.md
 AGENT_DEFINITION_SYNTAX.md
 EMAIL_REPLACEMENT_IMPLEMENTATION.md
 
@@ -69,7 +70,7 @@ __pycache__/
 # Data generation connections
 aws/lab1-tool-calling/data-gen/connections/
 azure/lab1-tool-calling/data-gen/connections/
-aws/lab3-anomaly-detection/data-gen/connections/
+aws/lab3-agentic-fleet-management/data-gen/connections/
 
 # Logs
 *.log

@@ -25,6 +25,8 @@ def cleanup_terraform_artifacts(env_path: Path) -> None:
     - *.tfvars* files
     - .terraform/ directory
     - .terraform.lock.hcl file
+    - FLINK_SQL_COMMANDS.md (auto-generated summary)
+    - mcp_commands.txt (legacy file)
 
     Does NOT remove credentials.env (which is in project root, not env directories).
 
@@ -49,6 +51,16 @@ def cleanup_terraform_artifacts(env_path: Path) -> None:
         lock_file = env_path / ".terraform.lock.hcl"
         if lock_file.exists():
             lock_file.unlink()
+
+        # Remove auto-generated Flink SQL summary file
+        flink_sql_summary = env_path / "FLINK_SQL_COMMANDS.md"
+        if flink_sql_summary.exists():
+            flink_sql_summary.unlink()
+
+        # Remove legacy mcp_commands.txt file
+        mcp_commands = env_path / "mcp_commands.txt"
+        if mcp_commands.exists():
+            mcp_commands.unlink()
 
     except Exception as e:
         # Silently continue if cleanup fails - destroy was successful

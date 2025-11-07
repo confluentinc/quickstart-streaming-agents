@@ -32,7 +32,7 @@ from .common.datagen_helpers import (
 # Lab3-Specific Configuration
 LAB3_CONNECTION_NAMES = ["ride-requests", "vessel-catalog"]
 LAB3_REQUIRED_GENERATORS = ["base-rides.json", "steady-state-rides.json", "surge-rides.json", "vesselcatalog.json"]
-LAB3_DIR_NAME = "lab3-anomaly-detection"
+LAB3_DIR_NAME = "lab3-agentic-fleet-management"
 
 
 def setup_logging(verbose: bool = False) -> logging.Logger:
