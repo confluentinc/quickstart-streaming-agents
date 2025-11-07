@@ -51,9 +51,13 @@ terraform/terraform.tfvars.backup
 # Files with sensitive credentials
 confluent_api_keys.md
 mongodb_commands.txt
+mcp_commands.txt
+updated-queries.md
 .setup_config.json
 **/.setup_config.json
 **/DEPLOYED_RESOURCES.md
+AGENT_DEFINITION_SYNTAX.md
+EMAIL_REPLACEMENT_IMPLEMENTATION.md
 
 # Python (if scripts are added)
 __pycache__/

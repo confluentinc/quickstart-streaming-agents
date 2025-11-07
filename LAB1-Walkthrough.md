@@ -5,6 +5,7 @@ In this lab, we'll use Apache Flink for Confluent Cloud's MCP tool calling featu
 ![Architecture Diagram](./assets/lab1/lab1-architecture.png)
 
 ## Prerequisites
+
 - Run `uv run deploy` to deploy Lab1 (see [main README](./README.md))
 - Zapier account and remote MCP server set up  (instructions below)
 - ⚠️ **IMPORTANT: AWS Users Only:** To access Claude Sonnet 3.7 you must request access to the model by filling out an Anthropic use case form (or someone in your org must have previously done so) for your cloud region. To do so, visit the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog), select Claude 3.7 Sonnet and open it it in the Playground, then send a message in the chat - the form will appear automatically. ⚠️
@@ -57,7 +58,9 @@ Click **"Connect",** choose **"Other"** for your client, then change transport t
 
 </details>
 
-## Test the LLM models before continuing
+# Getting Started
+
+## 1. Test the LLM models before continuing
 
 Once you've deployed Lab1 via `uv run deploy`, run the following queries in the SQL Workspace to make sure your models are working as expected:
 
@@ -73,14 +76,14 @@ LATERAL TABLE(ML_PREDICT('llm_textgen_model', question, MAP['debug', 'true'])) a
 
 #### Test Query 2: LLM Tool Calling Model
 
-⚠️ IMPORTANT: Replace `<<⚠️️YOUR-EMAIL-ADDRESS-HERE⚠️️>>` in the query below with the email address where you want the email to delivered to. ⚠️️️
+⚠️ IMPORTANT: Add your email address where you want to receive the test email, to the query below. ⚠️️️
 
 ```sql
  SELECT
       AI_TOOL_INVOKE(
           'zapier_mcp_model',
           'Use the gmail_send_email tool to send an email. 
-           The "to" parameter must be a single string value: <<⚠️️YOUR-EMAIL-ADDRESS-HERE⚠️️>>
+           The "to" parameter must be a single string value: <<YOUR-EMAIL-ADDRESS-HERE>>
            The "subject" parameter is: Direct Query Test
            The "body" parameter is: This email was sent directly from Confluent Cloud!
            Important: pass the to address as a string, not an array.',
@@ -90,9 +93,9 @@ LATERAL TABLE(ML_PREDICT('llm_textgen_model', question, MAP['debug', 'true'])) a
       ) as response;
 ```
 
-## Generate Data
+## 2. Generate Data
 
-Make sure Docker is running, then begin generating data with the following command:
+Open **Docker Desktop**, then begin generating data with the following command:
 
 ```bash
 uv run lab1_datagen
@@ -115,9 +118,9 @@ The data generator creates three typical ecommerce data streams:
 - **`products`**: 17 product records including electronics, games, sports equipment, and household items with prices ranging from $5-$365
 - **`orders`**: Continuous stream of orders linking customers to products with timestamps
 
-## SQL Queries
+## Run SQL Queries
 
-## Run  `CREATE TOOL` and `CREATE AGENT`
+### 3. Run  `CREATE TOOL` and `CREATE AGENT`
 
 ```sql
 CREATE TOOL zapier
@@ -149,28 +152,31 @@ WITH (
 );
 ```
 
-## Create `price_match_input` table for the agent to use
+## 4. Create `price_match_input` table for the agent to use
 
-In this step, we'll notify the customer when a price match has been applied.
-We'll again use Confluent Cloud's tool-calling feature — this time connecting to the Zapier MCP server to trigger an email or message to the customer. For this agent, the tool is `gmail_send_email`.
-
-⚠️ IMPORTANT: Replace `<<YOUR-EMAIL-ADDRESS-HERE>>` in the query below with the email address where you want the email to delivered to. ⚠️️️
+⚠️ IMPORTANT: Modify the line beginning with "EMAIL RECIPIENT:" in the query below with the email address where you want the email to delivered to. ⚠️️️
 ```sql
 SET 'sql.state-ttl' = '1 HOURS';
+
 CREATE TABLE price_match_input AS
 SELECT
     o.order_id,
     p.product_name,
     c.customer_email,
-    o.price as order_price,
+    o.price AS order_price,
     CONCAT(
-        'COMPETITOR URL: https://www.walmart.com/search?q="', p.product_name, '"',
-        '\n\nPRODUCT NAME: ', p.product_name,
-        '\n\nOUR ORDER PRICE: $', CAST(CAST(o.price AS DECIMAL(10, 2)) AS STRING),
-        '\n\nEMAIL RECIPIENT: <<YOUR-EMAIL-ADDRESS-HERE>>',
-        '\n\nEMAIL SUBJECT: ✅ Great News! Price Match Applied - Order #', o.order_id,
-        '\n\nEMAIL BODY TEMPLATE:',
-        '\nSubject: Your Price Match Has Been Applied - Order #', o.order_id, '
+'COMPETITOR URL: https://www.walmart.com/search?q="', p.product_name, '"',
+'
+PRODUCT NAME: ', p.product_name, '
+
+OUR ORDER PRICE: $', CAST(CAST(o.price AS DECIMAL(10, 2)) AS STRING), '
+
+EMAIL RECIPIENT: <<YOUR-EMAIL-ADDRESS-HERE>>
+
+EMAIL SUBJECT: ✅ Great News! Price Match Applied - Order #', o.order_id, '
+
+EMAIL BODY TEMPLATE:
+Subject: Your Price Match Has Been Applied - Order #', o.order_id, '
 
 Dear Valued Customer,
 
@@ -199,13 +205,13 @@ River Retail Customer Success Team
 
 ---
 This is an automated message from our price matching system.'
-    ) as agent_prompt
+    ) AS agent_prompt
 FROM orders o
 JOIN customers c ON o.customer_id = c.customer_id
 JOIN products p ON o.product_id = p.product_id;
 ```
 
-## Run the Agent
+## 5. Run the Agent
 
 
 ```sql
@@ -228,64 +234,15 @@ LATERAL TABLE(
 ) as agent_result(status, response);
 ```
 
-In a new cell, check the output of `price_match_results`.
-
-###
-
-
-
-With Agent 3 running, our real-time price matching pipeline is complete—orders stream in, competitor prices are fetched and analyzed, and customers are instantly notified when they get the best deal.
+Our real-time price matching pipeline is complete—orders stream in, competitor prices are fetched and analyzed, and customers are instantly notified when they get the best deal.
 
 Check out your email for price matched orders:
 
 <details open>
 <summary>Click to collapse</summary>
-
 <img src="./assets/lab1/email.png" alt="Price match email" width="50%" />
 
 </details>
-
-
-
-## Verification Queries
-
-```sql
--- Check pipeline progress
-SELECT 
-    'Orders Scraped' as step,
-    COUNT(*) as record_count
-FROM recent_orders_scraped
-WHERE page_content IS NOT NULL
-
-UNION ALL
-
-SELECT 
-    'Prices Extracted' as step,
-    COUNT(*) as record_count
-FROM streaming_competitor_prices
-WHERE extracted_price IS NOT NULL
-
-UNION ALL
-
-SELECT 
-    'Emails Sent' as step,
-    COUNT(*) as record_count
-FROM price_match_email_results
-WHERE email_response IS NOT NULL;
-```
-
-```sql
--- View successful price matches
-SELECT 
-    order_id,
-    product_name,
-    order_price,
-    competitor_price,
-    (CAST(order_price AS DECIMAL(10,2)) - CAST(competitor_price AS DECIMAL(10,2))) as savings
-FROM price_match_email_results;
-```
-
-
 
 ## Conclusion
 
