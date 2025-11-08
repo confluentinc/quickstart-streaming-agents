@@ -18,15 +18,15 @@ Build real-time AI agents with [Confluent Cloud Streaming Agents](https://docs.c
 </tr>
 <tr>
 <td><a href="./LAB1-Walkthrough.md"><strong>Lab1 - MCP Tool Calling</strong></a></td>
-<td><b>*NEW!*</b> Now using new Agent Definition (`CREATE AGENT`) syntax. Price matching agent that scrapes competitor websites and adjusts prices in real-time<br><br><img src="./assets/lab1/lab1-architecture.png" alt="Lab1 architecture diagram"></td>
+<td><b>*NEW!*</b> Now using new Agent Definition (CREATE AGENT) syntax. Price matching agent that scrapes competitor websites and adjusts prices in real-time<br><br><img src="./assets/lab1/lab1-architecture.png" alt="Lab1 architecture diagram"></td>
 </tr>
 <tr>
 <td><a href="./LAB2-Walkthrough.md"><strong>Lab2 - Vector Search & RAG</strong></a></td>
 <td>Vector search pipeline template with retrieval augmented generation (RAG). Use the included Flink documentation chunks, or bring your own documents for intelligent document retrieval.<br><br><img src="./assets/lab2/mongodb/00_lab2_architecture.png" alt="Lab2 architecture diagram"></td>
 </tr>
 <tr>
-<td><a href="./LAB3-Agentic-Fleet-Management.md"><strong>Lab3 - Anomaly Detection</strong></a></td>
-    <td>End-to-end boat rideshare demo shows use of Agent Definition, MCP tool calling, vector search, and <a href="https://docs.confluent.io/cloud/current/ai/builtin-functions/detect-anomalies.html">ML_DETECT_ANOMALIES</a>.<br><br><img src="./assets/lab3/lab3_architecture.png" alt="Lab3 architecture diagram"></td>
+<td><a href="./LAB3-Agentic-Fleet-Management.md"><strong>Lab3 - Agentic Fleet Management</strong></a></td>
+    <td>End-to-end boat fleet management demo showing use of Agent Definition, MCP tool calling, vector search, and <a href="https://docs.confluent.io/cloud/current/ai/builtin-functions/detect-anomalies.html">anomaly detection</a>.<br><br><img src="./assets/lab3/lab3_architecture.png" alt="Lab3 architecture diagram"></td>
 </tr>
 </table>
 

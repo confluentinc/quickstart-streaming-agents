@@ -519,7 +519,7 @@ resource "null_resource" "generate_flink_sql_summary" {
   }
 
   provisioner "local-exec" {
-    command     = "python ${path.module}/../../scripts/generate_lab_flink_summary.py lab2 aws ${path.module} || true"
+    command     = "python ${path.module}/../../scripts/generate_lab_flink_summary.py lab2 aws ${path.module} mongodb_connection_string='${var.mongodb_connection_string}' mongodb_username='${var.mongodb_username}' mongodb_password='${var.mongodb_password}' || true"
     working_dir = path.module
   }
 

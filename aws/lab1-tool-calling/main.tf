@@ -121,7 +121,7 @@ resource "null_resource" "generate_flink_sql_summary" {
   }
 
   provisioner "local-exec" {
-    command     = "python ${path.module}/../../scripts/generate_lab_flink_summary.py lab1 aws ${path.module} || true"
+    command     = "python ${path.module}/../../scripts/generate_lab_flink_summary.py lab1 aws ${path.module} zapier_endpoint='${var.zapier_sse_endpoint}' owner_email='${data.terraform_remote_state.core.outputs.owner_email}' || true"
     working_dir = path.module
   }
 

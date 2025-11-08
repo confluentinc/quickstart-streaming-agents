@@ -24,29 +24,55 @@ sys.path.insert(0, str(Path(__file__).parent / "common"))
 from generate_deployment_summary import generate_flink_sql_summary
 
 
-def get_lab_commands(lab_name: str, cloud_provider: str):
+def get_lab_commands(lab_name: str, cloud_provider: str, credentials: dict = None, tf_outputs: dict = None):
     """
     Get the automated and manual SQL commands for each lab.
 
+    Args:
+        lab_name: Name of the lab (e.g., "lab1")
+        cloud_provider: Cloud provider ("aws" or "azure")
+        credentials: Dictionary of credential key-value pairs
+        tf_outputs: Dictionary of Terraform outputs from core
+
     Returns:
-        tuple: (automated_commands, manual_commands)
+        tuple: (automated_commands, manual_commands, core_resources)
     """
+    if credentials is None:
+        credentials = {}
+    if tf_outputs is None:
+        tf_outputs = {}
+
+    # Helper to safely get terraform outputs
+    def get_output(key: str, default: str = "") -> str:
+        if key not in tf_outputs:
+            return default
+        output = tf_outputs[key]
+        if isinstance(output, dict) and 'value' in output:
+            return str(output['value']) if output['value'] is not None else default
+        return str(output) if output is not None else default
+
     # Determine provider-specific details
     if cloud_provider == "azure":
         provider = "azureopenai"
         llm_connection = "llm-textgen-connection"
+        llm_embedding_connection = "llm-embedding-connection"
     else:  # AWS
         provider = "bedrock"
         llm_connection = "llm-textgen-connection"
+        llm_embedding_connection = "llm-embedding-connection"
 
     if lab_name == "lab1":
+        # Get credentials for Lab1
+        zapier_endpoint = credentials.get('zapier_endpoint', '<your-zapier-sse-endpoint>')
+        owner_email = credentials.get('owner_email', '<your-email-address>')
+
         automated = [
             {
                 "title": "Create Zapier MCP Connection",
-                "sql": """CREATE CONNECTION `zapier-mcp-connection`
+                "sql": f"""CREATE CONNECTION `zapier-mcp-connection`
 WITH (
   'type' = 'MCP_SERVER',
-  'endpoint' = '<your-zapier-sse-endpoint>',
+  'endpoint' = '{zapier_endpoint}',
   'api-key' = 'api_key'
 );"""
             },
@@ -156,7 +182,7 @@ WITH (
             },
             {
                 "title": "Create Price Match Input Table",
-                "sql": """SET 'sql.state-ttl' = '1 HOURS';
+                "sql": f"""SET 'sql.state-ttl' = '1 HOURS';
 
 CREATE TABLE price_match_input AS
 SELECT
@@ -168,7 +194,7 @@ SELECT
         'COMPETITOR URL: https://www.walmart.com/search?q="', p.product_name, '"',
         ' PRODUCT NAME: ', p.product_name,
         ' OUR ORDER PRICE: $', CAST(CAST(o.price AS DECIMAL(10, 2)) AS STRING),
-        ' EMAIL RECIPIENT: <your-email>',
+        ' EMAIL RECIPIENT: {owner_email}',
         ' EMAIL SUBJECT: Price Match Applied - Order #', o.order_id,
         ' [email body template...]'
     ) AS agent_prompt
@@ -199,15 +225,20 @@ LATERAL TABLE(
         ]
 
     elif lab_name == "lab2":
+        # Get credentials for Lab2
+        mongodb_connection_string = credentials.get('mongodb_connection_string', '<your-mongodb-connection-string>')
+        mongodb_username = credentials.get('mongodb_username', '<your-mongodb-username>')
+        mongodb_password = credentials.get('mongodb_password', '<your-mongodb-password>')
+
         automated = [
             {
                 "title": "Create MongoDB Connection",
-                "sql": """CREATE CONNECTION `mongodb-connection`
+                "sql": f"""CREATE CONNECTION `mongodb-connection`
 WITH (
   'type' = 'MONGODB',
-  'endpoint' = '<your-mongodb-connection-string>',
-  'username' = '<your-mongodb-username>',
-  'password' = '<your-mongodb-password>'
+  'endpoint' = '{mongodb_connection_string}',
+  'username' = '{mongodb_username}',
+  'password' = '{mongodb_password}'
 );"""
             },
             {
@@ -374,21 +405,92 @@ WHERE anomaly_result.is_anomaly = true
 
     else:
         print(f"Warning: Unknown lab '{lab_name}', no SQL commands configured")
-        return [], []
+        return [], [], []
 
-    return automated, manual
+    # Build Core LLM resources section based on what this lab uses
+    core_resources = []
+
+    if lab_name in ["lab1", "lab2"]:  # Labs that use LLM text generation
+        core_resources.append({
+            "title": f"LLM Text Generation Connection ({provider})",
+            "sql": f"""-- Created in Core Terraform
+CREATE CONNECTION `{llm_connection}`
+WITH (
+  'type' = '{provider.upper()}',
+  'endpoint' = '<configured-by-terraform>',
+  'credentials' = '<configured-by-terraform>'
+);"""
+        })
+
+        if cloud_provider == "aws":
+            model_params = "'bedrock.params.max_tokens' = '50000'"
+        else:
+            model_params = "'azureopenai.model_version' = '2024-08-06',\n  'azureopenai.PARAMS.max_tokens' = '16384'"
+
+        core_resources.append({
+            "title": "LLM Text Generation Model",
+            "sql": f"""-- Created in Core Terraform
+CREATE MODEL llm_textgen_model
+INPUT (prompt STRING)
+OUTPUT (response STRING)
+WITH (
+  'provider' = '{provider}',
+  'task' = 'text_generation',
+  '{provider}.connection' = '{llm_connection}',
+  {model_params}
+);"""
+        })
+
+    if lab_name == "lab2":  # Lab2 also uses embeddings
+        core_resources.append({
+            "title": f"LLM Embedding Connection ({provider})",
+            "sql": f"""-- Created in Core Terraform
+CREATE CONNECTION `{llm_embedding_connection}`
+WITH (
+  'type' = '{provider.upper()}',
+  'endpoint' = '<configured-by-terraform>',
+  'credentials' = '<configured-by-terraform>'
+);"""
+        })
+
+        if cloud_provider == "aws":
+            emb_model_params = ""
+        else:
+            emb_model_params = "\n  'azureopenai.PARAMS.max_tokens' = '16384'"
+
+        core_resources.append({
+            "title": "LLM Embedding Model",
+            "sql": f"""-- Created in Core Terraform
+CREATE MODEL llm_embedding_model
+INPUT (text STRING)
+OUTPUT (embedding ARRAY<FLOAT>)
+WITH (
+  'provider' = '{provider}',
+  'task' = 'embedding',
+  '{provider}.connection' = '{llm_embedding_connection}'{emb_model_params}
+);"""
+        })
+
+    return automated, manual, core_resources
 
 
 def main():
     """Main entry point."""
-    if len(sys.argv) != 4:
-        print("Usage: python scripts/generate_lab_flink_summary.py <lab-name> <cloud-provider> <terraform-dir>")
-        print("Example: python scripts/generate_lab_flink_summary.py lab1 aws aws/lab1-tool-calling")
+    if len(sys.argv) < 4:
+        print("Usage: python scripts/generate_lab_flink_summary.py <lab-name> <cloud-provider> <terraform-dir> [key=value...]")
+        print("Example: python scripts/generate_lab_flink_summary.py lab1 aws aws/lab1-tool-calling zapier_endpoint=https://... owner_email=user@example.com")
         sys.exit(1)
 
     lab_name = sys.argv[1]  # e.g., "lab1"
     cloud_provider = sys.argv[2]  # e.g., "aws"
     terraform_dir = Path(sys.argv[3])  # e.g., "aws/lab1-tool-calling"
+
+    # Parse additional key=value arguments
+    credentials = {}
+    for arg in sys.argv[4:]:
+        if '=' in arg:
+            key, value = arg.split('=', 1)
+            credentials[key] = value
 
     # Validate inputs
     if cloud_provider not in ["aws", "azure"]:
@@ -422,7 +524,12 @@ def main():
             tf_outputs = {}
 
     # Get lab-specific commands
-    automated_commands, manual_commands = get_lab_commands(lab_name, cloud_provider)
+    automated_commands, manual_commands, core_resources = get_lab_commands(
+        lab_name,
+        cloud_provider,
+        credentials=credentials,
+        tf_outputs=tf_outputs
+    )
 
     # Generate the summary
     output_file = terraform_dir / "FLINK_SQL_COMMANDS.md"
@@ -434,7 +541,8 @@ def main():
         tf_outputs=tf_outputs,
         output_path=output_file,
         automated_commands=automated_commands,
-        manual_commands=manual_commands
+        manual_commands=manual_commands,
+        core_resources=core_resources
     )
 
     print(f"\nSuccess! Flink SQL summary generated at: {output_file}")

@@ -56,7 +56,7 @@ def main():
         # Extract values from JSON
         cloud = creds["cloud"]
         region = creds["region"]
-        envs_to_deploy = ["core", "lab1-tool-calling", "lab2-vector-search"]
+        envs_to_deploy = ["core", "lab1-tool-calling", "lab2-vector-search", "lab3-agentic-fleet-management"]
 
         # Build environment variables for Terraform
         env_vars = {
@@ -132,7 +132,8 @@ def main():
         deploy_options = [
             "Lab 1: MCP Tool Calling",
             "Lab 2: Vector Search / RAG",
-            "Both Labs",
+            "Lab 3: Agentic Fleet Management",
+            "All Labs (Labs 1, 2, and 3)",
             "Core Infrastructure Only (advanced)"
         ]
         env_choice = prompt_choice("What would you like to deploy?", deploy_options)
@@ -142,8 +143,10 @@ def main():
             envs_to_deploy = ["core", "lab1-tool-calling"]
         elif env_choice == "Lab 2: Vector Search / RAG":
             envs_to_deploy = ["core", "lab2-vector-search"]
-        elif env_choice == "Both Labs":
-            envs_to_deploy = ["core", "lab1-tool-calling", "lab2-vector-search"]
+        elif env_choice == "Lab 3: Agentic Fleet Management":
+            envs_to_deploy = ["core", "lab3-agentic-fleet-management"]
+        elif env_choice == "All Labs (Labs 1, 2, and 3)":
+            envs_to_deploy = ["core", "lab1-tool-calling", "lab2-vector-search", "lab3-agentic-fleet-management"]
         else:  # Core Infrastructure Only (advanced)
             envs_to_deploy = ["core"]
 
@@ -167,14 +170,14 @@ def main():
             set_key(creds_file, "TF_VAR_azure_subscription_id", azure_sub)
 
         # Lab-specific credentials
-        if "lab1-tool-calling" in envs_to_deploy or env_choice == "all":
-            zapier_endpoint = prompt_with_default("Zapier SSE Endpoint (Lab 1 only)", creds.get("TF_VAR_zapier_sse_endpoint", ""))
+        if "lab1-tool-calling" in envs_to_deploy or "lab3-agentic-fleet-management" in envs_to_deploy:
+            zapier_endpoint = prompt_with_default("Zapier SSE Endpoint (Lab 1 and Lab 3)", creds.get("TF_VAR_zapier_sse_endpoint", ""))
             set_key(creds_file, "TF_VAR_zapier_sse_endpoint", zapier_endpoint)
 
-        if "lab2-vector-search" in envs_to_deploy or env_choice == "all":
-            mongo_conn = prompt_with_default("MongoDB Connection String (Lab 2 only)", creds.get("TF_VAR_mongodb_connection_string", ""))
-            mongo_user = prompt_with_default("MongoDB Username (Lab 2 only)", creds.get("TF_VAR_mongodb_username", ""))
-            mongo_pass = prompt_with_default("MongoDB Password (Lab 2 only)", creds.get("TF_VAR_mongodb_password", ""))
+        if "lab2-vector-search" in envs_to_deploy or "lab3-agentic-fleet-management" in envs_to_deploy:
+            mongo_conn = prompt_with_default("MongoDB Connection String (Lab 2 and Lab 3)", creds.get("TF_VAR_mongodb_connection_string", ""))
+            mongo_user = prompt_with_default("MongoDB Username (Lab 2 and Lab 3)", creds.get("TF_VAR_mongodb_username", ""))
+            mongo_pass = prompt_with_default("MongoDB Password (Lab 2 and Lab 3)", creds.get("TF_VAR_mongodb_password", ""))
             set_key(creds_file, "TF_VAR_mongodb_connection_string", mongo_conn)
             set_key(creds_file, "TF_VAR_mongodb_username", mongo_user)
             set_key(creds_file, "TF_VAR_mongodb_password", mongo_pass)

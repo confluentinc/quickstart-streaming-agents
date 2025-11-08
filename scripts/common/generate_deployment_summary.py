@@ -374,7 +374,8 @@ def generate_flink_sql_summary(
     tf_outputs: Dict[str, Any],
     output_path: Path,
     automated_commands: list[dict] = None,
-    manual_commands: list[dict] = None
+    manual_commands: list[dict] = None,
+    core_resources: list[dict] = None
 ) -> None:
     """
     Generate a Flink SQL command summary markdown file for a lab.
@@ -386,6 +387,7 @@ def generate_flink_sql_summary(
         output_path: Path where the markdown file should be saved
         automated_commands: List of dicts with 'title' and 'sql' keys for Terraform-created resources
         manual_commands: List of dicts with 'title' and 'sql' keys for manual walkthrough steps
+        core_resources: List of dicts with 'title' and 'sql' keys for Core infrastructure resources used by this lab
     """
     try:
         # Helper function to get terraform outputs
@@ -423,6 +425,15 @@ The following Flink SQL commands were automatically executed during Terraform de
                 content += f"```sql\n{cmd['sql']}\n```\n\n"
         else:
             content += "_No automated SQL commands for this lab._\n\n"
+
+        # Add core resources section if applicable
+        if core_resources:
+            content += "---\n\n## Shared Resources from Core Infrastructure\n\n"
+            content += "The following LLM connections and models were created in Core Terraform and are used by this lab:\n\n"
+
+            for idx, cmd in enumerate(core_resources, 1):
+                content += f"### {idx}. {cmd['title']}\n\n"
+                content += f"```sql\n{cmd['sql']}\n```\n\n"
 
         content += "---\n\n## Manual Commands (From Walkthrough)\n\n"
         content += "The following commands are meant to be run manually as part of the lab walkthrough:\n\n"
