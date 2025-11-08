@@ -1,14 +1,15 @@
-# Lab4 - Agentic Fleet Management using Confluent Intelligence
+# Lab3 - Agentic Fleet Management using Confluent Intelligence
 
 [Current NOLA Keynote Demo](https://youtu.be/qSwVl72etgY?si=F6v119wshtIYlpGa&t=4410)
 
 The Agentic Fleet Management Demo is an end-to-end demo that pulls together elements of all the previous Streaming Agent Labs we've created so far. It showcases:
 - MCP tool calling and Agent Definition (`CREATE AGENT`) from Lab1,
 - Vector search and RAG from Lab2,
-- Anomaly Detection from Lab3, and
+- Anomaly detection, and
 - Use of Confluent's new **[Real-Time Context Engine](https://www.confluent.io/blog/introducing-real-time-context-engine-ai/)**.
 
 ## Prerequisites
+
 You will need to have these credentials ready in order to deploy all labs:
   - `zapier_sse_endpoint` - see [Lab1 Zapier MCP server instructions.](./Lab1-Walkthrough.md#zapier-remote-mcp-server-setup)
   - `mongodb_connection_string` - looks like `mongodb+srv://cluster0.c45vbkg.mongodb.net/` - no username and password in the string. See [Lab2 MongoDB setup instructions](./Lab2-Walkthrough.md#step-1-create-mongodb-atlas-account-and-cluster).
@@ -23,6 +24,12 @@ You will need to have these credentials ready in order to deploy all labs:
   ```
 
 ## SQL Queries
+
+### 1. Detect surge in `ride_requests` using `ML_DETECT_ANOMALIES`
+
+This query shows how to use the built-in Flink AI function, `ML_DETECT_ANOMALIES` to quickly identify unexpected surges or variances in real-time data streams. A common design pattern is for organizations to use anomaly detection as a trigger that kicks off a streaming agent, enabling it to take action given some change in the data.
+
+Read the [blog post](https://docs.confluent.io/cloud/current/ai/builtin-functions/detect-anomalies.html) and view the [documentation](https://docs.confluent.io/cloud/current/flink/reference/functions/model-inference-functions.html#flink-sql-ml-anomaly-detect-function) for more details about how it works.
 
 ```sql
 CREATE TABLE anomalies_detected_per_zone AS
@@ -78,10 +85,13 @@ WHERE anomaly_result.is_anomaly = true
   AND request_count > anomaly_result.upper_bound;
 ```
 
+> [!NOTE]
+>
+> It will typically take around five minutes for Flink to detect an anomaly. The reason for this is that we're detecting anomalies in 5 minute "windows", and we need to wait for the first window to close before Flink can detect one.
 
+### 2. Enrich the `ride_requests` with possible causes of the anomaly using vector search
 
 ```sql
-SET 'client.statement-name'='anomalies-enriched-rag-create';
 CREATE TABLE anomalies_enriched
 WITH ('changelog.mode' = 'append')
 AS SELECT
@@ -187,9 +197,10 @@ FROM (
     ) AS llm_response
 );
 ```
+### 3. Run `CREATE TOOL` and `CREATE AGENT` to define agent tools, prompt, and capabilities
 
+See [CREATE TOOL documenation](https://docs.confluent.io/cloud/current/flink/reference/statements/create-tool.html).
 ```sql
-SET 'client.statement-name'='create-agent-tool';
 CREATE TOOL zapier
 USING CONNECTION `zapier-mcp-connection`
 WITH (
@@ -199,8 +210,8 @@ WITH (
 );
 ```
 
+See [CREATE AGENT documentation](https://docs.confluent.io/cloud/current/flink/reference/statements/create-agent.html#flink-sql-create-agent).
 ```sql
-SET 'client.statement-name'='create-boat-dispatch-agent';
 CREATE AGENT `boat_dispatch_agent`
 USING MODEL `zapier_mcp_model`
 USING PROMPT 'You are an intelligent boat dispatch coordinator for a riverboat ride-sharing service.
@@ -244,9 +255,8 @@ API Response:
 
 CRITICAL INSTRUCTIONS:
 - Dispatch boats from nearby zones first
-- Consider boat capacity when selecting vessels
-- Dispatch more boats for larger surges (up to 8 boats)
-- Your response MUST contain these three labeled sections
+- Dispatch more boats with larger capacities for big surges (up to 8 boats)
+- Your response MUST contain the three labeled sections
 - The dispatch JSON must be valid and contain only the structure shown above
 - Always execute the POST request and include the API response
 - Do NOT include any other explanatory text outside these three sections'
@@ -255,15 +265,16 @@ WITH (
   'max_iterations' = '5'
 );
 ```
+### 4. Invoke the agent with `AI_RUN_AGENT`
 
+See [AI_RUN_AGENT documentation](https://docs.confluent.io/cloud/current/flink/reference/functions/model-inference-functions.html#flink-sql-ai-run-agent-function).
 ```sql
 SET 'client.statement-name'='completed-actions-create';
 CREATE TABLE completed_actions (
     PRIMARY KEY (pickup_zone) NOT ENFORCED
 )
 WITH ('changelog.mode' = 'append')
-AS
-SELECT
+AS SELECT
     pickup_zone,
     window_time,
     request_count,
@@ -279,3 +290,25 @@ LATERAL TABLE(AI_RUN_AGENT(
 ));
 ```
 
+## Troubleshooting
+
+
+When running Query #1 to create table `anomalies_detected_per_zone`, if you get this error:
+
+```sql
+-- Something went wrong.
+-- The window function requires the timecol is a time attribute type, but is TIMESTAMP_WITH_LOCAL_TIME_ZONE(3).
+```
+
+then run the query below and try again. This can occur if you drop the pre-created `ride_requests` table and then re-run data generation, because neither Flink nor the data generator know we want to use `request_ts` as our watermark column until we tell them.
+
+```sql
+ALTER TABLE ride_requests
+MODIFY (WATERMARK FOR request_ts AS request_ts - INTERVAL '5' SECOND);
+```
+
+## Navigation
+
+- **← Back to Overview**: [Main README](./README.md)
+- **← Previous Lab**: [Lab2: Vector Search & RAG](./LAB2-Walkthrough.md)
+- **🧹 Cleanup**: [Cleanup Instructions](./README.md#cleanup)
