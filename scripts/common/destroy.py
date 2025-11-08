@@ -86,13 +86,15 @@ def main():
     if args.testing:
         creds = load_credentials_json(root)
         cloud = creds["cloud"]
-        envs_to_destroy = ["lab2-vector-search", "lab1-tool-calling", "core"]  # Reverse order
+        envs_to_destroy = ["lab3-agentic-fleet-management", "lab2-vector-search", "lab1-tool-calling", "core"]  # Reverse order
 
         # Build environment variables
+        workshop_mode = creds.get("workshop", False)
         env_vars = {
             "TF_VAR_confluent_cloud_api_key": creds["confluent_cloud_api_key"],
             "TF_VAR_confluent_cloud_api_secret": creds["confluent_cloud_api_secret"],
             "TF_VAR_cloud_region": creds["region"],
+            "TF_VAR_workshop_mode": "true" if workshop_mode else "false",
         }
 
         # Load optional fields
@@ -106,6 +108,13 @@ def main():
             env_vars["TF_VAR_mongodb_password"] = creds["mongodb_password"]
         if cloud == "azure" and "azure_subscription_id" in creds:
             env_vars["TF_VAR_azure_subscription_id"] = creds["azure_subscription_id"]
+
+        # Workshop mode credentials
+        if workshop_mode and cloud == "aws":
+            if "aws_bedrock_access_key" in creds and creds["aws_bedrock_access_key"]:
+                env_vars["TF_VAR_aws_bedrock_access_key"] = creds["aws_bedrock_access_key"]
+            if "aws_bedrock_secret_key" in creds and creds["aws_bedrock_secret_key"]:
+                env_vars["TF_VAR_aws_bedrock_secret_key"] = creds["aws_bedrock_secret_key"]
 
         # Load into environment
         for key, value in env_vars.items():
@@ -122,11 +131,11 @@ def main():
         cloud = prompt_choice("Select cloud provider to destroy:", ["aws", "azure"])
 
         # Step 2: Select what to destroy
-        env_choice = prompt_choice("What to destroy?", ["core", "lab1-tool-calling", "lab2-vector-search", "all"])
+        env_choice = prompt_choice("What to destroy?", ["core", "lab1-tool-calling", "lab2-vector-search", "lab3-agentic-fleet-management", "all"])
 
         envs_to_destroy = []
         if env_choice == "all":
-            envs_to_destroy = ["lab2-vector-search", "lab1-tool-calling", "core"]  # Reverse order
+            envs_to_destroy = ["lab3-agentic-fleet-management", "lab2-vector-search", "lab1-tool-calling", "core"]  # Reverse order
         else:
             envs_to_destroy = [env_choice]
 

@@ -40,11 +40,15 @@ def main():
     parser = argparse.ArgumentParser(description="Simple deployment tool for Confluent streaming agents")
     parser.add_argument("--testing", action="store_true",
                        help="Non-interactive mode using credentials.json (for automated testing)")
+    parser.add_argument("--workshop", action="store_true",
+                       help="Workshop mode using pre-provided cloud credentials (no cloud CLI required)")
     args = parser.parse_args()
 
     print("=== Simple Deployment Tool ===\n")
     if args.testing:
         print("Running in TESTING mode (non-interactive)\n")
+    if args.workshop:
+        print("Running in WORKSHOP mode (pre-provided cloud credentials)\n")
 
     root = get_project_root()
     print(f"Project root: {root}")
@@ -56,6 +60,7 @@ def main():
         # Extract values from JSON
         cloud = creds["cloud"]
         region = creds["region"]
+        workshop_mode = creds.get("workshop", False)
         envs_to_deploy = ["core", "lab1-tool-calling", "lab2-vector-search", "lab3-agentic-fleet-management"]
 
         # Build environment variables for Terraform
@@ -63,6 +68,7 @@ def main():
             "TF_VAR_confluent_cloud_api_key": creds["confluent_cloud_api_key"],
             "TF_VAR_confluent_cloud_api_secret": creds["confluent_cloud_api_secret"],
             "TF_VAR_cloud_region": region,
+            "TF_VAR_workshop_mode": "true" if workshop_mode else "false",
         }
 
         # Optional fields
@@ -78,6 +84,13 @@ def main():
             env_vars["TF_VAR_mongodb_password"] = creds["mongodb_password"]
         if cloud == "azure" and "azure_subscription_id" in creds:
             env_vars["TF_VAR_azure_subscription_id"] = creds["azure_subscription_id"]
+
+        # Workshop mode credentials
+        if workshop_mode and cloud == "aws":
+            if "aws_bedrock_access_key" in creds and creds["aws_bedrock_access_key"]:
+                env_vars["TF_VAR_aws_bedrock_access_key"] = creds["aws_bedrock_access_key"]
+            if "aws_bedrock_secret_key" in creds and creds["aws_bedrock_secret_key"]:
+                env_vars["TF_VAR_aws_bedrock_secret_key"] = creds["aws_bedrock_secret_key"]
 
         print(f"✓ Credentials loaded from credentials.json")
         print(f"  Cloud: {cloud}")
@@ -104,15 +117,23 @@ def main():
         # Step 1: Select cloud provider
         cloud = prompt_choice("Select cloud provider:", ["aws", "azure"])
 
-        if not check_cloud_cli_login(cloud):
-            print(f"\nError: Not logged into {cloud.upper()} CLI.")
-            print(f"Please login using: {'aws configure' if cloud == 'aws' else 'az login'}")
-            sys.exit(1)
-        print(f"✓ {cloud.upper()} CLI logged in")
+        # Step 1.5: Check cloud CLI login (skip in workshop mode)
+        if args.workshop:
+            print(f"✓ Workshop mode: Using pre-provided {cloud.upper()} credentials (no CLI login required)")
+        else:
+            if not check_cloud_cli_login(cloud):
+                print(f"\nError: Not logged into {cloud.upper()} CLI.")
+                print(f"Please login using: {'aws configure' if cloud == 'aws' else 'az login'}")
+                sys.exit(1)
+            print(f"✓ {cloud.upper()} CLI logged in")
 
-        # Step 2: Select cloud region
-        regions = AWS_REGIONS if cloud == "aws" else AZURE_REGIONS
-        region = prompt_choice("Select cloud region:", regions)
+        # Step 2: Select cloud region (auto-select in workshop mode)
+        if args.workshop:
+            region = "us-east-1" if cloud == "aws" else "eastus2"
+            print(f"✓ Workshop mode: Auto-selected region: {region}")
+        else:
+            regions = AWS_REGIONS if cloud == "aws" else AZURE_REGIONS
+            region = prompt_choice("Select cloud region:", regions)
 
         # Load credentials file
         creds_file, creds = load_or_create_credentials_file(root)
@@ -169,6 +190,13 @@ def main():
             azure_sub = prompt_with_default("Azure Subscription ID", creds.get("TF_VAR_azure_subscription_id", ""))
             set_key(creds_file, "TF_VAR_azure_subscription_id", azure_sub)
 
+        # Workshop mode: AWS Bedrock credentials (pre-provided)
+        if args.workshop and cloud == "aws":
+            aws_bedrock_key = prompt_with_default("AWS Bedrock Access Key (workshop)", creds.get("TF_VAR_aws_bedrock_access_key", ""))
+            aws_bedrock_secret = prompt_with_default("AWS Bedrock Secret Key (workshop)", creds.get("TF_VAR_aws_bedrock_secret_key", ""))
+            set_key(creds_file, "TF_VAR_aws_bedrock_access_key", aws_bedrock_key)
+            set_key(creds_file, "TF_VAR_aws_bedrock_secret_key", aws_bedrock_secret)
+
         # Lab-specific credentials
         if "lab1-tool-calling" in envs_to_deploy or "lab3-agentic-fleet-management" in envs_to_deploy:
             zapier_endpoint = prompt_with_default("Zapier SSE Endpoint (Lab 1 and Lab 3)", creds.get("TF_VAR_zapier_sse_endpoint", ""))
@@ -184,6 +212,9 @@ def main():
 
         # Set cloud region
         set_key(creds_file, "TF_VAR_cloud_region", region)
+
+        # Set workshop mode flag
+        set_key(creds_file, "TF_VAR_workshop_mode", "true" if args.workshop else "false")
 
         # Step 6: Show all credentials and confirm
         print("\n--- Configuration Summary ---")

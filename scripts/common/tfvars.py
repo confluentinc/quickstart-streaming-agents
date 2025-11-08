@@ -62,7 +62,10 @@ def generate_core_tfvars_content(
     api_key: str,
     api_secret: str,
     azure_sub_id: Optional[str] = None,
-    owner_email: Optional[str] = None
+    owner_email: Optional[str] = None,
+    workshop_mode: bool = False,
+    aws_bedrock_access_key: Optional[str] = None,
+    aws_bedrock_secret_key: Optional[str] = None
 ) -> str:
     """
     Generate terraform.tfvars content for Core module.
@@ -74,6 +77,9 @@ def generate_core_tfvars_content(
         api_secret: Confluent Cloud API secret
         azure_sub_id: Azure subscription ID (required for Azure)
         owner_email: Owner email for resource tagging (optional)
+        workshop_mode: Whether workshop mode is enabled
+        aws_bedrock_access_key: AWS Bedrock access key (workshop mode only)
+        aws_bedrock_secret_key: AWS Bedrock secret key (workshop mode only)
 
     Returns:
         Formatted terraform.tfvars content
@@ -82,6 +88,7 @@ def generate_core_tfvars_content(
 cloud_region = "{region}"
 confluent_cloud_api_key = "{api_key}"
 confluent_cloud_api_secret = "{api_secret}"
+workshop_mode = {str(workshop_mode).lower()}
 """
 
     if owner_email:
@@ -89,6 +96,11 @@ confluent_cloud_api_secret = "{api_secret}"
 
     if cloud == "azure" and azure_sub_id:
         content += f'azure_subscription_id = "{azure_sub_id}"\n'
+
+    # Workshop mode: AWS Bedrock credentials
+    if workshop_mode and cloud == "aws" and aws_bedrock_access_key and aws_bedrock_secret_key:
+        content += f'aws_bedrock_access_key = "{aws_bedrock_access_key}"\n'
+        content += f'aws_bedrock_secret_key = "{aws_bedrock_secret_key}"\n'
 
     return content
 
@@ -162,9 +174,19 @@ def write_tfvars_for_deployment(
         azure_sub_id = get_credential_value(creds, "azure_subscription_id") if cloud == "azure" else None
         owner_email = get_credential_value(creds, "owner_email")
 
+        # Workshop mode parameters
+        workshop_mode_str = get_credential_value(creds, "workshop_mode")
+        workshop_mode = workshop_mode_str == "true" if workshop_mode_str else False
+        aws_bedrock_access_key = get_credential_value(creds, "aws_bedrock_access_key") if cloud == "aws" else None
+        aws_bedrock_secret_key = get_credential_value(creds, "aws_bedrock_secret_key") if cloud == "aws" else None
+
         if api_key and api_secret:
             core_tfvars_path = root / cloud / "core" / "terraform.tfvars"
-            content = generate_core_tfvars_content(cloud, region, api_key, api_secret, azure_sub_id, owner_email)
+            content = generate_core_tfvars_content(
+                cloud, region, api_key, api_secret,
+                azure_sub_id, owner_email,
+                workshop_mode, aws_bedrock_access_key, aws_bedrock_secret_key
+            )
             if write_tfvars_file(core_tfvars_path, content):
                 print(f"✓ Wrote {core_tfvars_path}")
 

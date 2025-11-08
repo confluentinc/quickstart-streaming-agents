@@ -257,8 +257,9 @@ resource "confluent_kafka_acl" "app-manager-read-on-group" {
 # LLM INFRASTRUCTURE - SHARED ACROSS ALL LABS
 # ------------------------------------------------------
 
-# AWS AI Services Module
+# AWS AI Services Module (production mode - creates IAM resources)
 module "aws_ai_services" {
+  count  = var.workshop_mode ? 0 : 1
   source = "./modules/aws-ai"
 
   cloud_region                     = var.cloud_region
@@ -275,6 +276,94 @@ module "aws_ai_services" {
   confluent_role_binding_resource  = confluent_role_binding.app-manager-kafka-cluster-admin
   owner_email                      = var.owner_email
   project_root_path                = local.project_root_path
+}
+
+# Workshop Mode: Direct Bedrock Connections (using pre-provided credentials)
+# Model prefix for Bedrock endpoint
+locals {
+  model_prefix = length(regexall("^us-", var.cloud_region)) > 0 ? "us" : (length(regexall("^eu-", var.cloud_region)) > 0 ? "eu" : "apac")
+}
+
+# Bedrock Text Generation Connection (workshop mode)
+resource "confluent_flink_connection" "bedrock_connection_workshop" {
+  count = var.workshop_mode ? 1 : 0
+
+  organization {
+    id = data.confluent_organization.main.id
+  }
+  environment {
+    id = confluent_environment.staging.id
+  }
+  compute_pool {
+    id = confluent_flink_compute_pool.flinkpool-main.id
+  }
+  principal {
+    id = confluent_service_account.app-manager.id
+  }
+  rest_endpoint = data.confluent_flink_region.demo_flink_region.rest_endpoint
+  credentials {
+    key    = confluent_api_key.app-manager-flink-api-key.id
+    secret = confluent_api_key.app-manager-flink-api-key.secret
+  }
+
+  display_name   = "llm-textgen-connection"
+  type           = "BEDROCK"
+  endpoint       = "https://bedrock-runtime.${var.cloud_region}.amazonaws.com/model/${local.model_prefix}.anthropic.claude-3-7-sonnet-20250219-v1:0/invoke"
+  aws_access_key = var.aws_bedrock_access_key
+  aws_secret_key = var.aws_bedrock_secret_key
+
+  depends_on = [
+    confluent_api_key.app-manager-flink-api-key,
+    confluent_role_binding.app-manager-kafka-cluster-admin
+  ]
+
+  lifecycle {
+    create_before_destroy = false
+  }
+}
+
+# Bedrock Embedding Connection (workshop mode)
+resource "confluent_flink_connection" "bedrock_embedding_connection_workshop" {
+  count = var.workshop_mode ? 1 : 0
+
+  organization {
+    id = data.confluent_organization.main.id
+  }
+  environment {
+    id = confluent_environment.staging.id
+  }
+  compute_pool {
+    id = confluent_flink_compute_pool.flinkpool-main.id
+  }
+  principal {
+    id = confluent_service_account.app-manager.id
+  }
+  rest_endpoint = data.confluent_flink_region.demo_flink_region.rest_endpoint
+  credentials {
+    key    = confluent_api_key.app-manager-flink-api-key.id
+    secret = confluent_api_key.app-manager-flink-api-key.secret
+  }
+
+  display_name   = "llm-embedding-connection"
+  type           = "BEDROCK"
+  endpoint       = "https://bedrock-runtime.${var.cloud_region}.amazonaws.com/model/amazon.titan-embed-text-v1/invoke"
+  aws_access_key = var.aws_bedrock_access_key
+  aws_secret_key = var.aws_bedrock_secret_key
+
+  depends_on = [
+    confluent_api_key.app-manager-flink-api-key,
+    confluent_role_binding.app-manager-kafka-cluster-admin
+  ]
+
+  lifecycle {
+    create_before_destroy = false
+  }
+}
+
+# Locals to abstract connection names based on mode
+locals {
+  bedrock_connection_name          = var.workshop_mode ? confluent_flink_connection.bedrock_connection_workshop[0].display_name : module.aws_ai_services[0].flink_connection_name
+  bedrock_embedding_connection_name = var.workshop_mode ? confluent_flink_connection.bedrock_embedding_connection_workshop[0].display_name : module.aws_ai_services[0].flink_embedding_connection_name
 }
 
 
@@ -299,7 +388,7 @@ resource "confluent_flink_statement" "llm_textgen_model_aws" {
     secret = confluent_api_key.app-manager-flink-api-key.secret
   }
 
-  statement = "CREATE MODEL `${confluent_environment.staging.display_name}`.`${confluent_kafka_cluster.standard.display_name}`.`llm_textgen_model` INPUT (prompt STRING) OUTPUT (response STRING) WITH ( 'provider' = 'bedrock', 'task' = 'text_generation', 'bedrock.connection' = '${module.aws_ai_services.flink_connection_name}', 'bedrock.params.max_tokens' = '50000' );"
+  statement = "CREATE MODEL `${confluent_environment.staging.display_name}`.`${confluent_kafka_cluster.standard.display_name}`.`llm_textgen_model` INPUT (prompt STRING) OUTPUT (response STRING) WITH ( 'provider' = 'bedrock', 'task' = 'text_generation', 'bedrock.connection' = '${local.bedrock_connection_name}', 'bedrock.params.max_tokens' = '50000' );"
 
   properties = {
     "sql.current-catalog"  = confluent_environment.staging.display_name
@@ -310,7 +399,10 @@ resource "confluent_flink_statement" "llm_textgen_model_aws" {
   #   prevent_destroy = true
   # }
 
-  depends_on = [module.aws_ai_services]
+  depends_on = [
+    module.aws_ai_services,
+    confluent_flink_connection.bedrock_connection_workshop
+  ]
 }
 
 # Core LLM Model - Embedding
@@ -334,7 +426,7 @@ resource "confluent_flink_statement" "llm_embedding_model_aws" {
     secret = confluent_api_key.app-manager-flink-api-key.secret
   }
 
-  statement = "CREATE MODEL `${confluent_environment.staging.display_name}`.`${confluent_kafka_cluster.standard.display_name}`.`llm_embedding_model` INPUT (text STRING) OUTPUT (embedding ARRAY<FLOAT>) WITH ( 'provider' = 'bedrock', 'task' = 'embedding', 'bedrock.connection' = '${module.aws_ai_services.flink_embedding_connection_name}' );"
+  statement = "CREATE MODEL `${confluent_environment.staging.display_name}`.`${confluent_kafka_cluster.standard.display_name}`.`llm_embedding_model` INPUT (text STRING) OUTPUT (embedding ARRAY<FLOAT>) WITH ( 'provider' = 'bedrock', 'task' = 'embedding', 'bedrock.connection' = '${local.bedrock_embedding_connection_name}' );"
 
   properties = {
     "sql.current-catalog"  = confluent_environment.staging.display_name
@@ -345,7 +437,10 @@ resource "confluent_flink_statement" "llm_embedding_model_aws" {
   #   prevent_destroy = true
   # }
 
-  depends_on = [module.aws_ai_services]
+  depends_on = [
+    module.aws_ai_services,
+    confluent_flink_connection.bedrock_embedding_connection_workshop
+  ]
 }
 
 # Core LLM Model - Embedding (Azure)

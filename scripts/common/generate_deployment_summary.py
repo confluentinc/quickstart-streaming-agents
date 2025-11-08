@@ -412,28 +412,29 @@ This file contains the Flink SQL commands used in {lab_name.replace('-', ' ').ti
 
 ---
 
-## Automated Commands (Created by Terraform)
-
-The following Flink SQL commands were automatically executed during Terraform deployment:
-
 """
 
+        # Add core resources section first if applicable
+        if core_resources:
+            content += "## Shared Resources from Core Infrastructure\n\n"
+            content += "The following LLM connections and models were created in Core Terraform and are used by this lab:\n\n"
+
+            for idx, cmd in enumerate(core_resources, 1):
+                content += f"### {idx}. {cmd['title']}\n\n"
+                content += f"```sql\n{cmd['sql']}\n```\n\n"
+
+            content += "---\n\n"
+
         # Add automated commands
+        content += "## Automated Commands (Created by Terraform)\n\n"
+        content += "The following Flink SQL commands were automatically executed during Terraform deployment:\n\n"
+
         if automated_commands:
             for idx, cmd in enumerate(automated_commands, 1):
                 content += f"### {idx}. {cmd['title']}\n\n"
                 content += f"```sql\n{cmd['sql']}\n```\n\n"
         else:
             content += "_No automated SQL commands for this lab._\n\n"
-
-        # Add core resources section if applicable
-        if core_resources:
-            content += "---\n\n## Shared Resources from Core Infrastructure\n\n"
-            content += "The following LLM connections and models were created in Core Terraform and are used by this lab:\n\n"
-
-            for idx, cmd in enumerate(core_resources, 1):
-                content += f"### {idx}. {cmd['title']}\n\n"
-                content += f"```sql\n{cmd['sql']}\n```\n\n"
 
         content += "---\n\n## Manual Commands (From Walkthrough)\n\n"
         content += "The following commands are meant to be run manually as part of the lab walkthrough:\n\n"
