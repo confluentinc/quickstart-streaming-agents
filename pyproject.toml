@@ -59,6 +59,9 @@ dev = [
     "detect-secrets>=1.5.0",
     "pre-commit>=3.5.0",
 ]
+mongodb = [
+    "pymongo>=4.0.0,<5.0",
+]
 
 
 [project.scripts]
@@ -71,9 +74,11 @@ lab1-datagen = "scripts.lab1_datagen:main"
 lab3_datagen = "scripts.lab3_datagen:main"
 lab3-datagen = "scripts.lab3_datagen:main"
 #
-lab2_publish_docs = "scripts.lab2_publish_docs:main"
-publish_docs = "scripts.lab2_publish_docs:main"
-publish-docs = "scripts.lab2_publish_docs:main"
+publish_docs = "scripts.publish_docs:main"
+publish-docs = "scripts.publish_docs:main"
+#
+clear_mongodb = "scripts.clear_mongodb:main"
+clear-mongodb = "scripts.clear_mongodb:main"
 #
 lab2_publish_queries = "scripts.lab2_publish_queries:main"
 publish_queries = "scripts.lab2_publish_queries:main"

@@ -17,11 +17,11 @@ In this lab, we'll use Apache Flink for Confluent Cloud's MCP tool calling featu
 
 Create a Zapier MCP server for tool calling:
 
-### 1. Create free Zapier Account
+### A. Create free Zapier Account
 
 Sign up at [zapier.com](https://zapier.com/sign-up) and verify your email.
 
-### 2. Create MCP Server
+### B. Create MCP Server
 
 Visit [mcp.zapier.com](https://mcp.zapier.com/mcp/servers), choose "Other" as MCP Client, and create your server.
 
@@ -32,7 +32,7 @@ Visit [mcp.zapier.com](https://mcp.zapier.com/mcp/servers), choose "Other" as MC
 
 </details>
 
-### 3. Add Tools
+### C. Add Tools
 
 Add these tools to your MCP server:
 
@@ -45,7 +45,7 @@ Add these tools to your MCP server:
 
 </details>
 
-### 4. Get SSE Endpoint URL
+### D. Get SSE Endpoint URL
 
 Click **"Connect",** choose **"Other"** for your client, then change transport to **"SSE Endpoint"**, and **copy the URL.** This is the `zapier_sse_endpoint` you will need to enter when deploying the lab with `uv run deploy`.
 
@@ -244,9 +244,21 @@ Check out your email for price matched orders:
 
 </details>
 
-## Conclusion
+## Troubleshooting
+- **Not getting emails?**
+  - Ensure you replaced `<<YOUR-EMAIL-ADDRESS-HERE>>` in both the test query and the `CREATE TABLE price_match_input` query with the email address where you want to receive the emails. Be sure to use single quotes around your email address ('your@email.com').
+  - **Run the MCP test query** to confirm your Zapier remote MCP server connection is working and able to send emails.
+  - **Check the Zapier Zap history** at [mcp.zapier.com](https://mcp.zapier.com/) to see whether calls to send emails are going through at all, and if so, why they are failing.
+  - **Make sure to run `uv run lab1_datagen`** to begin producing orders data. Drop `orders`, `customers`, and `products` tables to start fresh.
 
-By chaining these agents together, we've built a real-time data pipeline that reacts to market changes in seconds, ensures pricing competitiveness, and delivers immediate value to customers—right in their inbox.
+- `Runtime received bad response code 403. Please also double check if your model has multiple versions.` error?
+  - **AWS?** Ensure you've activated Claude 3.7 Sonnet in your AWS account. See: [Prerequisites](#prerequisites)
+  - **Azure?** Increase the tokens per minute quota for your GPT-4 model. Quota is low by default.
+
+- `MCP error -32602: Invalid arguments for tool gmail_send_email` error?
+  - Be sure to use single quotes around your email address ('your@email.com').
+  - Configure the Gmail send email tool to specify the email address you want to send to directly.
+  - Modify the model prompt to be more prescriptive about what format you need the email in (string, not array).
 
 ## Navigation
 

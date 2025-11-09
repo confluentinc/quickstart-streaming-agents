@@ -374,7 +374,7 @@ def generate_flink_sql_summary(
     tf_outputs: Dict[str, Any],
     output_path: Path,
     automated_commands: list[dict] = None,
-    manual_commands: list[dict] = None,
+    manual_commands: list[dict] | str = None,
     core_resources: list[dict] = None
 ) -> None:
     """
@@ -386,7 +386,7 @@ def generate_flink_sql_summary(
         tf_outputs: Dictionary of terraform outputs
         output_path: Path where the markdown file should be saved
         automated_commands: List of dicts with 'title' and 'sql' keys for Terraform-created resources
-        manual_commands: List of dicts with 'title' and 'sql' keys for manual walkthrough steps
+        manual_commands: Either a markdown string OR list of dicts with 'title' and 'sql' keys for manual walkthrough steps
         core_resources: List of dicts with 'title' and 'sql' keys for Core infrastructure resources used by this lab
     """
     try:
@@ -439,11 +439,16 @@ This file contains the Flink SQL commands used in {lab_name.replace('-', ' ').ti
         content += "---\n\n## Manual Commands (From Walkthrough)\n\n"
         content += "The following commands are meant to be run manually as part of the lab walkthrough:\n\n"
 
-        # Add manual commands
+        # Add manual commands (handle both string and list formats)
         if manual_commands:
-            for idx, cmd in enumerate(manual_commands, 1):
-                content += f"### {idx}. {cmd['title']}\n\n"
-                content += f"```sql\n{cmd['sql']}\n```\n\n"
+            if isinstance(manual_commands, str):
+                # Markdown string from walkthrough extraction
+                content += manual_commands + "\n\n"
+            else:
+                # Legacy list of dicts format
+                for idx, cmd in enumerate(manual_commands, 1):
+                    content += f"### {idx}. {cmd['title']}\n\n"
+                    content += f"```sql\n{cmd['sql']}\n```\n\n"
         else:
             content += "_No manual SQL commands for this lab._\n\n"
 

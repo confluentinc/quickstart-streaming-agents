@@ -6,13 +6,12 @@ Uses Confluent CLI instead of confluent-kafka Python library to eliminate
 librdkafka and pkg-config dependencies.
 
 Usage:
-    uv run publish_docs              # Auto-detect cloud provider
-    uv run publish_docs aws          # Publish to AWS environment
-    uv run publish_docs azure        # Publish to Azure environment
-    uv run publish_docs --dry-run    # Test without actually publishing
+    uv run publish_docs --lab2              # Publish Lab2 Flink docs
+    uv run publish_docs --lab3              # Publish Lab3 NOLA event docs
+    uv run publish_docs --lab2 --dry-run    # Test without actually publishing
 
 Traditional Python:
-    python scripts/lab2_publish_docs.py
+    python scripts/publish_docs.py --lab2
 """
 
 import argparse
@@ -31,6 +30,12 @@ import yaml
 from .common.cloud_detection import auto_detect_cloud_provider, validate_cloud_provider, suggest_cloud_provider
 from .common.terraform import extract_kafka_credentials, validate_terraform_state, get_project_root
 
+try:
+    from .clear_mongodb import extract_mongodb_credentials, clear_mongodb_collection
+    CLEAR_MONGODB_AVAILABLE = True
+except ImportError:
+    CLEAR_MONGODB_AVAILABLE = False
+
 
 def setup_logging(verbose: bool = False) -> logging.Logger:
     """Set up logging configuration."""
@@ -43,7 +48,7 @@ def setup_logging(verbose: bool = False) -> logging.Logger:
 
 
 class FlinkDocsPublisherCLI:
-    """Publisher for Flink documentation to Kafka using Confluent CLI."""
+    """Publisher for documentation to Kafka using Confluent CLI."""
 
     # Avro schema for documents
     DOCUMENT_VALUE_SCHEMA = {
@@ -320,59 +325,148 @@ class FlinkDocsPublisherCLI:
                 self.logger.debug(f"Could not clean up schema file: {e}")
 
 
-def find_flink_docs_directory(project_root: Path, cloud_provider: str) -> Optional[Path]:
+def find_docs_directory(project_root: Path, lab: int, cloud_provider: str) -> Optional[Path]:
     """
-    Find the Flink documentation directory.
+    Find the documentation directory for a specific lab.
 
     Args:
         project_root: Project root directory
+        lab: Lab number (2 or 3)
         cloud_provider: Cloud provider (aws or azure)
 
     Returns:
-        Path to Flink docs directory or None if not found
+        Path to docs directory or None if not found
     """
-    # Standard location for docs
-    standard_path = project_root / "assets" / "lab2" / "flink_docs" / "markdown_chunks"
-    if standard_path.exists():
-        return standard_path
+    if lab == 2:
+        # Lab2: Flink SQL documentation
+        # Standard location (new structure)
+        standard_path = project_root / "assets" / "lab2" / "flink_docs"
+        if standard_path.exists():
+            return standard_path
 
-    # Alternative without markdown_chunks subdirectory
-    alt_path = project_root / "assets" / "lab2" / "flink_docs"
-    if alt_path.exists():
-        return alt_path
+        # Legacy location with markdown_chunks subdirectory
+        legacy_chunks_path = project_root / "assets" / "lab2" / "flink_docs" / "markdown_chunks"
+        if legacy_chunks_path.exists():
+            return legacy_chunks_path
 
-    # Try cloud-specific path (legacy)
-    cloud_path = project_root / cloud_provider / "lab2-vector-search" / "flink_docs"
-    if cloud_path.exists():
-        return cloud_path
+        # Try cloud-specific path (legacy)
+        cloud_path = project_root / cloud_provider / "lab2-vector-search" / "flink_docs"
+        if cloud_path.exists():
+            return cloud_path
 
-    # Try generic path (legacy)
-    generic_path = project_root / "flink_docs"
-    if generic_path.exists():
-        return generic_path
+        # Try generic path (legacy)
+        generic_path = project_root / "flink_docs"
+        if generic_path.exists():
+            return generic_path
+
+    elif lab == 3:
+        # Lab3: New Orleans event documentation
+        # Standard location
+        standard_path = project_root / "assets" / "lab3" / "nola_events_docs"
+        if standard_path.exists():
+            return standard_path
+
+        # Legacy location with markdown_chunks subdirectory
+        legacy_chunks_path = project_root / "assets" / "lab3" / "markdown_chunks"
+        if legacy_chunks_path.exists():
+            return legacy_chunks_path
 
     return None
+
+
+def prompt_clear_mongodb(cloud_provider: str, project_root: Path, logger: logging.Logger) -> bool:
+    """
+    Prompt user to clear MongoDB collection and perform clearing if confirmed.
+
+    Args:
+        cloud_provider: Cloud provider (aws or azure)
+        project_root: Project root directory
+        logger: Logger instance
+
+    Returns:
+        True if successful or skipped, False if failed
+    """
+    if not CLEAR_MONGODB_AVAILABLE:
+        print("\nNote: MongoDB clearing functionality not available (pymongo not installed).")
+        print("Proceeding with publishing documents...")
+        return True
+
+    # Ask user if they want to clear MongoDB
+    print("\n" + "=" * 60)
+    print("MONGODB COLLECTION MANAGEMENT")
+    print("=" * 60)
+    try:
+        response = input("Clear existing documents from MongoDB before publishing? (y/n): ").strip().lower()
+    except (EOFError, KeyboardInterrupt):
+        print("\n\nSkipping MongoDB clearing.")
+        return True
+
+    if response not in ['y', 'yes']:
+        print("Skipping MongoDB clearing.")
+        return True
+
+    # User wants to clear - proceed with clearing
+    try:
+        logger.info("Extracting MongoDB credentials...")
+        mongodb_creds = extract_mongodb_credentials(cloud_provider, project_root)
+
+        logger.info(f"Connecting to MongoDB ({mongodb_creds['database']}.{mongodb_creds['collection']})...")
+        deleted_count = clear_mongodb_collection(
+            connection_string=mongodb_creds['connection_string'],
+            username=mongodb_creds['username'],
+            password=mongodb_creds['password'],
+            database=mongodb_creds['database'],
+            collection=mongodb_creds['collection']
+        )
+
+        print(f"\n{'=' * 60}")
+        print("MONGODB COLLECTION CLEARED")
+        print(f"{'=' * 60}")
+        print(f"Database:          {mongodb_creds['database']}")
+        print(f"Collection:        {mongodb_creds['collection']}")
+        print(f"Documents deleted: {deleted_count}")
+        print(f"{'=' * 60}\n")
+
+        return True
+
+    except ImportError as e:
+        logger.warning(f"pymongo not installed: {e}")
+        print("\nNote: Could not clear MongoDB (pymongo not installed).")
+        print("Proceeding with publishing documents...")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to clear MongoDB: {e}")
+        print(f"\nWarning: Could not clear MongoDB collection: {e}")
+        print("Proceeding with publishing documents anyway...")
+        return True
 
 
 def main():
     """Main entry point for the document publisher CLI."""
     parser = argparse.ArgumentParser(
-        description="Publish Flink documentation to Kafka using Confluent CLI (no librdkafka dependency)",
+        description="Publish documentation to Kafka using Confluent CLI (no librdkafka dependency)",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  %(prog)s
-  %(prog)s aws
-  %(prog)s azure --dry-run
+  %(prog)s --lab2
+  %(prog)s --lab3
+  %(prog)s --lab2 --dry-run
         """
     )
 
-    parser.add_argument(
-        "cloud_provider",
-        nargs="?",
-        choices=["aws", "azure"],
-        help="Cloud provider (aws or azure). If not specified, will auto-detect."
+    # Create mutually exclusive group for lab selection
+    lab_group = parser.add_mutually_exclusive_group(required=True)
+    lab_group.add_argument(
+        "--lab2",
+        action="store_true",
+        help="Publish Lab2 Flink SQL documentation"
     )
+    lab_group.add_argument(
+        "--lab3",
+        action="store_true",
+        help="Publish Lab3 New Orleans event documentation"
+    )
+
     parser.add_argument(
         "--topic",
         default="documents",
@@ -405,18 +499,26 @@ Examples:
     # Set up logging
     logger = setup_logging(args.verbose)
 
-    # Determine cloud provider
-    cloud_provider = args.cloud_provider
+    # Determine lab number
+    if args.lab2:
+        lab = 2
+        lab_name = "Lab2 (Flink SQL documentation)"
+    else:  # args.lab3
+        lab = 3
+        lab_name = "Lab3 (New Orleans event documentation)"
+
+    logger.info(f"Publishing documents for {lab_name}")
+
+    # Auto-detect cloud provider
+    cloud_provider = auto_detect_cloud_provider()
     if not cloud_provider:
-        cloud_provider = auto_detect_cloud_provider()
-        if not cloud_provider:
-            suggestion = suggest_cloud_provider()
-            if suggestion:
-                logger.info(f"Auto-detected cloud provider: {suggestion}")
-                cloud_provider = suggestion
-            else:
-                logger.error("Could not auto-detect cloud provider. Please specify 'aws' or 'azure'.")
-                return 1
+        suggestion = suggest_cloud_provider()
+        if suggestion:
+            logger.info(f"Auto-detected cloud provider: {suggestion}")
+            cloud_provider = suggestion
+        else:
+            logger.error("Could not auto-detect cloud provider. Please check your terraform deployment.")
+            return 1
 
     # Validate cloud provider
     if not validate_cloud_provider(cloud_provider):
@@ -433,9 +535,9 @@ Examples:
     # Find docs directory
     docs_dir = args.docs_dir
     if not docs_dir:
-        docs_dir = find_flink_docs_directory(project_root, cloud_provider)
+        docs_dir = find_docs_directory(project_root, lab, cloud_provider)
         if not docs_dir:
-            logger.error(f"Could not find Flink documentation directory. Please specify --docs-dir")
+            logger.error(f"Could not find documentation directory for Lab{lab}. Please specify --docs-dir")
             return 1
         logger.info(f"Found documentation directory: {docs_dir}")
 
@@ -456,6 +558,12 @@ Examples:
     except Exception as e:
         logger.error(f"Failed to extract Kafka credentials: {e}")
         return 1
+
+    # Prompt to clear MongoDB collection (if not in dry-run mode)
+    if not args.dry_run:
+        if not prompt_clear_mongodb(cloud_provider, project_root, logger):
+            logger.error("MongoDB clearing failed")
+            return 1
 
     # Initialize publisher
     try:

@@ -19,7 +19,7 @@ You will need to have these credentials ready in order to deploy all labs:
 
 - Once you have these credentials ready, run the following command and choose **All Labs** when prompted:
 
-  ```sql
+  ```sqlite
   uv run deploy
   ```
 
@@ -292,20 +292,16 @@ LATERAL TABLE(AI_RUN_AGENT(
 
 ## Troubleshooting
 
+**Error when running Query #1:** `The window function requires the timecol is a time attribute type, but is TIMESTAMP_WITH_LOCAL_TIME_ZONE(3).`
 
-When running Query #1 to create table `anomalies_detected_per_zone`, if you get this error:
+**Solution:** Run the query below and try again. This can occur if you drop the pre-created `ride_requests` table and then re-run data generation, because neither Flink nor the data generator know we want to use `request_ts` as our watermark column until we tell them.
 
-```sql
--- Something went wrong.
--- The window function requires the timecol is a time attribute type, but is TIMESTAMP_WITH_LOCAL_TIME_ZONE(3).
-```
-
-then run the query below and try again. This can occur if you drop the pre-created `ride_requests` table and then re-run data generation, because neither Flink nor the data generator know we want to use `request_ts` as our watermark column until we tell them.
-
-```sql
+```sql no-parse
 ALTER TABLE ride_requests
 MODIFY (WATERMARK FOR request_ts AS request_ts - INTERVAL '5' SECOND);
 ```
+
+**No anomalies detected?** Check that your data generation is running. The first anomaly should be detected after both data generation (run `uv run lab3_datagen`) and the anomaly detection query **(Query #1)** have been running for about 5 minutes. This is because the anomaly detection query uses 5-minute windows, and we have to wait for the first window to close before the detection algorithm can identify an anomaly.
 
 ## Navigation
 

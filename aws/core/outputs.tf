@@ -32,32 +32,26 @@ output "app_manager_service_account_id" {
 
 output "app_manager_kafka_api_key" {
   value     = confluent_api_key.app-manager-kafka-api-key.id
-  sensitive = true
 }
 
 output "app_manager_kafka_api_secret" {
   value     = confluent_api_key.app-manager-kafka-api-key.secret
-  sensitive = true
 }
 
 output "app_manager_schema_registry_api_key" {
   value     = confluent_api_key.app-manager-schema-registry-api-key.id
-  sensitive = true
 }
 
 output "app_manager_schema_registry_api_secret" {
   value     = confluent_api_key.app-manager-schema-registry-api-key.secret
-  sensitive = true
 }
 
 output "app_manager_flink_api_key" {
   value     = confluent_api_key.app-manager-flink-api-key.id
-  sensitive = true
 }
 
 output "app_manager_flink_api_secret" {
   value     = confluent_api_key.app-manager-flink-api-key.secret
-  sensitive = true
 }
 
 output "confluent_organization_id" {
@@ -70,12 +64,10 @@ output "confluent_flink_rest_endpoint" {
 
 output "confluent_cloud_api_key" {
   value     = var.confluent_cloud_api_key
-  sensitive = true
 }
 
 output "confluent_cloud_api_secret" {
   value     = var.confluent_cloud_api_secret
-  sensitive = true
 }
 
 
@@ -106,13 +98,11 @@ output "cloud_region" {
 
 output "aws_access_key_id" {
   value       = var.workshop_mode ? var.aws_bedrock_access_key : module.aws_ai_services[0].aws_access_key_id
-  sensitive   = true
   description = "AWS access key ID for Bedrock user"
 }
 
 output "aws_secret_access_key" {
   value       = var.workshop_mode ? var.aws_bedrock_secret_key : module.aws_ai_services[0].aws_secret_access_key
-  sensitive   = true
   description = "AWS secret access key for Bedrock user"
 }
 

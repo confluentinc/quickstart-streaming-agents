@@ -99,7 +99,18 @@ resource "confluent_flink_statement" "zapier_mcp_model" {
 
   statement_name = "zapier-mcp-model-create"
 
-  statement = "CREATE MODEL IF NOT EXISTS `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`zapier_mcp_model` INPUT (prompt STRING) OUTPUT (response STRING) WITH ( 'provider' = 'bedrock', 'task' = 'text_generation', 'bedrock.connection' = '${data.terraform_remote_state.core.outputs.llm_connection_name}', 'bedrock.params.max_tokens' = '50000', 'mcp.connection' = 'zapier-mcp-connection' );"
+  statement = <<-EOT
+    CREATE MODEL IF NOT EXISTS `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`zapier_mcp_model`
+    INPUT (prompt STRING)
+    OUTPUT (response STRING)
+    WITH (
+      'provider' = 'bedrock',
+      'task' = 'text_generation',
+      'bedrock.connection' = '${data.terraform_remote_state.core.outputs.llm_connection_name}',
+      'bedrock.params.max_tokens' = '50000',
+      'mcp.connection' = 'zapier-mcp-connection'
+    );
+  EOT
 
   properties = {
     "sql.current-catalog"  = data.terraform_remote_state.core.outputs.confluent_environment_display_name
@@ -162,23 +173,11 @@ resource "confluent_flink_statement" "orders_table" {
 
   statement = <<-EOT
     CREATE TABLE `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`orders` (
-      `order_id` VARCHAR(2147483647) NOT NULL,
-      `customer_id` VARCHAR(2147483647) NOT NULL,
-      `product_id` VARCHAR(2147483647) NOT NULL,
+      `order_id` STRING NOT NULL,
+      `customer_id` STRING NOT NULL,
+      `product_id` STRING NOT NULL,
       `price` DOUBLE NOT NULL,
       `order_ts` TIMESTAMP(3) WITH LOCAL TIME ZONE NOT NULL
-    )
-    WITH (
-      'changelog.mode' = 'append',
-      'connector' = 'confluent',
-      'kafka.cleanup-policy' = 'delete',
-      'kafka.compaction.time' = '0 ms',
-      'kafka.max-message-size' = '2097164 bytes',
-      'kafka.retention.size' = '0 bytes',
-      'kafka.retention.time' = '7 d',
-      'scan.bounded.mode' = 'unbounded',
-      'scan.startup.mode' = 'earliest-offset',
-      'value.format' = 'avro-registry'
     );
   EOT
 
@@ -216,23 +215,11 @@ resource "confluent_flink_statement" "products_table" {
 
   statement = <<-EOT
     CREATE TABLE `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`products` (
-      `product_id` VARCHAR(2147483647) NOT NULL,
-      `product_name` VARCHAR(2147483647) NOT NULL,
+      `product_id` STRING NOT NULL,
+      `product_name` STRING NOT NULL,
       `price` DOUBLE NOT NULL,
-      `department` VARCHAR(2147483647) NOT NULL,
+      `department` STRING NOT NULL,
       `updated_at` TIMESTAMP(3) WITH LOCAL TIME ZONE NOT NULL
-    )
-    WITH (
-      'changelog.mode' = 'append',
-      'connector' = 'confluent',
-      'kafka.cleanup-policy' = 'delete',
-      'kafka.compaction.time' = '0 ms',
-      'kafka.max-message-size' = '2097164 bytes',
-      'kafka.retention.size' = '0 bytes',
-      'kafka.retention.time' = '7 d',
-      'scan.bounded.mode' = 'unbounded',
-      'scan.startup.mode' = 'earliest-offset',
-      'value.format' = 'avro-registry'
     );
   EOT
 
@@ -270,23 +257,11 @@ resource "confluent_flink_statement" "customers_table" {
 
   statement = <<-EOT
     CREATE TABLE `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`customers` (
-      `customer_id` VARCHAR(2147483647) NOT NULL,
-      `customer_email` VARCHAR(2147483647) NOT NULL,
-      `customer_name` VARCHAR(2147483647) NOT NULL,
-      `state` VARCHAR(2147483647) NOT NULL,
+      `customer_id` STRING NOT NULL,
+      `customer_email` STRING NOT NULL,
+      `customer_name` STRING NOT NULL,
+      `state` STRING NOT NULL,
       `updated_at` TIMESTAMP(3) WITH LOCAL TIME ZONE NOT NULL
-    )
-    WITH (
-      'changelog.mode' = 'append',
-      'connector' = 'confluent',
-      'kafka.cleanup-policy' = 'delete',
-      'kafka.compaction.time' = '0 ms',
-      'kafka.max-message-size' = '2097164 bytes',
-      'kafka.retention.size' = '0 bytes',
-      'kafka.retention.time' = '7 d',
-      'scan.bounded.mode' = 'unbounded',
-      'scan.startup.mode' = 'earliest-offset',
-      'value.format' = 'avro-registry'
     );
   EOT
 

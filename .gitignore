@@ -57,8 +57,10 @@ updated-queries.md
 **/.setup_config.json
 **/DEPLOYED_RESOURCES.md
 **/FLINK_SQL_COMMANDS.md
+FLINK_SQL_COMMANDS_EXTRACTED.md
 AGENT_DEFINITION_SYNTAX.md
 EMAIL_REPLACEMENT_IMPLEMENTATION.md
+
 
 # Python (if scripts are added)
 __pycache__/

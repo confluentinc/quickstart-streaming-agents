@@ -226,24 +226,19 @@ SELECT query, response FROM search_results_response LIMIT 5;
 → Ensure you ran terraform apply successfully
 ```
 
-### Pipeline Issues
-```sql
--- Debug data flow (run in Confluent Cloud SQL workspace)
-SELECT COUNT(*) FROM documents;                -- Should be 385 after publish_docs.py
-SELECT COUNT(*) FROM documents_embed;          -- Should match documents count
-SELECT COUNT(*) FROM queries;                  -- Number of queries you sent
-SELECT COUNT(*) FROM search_results_response;  -- Final RAG responses
-```
-
 ### MongoDB Issues
 - **Connection failed**: Verify IP allowlist includes `0.0.0.0/0`
-- **No vector search**: Confirm Atlas vector search index `vector_search` is active
-- **Wrong credentials**: Use database user (not MongoDB.com login)
+- **Connection failed**: Ensure the following values are properly set:
+  - Database name: `vector_search`
+  - Collection name: `documents`
+  - Vector search index name: `vector_index`
+- **No vector search**: Confirm Atlas vector search index `vector_index` is active. Check that the JSON configuration matches the config in [step 9](#9-scroll-down-to-the-bottom-and-choose-json-editor-enter-the-following).
+- **Wrong credentials**: Use *database* username and password (not the credentials you use to login to MongoDB.com).
 
 ### Common Fixes
 1. **Pipeline not processing**: Wait 30-60 seconds after publishing documents
 2. **No query responses**: Check that LLM models are deployed in core infrastructure
-3. **Empty results**: Verify MongoDB connector status in Confluent Cloud
+3. **Empty results**: Verify MongoDB sink connector status in Confluent Cloud
 
 </details>
 

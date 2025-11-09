@@ -6,7 +6,6 @@ variable "cloud_region" {
 variable "mongodb_connection_string" {
   description = "MongoDB connection string for vector database"
   type        = string
-  sensitive   = true
 }
 
 variable "MONGODB_DATABASE" {
@@ -30,11 +29,9 @@ variable "MONGODB_INDEX_NAME" {
 variable "mongodb_username" {
   description = "MongoDB Atlas database user username (project-specific, NOT your Atlas account username). Create this in Atlas: Database Access -> Database Users -> Add New Database User. Example: 'confluent-user'"
   type        = string
-  sensitive   = true
 }
 
 variable "mongodb_password" {
   description = "MongoDB Atlas database user password (for the database user created above, NOT your Atlas account password). Set when creating the database user."
   type        = string
-  sensitive   = true
 }
