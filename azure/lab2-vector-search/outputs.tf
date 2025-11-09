@@ -59,6 +59,7 @@ output "mongodb_connection_details" {
     host       = local.mongodb_host
     username   = var.mongodb_username
   }
+  sensitive = true
 }
 
 # RAG Pipeline Statement Outputs

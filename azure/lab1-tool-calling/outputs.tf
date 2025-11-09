@@ -29,26 +29,32 @@ output "app_manager_service_account_id" {
 
 output "app_manager_kafka_api_key" {
   value     = data.terraform_remote_state.core.outputs.app_manager_kafka_api_key
+  sensitive = true
 }
 
 output "app_manager_kafka_api_secret" {
   value     = data.terraform_remote_state.core.outputs.app_manager_kafka_api_secret
+  sensitive = true
 }
 
 output "app_manager_schema_registry_api_key" {
   value     = data.terraform_remote_state.core.outputs.app_manager_schema_registry_api_key
+  sensitive = true
 }
 
 output "app_manager_schema_registry_api_secret" {
   value     = data.terraform_remote_state.core.outputs.app_manager_schema_registry_api_secret
+  sensitive = true
 }
 
 output "app_manager_flink_api_key" {
   value     = data.terraform_remote_state.core.outputs.app_manager_flink_api_key
+  sensitive = true
 }
 
 output "app_manager_flink_api_secret" {
   value     = data.terraform_remote_state.core.outputs.app_manager_flink_api_secret
+  sensitive = true
 }
 
 output "confluent_schema_registry_id" {

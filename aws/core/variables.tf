@@ -22,11 +22,13 @@ variable "cloud_region" {
 variable "confluent_cloud_api_key" {
   description = "Confluent Cloud API Key"
   type        = string
+  sensitive   = true
 }
 
 variable "confluent_cloud_api_secret" {
   description = "Confluent Cloud API Secret"
   type        = string
+  sensitive   = true
 }
 
 variable "owner_email" {
@@ -44,11 +46,13 @@ variable "workshop_mode" {
 variable "aws_bedrock_access_key" {
   description = "AWS Access Key ID for Bedrock (workshop mode only)"
   type        = string
+  sensitive   = true
   default     = ""
 }
 
 variable "aws_bedrock_secret_key" {
   description = "AWS Secret Access Key for Bedrock (workshop mode only)"
   type        = string
+  sensitive   = true
   default     = ""
 }
