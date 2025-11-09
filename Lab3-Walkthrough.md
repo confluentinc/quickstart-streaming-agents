@@ -17,19 +17,22 @@ You will need to have these credentials ready in order to deploy all labs:
 
 ## Deploy the Demo
 
-- Once you have these credentials ready, run the following command and choose **All Labs** when prompted:
+Once you have these credentials ready, run the following command and choose **Lab3**:
 
-  ```sqlite
+  ```sql no-parse
   uv run deploy
   ```
-
+  Then, publish the New Orleans local event documents to MongoDB by running the following command. Choose 'yes' to clear your MongoDB database of all documents when prompted, if you previously uploaded documents for Lab2:
+```sql
+uv run publish_docs --lab3
+```
 ## SQL Queries
 
 ### 1. Detect surge in `ride_requests` using `ML_DETECT_ANOMALIES`
 
 This query shows how to use the built-in Flink AI function, `ML_DETECT_ANOMALIES` to quickly identify unexpected surges or variances in real-time data streams. A common design pattern is for organizations to use anomaly detection as a trigger that kicks off a streaming agent, enabling it to take action given some change in the data.
 
-Read the [blog post](https://docs.confluent.io/cloud/current/ai/builtin-functions/detect-anomalies.html) and view the [documentation](https://docs.confluent.io/cloud/current/flink/reference/functions/model-inference-functions.html#flink-sql-ml-anomaly-detect-function) for more details about how it works.
+Read the [blog post](https://docs.confluent.io/cloud/current/ai/builtin-functions/detect-anomalies.html) and view the [documentation](https://docs.confluent.io/cloud/current/flink/reference/functions/model-inference-functions.html#flink-sql-ml-anomaly-detect-function) on Flink anomaly detection for more details about how it works.
 
 ```sql
 CREATE TABLE anomalies_detected_per_zone AS
@@ -199,7 +202,7 @@ FROM (
 ```
 ### 3. Run `CREATE TOOL` and `CREATE AGENT` to define agent tools, prompt, and capabilities
 
-See [CREATE TOOL documenation](https://docs.confluent.io/cloud/current/flink/reference/statements/create-tool.html).
+See [CREATE TOOL documentation](https://docs.confluent.io/cloud/current/flink/reference/statements/create-tool.html).
 ```sql
 CREATE TOOL zapier
 USING CONNECTION `zapier-mcp-connection`

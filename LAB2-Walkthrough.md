@@ -152,7 +152,7 @@ The lab uses real Confluent Flink documentation as the knowledge base:
 
 ```bash
 # Load 385 documents into the pipeline (run from anywhere in repo)
-uv run publish_docs
+uv run publish_docs --lab2
 ```
 
 <details>
@@ -246,4 +246,5 @@ SELECT query, response FROM search_results_response LIMIT 5;
 
 - **← Back to Overview**: [Main README](./README.md)
 - **← Previous Lab**: [Lab1: Tool Calling Agent](./LAB1-Walkthrough.md)
+- **→ Next Lab**: [Lab3: Agentic Fleet Management](./Lab3-Walkthrough.md)
 - **🧹 Cleanup**: [Cleanup Instructions](./README.md#cleanup)

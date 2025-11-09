@@ -44,10 +44,10 @@ resource "confluent_flink_statement" "ride_requests_table" {
 
   statement = <<-EOT
     CREATE TABLE IF NOT EXISTS `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`ride_requests` (
-      `request_id` VARCHAR(2147483647) NOT NULL,
-      `customer_email` VARCHAR(2147483647) NOT NULL,
-      `pickup_zone` VARCHAR(2147483647) NOT NULL,
-      `drop_off_zone` VARCHAR(2147483647) NOT NULL,
+      `request_id` STRING NOT NULL,
+      `customer_email` STRING NOT NULL,
+      `pickup_zone` STRING NOT NULL,
+      `drop_off_zone` STRING NOT NULL,
       `price` DOUBLE NOT NULL,
       `number_of_passengers` INT NOT NULL,
       `request_ts` TIMESTAMP(3) WITH LOCAL TIME ZONE NOT NULL,
@@ -93,10 +93,10 @@ resource "confluent_flink_statement" "vessel_catalog_table" {
 
   statement = <<-EOT
     CREATE TABLE IF NOT EXISTS `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`vessel_catalog` (
-      `vessel_id` VARCHAR(2147483647) NOT NULL,
-      `vessel_name` VARCHAR(2147483647) NOT NULL,
-      `base_zone` VARCHAR(2147483647) NOT NULL,
-      `availability` VARCHAR(2147483647) NOT NULL,
+      `vessel_id` STRING NOT NULL,
+      `vessel_name` STRING NOT NULL,
+      `base_zone` STRING NOT NULL,
+      `availability` STRING NOT NULL,
       `capacity` INT NOT NULL
     );
   EOT
