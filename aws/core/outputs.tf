@@ -36,6 +36,7 @@ output "app_manager_kafka_api_key" {
 
 output "app_manager_kafka_api_secret" {
   value     = confluent_api_key.app-manager-kafka-api-key.secret
+  sensitive = true
 }
 
 output "app_manager_schema_registry_api_key" {
@@ -44,6 +45,7 @@ output "app_manager_schema_registry_api_key" {
 
 output "app_manager_schema_registry_api_secret" {
   value     = confluent_api_key.app-manager-schema-registry-api-key.secret
+  sensitive = true
 }
 
 output "app_manager_flink_api_key" {
@@ -52,6 +54,7 @@ output "app_manager_flink_api_key" {
 
 output "app_manager_flink_api_secret" {
   value     = confluent_api_key.app-manager-flink-api-key.secret
+  sensitive = true
 }
 
 output "confluent_organization_id" {

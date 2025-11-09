@@ -44,7 +44,8 @@ dependencies = [
     "PyYAML>=6.0.1,<7.0",
     "requests>=2.31.0,<3.0",
     "python-dotenv>=1.0.0,<2.0",
-    "urllib3>=1.26.18,<2.0",  # Pin to v1.x for LibreSSL compatibility on macOS
+    "urllib3>=1.26.18,<2.0", # Pin to v1.x for LibreSSL compatibility on macOS
+    "pymongo>=4.10.1",
 ]
 
 # Optional dependencies for enhanced functionality
