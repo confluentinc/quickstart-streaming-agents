@@ -165,7 +165,7 @@ def main():
         elif env_choice == "Lab 2: Vector Search / RAG":
             envs_to_deploy = ["core", "lab2-vector-search"]
         elif env_choice == "Lab 3: Agentic Fleet Management":
-            envs_to_deploy = ["core", "lab3-agentic-fleet-management"]
+            envs_to_deploy = ["core", "lab2-vector-search", "lab3-agentic-fleet-management"]
         elif env_choice == "All Labs (Labs 1, 2, and 3)":
             envs_to_deploy = ["core", "lab1-tool-calling", "lab2-vector-search", "lab3-agentic-fleet-management"]
         else:  # Core Infrastructure Only (advanced)
