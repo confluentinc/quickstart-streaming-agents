@@ -1,52 +1,272 @@
-# Lab3 - Agentic Fleet Management Using Confluent Intelligence
+# Lab3: Agentic Fleet Management System with Confluent Intelligence
 
-[Current NOLA Keynote Demo](https://youtu.be/qSwVl72etgY?si=F6v119wshtIYlpGa&t=4410)
 
-The Agentic Fleet Management Demo is an end-to-end demo that pulls together elements of all the previous Streaming Agent Labs we've created so far. It showcases:
-- MCP tool calling and Agent Definition (`CREATE AGENT`) from Lab1,
-- Vector search and RAG from Lab2,
-- Anomaly detection, and
-- Use of Confluent's new **[Real-Time Context Engine](https://www.confluent.io/blog/introducing-real-time-context-engine-ai/)**.
+This demo showcases an intelligent, real-time fleet management system that autonomously detects demand surges, identifies their causes using AI-powered reasoning, and automatically dispatches vessels to meet increased demand. Built on [Confluent Intelligence](https://www.confluent.io/product/confluent-intelligence/), the system combines stream processing, anomaly detection, retrieval-augmented generation (RAG), and AI agent workflows to create a fully autonomous operations pipeline.
+
+### What This System Does
+
+The system continuously monitors ride request streams in real time and performs three key automated operations:
+
+1. **Anomaly Detection** – Detects unusual spikes in ride requests across different zones using Flink’s [built-in ML functions](https://docs.confluent.io/cloud/current/ai/builtin-functions/overview.html).  
+2. **Contextual Understanding** – Leverages [vector search](https://docs.confluent.io/cloud/current/ai/external-tables/vector-search.html) and RAG to uncover the reasons behind demand surges (e.g., events, conferences, festivals) by querying a knowledge base.  
+3. **Autonomous Action** – Automatically dispatches docked vessels or repositions available ones to high-demand zones using [Streaming Agents](https://docs.confluent.io/cloud/current/ai/streaming-agents/overview.html) with tool calling.  
+
+All of this runs in real time on **Confluent Cloud for Apache Flink**, with no external orchestration required.
+
+
+![Architecture Diagram](./assets/lab3/lab3-architecture.png)
 
 ## Prerequisites
-
-You will need to have these credentials ready in order to deploy all labs:
-  - `zapier_sse_endpoint` - see [Lab1 Zapier MCP server instructions.](./Lab1-Walkthrough.md#zapier-remote-mcp-server-setup)
-  - `mongodb_connection_string` - looks like `mongodb+srv://cluster0.c45vbkg.mongodb.net/` - no username and password in the string. See [Lab2 MongoDB setup instructions](./Lab2-Walkthrough.md#step-1-create-mongodb-atlas-account-and-cluster).
-  - `mongodb_username` and `mongodb_password`- these are database-specific credentials, not your mongodb.com login. See [Lab2 MongoDB setup instructions](./Lab2-Walkthrough.md#step-1-create-mongodb-atlas-account-and-cluster).
-
+- Zapier account and remote MCP server set up  (instructions below)
+- MongoDB free account with Atlas cluster (M0 - Free Tier) with vector search enabled - directions below.
 - ⚠️ **IMPORTANT: AWS Users Only:** To access Claude Sonnet 3.7 you must request access to the model by filling out an Anthropic use case form (or someone in your org must have previously done so) for your cloud region. To do so, visit the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog), select Claude 3.7 Sonnet and open it it in the Playground, then send a message in the chat - the form will appear automatically. ⚠️
+
+## MongoDB Atlas Setup
+<details>
+<summary>MongoDB Atlas Setup (Click to expand)</summary>
+
+### Step 1: Create MongoDB Atlas Account and Cluster
+
+If running Lab3, set up a free MongoDB Atlas cluster:
+
+#### 1. Create a **Project.**
+
+<details open>
+<summary>Click to collapse</summary>
+
+<img src="./assets/lab2/mongodb/01_create_project.png" alt="Create Project" width="50%" />
+
+</details>
+
+#### 2. Create a **Cluster.**
+
+<details open>
+<summary>Click to collapse</summary>
+
+<img src="./assets/lab2/mongodb/02_create_cluster.png" alt="Create Cluster" width="50%" />
+
+</details>
+
+#### 3. Choose the **Free Tier (M0).** Then choose your cloud provider (AWS or Azure) and region. Make sure this is the same region that your Confluent Cloud deployment is in. Click **Create Cluster.**
+
+<details open>
+<summary>Click to collapse</summary>
+
+<img src="./assets/lab2/mongodb/03_choose_free_tier_and_region.png" alt="Choose Free Tier" width="50%" />
+
+</details>
+
+#### 4. **Create a Database User.** **Write down the username and password** you choose, as they will be `mongodb_username` and `mongodb_password` that you will need to deploy Terraform later. Click **Create Database User** when you are done
+
+   **Note:** the username and password you set up to access your database are the credentials you'll need to save for later, NOT the separate login you use for mongodb.com.
+
+<details open>
+<summary>Click to collapse</summary>
+
+<img src="./assets/lab2/mongodb/04_create_database_user.png" alt="Create Database User" width="50%" />
+
+</details>
+
+#### 5. Click **Choose a Connection method.** => Shell => Copy the URL shown in **step 2.** This is the `MONGODB_CONNECTION_URL` you will need later. Don't worry about the rest of the command - you only need the URL that looks like `mongodb+srv://cluster0.xhgx1kr.mongodb.net`
+
+#### 6. Go to **Network Access** in left sidebar. Click green **Add IP Address** button on the right. Then simply click the **Allow Access From Anywhere** button, or manually enter `0.0.0.0/0`. Click **Confirm.**
+
+ ⚠️ **NOTE:** Important step! Confluent Cloud will not be able to connect to MongoDB without this rule. ⚠️
+
+<details open>
+<summary>Click to collapse</summary>
+
+<img src="./assets/lab2/mongodb/05_network_access_allow_all.png" alt="Network Access" width="50%" />
+
+</details>
+
+#### 7. Next, from **Clusters** page, choose "Atlas Search" then click **Add my own data.** Enter
+
+   Database name: `vector_search`
+
+   Collection name: `documents`
+
+<details open>
+<summary>Click to collapse</summary>
+
+<img src="./assets/lab2/mongodb/06_add_data_collection.png" alt="Add Data Collection" width="50%" />
+
+</details>
+
+#### 8. Next, click **Create Search Index.** Choose **Vector Search index, and name it `vector_search`
+
+<details open>
+<summary>Click to collapse</summary>
+<img src="./assets/lab2/mongodb/07_create_vector_search_index.png" alt="Create Vector Index" width="50%" />
+
+</details>
+
+#### 9. Scroll down to the bottom and choose **JSON Editor.** Enter the following
+
+   ```json
+   {
+     "fields": [
+       {
+         "type": "vector",
+         "path": "embedding",
+         "numDimensions": 1536,
+         "similarity": "cosine"
+       }
+     ]
+   }
+   ```
+
+<details open>
+<summary>Click to collapse</summary>
+
+<img src="./assets/lab2/mongodb/08_json_editor_config.png" alt="JSON Config" width="50%" />
+
+</details>
+
+</details>
+
+## Zapier MCP Server Setup
+
+<details>
+<summary>Zapier MCP Server Setup (Click to expand)</summary>
+
+Create a Zapier MCP server for tool calling:
+
+### 1. Create free Zapier Account
+
+Sign up at [zapier.com](https://zapier.com/sign-up) and verify your email.
+
+### 2. Create MCP Server
+
+Visit [mcp.zapier.com](https://mcp.zapier.com/mcp/servers), choose "Other" as MCP Client, and create your server.
+
+<details open>
+<summary>Click to collapse</summary>
+
+<img src="./assets/lab1/zapier/3.png" alt="Create MCP Server" width="50%" />
+
+</details>
+
+### 3. Add Tools
+
+Add these tools to your MCP server:
+
+- **Webhooks by Zapier: GET** tool
+- **Gmail: Send Email** tool (authenticate via SSO)
+
+<details open>
+<summary>Click to collapse</summary>
+
+<img src="./assets/lab1/zapier/4.png" alt="Add Tools" width="50%" />
+
+</details>
+</details>
+
 
 ## Deploy the Demo
 
-Once you have these credentials ready, run the following command and choose **Lab3**:
+Once you have these credentials ready, run the following command and choose **Lab3** (see [main README](./README.md)):
 
   ```sql no-parse
   uv run deploy
   ```
-  Then, publish the New Orleans local event documents to MongoDB by running the following command. Choose 'yes' to clear your MongoDB database of all documents when prompted, if you previously uploaded documents for Lab2:
+  Then, publish the local event documents to MongoDB by running the following command. Choose 'yes' to clear your MongoDB database of all documents when prompted, if you previously uploaded documents for Lab2:
 ```sql
 uv run publish_docs --lab3
 ```
-## SQL Queries
 
-### 1. Detect surge in `ride_requests` using `ML_DETECT_ANOMALIES`
+## Usecase Walkthrough
 
-This query shows how to use the built-in Flink AI function, `ML_DETECT_ANOMALIES` to quickly identify unexpected surges or variances in real-time data streams. A common design pattern is for organizations to use anomaly detection as a trigger that kicks off a streaming agent, enabling it to take action given some change in the data.
+### Data Generation
 
-Read the [blog post](https://docs.confluent.io/cloud/current/ai/builtin-functions/detect-anomalies.html) and view the [documentation](https://docs.confluent.io/cloud/current/flink/reference/functions/model-inference-functions.html#flink-sql-ml-anomaly-detect-function) on Flink anomaly detection for more details about how it works.
+Make sure Docker is running, then begin generating data with the following command:
+
+```bash
+uv run lab3_datagen
+```
+
+<details>
+<summary>Alternative: Using Python directly</summary>
+
+```bash
+python scripts/lab1_datagen.py
+```
+
+The Python script provides the same automation as the uv version.
+
+</details>
+
+The data generator produces two interconnected data streams:
+
+- **Ride Requests** – Represents incoming boat ride requests. Each request includes a **pickup zone** and a **drop-off zone**.  
+- **Products** – A catalog of all vessels currently in the system. Each vessel has one of three statuses:  
+  - `available` – ready to be hired  
+  - `hired` – currently in use  
+  - `in_dock` – docked and unavailable for hire
+
+
+### Anomaly Detection
+
+This step identifies unexpected surges in ride requests for each pickup zone in real time.  
+We want to analyse ride request counts over 5-minute windows and compare them against expected baselines derived from historical trends.
+
+In [Flink UI](https://confluen.cloud/go/flink), select your environment and open a SQL workspace.
+
+Run this query to visualise any anomalies detected.
 
 ```sql
-CREATE TABLE anomalies_detected_per_zone AS
 WITH windowed_traffic AS (
     SELECT 
         window_start,
         window_end,
         window_time,
         pickup_zone,
-        COUNT(*) AS request_count,
-        SUM(number_of_passengers) AS total_passengers,
-        SUM(CAST(price AS DECIMAL(10, 2))) AS total_revenue
+        COUNT(*) AS request_count
+    FROM TABLE(
+        TUMBLE(TABLE ride_requests, DESCRIPTOR(request_ts), INTERVAL '5' MINUTE)
+    )
+    GROUP BY window_start, window_end, window_time, pickup_zone
+)
+    SELECT 
+        pickup_zone,
+        window_time,
+        request_count,
+        ML_DETECT_ANOMALIES(
+            CAST(request_count AS DOUBLE),
+            window_time,
+            JSON_OBJECT(
+                'minTrainingSize' VALUE 287,
+                'maxTrainingSize' VALUE 7000,
+                'confidencePercentage' VALUE 99.999,
+                'enableStl' VALUE FALSE           
+            )
+        ) OVER (
+            PARTITION BY pickup_zone
+            ORDER BY window_time 
+            RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+        ) AS anomaly_result
+    FROM windowed_traffic
+```
+Click on the **anomaly_result** graph.
+
+![Anomaly Screenshot](./assets/lab3/lab3-anomaly-graph1.png)
+
+You will not notice that there was anomaly detected in one of the Zones.
+
+![Anomaly Screenshot](./assets/lab3/lab3-anomaly-graph2.png)
+
+Now to turn this into a continous Flink job run the following query.
+
+```sql
+SET 'client.statement-name' = 'anomalies-zone-create-table';
+CREATE TABLE anomalies_per_zone AS
+WITH windowed_traffic AS (
+    SELECT 
+        window_start,
+        window_end,
+        window_time,
+        pickup_zone,
+        COUNT(*) AS request_count
     FROM TABLE(
         TUMBLE(TABLE ride_requests, DESCRIPTOR(request_ts), INTERVAL '5' MINUTE)
     )
@@ -57,8 +277,6 @@ anomaly_detection AS (
         pickup_zone,
         window_time,
         request_count,
-        total_passengers,
-        total_revenue,
         ML_DETECT_ANOMALIES(
             CAST(request_count AS DOUBLE),
             window_time,
@@ -78,25 +296,42 @@ anomaly_detection AS (
 SELECT 
     pickup_zone,
     window_time,
-    request_count,
-    total_passengers,
-    total_revenue,
-    CAST(ROUND(anomaly_result.forecast_value) AS BIGINT) AS expected_requests,
-    anomaly_result.upper_bound AS upper_bound,
-    anomaly_result.lower_bound AS lower_bound,
-    anomaly_result.is_anomaly AS is_surge
+    request_count
 FROM anomaly_detection
 WHERE anomaly_result.is_anomaly = true 
-  AND request_count > anomaly_result.upper_bound;
+  AND request_count > anomaly_result.upper_bound 
 ```
 
-> [!NOTE]
->
-> It will typically take around five minutes for Flink to detect an anomaly. The reason for this is that we're detecting anomalies in 5-minute "windows", and we need to wait for the first window to close before Flink can detect one.
+This query creates a new table, `anomalies_per_zone`, that captures only the zones currently experiencing a surge.
 
-### 2. Enrich the `ride_requests` with possible causes of the anomaly using vector search
+> NOTE: Leave the query running so that it runs continously.
+
+In a new cell, run the following to view the results.
 
 ```sql
+SELECT * FROM anomalies_per_zone
+```
+
+You should see an anomaly in the `French Quarter` zone.
+
+![Anomaly Screenshot](./assets/lab3/lab3-anomaly-results.png)
+
+These detected surges are then used as triggers for the next steps — contextual understanding and agentic vessel movement.
+
+
+### Anomaly Enrichment with Vector Search
+
+Once a surge is detected, we want to **understand why** it happened.  
+This step enriches detected anomalies with real-world context using **Vector Search** and **LLM-based reasoning**.
+
+The query takes each detected surge and formulates a natural language query describing the anomaly (e.g., *“Transportation demand surge in French Quarter zone at 8:00 PM…”*).  
+It then embeds that query using an **LLM embedding model** and searches a **vector database** of local event data (e.g., concerts, conferences, or sports games) to find the most relevant documents.  
+
+Finally, it uses an **LLM text generation model** to summarize the results into a concise, human-readable explanation of the likely cause for the surge.
+
+
+```sql
+SET 'client.statement-name'='anomalies-enriched-rag-create';
 CREATE TABLE anomalies_enriched
 WITH ('changelog.mode' = 'append')
 AS SELECT
@@ -201,10 +436,19 @@ FROM (
         )
     ) AS llm_response
 );
-```
-### 3. Run `CREATE TOOL` and `CREATE AGENT` to define agent tools, prompt, and capabilities
 
-See [CREATE TOOL documentation](https://docs.confluent.io/cloud/current/flink/reference/statements/create-tool.html).
+```
+This produces an anomalies_enriched table containing each surge, its statistical details, and an AI-generated reason — such as “High demand due to Tech conference near French Quarter zone, expected attendance 20,000."
+
+### Autonomous Action
+
+Once anomalies have been detected and enriched with context, the system can act on them automatically.
+Using Streaming Agents, we can trigger specific operational workflows — for example, dispatching idle vessels from nearby docks to high-demand zones
+
+These agents leverage tool calling to interact directly with external systems or APIs, enabling closed-loop automation — all running natively within Confluent Cloud for Apache Flink.
+
+First create a tool connection by running the follwoing query. see [CREATE TOOL documentation](https://docs.confluent.io/cloud/current/flink/reference/statements/create-tool.html).
+
 ```sql
 CREATE TOOL zapier
 USING CONNECTION `zapier-mcp-connection`
@@ -270,9 +514,7 @@ WITH (
   'max_iterations' = '5'
 );
 ```
-### 4. Invoke the agent with `AI_RUN_AGENT`
-
-See [AI_RUN_AGENT documentation](https://docs.confluent.io/cloud/current/flink/reference/functions/model-inference-functions.html#flink-sql-ai-run-agent-function).
+Start the agent with `AI_RUN_AGENT` function to start taking actions on any anomalies detected. See [AI_RUN_AGENT documentation](https://docs.confluent.io/cloud/current/flink/reference/functions/model-inference-functions.html#flink-sql-ai-run-agent-function).
 ```sql
 CREATE TABLE completed_actions (
     PRIMARY KEY (pickup_zone) NOT ENFORCED
@@ -294,29 +536,14 @@ LATERAL TABLE(AI_RUN_AGENT(
 ));
 ```
 
-## Troubleshooting
-<details>
-<summary>Click to expand</summary>
 
-- **No anomalies detected?** Check that your data generation is running. The first anomaly should be detected after both data generation (run `uv run lab3_datagen`) and the anomaly detection query **(Query #1)** have been running for about 5 minutes. This is because the anomaly detection query uses 5-minute windows, and we have to wait for the first window to close before the detection algorithm can identify an anomaly.
+## Conclusion
 
-- **Error when running Query #1?:** `The window function requires the timecol is a time attribute type, but is TIMESTAMP_WITH_LOCAL_TIME_ZONE(3).`
-  - Run the query below and try again. This can occur if you drop the pre-created `ride_requests` table and then re-run data generation, because neither Flink nor the data generator know we want to use `request_ts` as our watermark column until we tell them.
-```sql no-parse
-ALTER TABLE ride_requests
-MODIFY (WATERMARK FOR request_ts AS request_ts - INTERVAL '5' SECOND);
-```
-- **Email about a degraded Flink statement?**
-  - Press "Stop" on the running `CREATE TABLE anomalies_detected_per_zone` statement in the SQL Workspace.
-    - The anomaly detection algorithm expects data to be flowing through it, and the statement will change to "degraded" after some time if you turn off data generation. Turning it off will stop the problem, or it will automatically resume running properly once data begins flowing again.
+By chaining these intelligent streaming components together, we’ve built an alwaty on real-time, context-aware agentic pipeline that detects surges, explains their causes, and takes autonomous action — all within seconds.
 
-- `Runtime received bad response code 403. Please also double check if your model has multiple versions.` error?
-  - **AWS?** Ensure you've activated Claude 3.7 Sonnet in your AWS account. See: [Prerequisites](#prerequisites)
-  - **Azure?** Increase the tokens per minute quota for your GPT-4 model. Quota is low by default.
-</details>
 
-## Navigation
+## Clean-up
 
-- **← Back to Overview**: [Main README](./README.md)
-- **← Previous Lab**: [Lab2: Vector Search & RAG](./LAB2-Walkthrough.md)
-- **🧹 Cleanup**: [Cleanup Instructions](./README.md#cleanup)
+When you’re done with the lab, make sure to clean up all resources to avoid unnecessary costs and keep your environment tidy.
+
+Follow the step-by-step [Cleanup Instructions](./README.md#cleanup).
