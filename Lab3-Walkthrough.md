@@ -1,6 +1,4 @@
 # Lab3: Agentic Fleet Management System with Confluent Intelligence
-
-
 This demo showcases an intelligent, real-time fleet management system that autonomously detects demand surges, identifies their causes using AI-powered reasoning, and automatically dispatches vessels to meet increased demand. Built on [Confluent Intelligence](https://www.confluent.io/product/confluent-intelligence/), the system combines stream processing, anomaly detection, retrieval-augmented generation (RAG), and AI agent workflows to create a fully autonomous operations pipeline.
 
 ### What This System Does
@@ -42,7 +40,6 @@ If running Lab3, set up a free MongoDB Atlas cluster:
 
 <details open>
 <summary>Click to collapse</summary>
-
 <img src="./assets/lab2/mongodb/02_create_cluster.png" alt="Create Cluster" width="50%" />
 
 </details>
@@ -258,7 +255,6 @@ You will not notice that there was anomaly detected in one of the Zones.
 Now to turn this into a continous Flink job run the following query.
 
 ```sql
-SET 'client.statement-name' = 'anomalies-zone-create-table';
 CREATE TABLE anomalies_per_zone AS
 WITH windowed_traffic AS (
     SELECT 
@@ -331,7 +327,6 @@ Finally, it uses an **LLM text generation model** to summarize the results into 
 
 
 ```sql
-SET 'client.statement-name'='anomalies-enriched-rag-create';
 CREATE TABLE anomalies_enriched
 WITH ('changelog.mode' = 'append')
 AS SELECT
@@ -539,11 +534,33 @@ LATERAL TABLE(AI_RUN_AGENT(
 
 ## Conclusion
 
-By chaining these intelligent streaming components together, we’ve built an alwaty on real-time, context-aware agentic pipeline that detects surges, explains their causes, and takes autonomous action — all within seconds.
+By chaining these intelligent streaming components together, we’ve built an always-on, real-time, context-aware agentic pipeline that detects surges, explains their causes, and takes autonomous action — all within seconds.
 
+## Troubleshooting
+
+<details>
+<summary>Click to expand</summary>
+
+- **Error when running Query #1?:** `The window function requires the timecol is a time attribute type, but is TIMESTAMP_WITH_LOCAL_TIME_ZONE(3).`
+  - Run the query below and try again. This can occur if you drop the pre-created `ride_requests` table and then re-run data generation, because neither Flink nor the data generator know we want to use `request_ts` as our watermark column until we tell them.
+```sql no-parse
+ALTER TABLE ride_requests
+MODIFY (WATERMARK FOR request_ts AS request_ts - INTERVAL '5' SECOND);
+```
+- **Email about a degraded Flink statement?**
+  - Press "Stop" on the running `CREATE TABLE anomalies_detected_per_zone` statement in the SQL Workspace.
+    - The anomaly detection algorithm expects data to be flowing through it, and the statement will change to "degraded" after some time if you turn off data generation. Turning it off will stop the problem, or it will automatically resume running properly once data begins flowing again.
+
+</details>
 
 ## Clean-up
 
-When you’re done with the lab, make sure to clean up all resources to avoid unnecessary costs and keep your environment tidy.
+When you’re done with the lab, make sure to run `uv run destroy` to clean up all resources, avoid unnecessary costs, and keep your environment tidy.
 
-Follow the step-by-step [Cleanup Instructions](./README.md#cleanup).
+
+
+**← Back to Overview**: [Main README](./README.md)
+
+**← Previous Lab**: [Lab2: Vector Search & RAG](./LAB2-Walkthrough.md)
+
+**🧹 Cleanup**: [Cleanup Instructions](./README.md#cleanup)
