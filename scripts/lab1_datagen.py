@@ -34,6 +34,7 @@ from typing import Dict, Optional
 
 from .common.cloud_detection import auto_detect_cloud_provider, validate_cloud_provider, suggest_cloud_provider
 from .common.terraform import extract_kafka_credentials, validate_terraform_state, get_project_root
+from .common.datagen_helpers import generate_all_connections
 
 
 def setup_logging(verbose: bool = False) -> logging.Logger:
@@ -185,75 +186,6 @@ def find_datagen_directories(cloud_provider: str, project_root: Path) -> Dict[st
         raise ValueError(f"Unsupported cloud provider: {cloud_provider}")
 
     return paths
-
-
-def generate_connection_file(
-    credentials: Dict[str, str],
-    connection_name: str,
-    output_path: Path
-) -> None:
-    """
-    Generate a ShadowTraffic connection file.
-
-    Args:
-        credentials: Extracted Kafka credentials
-        connection_name: Name of the connection (customers/products/orders)
-        output_path: Path to write the connection file
-    """
-    logger = logging.getLogger(__name__)
-
-    # Remove SASL_SSL:// prefix from bootstrap endpoint
-    bootstrap_endpoint = credentials["bootstrap_servers"]
-    if bootstrap_endpoint.startswith("SASL_SSL://"):
-        bootstrap_endpoint = bootstrap_endpoint[11:]
-
-    connection_config = {
-        "kind": "kafka",
-        "topicPolicy": {
-            "policy": "manual"
-        },
-        "producerConfigs": {
-            "bootstrap.servers": bootstrap_endpoint,
-            "security.protocol": "SASL_SSL",
-            "sasl.mechanism": "PLAIN",
-            "sasl.jaas.config": f"org.apache.kafka.common.security.plain.PlainLoginModule required username='{credentials['kafka_api_key']}' password='{credentials['kafka_api_secret']}';",
-            "key.serializer": "io.confluent.kafka.serializers.KafkaAvroSerializer",
-            "value.serializer": "io.confluent.kafka.serializers.KafkaAvroSerializer",
-            "schema.registry.url": credentials["schema_registry_url"],
-            "basic.auth.credentials.source": "USER_INFO",
-            "basic.auth.user.info": f"{credentials['schema_registry_api_key']}:{credentials['schema_registry_api_secret']}"
-        }
-    }
-
-    with open(output_path, 'w') as f:
-        json.dump(connection_config, f, indent=2)
-
-    logger.debug(f"Generated connection file: {output_path}")
-
-
-def generate_all_connections(credentials: Dict[str, str], connections_dir: Path) -> None:
-    """
-    Generate all required ShadowTraffic connection files.
-
-    Args:
-        credentials: Extracted Kafka credentials
-        connections_dir: Directory to write connection files
-    """
-    logger = logging.getLogger(__name__)
-
-    # Ensure connections directory exists
-    connections_dir.mkdir(parents=True, exist_ok=True)
-
-    connection_files = ["customers.json", "products.json", "orders.json"]
-
-    logger.info("📝 Generating ShadowTraffic connection files...")
-
-    for connection_name in ["customers", "products", "orders"]:
-        output_path = connections_dir / f"{connection_name}.json"
-        generate_connection_file(credentials, connection_name, output_path)
-        logger.info(f"✓ Created {connection_name}.json")
-
-    logger.info(f"🎉 Successfully generated all connection files in: {connections_dir}")
 
 
 def check_shadowtraffic_config(paths: Dict[str, Path]) -> bool:
@@ -595,8 +527,8 @@ def run_datagen(
         logger.info(f"📡 Extracting {cloud_provider.upper()} credentials...")
         credentials = extract_kafka_credentials(cloud_provider, project_root)
 
-        # Generate connection files
-        generate_all_connections(credentials, paths["connections_dir"])
+        # Generate connection files with manual topic policy
+        generate_all_connections(credentials, paths["connections_dir"], ["orders", "customers", "products"])
 
         # Check ShadowTraffic configuration
         if not check_shadowtraffic_config(paths):

@@ -44,7 +44,8 @@ dependencies = [
     "PyYAML>=6.0.1,<7.0",
     "requests>=2.31.0,<3.0",
     "python-dotenv>=1.0.0,<2.0",
-    "urllib3>=1.26.18,<2.0",  # Pin to v1.x for LibreSSL compatibility on macOS
+    "urllib3>=1.26.18,<2.0", # Pin to v1.x for LibreSSL compatibility on macOS
+    "pymongo>=4.10.1",
 ]
 
 # Optional dependencies for enhanced functionality
@@ -59,6 +60,9 @@ dev = [
     "detect-secrets>=1.5.0",
     "pre-commit>=3.5.0",
 ]
+mongodb = [
+    "pymongo>=4.0.0,<5.0",
+]
 
 
 [project.scripts]
@@ -71,9 +75,11 @@ lab1-datagen = "scripts.lab1_datagen:main"
 lab3_datagen = "scripts.lab3_datagen:main"
 lab3-datagen = "scripts.lab3_datagen:main"
 #
-lab2_publish_docs = "scripts.lab2_publish_docs:main"
-publish_docs = "scripts.lab2_publish_docs:main"
-publish-docs = "scripts.lab2_publish_docs:main"
+publish_docs = "scripts.publish_docs:main"
+publish-docs = "scripts.publish_docs:main"
+#
+clear_mongodb = "scripts.clear_mongodb:main"
+clear-mongodb = "scripts.clear_mongodb:main"
 #
 lab2_publish_queries = "scripts.lab2_publish_queries:main"
 publish_queries = "scripts.lab2_publish_queries:main"

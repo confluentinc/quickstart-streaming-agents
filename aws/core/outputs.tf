@@ -80,12 +80,12 @@ output "confluent_cloud_api_secret" {
 
 
 output "llm_connection_name" {
-  value       = module.aws_ai_services.flink_connection_name
+  value       = local.bedrock_connection_name
   description = "The name of the LLM connection (llm-textgen-connection)"
 }
 
 output "llm_embedding_connection_name" {
-  value       = module.aws_ai_services.flink_embedding_connection_name
+  value       = local.bedrock_embedding_connection_name
   description = "The name of the LLM embedding connection (llm-embedding-connection)"
 }
 
@@ -105,12 +105,13 @@ output "cloud_region" {
 }
 
 output "aws_access_key_id" {
-  value       = module.aws_ai_services.aws_access_key_id
+  value       = var.workshop_mode ? var.aws_bedrock_access_key : module.aws_ai_services[0].aws_access_key_id
+  sensitive   = true
   description = "AWS access key ID for Bedrock user"
 }
 
 output "aws_secret_access_key" {
-  value       = module.aws_ai_services.aws_secret_access_key
+  value       = var.workshop_mode ? var.aws_bedrock_secret_key : module.aws_ai_services[0].aws_secret_access_key
   sensitive   = true
   description = "AWS secret access key for Bedrock user"
 }

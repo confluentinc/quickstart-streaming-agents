@@ -1,5 +1,5 @@
 {
-    "connection": "products-kafka",
+    "connection": "products",
     "name": "products",
     "topic": "products",
     "vars": {
@@ -137,6 +137,20 @@
         }
     },
     "localConfigs": {
-        "maxEvents": 17
+        "maxEvents": 17,
+        "avroSchemaHint": {
+            "value": {
+                "type": "record",
+                "name": "products_value",
+                "namespace": "org.apache.flink.avro.generated.record",
+                "fields": [
+                    {"name": "product_id", "type": "string"},
+                    {"name": "product_name", "type": "string"},
+                    {"name": "price", "type": "double"},
+                    {"name": "department", "type": "string"},
+                    {"name": "updated_at", "type": {"type": "long", "logicalType": "timestamp-millis"}}
+                ]
+            }
+        }
     }
 }

@@ -513,3 +513,27 @@ resource "confluent_flink_statement" "search_results_response_create_table" {
     confluent_flink_statement.search_results_create_table
   ]
 }
+
+# Generate Flink SQL command summary
+resource "null_resource" "generate_flink_sql_summary" {
+  # Trigger regeneration when key resources change
+  triggers = {
+    documents_table       = confluent_flink_statement.documents_table.id
+    documents_embed_table = confluent_flink_statement.documents_embed_table.id
+    queries_table         = confluent_flink_statement.queries_table.id
+  }
+
+  provisioner "local-exec" {
+    command     = "python ${path.module}/../../scripts/generate_lab_flink_summary.py lab2 azure ${path.module} mongodb_connection_string='${var.mongodb_connection_string}' mongodb_username='${var.mongodb_username}' mongodb_password='${var.mongodb_password}' || true"
+    working_dir = path.module
+  }
+
+  depends_on = [
+    confluent_flink_statement.documents_table,
+    confluent_flink_statement.documents_embed_table,
+    confluent_flink_statement.queries_table,
+    confluent_flink_statement.queries_embed_table,
+    confluent_flink_statement.search_results_create_table,
+    confluent_flink_statement.search_results_response_create_table
+  ]
+}

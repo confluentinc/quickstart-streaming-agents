@@ -71,7 +71,8 @@ output "confluent_organization_id" {
 
 # Lab-specific outputs
 output "lab1_commands_file" {
-  value = local_file.mcp_commands.filename
+  value = "${path.module}/FLINK_SQL_COMMANDS.md"
+  description = "Path to the Flink SQL commands summary file"
 }
 
 output "lab_suffix" {
@@ -80,9 +81,10 @@ output "lab_suffix" {
 
 output "zapier_mcp_connection_name" {
   value       = "zapier-mcp-connection"
-  description = "Name for the Zapier MCP connection (must be created manually via CLI)"
+  description = "Name for the Zapier MCP connection"
 }
 
-output "mcp_commands_file" {
-  value = local_file.mcp_commands.filename
+output "flink_sql_commands_file" {
+  value = "${path.module}/FLINK_SQL_COMMANDS.md"
+  description = "Path to the Flink SQL commands summary file"
 }

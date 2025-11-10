@@ -119,7 +119,7 @@ def generate_connection_file(
     connection_config = {
         "kind": "kafka",
         "topicPolicy": {
-            "policy": "manual"
+            "policy": "create"
         },
         "producerConfigs": {
             "bootstrap.servers": bootstrap_endpoint,

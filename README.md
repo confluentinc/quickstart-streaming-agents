@@ -17,12 +17,16 @@ Build real-time AI agents with [Confluent Cloud Streaming Agents](https://docs.c
 <th width="75%">Description</th>
 </tr>
 <tr>
-<td><a href="./LAB1-Walkthrough.md"><strong>Lab1 - MCP Tool Calling</strong></a></td>
-<td>Price matching agent that scrapes competitor websites and adjusts prices in real-time<br><br><img src="./assets/lab1/lab1-architecture.png" alt="Lab1 Architecture"></td>
+<td><a href="./LAB1-Walkthrough.md"><strong>Lab1 - Price Matching Orders With MCP Tool Calling</strong></a></td>
+<td><b>*NEW!*</b> Now using new Agent Definition (CREATE AGENT) syntax. Price matching agent that scrapes competitor websites and adjusts prices in real-time<br><br><img src="./assets/lab1/lab1-architecture.png" alt="Lab1 architecture diagram"></td>
 </tr>
 <tr>
-<td><a href="./LAB2-Walkthrough.md"><strong>Lab2 - Vector Search - RAG</strong></a></td>
-<td>Vector search pipeline with optional retrieval augmented generation (RAG) for intelligent document retrieval<br><br><img src="./assets/lab2/mongodb/00_lab2_architecture.png" alt="Lab2 Architecture"></td>
+<td><a href="./LAB2-Walkthrough.md"><strong>Lab2 - Vector Search & RAG</strong></a></td>
+<td>Vector search pipeline template with retrieval augmented generation (RAG). Use the included Flink documentation chunks, or bring your own documents for intelligent document retrieval.<br><br><img src="./assets/lab2/mongodb/00_lab2_architecture.png" alt="Lab2 architecture diagram"></td>
+</tr>
+<tr>
+<td><a href="./LAB3-Agentic-Fleet-Management.md"><strong>Lab3 - Agentic Fleet Management Using Confluent Intelligence</strong></a></td>
+    <td>End-to-end boat fleet management demo showing use of Agent Definition, MCP tool calling, vector search, and <a href="https://docs.confluent.io/cloud/current/ai/builtin-functions/detect-anomalies.html">anomaly detection</a>.<br><br><img src="./assets/lab3/lab3_architecture.png" alt="Lab3 architecture diagram"></td>
 </tr>
 </table>
 
@@ -38,16 +42,16 @@ Build real-time AI agents with [Confluent Cloud Streaming Agents](https://docs.c
 
 - **[AWS CLI](https://github.com/aws/aws-cli)** or **[Azure CLI](https://github.com/Azure/azure-cli)** - must be logged in
 - **[Confluent CLI](https://docs.confluent.io/confluent-cli/current/overview.html)** - must be logged in
-- **[Docker](https://github.com/docker)** - for Lab1 data generation only
+- **[Docker](https://github.com/docker)** - for Lab1 & Lab3 data generation only
 - **[Git](https://github.com/git/git)**
 - **[Python 3.8+](https://github.com/python/cpython)**
-- **[Terraform](https://github.com/hashicorp/terraform)** - infrastructure deployment
+- **[Terraform](https://github.com/hashicorp/terraform)**
 - **[uv](https://github.com/astral-sh/uv)**
 
 <details>
 <summary> Installation commands (Mac/Windows/Linux)</summary>
-
 **Mac:**
+
 ```bash
 brew install uv git python && brew tap hashicorp/tap && brew install hashicorp/tap/terraform && brew install --cask confluent-cli docker-desktop && brew install awscli  # or azure-cli
 ```
@@ -127,10 +131,10 @@ cloud_provider = "aws"  # or "azure"
 cloud_region = "your-region"  # must be a region supported by MongoDB free tier, otherwise Lab2 deployment will not succeed
 confluent_cloud_api_key = "your-key"
 confluent_cloud_api_secret = "your-secret"
-zapier_sse_endpoint = "https://mcp.zapier.com/api/mcp/s/your-key/sse"  # Lab1
-mongodb_connection_string = "mongodb+srv://cluster0.abc.mongodb.net"  # Lab2
-mongodb_username = "your-db-user"  # Lab2
-mongodb_password = "your-db-pass"  # Lab2
+zapier_sse_endpoint = "https://mcp.zapier.com/api/mcp/s/your-key/sse"  # Lab1 & Lab3
+mongodb_connection_string = "mongodb+srv://cluster0.abc.mongodb.net"  # Lab2 & Lab3
+mongodb_username = "your-db-user"  # Lab2 & Lab3
+mongodb_password = "your-db-pass"  # Lab2 & Lab3
 ```
 
 ### Tear down

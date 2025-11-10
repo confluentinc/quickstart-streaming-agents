@@ -59,6 +59,10 @@ resource "confluent_flink_statement" "zapier_mcp_connection" {
     "sql.current-database" = data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name
   }
 
+  lifecycle {
+    ignore_changes = [statement]
+  }
+
   depends_on = [
     data.terraform_remote_state.core
   ]
@@ -97,55 +101,23 @@ resource "confluent_flink_statement" "zapier_mcp_model" {
   ]
 }
 
-# Generate MCP commands file with SQL reference
-resource "local_file" "mcp_commands" {
-  filename = "${path.module}/mcp_commands.txt"
-  content  = <<-EOT
-# Lab1 Tool Calling - Setup Status
-#
-# 🎉 FULLY AUTOMATED BY TERRAFORM (SQL-Based):
-# ✅ Core LLM infrastructure (deployed in core terraform)
-# ✅ LLM connection: ${data.terraform_remote_state.core.outputs.llm_connection_name}
-# ✅ LLM model: llm_textgen_model (available in core)
-# ✅ MCP connection: zapier-mcp-connection (created via Terraform SQL statement)
-# ✅ MCP model: zapier_mcp_model (created via Terraform SQL statement)
-#
-# ℹ️ NO MANUAL STEPS REQUIRED
-# All setup is handled automatically during 'terraform apply'
-#
-# 📋 MANUAL SQL COMMANDS (for reference only, if you need to recreate manually):
+# Generate Flink SQL command summary
+resource "null_resource" "generate_flink_sql_summary" {
+  # Trigger regeneration when key resources change
+  triggers = {
+    mcp_connection = confluent_flink_statement.zapier_mcp_connection.id
+    mcp_model      = confluent_flink_statement.zapier_mcp_model.id
+  }
 
-# Step 1: Create Zapier MCP Connection (automated via Terraform)
-CREATE CONNECTION `zapier-mcp-connection`
-WITH (
-  'type' = 'MCP_SERVER',
-  'endpoint' = '${var.zapier_sse_endpoint}',
-  'api-key' = 'api_key'
-);
+  provisioner "local-exec" {
+    command     = "python ${path.module}/../../scripts/generate_lab_flink_summary.py lab1 azure ${path.module} zapier_endpoint='${var.zapier_sse_endpoint}' owner_email='${data.terraform_remote_state.core.outputs.owner_email}' || true"
+    working_dir = path.module
+  }
 
-# Step 2: Create Zapier MCP Model (automated via Terraform)
-CREATE MODEL `zapier_mcp_model`
-INPUT (prompt STRING)
-OUTPUT (response STRING)
-WITH (
-  'provider' = 'azureopenai',
-  'task' = 'text_generation',
-  'azureopenai.connection' = '${data.terraform_remote_state.core.outputs.llm_connection_name}',
-  'mcp.connection' = 'zapier-mcp-connection'
-);
-
-# Agent 2: Use the shared llm_textgen_model (already created in core terraform)
-# No need to create this model - it's available as 'llm_textgen_model'
-
-# 📌 NOTE: Old CLI approach (deprecated):
-# The previous approach used Python script + Confluent CLI which required:
-# - Python + uv installation
-# - Confluent CLI installation
-# - Two separate endpoint parameters (--endpoint and --sse-endpoint)
-#
-# New SQL approach is simpler, fully declarative, and requires only Terraform.
-
-EOT
+  depends_on = [
+    confluent_flink_statement.zapier_mcp_connection,
+    confluent_flink_statement.zapier_mcp_model
+  ]
 }
 
 # ------------------------------------------------------

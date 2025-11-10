@@ -1,0 +1,78 @@
+{
+    "connection": "ride-requests",
+    "name": "vessel_catalog",
+    "topic": "vessel_catalog",
+    "vars": {
+        "vessel_id": {
+            "_gen": "sequentialString",
+            "startingFrom": 10,
+            "expr": "VESSEL-~d"
+        }
+    },
+    "key": {
+        "_gen": "var",
+        "var": "vessel_id"
+    },
+    "value": {
+        "vessel_id": {
+            "_gen": "var",
+            "var": "vessel_id"
+        },
+        "vessel_name": {
+            "_gen": "string",
+            "expr": "#{Dog.name}"
+        },
+        "base_zone": {
+            "_gen": "weightedOneOf",
+            "choices": [
+                { "weight": 1, "value": "French Quarter" },
+                { "weight": 5, "value": "Marigny" },
+                { "weight": 5, "value": "Bywater" },
+                { "weight": 5, "value": "Warehouse District" },
+                { "weight": 5, "value": "Uptown" },
+                { "weight": 5, "value": "Garden District" },
+                { "weight": 5, "value": "Central Business District (CBD)" }
+            ]
+        },
+        "availability": {
+            "_gen": "weightedOneOf",
+            "choices": [
+                {
+                    "weight": 1,
+                    "value": "available"
+                },
+                {
+                    "weight": 2,
+                    "value": "hired"
+                },
+                {
+                    "weight": 3,
+                    "value": "in_dock"
+                }
+            ]
+        },
+        "capacity": {
+            "_gen": "uniformDistribution",
+            "bounds": [5, 10],
+            "decimals": 0
+        }
+    },
+    "localConfigs": {
+        "maxEvents": 31,
+        "avroSchemaHint": {
+            "value": {
+                "type": "record",
+                "name": "vessel_catalog_value",
+                "namespace": "org.apache.flink.avro.generated.record",
+                "fields": [
+                    {"name": "vessel_id", "type": "string"},
+                    {"name": "vessel_name", "type": "string"},
+                    {"name": "base_zone", "type": "string"},
+                    {"name": "availability", "type": "string"},
+                    {"name": "capacity", "type": "int"}
+                ]
+            }
+        }
+    }
+}
+

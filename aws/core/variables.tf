@@ -36,3 +36,23 @@ variable "owner_email" {
   type        = string
   default     = ""
 }
+
+variable "workshop_mode" {
+  description = "Enable workshop mode (uses pre-provided Bedrock credentials instead of creating IAM resources)"
+  type        = bool
+  default     = false
+}
+
+variable "aws_bedrock_access_key" {
+  description = "AWS Access Key ID for Bedrock (workshop mode only)"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "aws_bedrock_secret_key" {
+  description = "AWS Secret Access Key for Bedrock (workshop mode only)"
+  type        = string
+  sensitive   = true
+  default     = ""
+}

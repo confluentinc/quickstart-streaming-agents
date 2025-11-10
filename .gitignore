@@ -51,9 +51,16 @@ terraform/terraform.tfvars.backup
 # Files with sensitive credentials
 confluent_api_keys.md
 mongodb_commands.txt
+mcp_commands.txt
+updated-queries.md
 .setup_config.json
 **/.setup_config.json
 **/DEPLOYED_RESOURCES.md
+**/FLINK_SQL_COMMANDS.md
+FLINK_SQL_COMMANDS_EXTRACTED.md
+AGENT_DEFINITION_SYNTAX.md
+EMAIL_REPLACEMENT_IMPLEMENTATION.md
+
 
 # Python (if scripts are added)
 __pycache__/
@@ -65,7 +72,7 @@ __pycache__/
 # Data generation connections
 aws/lab1-tool-calling/data-gen/connections/
 azure/lab1-tool-calling/data-gen/connections/
-aws/lab3-anomaly-detection/data-gen/connections/
+aws/lab3-agentic-fleet-management/data-gen/connections/
 
 # Logs
 *.log
