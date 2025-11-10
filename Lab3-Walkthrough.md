@@ -1,4 +1,4 @@
-# Lab3 - Agentic Fleet Management using Confluent Intelligence
+# Lab3 - Agentic Fleet Management Using Confluent Intelligence
 
 [Current NOLA Keynote Demo](https://youtu.be/qSwVl72etgY?si=F6v119wshtIYlpGa&t=4410)
 
@@ -14,6 +14,8 @@ You will need to have these credentials ready in order to deploy all labs:
   - `zapier_sse_endpoint` - see [Lab1 Zapier MCP server instructions.](./Lab1-Walkthrough.md#zapier-remote-mcp-server-setup)
   - `mongodb_connection_string` - looks like `mongodb+srv://cluster0.c45vbkg.mongodb.net/` - no username and password in the string. See [Lab2 MongoDB setup instructions](./Lab2-Walkthrough.md#step-1-create-mongodb-atlas-account-and-cluster).
   - `mongodb_username` and `mongodb_password`- these are database-specific credentials, not your mongodb.com login. See [Lab2 MongoDB setup instructions](./Lab2-Walkthrough.md#step-1-create-mongodb-atlas-account-and-cluster).
+
+- ⚠️ **IMPORTANT: AWS Users Only:** To access Claude Sonnet 3.7 you must request access to the model by filling out an Anthropic use case form (or someone in your org must have previously done so) for your cloud region. To do so, visit the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog), select Claude 3.7 Sonnet and open it it in the Playground, then send a message in the chat - the form will appear automatically. ⚠️
 
 ## Deploy the Demo
 
@@ -90,7 +92,7 @@ WHERE anomaly_result.is_anomaly = true
 
 > [!NOTE]
 >
-> It will typically take around five minutes for Flink to detect an anomaly. The reason for this is that we're detecting anomalies in 5 minute "windows", and we need to wait for the first window to close before Flink can detect one.
+> It will typically take around five minutes for Flink to detect an anomaly. The reason for this is that we're detecting anomalies in 5-minute "windows", and we need to wait for the first window to close before Flink can detect one.
 
 ### 2. Enrich the `ride_requests` with possible causes of the anomaly using vector search
 
@@ -272,7 +274,6 @@ WITH (
 
 See [AI_RUN_AGENT documentation](https://docs.confluent.io/cloud/current/flink/reference/functions/model-inference-functions.html#flink-sql-ai-run-agent-function).
 ```sql
-SET 'client.statement-name'='completed-actions-create';
 CREATE TABLE completed_actions (
     PRIMARY KEY (pickup_zone) NOT ENFORCED
 )
@@ -294,17 +295,25 @@ LATERAL TABLE(AI_RUN_AGENT(
 ```
 
 ## Troubleshooting
+<details>
+<summary>Click to expand</summary>
 
-**Error when running Query #1:** `The window function requires the timecol is a time attribute type, but is TIMESTAMP_WITH_LOCAL_TIME_ZONE(3).`
+- **No anomalies detected?** Check that your data generation is running. The first anomaly should be detected after both data generation (run `uv run lab3_datagen`) and the anomaly detection query **(Query #1)** have been running for about 5 minutes. This is because the anomaly detection query uses 5-minute windows, and we have to wait for the first window to close before the detection algorithm can identify an anomaly.
 
-**Solution:** Run the query below and try again. This can occur if you drop the pre-created `ride_requests` table and then re-run data generation, because neither Flink nor the data generator know we want to use `request_ts` as our watermark column until we tell them.
-
+- **Error when running Query #1?:** `The window function requires the timecol is a time attribute type, but is TIMESTAMP_WITH_LOCAL_TIME_ZONE(3).`
+  - Run the query below and try again. This can occur if you drop the pre-created `ride_requests` table and then re-run data generation, because neither Flink nor the data generator know we want to use `request_ts` as our watermark column until we tell them.
 ```sql no-parse
 ALTER TABLE ride_requests
 MODIFY (WATERMARK FOR request_ts AS request_ts - INTERVAL '5' SECOND);
 ```
+- **Email about a degraded Flink statement?**
+  - Press "Stop" on the running `CREATE TABLE anomalies_detected_per_zone` statement in the SQL Workspace.
+    - The anomaly detection algorithm expects data to be flowing through it, and the statement will change to "degraded" after some time if you turn off data generation. Turning it off will stop the problem, or it will automatically resume running properly once data begins flowing again.
 
-**No anomalies detected?** Check that your data generation is running. The first anomaly should be detected after both data generation (run `uv run lab3_datagen`) and the anomaly detection query **(Query #1)** have been running for about 5 minutes. This is because the anomaly detection query uses 5-minute windows, and we have to wait for the first window to close before the detection algorithm can identify an anomaly.
+- `Runtime received bad response code 403. Please also double check if your model has multiple versions.` error?
+  - **AWS?** Ensure you've activated Claude 3.7 Sonnet in your AWS account. See: [Prerequisites](#prerequisites)
+  - **Azure?** Increase the tokens per minute quota for your GPT-4 model. Quota is low by default.
+</details>
 
 ## Navigation
 

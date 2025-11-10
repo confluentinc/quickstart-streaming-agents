@@ -232,12 +232,12 @@ SELECT query, response FROM search_results_response LIMIT 5;
   - Database name: `vector_search`
   - Collection name: `documents`
   - Vector search index name: `vector_index`
-- **No vector search**: Confirm Atlas vector search index `vector_index` is active. Check that the JSON configuration matches the config in [step 9](#9-scroll-down-to-the-bottom-and-choose-json-editor-enter-the-following).
+- **No vector search**: Confirm Atlas vector search index `vector_index` is active. Check that the type of search index is in fact an "Atlas **Vector** Search index" and not just an "Atlas Search index." Check that the JSON configuration matches the config in [step 9](#9-scroll-down-to-the-bottom-and-choose-json-editor-enter-the-following).
 - **Wrong credentials**: Use *database* username and password (not the credentials you use to login to MongoDB.com).
 
 ### Common Fixes
 1. **Pipeline not processing**: Wait 30-60 seconds after publishing documents
-2. **No query responses**: Check that LLM models are deployed in core infrastructure
+2. **No query responses**: Check that LLM models are deployed in core infrastructure. [Run test query #1 found here](./Lab1-Walkthrough.md#test-query-1-base-llm-model) to ensure the `llm_textgen_model` is working properly.
 3. **Empty results**: Verify MongoDB sink connector status in Confluent Cloud
 
 </details>

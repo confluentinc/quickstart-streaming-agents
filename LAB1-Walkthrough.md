@@ -1,4 +1,4 @@
-# Lab1: Tool Calling Agent Walkthrough
+# Lab1: Price Matching Orders with MCP Tool Calling Agent Walkthrough
 
 In this lab, we'll use Apache Flink for Confluent Cloud's MCP tool calling feature to "price match" customer orders in real-time. Flink, through tool calling, uses a remote MCP server to retrieve competitor prices, and if a competitor offers a better price, the agent automatically applies a price match and uses tool calling again to email the customer a summary.
 
@@ -245,11 +245,16 @@ Check out your email for price matched orders:
 </details>
 
 ## Troubleshooting
+<details>
+<summary>Click to expand</summary>
+
 - **Not getting emails?**
   - Ensure you replaced `<<YOUR-EMAIL-ADDRESS-HERE>>` in both the test query and the `CREATE TABLE price_match_input` query with the email address where you want to receive the emails. Be sure to use single quotes around your email address ('your@email.com').
   - **Run the MCP test query** to confirm your Zapier remote MCP server connection is working and able to send emails.
   - **Check the Zapier Zap history** at [mcp.zapier.com](https://mcp.zapier.com/) to see whether calls to send emails are going through at all, and if so, why they are failing.
-  - **Make sure to run `uv run lab1_datagen`** to begin producing orders data. Drop `orders`, `customers`, and `products` tables to start fresh.
+  - **Make sure to run `uv run lab1_datagen`** to begin producing orders data.
+- **Getting duplicate orders / duplicate price matching emails?**
+  - Drop `orders`, `customers`, and `products` tables to start with a clean slate before re-running `uv run lab1_datagen`. The data generator randomly generates new customer information beginning with the same customer ID each time it is run, causing collisions if you do not clear the tables before restarting.
 
 - `Runtime received bad response code 403. Please also double check if your model has multiple versions.` error?
   - **AWS?** Ensure you've activated Claude 3.7 Sonnet in your AWS account. See: [Prerequisites](#prerequisites)
@@ -259,6 +264,7 @@ Check out your email for price matched orders:
   - Be sure to use single quotes around your email address ('your@email.com').
   - Configure the Gmail send email tool to specify the email address you want to send to directly.
   - Modify the model prompt to be more prescriptive about what format you need the email in (string, not array).
+</details>
 
 ## Navigation
 
