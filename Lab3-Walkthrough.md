@@ -1,7 +1,4 @@
-# Lab3: Agentic Fleet Management System with Confluent Intelligence
-
-
-This demo showcases an intelligent, real-time fleet management system that autonomously detects demand surges, identifies their causes using AI-powered reasoning, and automatically dispatches vessels to meet increased demand. Built on [Confluent Intelligence](https://www.confluent.io/product/confluent-intelligence/), the system combines stream processing, anomaly detection, retrieval-augmented generation (RAG), and AI agent workflows to create a fully autonomous operations pipeline.
+# Lab3: Agentic Fleet Management Using Confluent Intelligence
 
 ### What This System Does
 
@@ -42,7 +39,6 @@ If running Lab3, set up a free MongoDB Atlas cluster:
 
 <details open>
 <summary>Click to collapse</summary>
-
 <img src="./assets/lab2/mongodb/02_create_cluster.png" alt="Create Cluster" width="50%" />
 
 </details>
@@ -189,7 +185,7 @@ uv run lab3_datagen
 <summary>Alternative: Using Python directly</summary>
 
 ```bash
-python scripts/lab1_datagen.py
+python scripts/lab3_datagen.py
 ```
 
 The Python script provides the same automation as the uv version.
@@ -198,85 +194,92 @@ The Python script provides the same automation as the uv version.
 
 The data generator produces two interconnected data streams:
 
-- **Ride Requests** – Represents incoming boat ride requests. Each request includes a **pickup zone** and a **drop-off zone**.  
-- **Products** – A catalog of all vessels currently in the system. Each vessel has one of three statuses:  
-  - `available` – ready to be hired  
-  - `hired` – currently in use  
+- **`ride_requests`** – Represents incoming boat ride requests. Each request includes a **pickup zone** and a **drop-off zone**.
+- **`vessel_catalog`** – A catalog of all vessels currently in the system. Each vessel has one of three statuses:
+  - `available` – ready to be hired
+  - `hired` – currently in use
   - `in_dock` – docked and unavailable for hire
 
 
-### Anomaly Detection
+### 1. Anomaly Detection: Detect surge in `ride_requests` using `ML_DETECT_ANOMALIES`
 
-This step identifies unexpected surges in ride requests for each pickup zone in real time.  
-We want to analyse ride request counts over 5-minute windows and compare them against expected baselines derived from historical trends.
+This step identifies unexpected surges in ride requests for each pickup zone in real time using Flink's built-in anomaly detection function. We analyze ride request counts over 5-minute windows and compare them against expected baselines derived from historical trends.
 
-In [Flink UI](https://confluen.cloud/go/flink), select your environment and open a SQL workspace.
+Read the [blog post](https://docs.confluent.io/cloud/current/ai/builtin-functions/detect-anomalies.html) and view the [documentation](https://docs.confluent.io/cloud/current/flink/reference/functions/model-inference-functions.html#flink-sql-ml-anomaly-detect-function) on Flink anomaly detection for more details about how it works.
 
-Run this query to visualise any anomalies detected.
+First, let's visualize the anomaly detection in action by running this query:
 
 ```sql
 WITH windowed_traffic AS (
-    SELECT 
+    SELECT
         window_start,
         window_end,
         window_time,
         pickup_zone,
-        COUNT(*) AS request_count
+        COUNT(*) AS request_count,
+        SUM(number_of_passengers) AS total_passengers,
+        SUM(CAST(price AS DECIMAL(10, 2))) AS total_revenue
     FROM TABLE(
         TUMBLE(TABLE ride_requests, DESCRIPTOR(request_ts), INTERVAL '5' MINUTE)
     )
     GROUP BY window_start, window_end, window_time, pickup_zone
 )
-    SELECT 
-        pickup_zone,
+SELECT
+    pickup_zone,
+    window_time,
+    request_count,
+    total_passengers,
+    total_revenue,
+    ML_DETECT_ANOMALIES(
+        CAST(request_count AS DOUBLE),
         window_time,
-        request_count,
-        ML_DETECT_ANOMALIES(
-            CAST(request_count AS DOUBLE),
-            window_time,
-            JSON_OBJECT(
-                'minTrainingSize' VALUE 287,
-                'maxTrainingSize' VALUE 7000,
-                'confidencePercentage' VALUE 99.999,
-                'enableStl' VALUE FALSE           
-            )
-        ) OVER (
-            PARTITION BY pickup_zone
-            ORDER BY window_time 
-            RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
-        ) AS anomaly_result
-    FROM windowed_traffic
+        JSON_OBJECT(
+            'minTrainingSize' VALUE 287,
+            'maxTrainingSize' VALUE 7000,
+            'confidencePercentage' VALUE 99.999,
+            'enableStl' VALUE FALSE
+        )
+    ) OVER (
+        PARTITION BY pickup_zone
+        ORDER BY window_time
+        RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+    ) AS anomaly_result
+FROM windowed_traffic;
 ```
+
 Click on the **anomaly_result** graph.
 
 ![Anomaly Screenshot](./assets/lab3/lab3-anomaly-graph1.png)
 
-You will not notice that there was anomaly detected in one of the Zones.
+You will notice that there was an anomaly detected in one of the zones.
 
 ![Anomaly Screenshot](./assets/lab3/lab3-anomaly-graph2.png)
 
-Now to turn this into a continous Flink job run the following query.
+Now let's turn this into a continuous Flink job that filters for only the anomalies:
 
 ```sql
-SET 'client.statement-name' = 'anomalies-zone-create-table';
-CREATE TABLE anomalies_per_zone AS
+CREATE TABLE anomalies_detected_per_zone AS
 WITH windowed_traffic AS (
-    SELECT 
+    SELECT
         window_start,
         window_end,
         window_time,
         pickup_zone,
-        COUNT(*) AS request_count
+        COUNT(*) AS request_count,
+        SUM(number_of_passengers) AS total_passengers,
+        SUM(CAST(price AS DECIMAL(10, 2))) AS total_revenue
     FROM TABLE(
         TUMBLE(TABLE ride_requests, DESCRIPTOR(request_ts), INTERVAL '5' MINUTE)
     )
     GROUP BY window_start, window_end, window_time, pickup_zone
 ),
 anomaly_detection AS (
-    SELECT 
+    SELECT
         pickup_zone,
         window_time,
         request_count,
+        total_passengers,
+        total_revenue,
         ML_DETECT_ANOMALIES(
             CAST(request_count AS DOUBLE),
             window_time,
@@ -284,54 +287,44 @@ anomaly_detection AS (
                 'minTrainingSize' VALUE 287,
                 'maxTrainingSize' VALUE 7000,
                 'confidencePercentage' VALUE 99.999,
-                'enableStl' VALUE FALSE           
+                'enableStl' VALUE FALSE
             )
         ) OVER (
             PARTITION BY pickup_zone
-            ORDER BY window_time 
+            ORDER BY window_time
             RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
         ) AS anomaly_result
     FROM windowed_traffic
 )
-SELECT 
+SELECT
     pickup_zone,
     window_time,
-    request_count
+    request_count,
+    total_passengers,
+    total_revenue,
+    CAST(ROUND(anomaly_result.forecast_value) AS BIGINT) AS expected_requests,
+    anomaly_result.upper_bound AS upper_bound,
+    anomaly_result.lower_bound AS lower_bound,
+    anomaly_result.is_anomaly AS is_surge
 FROM anomaly_detection
-WHERE anomaly_result.is_anomaly = true 
-  AND request_count > anomaly_result.upper_bound 
+WHERE anomaly_result.is_anomaly = true
+  AND request_count > anomaly_result.upper_bound;
 ```
 
-This query creates a new table, `anomalies_per_zone`, that captures only the zones currently experiencing a surge.
-
-> NOTE: Leave the query running so that it runs continously.
-
-In a new cell, run the following to view the results.
-
-```sql
-SELECT * FROM anomalies_per_zone
-```
-
-You should see an anomaly in the `French Quarter` zone.
-
-![Anomaly Screenshot](./assets/lab3/lab3-anomaly-results.png)
-
-These detected surges are then used as triggers for the next steps — contextual understanding and agentic vessel movement.
+> [!NOTE]
+>
+> It will typically take around five minutes for Flink to detect an anomaly. The reason for this is that we're detecting anomalies in 5-minute "windows", and we need to wait for the first window to close before Flink can detect one.
 
 
-### Anomaly Enrichment with Vector Search
+### 2. Enrich `ride_requests` with possible causes of the anomaly using vector search
 
-Once a surge is detected, we want to **understand why** it happened.  
-This step enriches detected anomalies with real-world context using **Vector Search** and **LLM-based reasoning**.
+Once a surge is detected, we want to **understand why** it happened. This step enriches detected anomalies with real-world context using **Vector Search** and **LLM-based reasoning**. These detected surges are then used as triggers for the next steps — contextual understanding and agentic vessel movement.
 
-The query takes each detected surge and formulates a natural language query describing the anomaly (e.g., *“Transportation demand surge in French Quarter zone at 8:00 PM…”*).  
-It then embeds that query using an **LLM embedding model** and searches a **vector database** of local event data (e.g., concerts, conferences, or sports games) to find the most relevant documents.  
+The query takes each detected surge and formulates a natural language query describing the anomaly (e.g., *"Transportation demand surge in French Quarter zone at 8:00 PM…"*). It then embeds that query using an **LLM embedding model** and searches a **vector database** of local event data (e.g., concerts, conferences, or sports games) to find the most relevant documents.
 
 Finally, it uses an **LLM text generation model** to summarize the results into a concise, human-readable explanation of the likely cause for the surge.
 
-
 ```sql
-SET 'client.statement-name'='anomalies-enriched-rag-create';
 CREATE TABLE anomalies_enriched
 WITH ('changelog.mode' = 'append')
 AS SELECT
@@ -436,19 +429,15 @@ FROM (
         )
     ) AS llm_response
 );
-
 ```
-This produces an anomalies_enriched table containing each surge, its statistical details, and an AI-generated reason — such as “High demand due to Tech conference near French Quarter zone, expected attendance 20,000."
 
-### Autonomous Action
+### 3. Agent Definition: Run `CREATE TOOL` and `CREATE AGENT` to define agent tools, prompt, and capabilities
 
-Once anomalies have been detected and enriched with context, the system can act on them automatically.
-Using Streaming Agents, we can trigger specific operational workflows — for example, dispatching idle vessels from nearby docks to high-demand zones
+Once anomalies have been detected and enriched with context, the system can act on them automatically using Streaming Agents. We can trigger specific operational workflows — for example, dispatching idle vessels from nearby docks to high-demand zones.
 
 These agents leverage tool calling to interact directly with external systems or APIs, enabling closed-loop automation — all running natively within Confluent Cloud for Apache Flink.
 
-First create a tool connection by running the follwoing query. see [CREATE TOOL documentation](https://docs.confluent.io/cloud/current/flink/reference/statements/create-tool.html).
-
+See [CREATE TOOL documentation](https://docs.confluent.io/cloud/current/flink/reference/statements/create-tool.html).
 ```sql
 CREATE TOOL zapier
 USING CONNECTION `zapier-mcp-connection`
@@ -514,7 +503,9 @@ WITH (
   'max_iterations' = '5'
 );
 ```
-Start the agent with `AI_RUN_AGENT` function to start taking actions on any anomalies detected. See [AI_RUN_AGENT documentation](https://docs.confluent.io/cloud/current/flink/reference/functions/model-inference-functions.html#flink-sql-ai-run-agent-function).
+### 4. Invoke the agent with `AI_RUN_AGENT`
+
+Start the agent with the `AI_RUN_AGENT` command to start taking action on any anomalies the moment that Flink detects them.See [AI_RUN_AGENT documentation](https://docs.confluent.io/cloud/current/flink/reference/functions/model-inference-functions.html#flink-sql-ai-run-agent-function).
 ```sql
 CREATE TABLE completed_actions (
     PRIMARY KEY (pickup_zone) NOT ENFORCED
@@ -539,11 +530,35 @@ LATERAL TABLE(AI_RUN_AGENT(
 
 ## Conclusion
 
-By chaining these intelligent streaming components together, we’ve built an alwaty on real-time, context-aware agentic pipeline that detects surges, explains their causes, and takes autonomous action — all within seconds.
+By chaining these intelligent streaming components together, we’ve built an always-on, real-time, context-aware agentic pipeline that detects surges, explains their causes, and takes autonomous action — all within seconds.
 
+## Troubleshooting
+<details>
+<summary>Click to expand</summary>
+
+- **No anomalies detected?** Check that your data generation is running. The first anomaly should be detected after both data generation (run `uv run lab3_datagen`) and the anomaly detection query **(Query #1)** have been running for about 5 minutes. This is because the anomaly detection query uses 5-minute windows, and we have to wait for the first window to close before the detection algorithm can identify an anomaly.
+
+- **Error when running Query #1?:** `The window function requires the timecol is a time attribute type, but is TIMESTAMP_WITH_LOCAL_TIME_ZONE(3).`
+  - Run the query below and try again. This can occur if you drop the pre-created `ride_requests` table and then re-run data generation, because neither Flink nor the data generator know we want to use `request_ts` as our watermark column until we tell them.
+```sql no-parse
+ALTER TABLE ride_requests
+MODIFY (WATERMARK FOR request_ts AS request_ts - INTERVAL '5' SECOND);
+```
+- **Email about a degraded Flink statement?**
+  - Press "Stop" on the running `CREATE TABLE anomalies_detected_per_zone` statement in the SQL Workspace.
+    - The anomaly detection algorithm expects data to be flowing through it, and the statement will change to "degraded" after some time if you turn off data generation. Turning it off will stop the problem, or it will automatically resume running properly once data begins flowing again.
+
+- `Runtime received bad response code 403. Please also double check if your model has multiple versions.` error?
+  - **AWS?** Ensure you've activated Claude 3.7 Sonnet in your AWS account. See: [Prerequisites](#prerequisites)
+  - **Azure?** Increase the tokens per minute quota for your GPT-4 model. Quota is low by default.
+</details>
 
 ## Clean-up
 
-When you’re done with the lab, make sure to clean up all resources to avoid unnecessary costs and keep your environment tidy.
+When you're done with the lab, make sure to run `uv run destroy` to clean up all resources, avoid unnecessary costs, and keep your environment tidy.
 
-Follow the step-by-step [Cleanup Instructions](./README.md#cleanup).
+## Navigation
+
+- **← Back to Overview**: [Main README](./README.md)
+- **← Previous Lab**: [Lab2: Vector Search & RAG](./LAB2-Walkthrough.md)
+- **🧹 Cleanup**: [Cleanup Instructions](./README.md#cleanup)

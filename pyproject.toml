@@ -172,4 +172,3 @@ addopts = [
     "--cov-report=term-missing",
     "--cov-report=html",
 ]
-
