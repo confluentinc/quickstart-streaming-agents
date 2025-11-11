@@ -120,7 +120,29 @@ The data generator creates three typical ecommerce data streams:
 
 ## Run SQL Queries
 
-### 3. Run  `CREATE TOOL` and `CREATE AGENT`
+## 3. Create `orders_enriched` table for the agent to use
+
+Enrich the incoming orders stream with customer and product details.
+We’ll use regular joins for this step and configure a state TTL to prevent the state from growing indefinitely.
+
+```sql
+SET 'sql.state-ttl' = '1 HOURS';
+
+CREATE TABLE enriched_orders AS
+SELECT
+    o.order_id,
+    p.product_name,
+    c.customer_email,
+    o.price AS order_price
+FROM orders o
+JOIN customers c ON o.customer_id = c.customer_id
+JOIN products p ON o.product_id = p.product_id;
+```
+
+### 4. Run  `CREATE TOOL` and `CREATE AGENT`
+
+The agent will use the [Tool Calling](https://docs.confluent.io/cloud/current/ai/builtin-functions/invoke-tool-ai-workflow.html) feature to scrape competitors’ websites, extract the price of the same product, and send an email when a price match is found.
+Create a new tool that leverages your Zapier connection:
 
 ```sql
 CREATE TOOL zapier
@@ -131,6 +153,10 @@ WITH (
   'request_timeout' = '30'
 );
 ```
+
+Next, create a new agent and provide a **system prompt**.  
+This agent will compare the extracted competitor price with our own product price and determine whether to trigger a price match and send an email notification.
+
 
 ```sql
 CREATE AGENT price_match_agent
@@ -152,66 +178,13 @@ WITH (
 );
 ```
 
-## 4. Create `price_match_input` table for the agent to use
-
-⚠️ IMPORTANT: Modify the line beginning with "EMAIL RECIPIENT:" in the query below with the email address where you want the email to delivered to. ⚠️️️
-```sql
-SET 'sql.state-ttl' = '1 HOURS';
-
-CREATE TABLE price_match_input AS
-SELECT
-    o.order_id,
-    p.product_name,
-    c.customer_email,
-    o.price AS order_price,
-    CONCAT(
-'COMPETITOR URL: https://www.walmart.com/search?q="', p.product_name, '"',
-'
-PRODUCT NAME: ', p.product_name, '
-
-OUR ORDER PRICE: $', CAST(CAST(o.price AS DECIMAL(10, 2)) AS STRING), '
-
-EMAIL RECIPIENT: <<YOUR-EMAIL-ADDRESS-HERE>>
-
-EMAIL SUBJECT: ✅ Great News! Price Match Applied - Order #', o.order_id, '
-
-EMAIL BODY TEMPLATE:
-Subject: Your Price Match Has Been Applied - Order #', o.order_id, '
-
-Dear Valued Customer,
-
-We have great news! We found a better price for your recent purchase and have automatically applied a price match.
-
-📦 ORDER DETAILS:
-   • Order Number: #', o.order_id, '
-   • Product: ', p.product_name, '
-
-💰 PRICE MATCH DETAILS:
-   • Original Price: $', CAST(CAST(o.price AS DECIMAL(10, 2)) AS STRING), '
-   • Competitor Price Found: $[INSERT_COMPETITOR_PRICE]
-   • Your Savings: $[INSERT_SAVINGS]
-
-✅ ACTION TAKEN:
-We have processed a price match refund of $[INSERT_SAVINGS] back to your original payment method. You should see this credit within 3-5 business days.
-
-🛒 WHY WE DO THIS:
-We are committed to offering you the best prices. Our automated price matching system continuously monitors competitor prices to ensure you always get the best deal.
-
-Thank you for choosing River Retail. We appreciate your business!
-
-Best regards,
-River Retail Customer Success Team
-📧 support@riverretail.com | 📞 1-800-RIVER-HELP
-
----
-This is an automated message from our price matching system.'
-    ) AS agent_prompt
-FROM orders o
-JOIN customers c ON o.customer_id = c.customer_id
-JOIN products p ON o.product_id = p.product_id;
-```
-
 ## 5. Run the Agent
+
+The agent will take `orders_enriched` as input and process each order in real time as it is generated.  
+To run the agent continuously, we’ll execute it as part of a **Flink job**.  
+Provide a **user prompt** to guide how the agent processes each incoming enriched order, and create a new table named `price_match_results` to store the agent’s evaluation results.
+
+⚠️ **IMPORTANT:** Modify the line beginning with `EMAIL RECIPIENT:` in the query below by replacing `<<YOUR-EMAIL-ADDRESS-HERE>>` with the email address where you want the email to be delivered.⚠️
 
 
 ```sql
@@ -223,11 +196,52 @@ SELECT
     CAST(CAST(pmi.order_price AS DECIMAL(10, 2)) AS STRING) as order_price,
     agent_result.status as agent_status,
     agent_result.response as agent_response
-FROM price_match_input pmi,
+FROM enriched_orders pmi,
 LATERAL TABLE(
     AI_RUN_AGENT(
         'price_match_agent',
-        pmi.agent_prompt,
+         CONCAT(
+          'COMPETITOR URL: https://www.walmart.com/search?q="', pmi.product_name, '"',
+          '
+          PRODUCT NAME: ', pmi.product_name, '
+          
+          OUR ORDER PRICE: $', CAST(CAST(pmi.order_price AS DECIMAL(10, 2)) AS STRING), '
+          
+          EMAIL RECIPIENT: <<YOUR-EMAIL-ADDRESS-HERE>>
+          
+          EMAIL SUBJECT: ✅ Great News! Price Match Applied - Order #', pmi.order_id, '
+          
+          EMAIL BODY TEMPLATE:
+          Subject: Your Price Match Has Been Applied - Order #', pmi.order_id, '
+          
+          Dear Valued Customer,
+          
+          We have great news! We found a better price for your recent purchase and have automatically applied a price match.
+          
+          📦 ORDER DETAILS:
+             • Order Number: #', pmi.order_id, '
+             • Product: ', pmi.product_name, '
+          
+          💰 PRICE MATCH DETAILS:
+             • Original Price: $', CAST(CAST(pmi.order_price AS DECIMAL(10, 2)) AS STRING), '
+             • Competitor Price Found: $[INSERT_COMPETITOR_PRICE]
+             • Your Savings: $[INSERT_SAVINGS]
+          
+          ✅ ACTION TAKEN:
+          We have processed a price match refund of $[INSERT_SAVINGS] back to your original payment method. You should see this credit within 3-5 business days.
+          
+          🛒 WHY WE DO THIS:
+          We are committed to offering you the best prices. Our automated price matching system continuously monitors competitor prices to ensure you always get the best deal.
+          
+          Thank you for choosing River Retail. We appreciate your business!
+          
+          Best regards,
+          River Retail Customer Success Team
+          📧 support@riverretail.com | 📞 1-800-RIVER-HELP
+          
+          ---
+          This is an automated message from our price matching system.'
+        ),
         pmi.order_id,
         MAP['debug', 'true']
     )

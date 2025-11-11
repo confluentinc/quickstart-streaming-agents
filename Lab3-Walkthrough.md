@@ -1,5 +1,6 @@
 # Lab3: Agentic Fleet Management Using Confluent Intelligence
 
+This demo showcases an intelligent, real-time fleet management system that autonomously detects demand surges, identifies their causes using AI-powered reasoning, and automatically dispatches vessels to meet increased demand. Built on [Confluent Intelligence](https://www.confluent.io/product/confluent-intelligence/), the system combines stream processing, anomaly detection, retrieval-augmented generation (RAG), and AI agent workflows to create a fully autonomous operations pipeline.
 ### What This System Does
 
 The system continuously monitors ride request streams in real time and performs three key automated operations:
@@ -207,6 +208,8 @@ This step identifies unexpected surges in ride requests for each pickup zone in 
 
 Read the [blog post](https://docs.confluent.io/cloud/current/ai/builtin-functions/detect-anomalies.html) and view the [documentation](https://docs.confluent.io/cloud/current/flink/reference/functions/model-inference-functions.html#flink-sql-ml-anomaly-detect-function) on Flink anomaly detection for more details about how it works.
 
+In [Flink UI](https://confluen.cloud/go/flink), select your environment and open a SQL workspace.
+
 First, let's visualize the anomaly detection in action by running this query:
 
 ```sql
@@ -258,7 +261,7 @@ You will notice that there was an anomaly detected in one of the zones.
 Now let's turn this into a continuous Flink job that filters for only the anomalies:
 
 ```sql
-CREATE TABLE anomalies_detected_per_zone AS
+CREATE TABLE anomalies_per_zone AS
 WITH windowed_traffic AS (
     SELECT
         window_start,
@@ -316,7 +319,22 @@ WHERE anomaly_result.is_anomaly = true
 > It will typically take around five minutes for Flink to detect an anomaly. The reason for this is that we're detecting anomalies in 5-minute "windows", and we need to wait for the first window to close before Flink can detect one.
 
 
-### 2. Enrich `ride_requests` with possible causes of the anomaly using vector search
+> NOTE: Leave the query running so that it runs continously.
+
+In a new cell, run the following to view the results.
+
+```sql
+SELECT * FROM anomalies_per_zone
+```
+
+You should see an anomaly in the `French Quarter` zone.
+
+![Anomaly Screenshot](./assets/lab3/lab3-anomaly-results.png)
+
+These detected surges are then used as triggers for the next steps — contextual understanding and agentic vessel movement.
+
+
+### 2. Enrich `anomalies_per_zone` with possible causes of the anomaly using vector search
 
 Once a surge is detected, we want to **understand why** it happened. This step enriches detected anomalies with real-world context using **Vector Search** and **LLM-based reasoning**. These detected surges are then used as triggers for the next steps — contextual understanding and agentic vessel movement.
 
@@ -382,7 +400,7 @@ FROM (
                     ' are causing this increase in ride requests?'
                 ) AS query,
                 emb.embedding
-            FROM anomalies_detected_per_zone,
+            FROM anomalies_per_zone,
             LATERAL TABLE(ML_PREDICT('llm_embedding_model',
                 CONCAT(
                     'Transportation demand surge in ',
