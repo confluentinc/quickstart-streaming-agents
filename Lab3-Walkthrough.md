@@ -1,9 +1,12 @@
-# Lab3 - Agentic Fleet Management Using Confluent Intelligence
+# Lab3: Agentic Fleet Management Using Confluent Intelligence
 
-This demo showcases an intelligent, real-time fleet management system that autonomously detects demand surges, identifies their causes using AI-powered reasoning, and automatically dispatches vessels to meet increased demand. The system pulls together:
-- Anomaly detection using Flink's built-in ML functions
-- Vector search and RAG from Lab2
-- MCP tool calling and Agent Definition (`CREATE AGENT`) from Lab1
+### What This System Does
+
+The system continuously monitors ride request streams in real time and performs three key automated operations:
+
+1. **Anomaly Detection** – Detects unusual spikes in ride requests across different zones using Flink’s [built-in ML functions](https://docs.confluent.io/cloud/current/ai/builtin-functions/overview.html).  
+2. **Contextual Understanding** – Leverages [vector search](https://docs.confluent.io/cloud/current/ai/external-tables/vector-search.html) and RAG to uncover the reasons behind demand surges (e.g., events, conferences, festivals) by querying a knowledge base.  
+3. **Autonomous Action** – Automatically dispatches docked vessels or repositions available ones to high-demand zones using [Streaming Agents](https://docs.confluent.io/cloud/current/ai/streaming-agents/overview.html) with tool calling.  
 
 All of this runs in real time on **Confluent Cloud for Apache Flink**, with no external orchestration required.
 
