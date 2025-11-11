@@ -199,10 +199,13 @@ Monitor the pipeline in Confluent Cloud SQL workspace:
 
 ```sql
 -- Check data flow through pipeline
-SELECT COUNT(*) FROM documents;        -- 385 Flink docs
-SELECT COUNT(*) FROM documents_embed;  -- Docs with embeddings
-SELECT COUNT(*) FROM queries;          -- Your questions
-SELECT COUNT(*) FROM queries_embed;    -- Queries with embeddings
+SELECT
+  (SELECT COUNT(*) FROM documents) AS document_count,                                 -- 385 Flink docs
+  (SELECT COUNT(*) FROM documents_embed) AS document_embeddings_count,                -- 385 Flink docs in vector form
+  (SELECT COUNT(*) FROM queries) AS queries_count,                                    -- Your questions
+  (SELECT COUNT(*) FROM queries_embed) AS queries_embed_count,                        -- Your questions in vector form
+  (SELECT COUNT(*) FROM search_results) AS search_results_count,                      -- Vector search results
+  (SELECT COUNT(*) FROM search_results_response) AS search_results_response_count;    -- RAG based on vector search results
 
 -- See vector search results
 SELECT * FROM search_results LIMIT 5;

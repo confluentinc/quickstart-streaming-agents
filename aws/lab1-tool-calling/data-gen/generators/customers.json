@@ -2,6 +2,13 @@
     "connection": "customers",
     "name": "customers",
     "topic": "customers",
+    "key": {
+      "customer_id": {
+        "_gen": "sequentialString",
+        "startingFrom": 100000,
+        "expr": "C-~d"
+      }
+    },
     "value": {
         "customer_id": {
             "_gen": "sequentialString",
@@ -49,20 +56,6 @@
         }
     },
     "localConfigs": {
-        "maxEvents": 100,
-        "avroSchemaHint": {
-            "value": {
-                "type": "record",
-                "name": "customers_value",
-                "namespace": "org.apache.flink.avro.generated.record",
-                "fields": [
-                    {"name": "customer_id", "type": "string"},
-                    {"name": "customer_email", "type": "string"},
-                    {"name": "customer_name", "type": "string"},
-                    {"name": "state", "type": "string"},
-                    {"name": "updated_at", "type": {"type": "long", "logicalType": "timestamp-millis"}}
-                ]
-            }
-        }
+        "maxEvents": 100
     }
 }
