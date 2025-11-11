@@ -449,6 +449,8 @@ FROM (
 );
 ```
 
+> NOTE: Leave the query running so that it runs continously.
+
 ### 3. Agent Definition: Run `CREATE TOOL` and `CREATE AGENT` to define agent tools, prompt, and capabilities
 
 Once anomalies have been detected and enriched with context, the system can act on them automatically using Streaming Agents. We can trigger specific operational workflows — for example, dispatching idle vessels from nearby docks to high-demand zones.
