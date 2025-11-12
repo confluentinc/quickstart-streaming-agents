@@ -6,63 +6,22 @@ In this lab, we'll use Apache Flink for Confluent Cloud's MCP tool calling featu
 
 ## Prerequisites
 
-- Run `uv run deploy` to deploy Lab1 (see [main README](./README.md))
-- Zapier account and remote MCP server set up  (instructions below)
+- Zapier account and remote MCP server set up (instructions [here](./assets/pre-setup/Zapier-Setup.md))
 - ⚠️ **IMPORTANT: AWS Users Only:** To access Claude Sonnet 3.7 you must request access to the model by filling out an Anthropic use case form (or someone in your org must have previously done so) for your cloud region. To do so, visit the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog), select Claude 3.7 Sonnet and open it it in the Playground, then send a message in the chat - the form will appear automatically. ⚠️
 
-## Zapier Remote MCP Server Setup
+## Deploy the Demo
 
-<details>
-<summary>Zapier MCP Server Setup (Click to expand)</summary>
+Once you have these credentials ready, run the following command and choose **Lab3** (see [main README](./README.md)):
 
-Create a Zapier MCP server for tool calling:
-
-### A. Create free Zapier Account
-
-Sign up at [zapier.com](https://zapier.com/sign-up) and verify your email.
-
-### B. Create MCP Server
-
-Visit [mcp.zapier.com](https://mcp.zapier.com/mcp/servers), choose "Other" as MCP Client, and create your server.
-
-<details open>
-<summary>Click to collapse</summary>
-
-<img src="./assets/lab1/zapier/3.png" alt="Create MCP Server" width="50%" />
-
-</details>
-
-### C. Add Tools
-
-Add these tools to your MCP server:
-
-- **Webhooks by Zapier: GET** and **Custom Request** tools
-- **Gmail: Send Email** tool (authenticate via SSO)
-
-<details open>
-<summary>Click to collapse</summary>
-<img src="./assets/lab1/zapier/4.png" alt="Add Tools" width="50%" />
-
-</details>
-
-### D. Get SSE Endpoint URL
-
-Click **"Connect",** choose **"Other"** for your client, then change transport to **"SSE Endpoint"**, and **copy the URL.** This is the `zapier_sse_endpoint` you will need to enter when deploying the lab with `uv run deploy`.
-
-<details open>
-<summary>Click to collapse</summary>
-
-<img src="./assets/lab1/zapier/7.png" alt="SSE Endpoint" width="50%" />
-
-</details>
-
-</details>
+  ```bash
+  uv run deploy
+  ```
 
 # Getting Started
 
 ## 1. Test the LLM models before continuing
 
-Once you've deployed Lab1 via `uv run deploy`, run the following queries in the SQL Workspace to make sure your models are working as expected:
+Once you've deployed Lab1, run the following queries in the SQL Workspace to make sure your models are working as expected:
 
 #### Test Query 1: Base LLM model
 

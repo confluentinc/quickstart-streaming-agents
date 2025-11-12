@@ -22,7 +22,7 @@ Build real-time AI agents with [Confluent Cloud Streaming Agents](https://docs.c
 </tr>
 <tr>
 <td><a href="./LAB2-Walkthrough.md"><strong>Lab2 - Vector Search & RAG</strong></a></td>
-<td>Vector search pipeline template with retrieval augmented generation (RAG). Use the included Flink documentation chunks, or bring your own documents for intelligent document retrieval.<br><br><img src="./assets/lab2/mongodb/00_lab2_architecture.png" alt="Lab2 architecture diagram"></td>
+<td>Vector search pipeline template with retrieval augmented generation (RAG). Use the included Flink documentation chunks, or bring your own documents for intelligent document retrieval.<br><br><img src="./assets/lab2/00_lab2_architecture.png" alt="Lab2 architecture diagram"></td>
 </tr>
 <tr>
 <td><a href="./LAB3-Walkthrough.md"><strong>Lab3 - Agentic Fleet Management Using Confluent Intelligence</strong></a></td>
@@ -35,8 +35,31 @@ Build real-time AI agents with [Confluent Cloud Streaming Agents](https://docs.c
 **Required accounts & credentials:**
 
 - [![Sign up for Confluent Cloud](https://img.shields.io/badge/Sign%20up%20for%20Confluent%20Cloud-007BFF?style=for-the-badge&logo=apachekafka&logoColor=white)](https://www.confluent.io/get-started/?utm_campaign=tm.pmm_cd.q4fy25-quickstart-streaming-agents&utm_source=github&utm_medium=demo)
-- **Lab1:** Zapier account + SSE endpoint URL → [Setup guide](./LAB1-Walkthrough.md#zapier-mcp-server-setup)
-- **Lab2:** MongoDB Atlas + connection string, database-specific user credentials → [Setup guide](./LAB2-Walkthrough.md#mongodb-atlas-setup)
+
+- Pre-deployment steps for each lab you want to deploy:
+
+  <details>
+  <summary>LAB 1: Pre-deployment steps</summary>
+
+  - Zapier account + SSE endpoint URL → [Setup guide](./assets/pre-setup/Zapier-Setup.md)
+
+  </details>
+
+  <details>
+  <summary>LAB 2: Pre-deployment steps</summary>
+
+  - MongoDB Atlas + connection string, database-specific user credentials → [Setup guide](./assets/pre-setup/MongoDB-Setup.md)
+
+  </details>
+
+  <details>
+  <summary>LAB 3: Pre-deployment steps</summary>
+
+  - Zapier account + SSE endpoint URL → [Setup guide](./assets/pre-setup/Zapier-Setup.md)  
+  - MongoDB Atlas + connection string, database-specific user credentials → [Setup guide](./assets/pre-setup/MongoDB-Setup.md)
+
+  </details>
+
 
 **Required tools:**
 
@@ -50,6 +73,7 @@ Build real-time AI agents with [Confluent Cloud Streaming Agents](https://docs.c
 
 <details>
 <summary> Installation commands (Mac/Windows/Linux)</summary>
+
 **Mac:**
 
 ```bash
@@ -90,12 +114,13 @@ That's it! The script will guide you through setup, automatically create API key
 
 ```
 quickstart-streaming-agents/
-├── aws|azure/               # Choose a cloud
-│   ├── core/                # Shared Terraform infrastructure
-│   ├── lab1-tool-calling/   # Lab-specific infra
-│   └── lab2-vector-search/  # Lab-specific infra
-├── deploy.py                # 🚀 Start here
-└── scripts/                 # Python utilities
+├── aws|azure/                          # Choose a cloud
+│   ├── core/                           # Shared Terraform infrastructure
+│   ├── lab1-tool-calling/              # Lab-specific infra
+│   ├── lab2-vector-search/             # Lab-specific infra
+│   └── lab3-agentic-fleet-management/  # Lab-specific infra
+├── deploy.py                           # 🚀 Start here
+└── scripts/                            # Python utilities
 ```
 
 <details>
