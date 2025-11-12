@@ -2,112 +2,11 @@
 
 In this lab, we'll create a Retrieval-Augmented Generation (RAG) pipeline using Confluent Cloud for Apache Flink's vector search capabilities. The pipeline processes documents, creates embeddings, and enables semantic search to power intelligent responses through retrieval of relevant context.
 
-<img src="./assets/lab2/mongodb/00_lab2_architecture.png" alt="Lab2 Architecture Diagram"/>
+<img src="./assets/lab2/00_lab2_architecture.png" alt="Lab2 Architecture Diagram"/>
 
 ## Prerequisites
-- Run `uv run deploy` to deploy core infrastructure (see [main README](./README.md))
-- MongoDB free account with Atlas cluster (M0 - Free Tier) with vector search enabled - directions below.
-- ⚠️ **IMPORTANT: AWS Users Only:** To access Claude Sonnet 3.7 you must request access to the model by filling out an Anthropic use case form (or someone in your org must have previously done so) for your cloud region. To do so, visit the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog)**, select Claude 3.7 Sonnet and open it it in the Playground, then send a message in the chat - the form will appear automatically. ⚠️
-
-## MongoDB Atlas Setup
-<details>
-<summary>MongoDB Atlas Setup (Click to expand)</summary>
-
-### Step 1: Create MongoDB Atlas Account and Cluster
-
-If running Lab2, set up a free MongoDB Atlas cluster:
-
-#### 1. Create a **Project.**
-
-<details open>
-<summary>Click to collapse</summary>
-
-<img src="./assets/lab2/mongodb/01_create_project.png" alt="Create Project" width="50%" />
-
-</details>
-
-#### 2. Create a **Cluster.**
-
-<details open>
-<summary>Click to collapse</summary>
-
-<img src="./assets/lab2/mongodb/02_create_cluster.png" alt="Create Cluster" width="50%" />
-
-</details>
-
-#### 3. Choose the **Free Tier (M0).** Then choose your cloud provider (AWS or Azure) and region. Make sure this is the same region that your Confluent Cloud deployment is in. Click **Create Cluster.**
-
-<details open>
-<summary>Click to collapse</summary>
-
-<img src="./assets/lab2/mongodb/03_choose_free_tier_and_region.png" alt="Choose Free Tier" width="50%" />
-
-</details>
-
-#### 4. **Create a Database User.** **Write down the username and password** you choose, as they will be `mongodb_username` and `mongodb_password` that you will need to deploy Terraform later. Click **Create Database User** when you are done
-
-   **Note:** the username and password you set up to access your database are the credentials you'll need to save for later, NOT the separate login you use for mongodb.com.
-
-<details open>
-<summary>Click to collapse</summary>
-
-<img src="./assets/lab2/mongodb/04_create_database_user.png" alt="Create Database User" width="50%" />
-
-</details>
-
-#### 5. Click **Choose a Connection method.** => Shell => Copy the URL shown in **step 2.** This is the `MONGODB_CONNECTION_URL` you will need later. Don't worry about the rest of the command - you only need the URL that looks like `mongodb+srv://cluster0.xhgx1kr.mongodb.net`
-
-#### 6. Go to **Network Access** in left sidebar. Click green **Add IP Address** button on the right. Then simply click the **Allow Access From Anywhere** button, or manually enter `0.0.0.0/0`. Click **Confirm.**
-
- ⚠️ **NOTE:** Important step! Confluent Cloud will not be able to connect to MongoDB without this rule. ⚠️
-
-<details open>
-<summary>Click to collapse</summary>
-
-<img src="./assets/lab2/mongodb/05_network_access_allow_all.png" alt="Network Access" width="50%" />
-
-</details>
-
-#### 7. Next, from Clusters page, choose "Atlas Search" then click "Add my own data." Enter "database name" and "collection name". Then, click Create Search Index, Choose Vector Search index and enter the "index name" below.
-
-- Database name: `vector_search`
-- Collection name: `documents`
-- Vector search index name: `vector_index`
-
-<details open>
-<summary>Click to collapse</summary>
-<img src="./assets/lab2/mongodb/06_add_data_collection.png" alt="Add Data Collection" width="50%" />
-
-</details>
-
-<details open>
-<summary>Click to collapse</summary>
-<img src="./assets/lab2/mongodb/07_create_vector_search_index.png" alt="Create Vector Index" width="50%" />
-</details>
-
-#### 9. Scroll down to the bottom and choose **JSON Editor.** Enter the following
-
-   ```json
-   {
-     "fields": [
-       {
-         "type": "vector",
-         "path": "embedding",
-         "numDimensions": 1536,
-         "similarity": "cosine"
-       }
-     ]
-   }
-   ```
-
-<details open>
-<summary>Click to collapse</summary>
-
-<img src="./assets/lab2/mongodb/08_json_editor_config.png" alt="JSON Config" width="50%" />
-
-</details>
-
-</details>
+- MongoDB free account with Atlas cluster (M0 - Free Tier) with vector search enabled (instructions [here](./assets/pre-setup/MongoDB-Setup.md)).
+- ⚠️ **IMPORTANT: AWS Users Only:** To access Claude Sonnet 3.7 you must request access to the model by filling out an Anthropic use case form (or someone in your org must have previously done so) for your cloud region. To do so, visit the **[Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog)**, select Claude 3.7 Sonnet and open it it in the Playground, then send a message in the chat - the form will appear automatically. ⚠️
 
 ## Deployment
 
@@ -127,11 +26,11 @@ pip install . && python deploy.py
 </details>
 
 During deployment, you'll be prompted to provide 3 MongoDB variables:
-- `mongodb_connection_string`: The connection URL from [Step 5](#step-1-create-mongodb-atlas-account-and-cluster) of MongoDB setup (e.g., `mongodb+srv://cluster0.abc123.mongodb.net`)
-- `mongodb_username`: The database-specific username you created in [Step 4](#step-1-create-mongodb-atlas-account-and-cluster) (*different* from what you use to login to MongoDB)
-- `mongodb_password`: The database-specific password you created in [Step 4](#step-1-create-mongodb-atlas-account-and-cluster)
+- `mongodb_connection_string`: The connection URL from [Step 5](./assets/pre-setup/MongoDB-Setup.md#step-1-create-mongodb-atlas-account-and-cluster) of MongoDB setup (e.g., `mongodb+srv://cluster0.abc123.mongodb.net`)
+- `mongodb_username`: The database-specific username you created in [Step 4](./assets/pre-setup/MongoDB-Setup.md#step-1-create-mongodb-atlas-account-and-cluster) (*different* from what you use to login to MongoDB)
+- `mongodb_password`: The database-specific password you created in [Step 4](./assets/pre-setup/MongoDB-Setup.md#step-1-create-mongodb-atlas-account-and-cluster)
 
-This creates the complete RAG pipeline:
+Successful deployment creates the complete RAG pipeline:
 - **6 Flink tables** for the document-to-response flow (intentionally in alphabetical order from beginning to end of pipeline, to keep things tidy!):
   - `documents` 
   - `documents_embed`
@@ -235,12 +134,12 @@ SELECT query, response FROM search_results_response LIMIT 5;
   - Database name: `vector_search`
   - Collection name: `documents`
   - Vector search index name: `vector_index`
-- **No vector search**: Confirm Atlas vector search index `vector_index` is active. Check that the type of search index is in fact an "Atlas **Vector** Search index" and not just an "Atlas Search index." Check that the JSON configuration matches the config in [step 9](#9-scroll-down-to-the-bottom-and-choose-json-editor-enter-the-following).
+- **No vector search**: Confirm Atlas vector search index `vector_index` is active. Check that the type of search index is in fact an "Atlas **Vector** Search index" and not just an "Atlas Search index." Check that the JSON configuration matches the config in [step 9](./assets/pre-setup/MongoDB-Setup.md#9-scroll-down-to-the-bottom-and-choose-json-editor-enter-the-following).
 - **Wrong credentials**: Use *database* username and password (not the credentials you use to login to MongoDB.com).
 
 ### Common Fixes
 1. **Pipeline not processing**: Wait 30-60 seconds after publishing documents
-2. **No query responses**: Check that LLM models are deployed in core infrastructure. [Run test query #1 found here](./Lab1-Walkthrough.md#test-query-1-base-llm-model) to ensure the `llm_textgen_model` is working properly.
+2. **No query responses**: Check that LLM models are deployed in core infrastructure. [Run test query #1 found here](./LAB1-Walkthrough.md#test-query-1-base-llm-model) to ensure the `llm_textgen_model` is working properly.
 3. **Empty results**: Verify MongoDB sink connector status in Confluent Cloud
 
 </details>
@@ -249,5 +148,5 @@ SELECT query, response FROM search_results_response LIMIT 5;
 
 - **← Back to Overview**: [Main README](./README.md)
 - **← Previous Lab**: [Lab1: Tool Calling Agent](./LAB1-Walkthrough.md)
-- **→ Next Lab**: [Lab3: Agentic Fleet Management](./Lab3-Walkthrough.md)
+- **→ Next Lab**: [Lab3: Agentic Fleet Management](./LAB3-Walkthrough.md)
 - **🧹 Cleanup**: [Cleanup Instructions](./README.md#cleanup)
