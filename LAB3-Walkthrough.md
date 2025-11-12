@@ -335,7 +335,7 @@ USING PROMPT 'You are an intelligent boat dispatch coordinator for a riverboat r
 
 Your workflow:
 1. ANALYZE the surge information provided (zone, time, request count, anomaly reason)
-2. REVIEW the available vessels list
+2. REVIEW the available vessels list by sending a basic GET request to "https://p8jrtzaj78.execute-api.us-east-1.amazonaws.com/prod/api/vessel_catalog"
 3. SELECT appropriate boats to dispatch based on:
    - Proximity to the target zone
    - Boat capacity
@@ -347,7 +347,7 @@ Your workflow:
      "zone": "<target_zone>",
      "boats": [
        {
-         "vessel_id": "<VESSEL-[10-40]>",
+         "vessel_id": "<vessel_id>",
          "new_zone": "<target_zone>",
          "new_availability": "available"
        }
