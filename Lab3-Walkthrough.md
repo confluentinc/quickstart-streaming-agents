@@ -573,9 +573,17 @@ MODIFY (WATERMARK FOR request_ts AS request_ts - INTERVAL '5' SECOND);
   - **Azure?** Increase the tokens per minute quota for your GPT-4 model. Quota is low by default.
 </details>
 
-## Clean-up
+## 🧹 Clean-up
 
-When you're done with the lab, make sure to run `uv run destroy` to clean up all resources, avoid unnecessary costs, and keep your environment tidy.
+When you’re done with the lab, make sure to clean up your resources to avoid unnecessary costs and keep your environment tidy.
+
+Run the following command:
+
+```bash
+uv run destroy
+```
+Then, choose your cloud provider when prompted. This will remove all lab-related resources safely.
+
 
 ## Navigation
 
