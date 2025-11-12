@@ -25,7 +25,7 @@ Build real-time AI agents with [Confluent Cloud Streaming Agents](https://docs.c
 <td>Vector search pipeline template with retrieval augmented generation (RAG). Use the included Flink documentation chunks, or bring your own documents for intelligent document retrieval.<br><br><img src="./assets/lab2/mongodb/00_lab2_architecture.png" alt="Lab2 architecture diagram"></td>
 </tr>
 <tr>
-<td><a href="./LAB3-Agentic-Fleet-Management.md"><strong>Lab3 - Agentic Fleet Management Using Confluent Intelligence</strong></a></td>
+<td><a href="./LAB3-Walkthrough.md"><strong>Lab3 - Agentic Fleet Management Using Confluent Intelligence</strong></a></td>
     <td>End-to-end boat fleet management demo showing use of Agent Definition, MCP tool calling, vector search, and <a href="https://docs.confluent.io/cloud/current/ai/builtin-functions/detect-anomalies.html">anomaly detection</a>.<br><br><img src="./assets/lab3/lab3-architecture.png" alt="Lab3 architecture diagram"></td>
 </tr>
 </table>

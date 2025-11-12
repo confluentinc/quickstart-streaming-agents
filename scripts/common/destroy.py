@@ -130,14 +130,9 @@ def main():
         # Step 1: Select cloud provider
         cloud = prompt_choice("Select cloud provider to destroy:", ["aws", "azure"])
 
-        # Step 2: Select what to destroy
-        env_choice = prompt_choice("What to destroy?", ["core", "lab1-tool-calling", "lab2-vector-search", "lab3-agentic-fleet-management", "all"])
-
-        envs_to_destroy = []
-        if env_choice == "all":
-            envs_to_destroy = ["lab3-agentic-fleet-management", "lab2-vector-search", "lab1-tool-calling", "core"]  # Reverse order
-        else:
-            envs_to_destroy = [env_choice]
+        # Step 2: Always destroy all environments
+        envs_to_destroy = ["lab3-agentic-fleet-management", "lab2-vector-search", "lab1-tool-calling", "core"]
+        print(f"✓ Will destroy all environments: {', '.join(envs_to_destroy)}")
 
         # Load credentials file
         creds_file, creds = load_or_create_credentials_file(root)
@@ -153,8 +148,8 @@ def main():
         print(f"Destroying: {', '.join(envs_to_destroy)}")
         print("\n⚠️  WARNING: This will permanently destroy all resources in the selected environments!")
 
-        confirm = input("\nAre you sure you want to proceed? (yes/no): ").strip().lower()
-        if confirm != "yes":
+        confirm = input("\nAre you sure you want to proceed? (y/n): ").strip().lower()
+        if confirm != "y":
             print("Destroy cancelled.")
             sys.exit(0)
 
@@ -163,14 +158,21 @@ def main():
     for env in envs_to_destroy:
         env_path = root / cloud / env
         if not env_path.exists():
-            print(f"Warning: {env_path} does not exist, skipping.")
+            print(f"⊘ Skipping {env}: directory does not exist")
+            continue
+        
+        # Check if terraform state exists (indicates it was deployed)
+        state_file = env_path / "terraform.tfstate"
+        if not state_file.exists():
+            print(f"⊘ Skipping {env}: no terraform state found (never deployed)")
             continue
 
+        print(f"\n→ Destroying {env}...")
         if run_terraform_destroy(env_path):
             # Cleanup terraform artifacts after successful destroy
             cleanup_terraform_artifacts(env_path)
         else:
-            print(f"\nDestroy failed at {env}. Continuing with remaining environments...")
+            print(f"\n✗ Destroy failed at {env}. Continuing with remaining environments...")
 
     print("\n✓ Destroy process completed!")
 
