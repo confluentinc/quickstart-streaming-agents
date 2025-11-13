@@ -73,9 +73,7 @@ __pycache__/
 .Python
 
 # Data generation connections
-aws/lab1-tool-calling/data-gen/connections/
-azure/lab1-tool-calling/data-gen/connections/
-aws/lab3-agentic-fleet-management/data-gen/connections/
+**/data-gen/connections/
 
 # Logs
 *.log
