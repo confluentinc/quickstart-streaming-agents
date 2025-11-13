@@ -44,7 +44,7 @@ Build real-time AI agents with [Confluent Cloud Streaming Agents](https://docs.c
 - **[Confluent CLI](https://docs.confluent.io/confluent-cli/current/overview.html)** - must be logged in
 - **[Docker](https://github.com/docker)** - for Lab1 & Lab3 data generation only
 - **[Git](https://github.com/git/git)**
-- **[Python 3.8+](https://github.com/python/cpython)**
+- **[Python 3.10+](https://github.com/python/cpython)**
 - **[Terraform](https://github.com/hashicorp/terraform)**
 - **[uv](https://github.com/astral-sh/uv)**
 

@@ -60,6 +60,8 @@ updated-queries.md
 FLINK_SQL_COMMANDS_EXTRACTED.md
 AGENT_DEFINITION_SYNTAX.md
 EMAIL_REPLACEMENT_IMPLEMENTATION.md
+WORKSHOP_CREDENTIALS.md
+.workshop-keys-state.json
 
 
 # Python (if scripts are added)

@@ -44,6 +44,7 @@ dependencies = [
     "python-dotenv>=1.0.0,<2.0",
     "urllib3>=1.26.18,<2.0", # Pin to v1.x for LibreSSL compatibility on macOS
     "pymongo>=4.10.1",
+    "boto3>=1.26.0,<2.0",
 ]
 
 # Optional dependencies for enhanced functionality
@@ -87,6 +88,9 @@ generate_deployment_summary = "scripts.common.generate_deployment_summary:main"
 generate-deployment-summary = "scripts.common.generate_deployment_summary:main"
 deployment_summary = "scripts.common.generate_deployment_summary:main"
 deployment-summary = "scripts.common.generate_deployment_summary:main"
+#
+workshop_keys = "scripts.common.workshop_key_manager:main"
+workshop-keys = "scripts.common.workshop_key_manager:main"
 
 
 [project.urls]
