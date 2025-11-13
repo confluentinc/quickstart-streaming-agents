@@ -124,7 +124,7 @@ resource "null_resource" "generate_flink_sql_summary" {
   }
 
   provisioner "local-exec" {
-    command     = "python ${path.module}/../../scripts/generate_lab_flink_summary.py lab3 aws ${path.module} || true"
+    command     = "python ${path.module}/../../scripts/common/generate_lab_flink_summary.py lab3 aws ${path.module} || true"
     working_dir = path.module
   }
 

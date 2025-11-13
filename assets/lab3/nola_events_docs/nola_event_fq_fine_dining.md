@@ -12,7 +12,7 @@ total_chunks: 1
 **Frequency:** Daily evening service
 **Time:** 7:00 PM - 10:00 PM
 **Location:** Upscale French Quarter restaurants
-**Expected Demand Impact:** MEDIUM
+**Expected Demand Impact:** HIGH
 
 Evening service at French Quarter's premier fine dining establishments featuring multi-course meals and sophisticated wine programs. Attracts 400-700 affluent diners seeking elegant culinary experiences in historic settings.
 

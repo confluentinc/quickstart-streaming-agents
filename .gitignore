@@ -23,6 +23,7 @@ tools/
 
 # detect-secrets
 .secrets.baseline
+gitleaks-report.json
 
 # Terraform
 *.tfstate

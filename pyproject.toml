@@ -77,8 +77,8 @@ lab3-datagen = "scripts.lab3_datagen:main"
 publish_docs = "scripts.publish_docs:main"
 publish-docs = "scripts.publish_docs:main"
 #
-clear_mongodb = "scripts.clear_mongodb:main"
-clear-mongodb = "scripts.clear_mongodb:main"
+clear_mongodb = "scripts.common.clear_mongodb:main"
+clear-mongodb = "scripts.common.clear_mongodb:main"
 #
 lab2_publish_queries = "scripts.lab2_publish_queries:main"
 publish_queries = "scripts.lab2_publish_queries:main"

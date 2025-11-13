@@ -12,7 +12,7 @@ total_chunks: 1
 **Frequency:** Daily market hours
 **Time:** 7:00 AM - 10:00 AM
 **Location:** French Market, Decatur Street
-**Expected Demand Impact:** MEDIUM
+**Expected Demand Impact:** HIGH
 
 Morning market activity at historic French Market featuring local vendors, produce, crafts, and prepared foods. Attracts 400-600 shoppers including locals doing morning shopping and tourists seeking authentic market experience.
 

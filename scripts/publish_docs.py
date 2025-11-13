@@ -28,10 +28,15 @@ from typing import Any, Dict, Optional, Tuple
 import yaml
 
 from .common.cloud_detection import auto_detect_cloud_provider, validate_cloud_provider, suggest_cloud_provider
+from .common.login_checks import check_confluent_login
 from .common.terraform import extract_kafka_credentials, validate_terraform_state, get_project_root
 
+# Global lock to ensure only one thread checks login at a time
+_login_check_lock = threading.Lock()
+_login_verified = False
+
 try:
-    from .clear_mongodb import extract_mongodb_credentials, clear_mongodb_collection
+    from .common.clear_mongodb import extract_mongodb_credentials, clear_mongodb_collection
     CLEAR_MONGODB_AVAILABLE = True
 except ImportError:
     CLEAR_MONGODB_AVAILABLE = False
@@ -95,6 +100,10 @@ class FlinkDocsPublisherCLI:
         self.max_workers = max_workers
         self.logger = logging.getLogger(__name__)
 
+        # Instance lock to prevent multiple workers from checking login simultaneously
+        self._login_check_lock = threading.Lock()
+        self._login_verified = False
+
         # Create temporary schema file
         self.schema_file = None
         self._create_schema_file()
@@ -110,6 +119,27 @@ class FlinkDocsPublisherCLI:
         json.dump(self.DOCUMENT_VALUE_SCHEMA, self.schema_file)
         self.schema_file.flush()
         self.logger.debug(f"Created schema file: {self.schema_file.name}")
+
+    def _verify_login_once(self) -> bool:
+        """
+        Thread-safe login verification that only checks once across all workers.
+
+        Returns:
+            True if logged in, False otherwise
+        """
+        # Use instance lock to ensure only one worker checks at a time
+        with self._login_check_lock:
+            if self._login_verified:
+                # Already verified by another worker
+                return True
+
+            # First worker to acquire lock performs the check
+            if check_confluent_login():
+                self._login_verified = True
+                return True
+            else:
+                self.logger.error("Confluent CLI login session expired during publishing")
+                return False
 
     def parse_markdown_file(self, file_path: Path) -> Optional[Dict[str, Any]]:
         """
@@ -170,6 +200,12 @@ class FlinkDocsPublisherCLI:
             True if successful, False otherwise
         """
         try:
+            # Verify login once per publisher instance (thread-safe)
+            # This prevents all workers from bombarding the login endpoint
+            if not self._verify_login_once():
+                self.logger.error(f"Skipping document {document['document_id']}: Not logged in")
+                return False
+
             # Create Avro record with union type formatting
             # For union types ["null", "string"], values must be wrapped as {"string": "value"}
             value = {
@@ -498,6 +534,21 @@ Examples:
 
     # Set up logging
     logger = setup_logging(args.verbose)
+
+    # Check Confluent CLI login before proceeding
+    if not check_confluent_login():
+        print("\n" + "=" * 60)
+        print("ERROR: Not logged into Confluent Cloud")
+        print("=" * 60)
+        print("\nYou must be logged in to publish documents.")
+        print("\nTo log in, run:")
+        print("  confluent login")
+        print("\nTo avoid session timeouts, save credentials with:")
+        print("  confluent login --save")
+        print("=" * 60 + "\n")
+        return 1
+
+    logger.info("✓ Confluent CLI logged in")
 
     # Determine lab number
     if args.lab2:

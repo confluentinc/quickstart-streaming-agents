@@ -211,7 +211,8 @@ AS SELECT
     expected_requests,
     anomaly_reason,
     top_chunk_1,
-    top_chunk_2
+    top_chunk_2,
+    top_chunk_3
 FROM (
     SELECT
         rad_with_rag.pickup_zone,
@@ -221,7 +222,8 @@ FROM (
         rad_with_rag.is_surge,
         TRIM(llm_response.response) AS anomaly_reason,
         rad_with_rag.top_chunk_1,
-        rad_with_rag.top_chunk_2
+        rad_with_rag.top_chunk_2,
+        rad_with_rag.top_chunk_3
     FROM (
         SELECT
             rad.pickup_zone,
@@ -235,7 +237,10 @@ FROM (
             vs.search_results[1].score AS top_score_1,
             vs.search_results[2].document_id AS top_document_2,
             vs.search_results[2].chunk AS top_chunk_2,
-            vs.search_results[2].score AS top_score_2
+            vs.search_results[2].score AS top_score_2,
+            vs.search_results[3].document_id AS top_document_3,
+            vs.search_results[3].chunk AS top_chunk_3,
+            vs.search_results[3].score AS top_score_3
         FROM (
             SELECT
                 pickup_zone,
@@ -246,17 +251,35 @@ FROM (
                 CONCAT(
                     'Transportation demand surge in ',
                     pickup_zone,
-                    ' zone at ',
-                    DATE_FORMAT(window_time, 'MMM. dd ''at'' HH:mm'),
-                    '. Groups of passengers requesting rides simultaneously. Expected requests: ',
+                    ' at ',
+                    DATE_FORMAT(window_time, 'h:mm a'),
+                    ' (',
+                    DATE_FORMAT(window_time, 'HH:mm'),
+                    ') during ',
+                    CASE
+                        WHEN HOUR(window_time) >= 0 AND HOUR(window_time) < 4 THEN 'late night hours (12:00 AM - 4:00 AM)'
+                        WHEN HOUR(window_time) >= 4 AND HOUR(window_time) < 7 THEN 'early morning setup period (4:00 AM - 7:00 AM)'
+                        WHEN HOUR(window_time) >= 7 AND HOUR(window_time) < 9 THEN 'morning rush hours (7:00 AM - 9:00 AM)'
+                        WHEN HOUR(window_time) >= 9 AND HOUR(window_time) < 12 THEN 'late morning period (9:00 AM - 12:00 PM)'
+                        WHEN HOUR(window_time) >= 12 AND HOUR(window_time) < 14 THEN 'lunch service peak (12:00 PM - 2:00 PM)'
+                        WHEN HOUR(window_time) >= 14 AND HOUR(window_time) < 17 THEN 'afternoon hours (2:00 PM - 5:00 PM)'
+                        WHEN HOUR(window_time) >= 17 AND HOUR(window_time) < 20 THEN 'evening dinner period (5:00 PM - 8:00 PM)'
+                        WHEN HOUR(window_time) >= 20 AND HOUR(window_time) < 23 THEN 'nightlife hours (8:00 PM - 11:00 PM)'
+                        ELSE 'late night period (11:00 PM - 12:00 AM)'
+                    END,
+                    '. Looking for HIGH demand events occurring between ',
+                    DATE_FORMAT(window_time - INTERVAL '1' HOUR, 'h:mm a'),
+                    ' and ',
+                    DATE_FORMAT(window_time + INTERVAL '1' HOUR, 'h:mm a'),
+                    '. Expected: ',
                     CAST(expected_requests AS STRING),
-                    ', Actual requests: ',
+                    ', Actual: ',
                     CAST(request_count AS STRING),
-                    ' (increase of ',
+                    ' (+',
                     CAST(ROUND(((request_count - expected_requests) / expected_requests) * 100, 1) AS STRING),
-                    '%). What events, conferences, festivals, or gatherings in or near ',
+                    '%). What HIGH impact events, festivals, or gatherings are active in ',
                     pickup_zone,
-                    ' are causing this increase in ride requests?'
+                    ' during this time?'
                 ) AS query,
                 emb.embedding
             FROM anomalies_per_zone,
@@ -264,17 +287,35 @@ FROM (
                 CONCAT(
                     'Transportation demand surge in ',
                     pickup_zone,
-                    ' zone at ',
-                    DATE_FORMAT(window_time, 'MMM. dd ''at'' HH:mm'),
-                    '. Groups of passengers requesting rides simultaneously. Expected requests: ',
+                    ' at ',
+                    DATE_FORMAT(window_time, 'h:mm a'),
+                    ' (',
+                    DATE_FORMAT(window_time, 'HH:mm'),
+                    ') during ',
+                    CASE
+                        WHEN HOUR(window_time) >= 0 AND HOUR(window_time) < 4 THEN 'late night hours (12:00 AM - 4:00 AM)'
+                        WHEN HOUR(window_time) >= 4 AND HOUR(window_time) < 7 THEN 'early morning setup period (4:00 AM - 7:00 AM)'
+                        WHEN HOUR(window_time) >= 7 AND HOUR(window_time) < 9 THEN 'morning rush hours (7:00 AM - 9:00 AM)'
+                        WHEN HOUR(window_time) >= 9 AND HOUR(window_time) < 12 THEN 'late morning period (9:00 AM - 12:00 PM)'
+                        WHEN HOUR(window_time) >= 12 AND HOUR(window_time) < 14 THEN 'lunch service peak (12:00 PM - 2:00 PM)'
+                        WHEN HOUR(window_time) >= 14 AND HOUR(window_time) < 17 THEN 'afternoon hours (2:00 PM - 5:00 PM)'
+                        WHEN HOUR(window_time) >= 17 AND HOUR(window_time) < 20 THEN 'evening dinner period (5:00 PM - 8:00 PM)'
+                        WHEN HOUR(window_time) >= 20 AND HOUR(window_time) < 23 THEN 'nightlife hours (8:00 PM - 11:00 PM)'
+                        ELSE 'late night period (11:00 PM - 12:00 AM)'
+                    END,
+                    '. Looking for HIGH demand events occurring between ',
+                    DATE_FORMAT(window_time - INTERVAL '1' HOUR, 'h:mm a'),
+                    ' and ',
+                    DATE_FORMAT(window_time + INTERVAL '1' HOUR, 'h:mm a'),
+                    '. Expected: ',
                     CAST(expected_requests AS STRING),
-                    ', Actual requests: ',
+                    ', Actual: ',
                     CAST(request_count AS STRING),
-                    ' (increase of ',
+                    ' (+',
                     CAST(ROUND(((request_count - expected_requests) / expected_requests) * 100, 1) AS STRING),
-                    '%). What events, conferences, festivals, or gatherings in or near ',
+                    '%). What HIGH impact events, festivals, or gatherings are active in ',
                     pickup_zone,
-                    ' are causing this increase in ride requests?'
+                    ' during this time?'
                 )
             )) AS emb
             WHERE is_surge = true
@@ -284,7 +325,7 @@ FROM (
                 documents_vectordb,
                 DESCRIPTOR(embedding),
                 rad.embedding,
-                2
+                3
             )
         ) AS vs
     ) AS rad_with_rag,
@@ -292,7 +333,7 @@ FROM (
         ML_PREDICT(
             'llm_textgen_model',
             CONCAT(
-                'Based on the retrieved event documents, provide a one-two sentence reason for the traffic increase. Include specific event names, expected attendance numbers, and peak times when available.\n\n',
+                'Analyze the retrieved HIGH demand event documents and identify which events are actively occurring during the surge time. Only consider events whose time ranges overlap with the query time. Provide a one-two sentence explanation including specific event names, attendance numbers, and time ranges.\n\n',
                 'USER QUERY: ', rad_with_rag.query, '\n\n',
                 'RETRIEVED DOCUMENTS:\n',
                 'Document 1 (Score: ', CAST(rad_with_rag.top_score_1 AS STRING), '):\n',
@@ -301,6 +342,9 @@ FROM (
                 'Document 2 (Score: ', CAST(rad_with_rag.top_score_2 AS STRING), '):\n',
                 'Source: ', rad_with_rag.top_document_2, '\n',
                 rad_with_rag.top_chunk_2, '\n\n',
+                'Document 3 (Score: ', CAST(rad_with_rag.top_score_3 AS STRING), '):\n',
+                'Source: ', rad_with_rag.top_document_3, '\n',
+                rad_with_rag.top_chunk_3, '\n\n',
                 'Provide only the reason, no additional text.'
             )
         )
@@ -335,7 +379,7 @@ USING PROMPT 'You are an intelligent boat dispatch coordinator for a riverboat r
 
 Your workflow:
 1. ANALYZE the surge information provided (zone, time, request count, anomaly reason)
-2. REVIEW the available vessels list by sending a basic GET request to "https://p8jrtzaj78.execute-api.us-east-1.amazonaws.com/prod/api/vessel_catalog"
+2. REVIEW the available vessels list by sending a basic GET request using the webhooks_by_zapier_get tool to "https://p8jrtzaj78.execute-api.us-east-1.amazonaws.com/prod/api/vessel_catalog"
 3. SELECT appropriate boats to dispatch based on:
    - Proximity to the target zone
    - Boat capacity

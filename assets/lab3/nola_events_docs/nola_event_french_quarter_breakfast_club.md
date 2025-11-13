@@ -12,7 +12,7 @@ total_chunks: 1
 **Frequency:** Monthly networking event
 **Time:** 8:00 AM - 10:00 AM
 **Location:** Various French Quarter restaurants (rotating)
-**Expected Demand Impact:** MEDIUM
+**Expected Demand Impact:** HIGH
 
 Professional networking breakfast bringing together 150-200 business leaders, entrepreneurs, and community stakeholders. Features keynote speaker and structured networking in upscale French Quarter dining venues.
 
