@@ -16,7 +16,7 @@ data "confluent_organization" "main" {}
 
 # Get Flink region data
 data "confluent_flink_region" "lab3_flink_region" {
-  cloud  = "AWS"
+  cloud  = "AZURE"
   region = local.cloud_region
 }
 
@@ -124,7 +124,7 @@ resource "null_resource" "generate_flink_sql_summary" {
   }
 
   provisioner "local-exec" {
-    command     = "python ${path.module}/../../scripts/common/generate_lab_flink_summary.py lab3 aws ${path.module} || true"
+    command     = "python ${path.module}/../../scripts/common/generate_lab_flink_summary.py lab3 azure ${path.module} || true"
     working_dir = path.module
   }
 

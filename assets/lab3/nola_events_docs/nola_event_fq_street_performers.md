@@ -12,7 +12,7 @@ total_chunks: 1
 **Frequency:** Daily performance hours
 **Time:** 9:00 AM - 12:00 PM
 **Location:** Jackson Square and Royal Street, French Quarter
-**Expected Demand Impact:** MEDIUM
+**Expected Demand Impact:** HIGH
 
 Morning street performance period with musicians, artists, and entertainers active throughout Jackson Square and Royal Street. Creates vibrant atmosphere attracting 500-800 tourists and locals to French Quarter's open-air entertainment scene.
 

@@ -7,8 +7,6 @@
     <img src="https://img.youtube.com/vi/3fWMD3qqBR8/maxresdefault.jpg" alt="Watch Demo Video" style="width:100%;max-width:800px;">
   </a>
 </div>
-
-
 Build real-time AI agents with [Confluent Cloud Streaming Agents](https://docs.confluent.io/cloud/current/ai/streaming-agents/overview.html). This quickstart includes two hands-on labs:
 
 <table>
@@ -36,30 +34,9 @@ Build real-time AI agents with [Confluent Cloud Streaming Agents](https://docs.c
 
 - [![Sign up for Confluent Cloud](https://img.shields.io/badge/Sign%20up%20for%20Confluent%20Cloud-007BFF?style=for-the-badge&logo=apachekafka&logoColor=white)](https://www.confluent.io/get-started/?utm_campaign=tm.pmm_cd.q4fy25-quickstart-streaming-agents&utm_source=github&utm_medium=demo)
 
-- Pre-deployment steps for each lab you want to deploy:
-
-  <details>
-  <summary>LAB 1: Pre-deployment steps</summary>
-
-  - Zapier account + SSE endpoint URL → [Setup guide](./assets/pre-setup/Zapier-Setup.md)
-
-  </details>
-
-  <details>
-  <summary>LAB 2: Pre-deployment steps</summary>
-
-  - MongoDB Atlas + connection string, database-specific user credentials → [Setup guide](./assets/pre-setup/MongoDB-Setup.md)
-
-  </details>
-
-  <details>
-  <summary>LAB 3: Pre-deployment steps</summary>
-
-  - Zapier account + SSE endpoint URL → [Setup guide](./assets/pre-setup/Zapier-Setup.md)  
-  - MongoDB Atlas + connection string, database-specific user credentials → [Setup guide](./assets/pre-setup/MongoDB-Setup.md)
-
-  </details>
-
+- **Lab1:** Zapier remote MCP server ([Setup guide](./assets/pre-setup/Zapier-Setup.md))
+- **Lab2:** MongoDB Atlas vector database ([Setup guide](./assets/pre-setup/MongoDB-Setup.md))
+- **Lab3:** Zapier ([Setup guide](./assets/pre-setup/Zapier-Setup.md)) + MongoDB ([Setup guide](./assets/pre-setup/MongoDB-Setup.md))
 
 **Required tools:**
 
@@ -67,13 +44,12 @@ Build real-time AI agents with [Confluent Cloud Streaming Agents](https://docs.c
 - **[Confluent CLI](https://docs.confluent.io/confluent-cli/current/overview.html)** - must be logged in
 - **[Docker](https://github.com/docker)** - for Lab1 & Lab3 data generation only
 - **[Git](https://github.com/git/git)**
-- **[Python 3.8+](https://github.com/python/cpython)**
+- **[Python 3.10+](https://github.com/python/cpython)**
 - **[Terraform](https://github.com/hashicorp/terraform)**
 - **[uv](https://github.com/astral-sh/uv)**
 
 <details>
 <summary> Installation commands (Mac/Windows/Linux)</summary>
-
 **Mac:**
 
 ```bash

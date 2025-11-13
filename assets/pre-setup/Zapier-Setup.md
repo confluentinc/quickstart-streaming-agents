@@ -35,4 +35,9 @@ Click **"Connect",** choose **"Other"** for your client, then change transport t
 <img src="./zapier-screenshots/7.png" alt="SSE Endpoint" width="100%" />
 
 
+## Navigation
 
+- **← Back to Overview**: [Main README](../../README.md)
+- **→ Lab1**: [Price Matching Orders With MCP Tool Calling](../../LAB1-Walkthrough.md)
+- **→ Lab3**: [Agentic Fleet Management](../../LAB3-Walkthrough.md)
+- **→ MongoDB Setup**: [MongoDB Atlas Setup Guide](./MongoDB-Setup.md)

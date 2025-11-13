@@ -6,12 +6,12 @@ This script extracts Flink SQL from Terraform state and lab walkthrough markdown
 ensuring the documentation automatically stays in sync with deployed infrastructure.
 
 Usage:
-    python scripts/generate_lab_flink_summary.py <lab-name> <cloud-provider> <terraform-dir> [key=value...]
+    python scripts/common/generate_lab_flink_summary.py <lab-name> <cloud-provider> <terraform-dir> [key=value...]
 
 Examples:
-    python scripts/generate_lab_flink_summary.py lab1 aws aws/lab1-tool-calling
-    python scripts/generate_lab_flink_summary.py lab2 azure azure/lab2-vector-search
-    python scripts/generate_lab_flink_summary.py lab3 aws aws/lab3-agentic-fleet-management
+    python scripts/common/generate_lab_flink_summary.py lab1 aws aws/lab1-tool-calling
+    python scripts/common/generate_lab_flink_summary.py lab2 azure azure/lab2-vector-search
+    python scripts/common/generate_lab_flink_summary.py lab3 aws aws/lab3-agentic-fleet-management
 
 Note: Additional key=value arguments are accepted for backward compatibility but not currently used.
 """
@@ -21,11 +21,10 @@ import subprocess
 import sys
 from pathlib import Path
 
-# Add scripts/common to the path so we can import from it
-sys.path.insert(0, str(Path(__file__).parent / "common"))
+# No need to add to path since we're already in scripts/common
 
-from generate_deployment_summary import generate_flink_sql_summary
-from sql_extractors import extract_sql_from_terraform, extract_sql_from_lab_walkthroughs
+from .generate_deployment_summary import generate_flink_sql_summary
+from .sql_extractors import extract_sql_from_terraform, extract_sql_from_lab_walkthroughs
 
 
 def get_manual_commands_for_lab(lab_name: str) -> str:
@@ -71,8 +70,8 @@ def get_manual_commands_for_lab(lab_name: str) -> str:
 def main():
     """Main entry point."""
     if len(sys.argv) < 4:
-        print("Usage: python scripts/generate_lab_flink_summary.py <lab-name> <cloud-provider> <terraform-dir> [key=value...]")
-        print("Example: python scripts/generate_lab_flink_summary.py lab1 aws aws/lab1-tool-calling")
+        print("Usage: python scripts/common/generate_lab_flink_summary.py <lab-name> <cloud-provider> <terraform-dir> [key=value...]")
+        print("Example: python scripts/common/generate_lab_flink_summary.py lab1 aws aws/lab1-tool-calling")
         sys.exit(1)
 
     lab_name = sys.argv[1]  # e.g., "lab1"

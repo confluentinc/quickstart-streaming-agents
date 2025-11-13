@@ -18,7 +18,7 @@ import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, Any
+from typing import Dict, Any, Union, Optional
 
 
 def generate_credentials_markdown(cloud_provider: str, tf_outputs: Dict[str, Any], output_path: Path) -> None:
@@ -373,9 +373,9 @@ def generate_flink_sql_summary(
     cloud_provider: str,
     tf_outputs: Dict[str, Any],
     output_path: Path,
-    automated_commands: list[dict] = None,
-    manual_commands: list[dict] | str = None,
-    core_resources: list[dict] = None
+    automated_commands: Optional[list] = None,
+    manual_commands: Union[list, str, None] = None,
+    core_resources: Optional[list] = None
 ) -> None:
     """
     Generate a Flink SQL command summary markdown file for a lab.

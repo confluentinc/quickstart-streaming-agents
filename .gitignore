@@ -23,6 +23,7 @@ tools/
 
 # detect-secrets
 .secrets.baseline
+gitleaks-report.json
 
 # Terraform
 *.tfstate
@@ -60,6 +61,8 @@ updated-queries.md
 FLINK_SQL_COMMANDS_EXTRACTED.md
 AGENT_DEFINITION_SYNTAX.md
 EMAIL_REPLACEMENT_IMPLEMENTATION.md
+WORKSHOP_CREDENTIALS.md
+.workshop-keys-state.json
 
 
 # Python (if scripts are added)
@@ -70,9 +73,7 @@ __pycache__/
 .Python
 
 # Data generation connections
-aws/lab1-tool-calling/data-gen/connections/
-azure/lab1-tool-calling/data-gen/connections/
-aws/lab3-agentic-fleet-management/data-gen/connections/
+**/data-gen/connections/
 
 # Logs
 *.log

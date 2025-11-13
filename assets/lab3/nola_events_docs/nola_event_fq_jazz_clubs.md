@@ -12,7 +12,7 @@ total_chunks: 1
 **Frequency:** Nightly performances
 **Time:** 8:30 PM - 12:00 AM
 **Location:** Multiple French Quarter jazz venues
-**Expected Demand Impact:** MEDIUM
+**Expected Demand Impact:** HIGH
 
 Evening jazz performances at intimate French Quarter clubs featuring local and touring musicians. Attracts 600-900 jazz enthusiasts nightly to authentic venues preserving New Orleans musical heritage.
 

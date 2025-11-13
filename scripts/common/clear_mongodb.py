@@ -23,8 +23,8 @@ try:
 except ImportError:
     PYMONGO_AVAILABLE = False
 
-from .common.cloud_detection import auto_detect_cloud_provider, validate_cloud_provider, suggest_cloud_provider
-from .common.terraform import get_project_root
+from .cloud_detection import auto_detect_cloud_provider, validate_cloud_provider, suggest_cloud_provider
+from .terraform import get_project_root
 
 
 def setup_logging(verbose: bool = False) -> logging.Logger:

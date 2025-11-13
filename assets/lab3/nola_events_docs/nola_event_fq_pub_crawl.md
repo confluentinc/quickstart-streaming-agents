@@ -12,7 +12,7 @@ total_chunks: 1
 **Frequency:** Daily departures
 **Time:** 3:00 PM - 6:00 PM
 **Location:** French Quarter historic bars
-**Expected Demand Impact:** MEDIUM
+**Expected Demand Impact:** HIGH
 
 Guided tour of historic French Quarter bars and taverns with drinks and storytelling. Groups of 20-30 tourists explore neighborhood's drinking culture and history at famous establishments.
 

@@ -12,7 +12,7 @@ total_chunks: 1
 **Frequency:** Daily gallery hours
 **Time:** 10:00 AM - 1:00 PM
 **Location:** Royal Street galleries, French Quarter
-**Expected Demand Impact:** MEDIUM
+**Expected Demand Impact:** HIGH
 
 Morning gallery browsing period along Royal Street's renowned art gallery corridor. Attracts 300-500 art enthusiasts, collectors, and tourists exploring paintings, sculptures, and fine crafts in historic French Quarter galleries.
 

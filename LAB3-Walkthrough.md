@@ -15,150 +15,9 @@ All of this runs in real time on **Confluent Cloud for Apache Flink**, with no e
 ![Architecture Diagram](./assets/lab3/lab3-architecture.png)
 
 ## Prerequisites
-- Zapier account and remote MCP server set up  (instructions below)
-- MongoDB free account with Atlas cluster (M0 - Free Tier) with vector search enabled - directions below.
+- Zapier remote MCP server ([Setup guide](./assets/pre-setup/Zapier-Setup.md))
+- MongoDB Atlas vector database ([Setup guide](./assets/pre-setup/MongoDB-Setup.md))
 - ⚠️ **IMPORTANT: AWS Users Only:** To access Claude Sonnet 3.7 you must request access to the model by filling out an Anthropic use case form (or someone in your org must have previously done so) for your cloud region. To do so, visit the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog), select Claude 3.7 Sonnet and open it it in the Playground, then send a message in the chat - the form will appear automatically. ⚠️
-
-## MongoDB Atlas Setup
-<details>
-<summary>MongoDB Atlas Setup (Click to expand)</summary>
-
-### Step 1: Create MongoDB Atlas Account and Cluster
-
-If running Lab3, set up a free MongoDB Atlas cluster:
-
-#### 1. Create a **Project.**
-
-<details open>
-<summary>Click to collapse</summary>
-
-<img src="./assets/lab2/mongodb/01_create_project.png" alt="Create Project" width="50%" />
-
-</details>
-
-#### 2. Create a **Cluster.**
-
-<details open>
-<summary>Click to collapse</summary>
-<img src="./assets/lab2/mongodb/02_create_cluster.png" alt="Create Cluster" width="50%" />
-
-</details>
-
-#### 3. Choose the **Free Tier (M0).** Then choose your cloud provider (AWS or Azure) and region. Make sure this is the same region that your Confluent Cloud deployment is in. Click **Create Cluster.**
-
-<details open>
-<summary>Click to collapse</summary>
-
-<img src="./assets/lab2/mongodb/03_choose_free_tier_and_region.png" alt="Choose Free Tier" width="50%" />
-
-</details>
-
-#### 4. **Create a Database User.** **Write down the username and password** you choose, as they will be `mongodb_username` and `mongodb_password` that you will need to deploy Terraform later. Click **Create Database User** when you are done
-
-   **Note:** the username and password you set up to access your database are the credentials you'll need to save for later, NOT the separate login you use for mongodb.com.
-
-<details open>
-<summary>Click to collapse</summary>
-
-<img src="./assets/lab2/mongodb/04_create_database_user.png" alt="Create Database User" width="50%" />
-
-</details>
-
-#### 5. Click **Choose a Connection method.** => Shell => Copy the URL shown in **step 2.** This is the `MONGODB_CONNECTION_URL` you will need later. Don't worry about the rest of the command - you only need the URL that looks like `mongodb+srv://cluster0.xhgx1kr.mongodb.net`
-
-#### 6. Go to **Network Access** in left sidebar. Click green **Add IP Address** button on the right. Then simply click the **Allow Access From Anywhere** button, or manually enter `0.0.0.0/0`. Click **Confirm.**
-
- ⚠️ **NOTE:** Important step! Confluent Cloud will not be able to connect to MongoDB without this rule. ⚠️
-
-<details open>
-<summary>Click to collapse</summary>
-
-<img src="./assets/lab2/mongodb/05_network_access_allow_all.png" alt="Network Access" width="50%" />
-
-</details>
-
-#### 7. Next, from **Clusters** page, choose "Atlas Search" then click **Add my own data.** Enter
-
-   Database name: `vector_search`
-
-   Collection name: `documents`
-
-<details open>
-<summary>Click to collapse</summary>
-
-<img src="./assets/lab2/mongodb/06_add_data_collection.png" alt="Add Data Collection" width="50%" />
-
-</details>
-
-#### 8. Next, click **Create Search Index.** Choose **Vector Search index, and name it `vector_search`
-
-<details open>
-<summary>Click to collapse</summary>
-<img src="./assets/lab2/mongodb/07_create_vector_search_index.png" alt="Create Vector Index" width="50%" />
-
-</details>
-
-#### 9. Scroll down to the bottom and choose **JSON Editor.** Enter the following
-
-   ```json
-   {
-     "fields": [
-       {
-         "type": "vector",
-         "path": "embedding",
-         "numDimensions": 1536,
-         "similarity": "cosine"
-       }
-     ]
-   }
-   ```
-
-<details open>
-<summary>Click to collapse</summary>
-
-<img src="./assets/lab2/mongodb/08_json_editor_config.png" alt="JSON Config" width="50%" />
-
-</details>
-
-</details>
-
-## Zapier MCP Server Setup
-
-<details>
-<summary>Zapier MCP Server Setup (Click to expand)</summary>
-
-Create a Zapier MCP server for tool calling:
-
-### 1. Create free Zapier Account
-
-Sign up at [zapier.com](https://zapier.com/sign-up) and verify your email.
-
-### 2. Create MCP Server
-
-Visit [mcp.zapier.com](https://mcp.zapier.com/mcp/servers), choose "Other" as MCP Client, and create your server.
-
-<details open>
-<summary>Click to collapse</summary>
-
-<img src="./assets/lab1/zapier/3.png" alt="Create MCP Server" width="50%" />
-
-</details>
-
-### 3. Add Tools
-
-Add these tools to your MCP server:
-
-- **Webhooks by Zapier: GET** tool
-- **Gmail: Send Email** tool (authenticate via SSO)
-
-<details open>
-<summary>Click to collapse</summary>
-
-<img src="./assets/lab1/zapier/4.png" alt="Add Tools" width="50%" />
-
-</details>
-</details>
-
 
 ## Deploy the Demo
 
@@ -352,7 +211,8 @@ AS SELECT
     expected_requests,
     anomaly_reason,
     top_chunk_1,
-    top_chunk_2
+    top_chunk_2,
+    top_chunk_3
 FROM (
     SELECT
         rad_with_rag.pickup_zone,
@@ -362,7 +222,8 @@ FROM (
         rad_with_rag.is_surge,
         TRIM(llm_response.response) AS anomaly_reason,
         rad_with_rag.top_chunk_1,
-        rad_with_rag.top_chunk_2
+        rad_with_rag.top_chunk_2,
+        rad_with_rag.top_chunk_3
     FROM (
         SELECT
             rad.pickup_zone,
@@ -376,7 +237,10 @@ FROM (
             vs.search_results[1].score AS top_score_1,
             vs.search_results[2].document_id AS top_document_2,
             vs.search_results[2].chunk AS top_chunk_2,
-            vs.search_results[2].score AS top_score_2
+            vs.search_results[2].score AS top_score_2,
+            vs.search_results[3].document_id AS top_document_3,
+            vs.search_results[3].chunk AS top_chunk_3,
+            vs.search_results[3].score AS top_score_3
         FROM (
             SELECT
                 pickup_zone,
@@ -387,17 +251,35 @@ FROM (
                 CONCAT(
                     'Transportation demand surge in ',
                     pickup_zone,
-                    ' zone at ',
-                    DATE_FORMAT(window_time, 'MMM. dd ''at'' HH:mm'),
-                    '. Groups of passengers requesting rides simultaneously. Expected requests: ',
+                    ' at ',
+                    DATE_FORMAT(window_time, 'h:mm a'),
+                    ' (',
+                    DATE_FORMAT(window_time, 'HH:mm'),
+                    ') during ',
+                    CASE
+                        WHEN HOUR(window_time) >= 0 AND HOUR(window_time) < 4 THEN 'late night hours (12:00 AM - 4:00 AM)'
+                        WHEN HOUR(window_time) >= 4 AND HOUR(window_time) < 7 THEN 'early morning setup period (4:00 AM - 7:00 AM)'
+                        WHEN HOUR(window_time) >= 7 AND HOUR(window_time) < 9 THEN 'morning rush hours (7:00 AM - 9:00 AM)'
+                        WHEN HOUR(window_time) >= 9 AND HOUR(window_time) < 12 THEN 'late morning period (9:00 AM - 12:00 PM)'
+                        WHEN HOUR(window_time) >= 12 AND HOUR(window_time) < 14 THEN 'lunch service peak (12:00 PM - 2:00 PM)'
+                        WHEN HOUR(window_time) >= 14 AND HOUR(window_time) < 17 THEN 'afternoon hours (2:00 PM - 5:00 PM)'
+                        WHEN HOUR(window_time) >= 17 AND HOUR(window_time) < 20 THEN 'evening dinner period (5:00 PM - 8:00 PM)'
+                        WHEN HOUR(window_time) >= 20 AND HOUR(window_time) < 23 THEN 'nightlife hours (8:00 PM - 11:00 PM)'
+                        ELSE 'late night period (11:00 PM - 12:00 AM)'
+                    END,
+                    '. Looking for HIGH demand events occurring between ',
+                    DATE_FORMAT(window_time - INTERVAL '1' HOUR, 'h:mm a'),
+                    ' and ',
+                    DATE_FORMAT(window_time + INTERVAL '1' HOUR, 'h:mm a'),
+                    '. Expected: ',
                     CAST(expected_requests AS STRING),
-                    ', Actual requests: ',
+                    ', Actual: ',
                     CAST(request_count AS STRING),
-                    ' (increase of ',
+                    ' (+',
                     CAST(ROUND(((request_count - expected_requests) / expected_requests) * 100, 1) AS STRING),
-                    '%). What events, conferences, festivals, or gatherings in or near ',
+                    '%). What HIGH impact events, festivals, or gatherings are active in ',
                     pickup_zone,
-                    ' are causing this increase in ride requests?'
+                    ' during this time?'
                 ) AS query,
                 emb.embedding
             FROM anomalies_per_zone,
@@ -405,17 +287,35 @@ FROM (
                 CONCAT(
                     'Transportation demand surge in ',
                     pickup_zone,
-                    ' zone at ',
-                    DATE_FORMAT(window_time, 'MMM. dd ''at'' HH:mm'),
-                    '. Groups of passengers requesting rides simultaneously. Expected requests: ',
+                    ' at ',
+                    DATE_FORMAT(window_time, 'h:mm a'),
+                    ' (',
+                    DATE_FORMAT(window_time, 'HH:mm'),
+                    ') during ',
+                    CASE
+                        WHEN HOUR(window_time) >= 0 AND HOUR(window_time) < 4 THEN 'late night hours (12:00 AM - 4:00 AM)'
+                        WHEN HOUR(window_time) >= 4 AND HOUR(window_time) < 7 THEN 'early morning setup period (4:00 AM - 7:00 AM)'
+                        WHEN HOUR(window_time) >= 7 AND HOUR(window_time) < 9 THEN 'morning rush hours (7:00 AM - 9:00 AM)'
+                        WHEN HOUR(window_time) >= 9 AND HOUR(window_time) < 12 THEN 'late morning period (9:00 AM - 12:00 PM)'
+                        WHEN HOUR(window_time) >= 12 AND HOUR(window_time) < 14 THEN 'lunch service peak (12:00 PM - 2:00 PM)'
+                        WHEN HOUR(window_time) >= 14 AND HOUR(window_time) < 17 THEN 'afternoon hours (2:00 PM - 5:00 PM)'
+                        WHEN HOUR(window_time) >= 17 AND HOUR(window_time) < 20 THEN 'evening dinner period (5:00 PM - 8:00 PM)'
+                        WHEN HOUR(window_time) >= 20 AND HOUR(window_time) < 23 THEN 'nightlife hours (8:00 PM - 11:00 PM)'
+                        ELSE 'late night period (11:00 PM - 12:00 AM)'
+                    END,
+                    '. Looking for HIGH demand events occurring between ',
+                    DATE_FORMAT(window_time - INTERVAL '1' HOUR, 'h:mm a'),
+                    ' and ',
+                    DATE_FORMAT(window_time + INTERVAL '1' HOUR, 'h:mm a'),
+                    '. Expected: ',
                     CAST(expected_requests AS STRING),
-                    ', Actual requests: ',
+                    ', Actual: ',
                     CAST(request_count AS STRING),
-                    ' (increase of ',
+                    ' (+',
                     CAST(ROUND(((request_count - expected_requests) / expected_requests) * 100, 1) AS STRING),
-                    '%). What events, conferences, festivals, or gatherings in or near ',
+                    '%). What HIGH impact events, festivals, or gatherings are active in ',
                     pickup_zone,
-                    ' are causing this increase in ride requests?'
+                    ' during this time?'
                 )
             )) AS emb
             WHERE is_surge = true
@@ -425,7 +325,7 @@ FROM (
                 documents_vectordb,
                 DESCRIPTOR(embedding),
                 rad.embedding,
-                2
+                3
             )
         ) AS vs
     ) AS rad_with_rag,
@@ -433,7 +333,7 @@ FROM (
         ML_PREDICT(
             'llm_textgen_model',
             CONCAT(
-                'Based on the retrieved event documents, provide a one-two sentence reason for the traffic increase. Include specific event names, expected attendance numbers, and peak times when available.\n\n',
+                'Analyze the retrieved HIGH demand event documents and identify which events are actively occurring during the surge time. Only consider events whose time ranges overlap with the query time. Provide a one-two sentence explanation including specific event names, attendance numbers, and time ranges.\n\n',
                 'USER QUERY: ', rad_with_rag.query, '\n\n',
                 'RETRIEVED DOCUMENTS:\n',
                 'Document 1 (Score: ', CAST(rad_with_rag.top_score_1 AS STRING), '):\n',
@@ -442,6 +342,9 @@ FROM (
                 'Document 2 (Score: ', CAST(rad_with_rag.top_score_2 AS STRING), '):\n',
                 'Source: ', rad_with_rag.top_document_2, '\n',
                 rad_with_rag.top_chunk_2, '\n\n',
+                'Document 3 (Score: ', CAST(rad_with_rag.top_score_3 AS STRING), '):\n',
+                'Source: ', rad_with_rag.top_document_3, '\n',
+                rad_with_rag.top_chunk_3, '\n\n',
                 'Provide only the reason, no additional text.'
             )
         )
@@ -476,7 +379,7 @@ USING PROMPT 'You are an intelligent boat dispatch coordinator for a riverboat r
 
 Your workflow:
 1. ANALYZE the surge information provided (zone, time, request count, anomaly reason)
-2. REVIEW the available vessels list
+2. REVIEW the available vessels list by sending a basic GET request using the webhooks_by_zapier_get tool to "https://p8jrtzaj78.execute-api.us-east-1.amazonaws.com/prod/api/vessel_catalog"
 3. SELECT appropriate boats to dispatch based on:
    - Proximity to the target zone
    - Boat capacity
@@ -488,7 +391,7 @@ Your workflow:
      "zone": "<target_zone>",
      "boats": [
        {
-         "vessel_id": "<VESSEL-[10-40]>",
+         "vessel_id": "<vessel_id>",
          "new_zone": "<target_zone>",
          "new_availability": "available"
        }
@@ -571,7 +474,7 @@ MODIFY (WATERMARK FOR request_ts AS request_ts - INTERVAL '5' SECOND);
 - `Runtime received bad response code 403. Please also double check if your model has multiple versions.` error?
   - **AWS?** Ensure you've activated Claude 3.7 Sonnet in your AWS account. See: [Prerequisites](#prerequisites)
   - **Azure?** Increase the tokens per minute quota for your GPT-4 model. Quota is low by default.
-</details>
+  </details>
 
 ## 🧹 Clean-up
 
