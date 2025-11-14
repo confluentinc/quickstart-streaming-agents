@@ -1,4 +1,5 @@
 # Lab3: Agentic Fleet Management Using Confluent Intelligence
+![River Robotaxi Logo](./assets/lab3/lab3-river-robotaxi-logo.png)
 
 This demo showcases an intelligent, real-time fleet management system that autonomously detects demand surges, identifies their causes using AI-powered reasoning, and automatically dispatches vessels to meet increased demand. Built on [Confluent Intelligence](https://www.confluent.io/product/confluent-intelligence/), the system combines stream processing, anomaly detection, retrieval-augmented generation (RAG), and AI agent workflows to create a fully autonomous operations pipeline.
 ### What This System Does

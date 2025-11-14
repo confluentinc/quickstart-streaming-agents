@@ -30,8 +30,6 @@ Add these tools to your MCP server:
 
 Click **"Connect",** choose **"Other"** for your client, then change transport to **"SSE Endpoint"**, and **copy the URL.** This is the `zapier_sse_endpoint` you will need to enter when deploying the lab with `uv run deploy`.
 
-
-
 <img src="./zapier-screenshots/7.png" alt="SSE Endpoint" width="100%" />
 
 
