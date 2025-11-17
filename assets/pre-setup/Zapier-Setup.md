@@ -19,12 +19,10 @@ Visit [mcp.zapier.com](https://mcp.zapier.com/mcp/servers), choose "Other" as MC
 
 Add these tools to your MCP server:
 
-- **Webhooks by Zapier: GET** and **Custom Request** tools
-- **[ONLY FOR LAB 1]Gmail: Send Email** tool (authenticate via SSO)
+- **`Webhooks by Zapier: GET`** and **`Custom Request`** tools
+- **[ONLY FOR LAB 1] `Gmail: Send Email`** tool (authenticate via SSO)
 
-
-    <img src="./zapier-screenshots/4.png" alt="Add Tools" width="100%" />
-
+<img src="./zapier-screenshots/4.png" alt="Add Tools" width="100%" />
 
 ### D. Get SSE Endpoint URL
 

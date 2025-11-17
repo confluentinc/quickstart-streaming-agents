@@ -39,3 +39,22 @@ variable "owner_email" {
   type        = string
   default     = ""
 }
+
+variable "workshop_mode" {
+  description = "Enable workshop mode (uses pre-provided Azure OpenAI credentials instead of creating Azure AI resources)"
+  type        = bool
+  default     = false
+}
+
+variable "azure_openai_api_key" {
+  description = "Azure OpenAI API Key (workshop mode only)"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "azure_openai_endpoint" {
+  description = "Azure OpenAI Endpoint URL (workshop mode only)"
+  type        = string
+  default     = ""
+}

@@ -135,7 +135,7 @@ USING TOOLS zapier
 COMMENT 'Consolidated agent for scraping competitor prices and sending price match notifications'
 WITH (
   'max_consecutive_failures' = '2',
-  'MAX_ITERATIONS' = '5'
+  'MAX_ITERATIONS' = '10'
 );
 ```
 
@@ -239,7 +239,7 @@ Check out your email for price matched orders:
   - Be sure to use single quotes around your email address ('your@email.com').
   - Configure the Gmail send email tool to specify the email address you want to send to directly.
   - Modify the model prompt to be more prescriptive about what format you need the email in (string, not array).
-</details>
+  </details>
 
 ## Navigation
 

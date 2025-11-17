@@ -214,26 +214,25 @@ resource "confluent_connector" "mongodb_sink" {
   }
 
   config_nonsensitive = {
-    "connector.class"                                        = "MongoDbAtlasSink"
-    "name"                                                   = "mongodb-sink"
-    "topics"                                                 = "documents_embed"
-    "input.data.format"                                      = "AVRO"
-    "connection.host"                                        = local.mongodb_host
-    "connection.user"                                        = var.mongodb_username
-    "database"                                               = var.MONGODB_DATABASE
-    "collection"                                             = var.MONGODB_COLLECTION
-    "tasks.max"                                              = "1"
-    "value.converter.schemas.enable"                         = "false"
-    "value.converter.decimal.format"                         = "BASE64"
-    "max.num.retries"                                        = "3"
-    "retries.defer.timeout"                                  = "5000"
-    "delete.on.null.values"                                  = "false"
-    "max.batch.size"                                         = "0"
-    "writemodel.strategy"                                    = "ReplaceOneStrategy"
-    "document.id.strategy"                                   = "PartialValueStrategy"
-    "document.id.strategy.partial.value.projection.list"    = "document_id"
-    "document.id.strategy.partial.value.projection.type"    = "AllowList"
-    "document.id.strategy.overwrite.existing"               = "true"
+    "connector.class"                         = "MongoDbAtlasSink"
+    "name"                                    = "mongodb-sink"
+    "topics"                                  = "documents_embed"
+    "input.data.format"                       = "AVRO"
+    "connection.host"                         = local.mongodb_host
+    "connection.user"                         = var.mongodb_username
+    "database"                                = var.MONGODB_DATABASE
+    "collection"                              = var.MONGODB_COLLECTION
+    "tasks.max"                               = "1"
+    "value.converter.schemas.enable"          = "false"
+    "value.converter.decimal.format"          = "BASE64"
+    "max.num.retries"                         = "3"
+    "retries.defer.timeout"                   = "5000"
+    "delete.on.null.values"                   = "false"
+    "max.batch.size"                          = "0"
+    "writemodel.strategy"                     = "DefaultWriteModelStrategy"
+    "use.ordered.bulk.writes"                 = "true"
+    "document.id.strategy"                    = "BsonOidStrategy"
+    "document.id.strategy.overwrite.existing" = "false"
   }
 
   depends_on = [
