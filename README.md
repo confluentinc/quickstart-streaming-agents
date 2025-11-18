@@ -83,13 +83,17 @@ uv run deploy
 
 That's it! The script will guide you through setup, automatically create API keys, and deploy your chosen lab(s).
 
+> [!NOTE]
+>
+> For instructor-led workshops, add the `--workshop` flag: `uv run deploy --workshop`.
+
 
 ## Directory Structure
 
 ```
 quickstart-streaming-agents/
 ├── aws|azure/                          # Choose a cloud
-│   ├── core/                           # Shared Terraform infrastructure
+│   ├── core/                           # Shared Confluent Cloud infra for all labs
 │   ├── lab1-tool-calling/              # Lab-specific infra
 │   ├── lab2-vector-search/             # Lab-specific infra
 │   └── lab3-agentic-fleet-management/  # Lab-specific infra

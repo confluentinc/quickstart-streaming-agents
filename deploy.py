@@ -165,7 +165,11 @@ def main():
         elif env_choice == "Lab 2: Vector Search / RAG":
             envs_to_deploy = ["core", "lab2-vector-search"]
         elif env_choice == "Lab 3: Agentic Fleet Management":
-            envs_to_deploy = ["core", "lab2-vector-search", "lab3-agentic-fleet-management"]
+            # In workshop mode, Lab3 is standalone (has its own MongoDB connection)
+            if args.workshop:
+                envs_to_deploy = ["core", "lab3-agentic-fleet-management"]
+            else:
+                envs_to_deploy = ["core", "lab2-vector-search", "lab3-agentic-fleet-management"]
         elif env_choice == "All Labs (Labs 1, 2, and 3)":
             envs_to_deploy = ["core", "lab1-tool-calling", "lab2-vector-search", "lab3-agentic-fleet-management"]
         else:  # Core Infrastructure Only (advanced)
@@ -202,7 +206,14 @@ def main():
             zapier_endpoint = prompt_with_default("Zapier SSE Endpoint (Lab 1 and Lab 3)", creds.get("TF_VAR_zapier_sse_endpoint", ""))
             set_key(creds_file, "TF_VAR_zapier_sse_endpoint", zapier_endpoint)
 
-        if "lab2-vector-search" in envs_to_deploy or "lab3-agentic-fleet-management" in envs_to_deploy:
+        # MongoDB credentials needed if:
+        # - Lab2 is being deployed (always needs MongoDB), OR
+        # - Lab3 is being deployed in non-workshop mode (needs MongoDB)
+        # In workshop mode, Lab3 uses hardcoded MongoDB credentials
+        needs_mongodb = ("lab2-vector-search" in envs_to_deploy) or \
+                       ("lab3-agentic-fleet-management" in envs_to_deploy and not args.workshop)
+
+        if needs_mongodb:
             mongo_conn = prompt_with_default("MongoDB Connection String (Lab 2 and Lab 3)", creds.get("TF_VAR_mongodb_connection_string", ""))
             mongo_user = prompt_with_default("MongoDB Username (Lab 2 and Lab 3)", creds.get("TF_VAR_mongodb_username", ""))
             mongo_pass = prompt_with_default("MongoDB Password (Lab 2 and Lab 3)", creds.get("TF_VAR_mongodb_password", ""))

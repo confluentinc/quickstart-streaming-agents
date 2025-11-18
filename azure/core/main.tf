@@ -296,10 +296,10 @@ resource "confluent_flink_connection" "azureopenai_connection_workshop" {
     secret = confluent_api_key.app-manager-flink-api-key.secret
   }
 
-  display_name         = "llm-textgen-connection"
-  type                 = "AZUREOPENAI"
-  endpoint             = "${var.azure_openai_endpoint}/openai/deployments/gpt-4o/chat/completions?api-version=2024-08-01-preview"
-  azure_openai_api_key = var.azure_openai_api_key
+  display_name = "llm-textgen-connection"
+  type         = "AZUREOPENAI"
+  endpoint     = "${var.azure_openai_endpoint}/openai/deployments/gpt-4o/chat/completions?api-version=2024-08-01-preview"
+  api_key      = var.azure_openai_api_key
 
   depends_on = [
     confluent_api_key.app-manager-flink-api-key,
@@ -333,10 +333,10 @@ resource "confluent_flink_connection" "azureopenai_embedding_connection_workshop
     secret = confluent_api_key.app-manager-flink-api-key.secret
   }
 
-  display_name         = "llm-embedding-connection"
-  type                 = "AZUREOPENAI"
-  endpoint             = "${var.azure_openai_endpoint}/openai/deployments/text-embedding-3-large/embeddings?api-version=2024-08-01-preview"
-  azure_openai_api_key = var.azure_openai_api_key
+  display_name = "llm-embedding-connection"
+  type         = "AZUREOPENAI"
+  endpoint     = "${var.azure_openai_endpoint}/openai/deployments/text-embedding-3-large/embeddings?api-version=2024-08-01-preview"
+  api_key      = var.azure_openai_api_key
 
   depends_on = [
     confluent_api_key.app-manager-flink-api-key,
