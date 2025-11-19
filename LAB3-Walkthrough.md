@@ -424,7 +424,7 @@ CRITICAL INSTRUCTIONS:
 - Do NOT include any other explanatory text outside these three sections'
 USING TOOLS `zapier`
 WITH (
-  'max_iterations' = '5'
+  'max_iterations' = '10'
 );
 ```
 ### 4. Invoke the agent with `AI_RUN_AGENT`

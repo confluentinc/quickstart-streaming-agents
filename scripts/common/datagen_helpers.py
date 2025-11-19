@@ -37,19 +37,6 @@ def check_dependencies() -> Dict[str, bool]:
     except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired):
         dependencies["docker"] = False
 
-    # Check jq
-    try:
-        result = subprocess.run(
-            ["jq", "--version"],
-            capture_output=True,
-            text=True,
-            check=True,
-            timeout=10
-        )
-        dependencies["jq"] = True
-    except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired):
-        dependencies["jq"] = False
-
     # Check terraform
     try:
         result = subprocess.run(
@@ -88,8 +75,6 @@ def validate_dependencies(dependencies: Dict[str, bool]) -> bool:
     for dep in missing:
         if dep == "docker":
             logger.error("  - Docker: https://docs.docker.com/get-docker/")
-        elif dep == "jq":
-            logger.error("  - jq: https://jqlang.github.io/jq/download/")
         elif dep == "terraform":
             logger.error("  - Terraform: https://developer.hashicorp.com/terraform/install")
 

@@ -138,7 +138,6 @@ Examples:
 
 Dependencies:
   - Docker: https://docs.docker.com/get-docker/
-  - jq: https://jqlang.github.io/jq/download/
   - Terraform: https://developer.hashicorp.com/terraform/install
         """.strip()
     )
