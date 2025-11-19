@@ -2,10 +2,6 @@
     "generators": [
         {
             "_gen": "loadJsonFile",
-            "file": "/home/generators/vesselcatalog.json"
-        },
-        {
-            "_gen": "loadJsonFile",
             "files": [
                 "/home/generators/base-rides.json",
                 "/home/generators/steady-state-rides.json"
@@ -22,7 +18,7 @@
     "schedule": {
         "stages": [
             {
-                "generators": [ "vessel_catalog", "steadyState", "surge"]
+                "generators": [ "steadyState", "surge"]
             }
         ]
     },

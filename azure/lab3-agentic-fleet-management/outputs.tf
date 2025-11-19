@@ -34,7 +34,12 @@ output "ride_requests_table_id" {
   description = "Flink statement ID for ride_requests table"
 }
 
-output "vessel_catalog_table_id" {
-  value       = confluent_flink_statement.vessel_catalog_table.id
-  description = "Flink statement ID for vessel_catalog table"
+output "documents_vectordb_table_id" {
+  value       = var.workshop_mode ? (length(confluent_flink_statement.documents_vectordb_lab3) > 0 ? confluent_flink_statement.documents_vectordb_lab3[0].id : null) : null
+  description = "Flink statement ID for documents_vectordb table (workshop mode only)"
+}
+
+output "mongodb_connection_name" {
+  value       = var.workshop_mode ? (length(confluent_flink_connection.mongodb_connection_lab3) > 0 ? confluent_flink_connection.mongodb_connection_lab3[0].display_name : null) : null
+  description = "MongoDB connection name for Lab3 vector search (workshop mode only)"
 }

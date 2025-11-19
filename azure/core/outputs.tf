@@ -83,12 +83,12 @@ output "azure_subscription_id" {
 }
 
 output "llm_connection_name" {
-  value       = module.azure_ai_services.flink_connection_name
+  value       = local.azureopenai_connection_name
   description = "The name of the LLM connection (llm-textgen-connection)"
 }
 
 output "llm_embedding_connection_name" {
-  value       = module.azure_ai_services.flink_embedding_connection_name
+  value       = local.azureopenai_embedding_connection_name
   description = "The name of the LLM embedding connection (llm-embedding-connection)"
 }
 
@@ -115,4 +115,15 @@ output "random_id" {
 output "owner_email" {
   value       = var.owner_email
   description = "Owner email for resource tagging"
+}
+
+output "azure_openai_api_key" {
+  value       = var.workshop_mode ? var.azure_openai_api_key : (length(module.azure_ai_services) > 0 ? module.azure_ai_services[0].azure_openai_api_key : "")
+  sensitive   = true
+  description = "Azure OpenAI API key"
+}
+
+output "azure_openai_endpoint" {
+  value       = var.workshop_mode ? var.azure_openai_endpoint : (length(module.azure_ai_services) > 0 ? module.azure_ai_services[0].azure_openai_endpoint : "")
+  description = "Azure OpenAI endpoint URL"
 }

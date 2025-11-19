@@ -3,7 +3,7 @@
 Lab3 Anomaly Detection Data Generation Script
 
 Generates streaming data for Lab3 using ShadowTraffic and Docker.
-Creates ride_requests and vessel_catalog topics on Confluent Cloud.
+Creates ride_requests topic on Confluent Cloud.
 
 Usage:
     uv run lab3_datagen                      # Auto-detect cloud provider
@@ -30,8 +30,8 @@ from .common.datagen_helpers import (
 
 
 # Lab3-Specific Configuration
-LAB3_CONNECTION_NAMES = ["ride-requests", "vessel-catalog"]
-LAB3_REQUIRED_GENERATORS = ["base-rides.json", "steady-state-rides.json", "surge-rides.json", "vesselcatalog.json"]
+LAB3_CONNECTION_NAMES = ["ride-requests"]
+LAB3_REQUIRED_GENERATORS = ["base-rides.json", "steady-state-rides.json", "surge-rides.json"]
 LAB3_DIR_NAME = "lab3-agentic-fleet-management"
 
 
@@ -138,7 +138,6 @@ Examples:
 
 Dependencies:
   - Docker: https://docs.docker.com/get-docker/
-  - jq: https://jqlang.github.io/jq/download/
   - Terraform: https://developer.hashicorp.com/terraform/install
         """.strip()
     )

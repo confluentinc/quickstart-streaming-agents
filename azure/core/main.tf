@@ -255,8 +255,9 @@ resource "confluent_kafka_acl" "app-manager-read-on-group" {
 # LLM INFRASTRUCTURE - SHARED ACROSS ALL LABS
 # ------------------------------------------------------
 
-# Azure AI Services Module
+# Azure AI Services Module (production mode - creates Azure AI resources)
 module "azure_ai_services" {
+  count  = var.workshop_mode ? 0 : 1
   source = "./modules/azure-ai"
 
   cloud_region                   = var.cloud_region
@@ -270,6 +271,87 @@ module "azure_ai_services" {
   confluent_flink_api_key_secret = confluent_api_key.app-manager-flink-api-key.secret
   owner_email                    = var.owner_email
   project_root_path              = local.project_root_path
+}
+
+# Workshop Mode: Direct Azure OpenAI Connections (using pre-provided credentials)
+# Azure OpenAI Text Generation Connection (workshop mode)
+resource "confluent_flink_connection" "azureopenai_connection_workshop" {
+  count = var.workshop_mode ? 1 : 0
+
+  organization {
+    id = data.confluent_organization.main.id
+  }
+  environment {
+    id = confluent_environment.staging.id
+  }
+  compute_pool {
+    id = confluent_flink_compute_pool.flinkpool-main.id
+  }
+  principal {
+    id = confluent_service_account.app-manager.id
+  }
+  rest_endpoint = data.confluent_flink_region.demo_flink_region.rest_endpoint
+  credentials {
+    key    = confluent_api_key.app-manager-flink-api-key.id
+    secret = confluent_api_key.app-manager-flink-api-key.secret
+  }
+
+  display_name = "llm-textgen-connection"
+  type         = "AZUREOPENAI"
+  endpoint     = "${var.azure_openai_endpoint}/openai/deployments/gpt-4o/chat/completions?api-version=2024-08-01-preview"
+  api_key      = var.azure_openai_api_key
+
+  depends_on = [
+    confluent_api_key.app-manager-flink-api-key,
+    confluent_role_binding.app-manager-kafka-cluster-admin
+  ]
+
+  lifecycle {
+    create_before_destroy = false
+  }
+}
+
+# Azure OpenAI Embedding Connection (workshop mode)
+resource "confluent_flink_connection" "azureopenai_embedding_connection_workshop" {
+  count = var.workshop_mode ? 1 : 0
+
+  organization {
+    id = data.confluent_organization.main.id
+  }
+  environment {
+    id = confluent_environment.staging.id
+  }
+  compute_pool {
+    id = confluent_flink_compute_pool.flinkpool-main.id
+  }
+  principal {
+    id = confluent_service_account.app-manager.id
+  }
+  rest_endpoint = data.confluent_flink_region.demo_flink_region.rest_endpoint
+  credentials {
+    key    = confluent_api_key.app-manager-flink-api-key.id
+    secret = confluent_api_key.app-manager-flink-api-key.secret
+  }
+
+  display_name = "llm-embedding-connection"
+  type         = "AZUREOPENAI"
+  endpoint     = "${var.azure_openai_endpoint}/openai/deployments/text-embedding-3-large/embeddings?api-version=2024-08-01-preview"
+  api_key      = var.azure_openai_api_key
+
+  depends_on = [
+    confluent_api_key.app-manager-flink-api-key,
+    confluent_role_binding.app-manager-kafka-cluster-admin
+  ]
+
+  lifecycle {
+    create_before_destroy = false
+  }
+}
+
+# Locals to abstract connection names based on mode
+locals {
+  azureopenai_connection_name          = var.workshop_mode ? confluent_flink_connection.azureopenai_connection_workshop[0].display_name : module.azure_ai_services[0].flink_connection_name
+  azureopenai_embedding_connection_name = var.workshop_mode ? confluent_flink_connection.azureopenai_embedding_connection_workshop[0].display_name : module.azure_ai_services[0].flink_embedding_connection_name
 }
 
 # Core LLM Model - Text Generation (Azure)
@@ -292,7 +374,7 @@ resource "confluent_flink_statement" "llm_textgen_model" {
     secret = confluent_api_key.app-manager-flink-api-key.secret
   }
 
-  statement = "CREATE MODEL `${confluent_environment.staging.display_name}`.`${confluent_kafka_cluster.standard.display_name}`.`llm_textgen_model` INPUT (prompt STRING) OUTPUT (response STRING) WITH( 'provider' = 'azureopenai', 'task' = 'text_generation', 'azureopenai.connection' = 'llm-textgen-connection', 'azureopenai.model_version' = '2024-08-06', 'azureopenai.PARAMS.max_tokens' = '16384' );"
+  statement = "CREATE MODEL `${confluent_environment.staging.display_name}`.`${confluent_kafka_cluster.standard.display_name}`.`llm_textgen_model` INPUT (prompt STRING) OUTPUT (response STRING) WITH( 'provider' = 'azureopenai', 'task' = 'text_generation', 'azureopenai.connection' = '${local.azureopenai_connection_name}', 'azureopenai.model_version' = '2024-08-06', 'azureopenai.PARAMS.max_tokens' = '16384' );"
 
   properties = {
     "sql.current-catalog"  = confluent_environment.staging.display_name
@@ -303,7 +385,10 @@ resource "confluent_flink_statement" "llm_textgen_model" {
   #   prevent_destroy = true
   # }
 
-  depends_on = [module.azure_ai_services]
+  depends_on = [
+    module.azure_ai_services,
+    confluent_flink_connection.azureopenai_connection_workshop
+  ]
 }
 
 # Core LLM Model - Embedding (Azure)
@@ -326,7 +411,7 @@ resource "confluent_flink_statement" "llm_embedding_model" {
     secret = confluent_api_key.app-manager-flink-api-key.secret
   }
 
-  statement = "CREATE MODEL `${confluent_environment.staging.display_name}`.`${confluent_kafka_cluster.standard.display_name}`.`llm_embedding_model` INPUT (text STRING) OUTPUT (embedding ARRAY<FLOAT>) WITH( 'provider' = 'azureopenai', 'task' = 'embedding', 'azureopenai.connection' = 'llm-embedding-connection', 'azureopenai.PARAMS.max_tokens' = '16384' );"
+  statement = "CREATE MODEL `${confluent_environment.staging.display_name}`.`${confluent_kafka_cluster.standard.display_name}`.`llm_embedding_model` INPUT (text STRING) OUTPUT (embedding ARRAY<FLOAT>) WITH( 'provider' = 'azureopenai', 'task' = 'embedding', 'azureopenai.connection' = '${local.azureopenai_embedding_connection_name}', 'azureopenai.PARAMS.max_tokens' = '16384' );"
 
   properties = {
     "sql.current-catalog"  = confluent_environment.staging.display_name
@@ -337,5 +422,8 @@ resource "confluent_flink_statement" "llm_embedding_model" {
   #   prevent_destroy = true
   # }
 
-  depends_on = [module.azure_ai_services]
+  depends_on = [
+    module.azure_ai_services,
+    confluent_flink_connection.azureopenai_embedding_connection_workshop
+  ]
 }

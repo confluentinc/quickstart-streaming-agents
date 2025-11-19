@@ -40,11 +40,10 @@ requires-python = ">=3.10"
 # Core dependencies
 dependencies = [
     "PyYAML>=6.0.1,<7.0",
-    "requests>=2.31.0,<3.0",
     "python-dotenv>=1.0.0,<2.0",
     "urllib3>=1.26.18,<2.0", # Pin to v1.x for LibreSSL compatibility on macOS
     "pymongo>=4.10.1",
-    "boto3>=1.26.0,<2.0",
+    "boto3>=1.26.0,<2.0", # Required for workshop-keys command
 ]
 
 # Optional dependencies for enhanced functionality

@@ -7,11 +7,11 @@ for participants to use Bedrock models without full infrastructure permissions.
 
 Usage:
     uv run workshop-keys create    # Create IAM user and access keys
-    uv run workshop-keys cleanup   # Revoke keys and optionally delete user
+    uv run workshop-keys destroy   # Revoke keys and optionally delete user
 
     # With options:
     uv run workshop-keys create --verbose
-    uv run workshop-keys cleanup --keep-user
+    uv run workshop-keys destroy --keep-user
 
 Examples:
     # Day before workshop
@@ -19,7 +19,7 @@ Examples:
     # → Creates WORKSHOP_CREDENTIALS.md with keys and instructions
 
     # After workshop
-    uv run workshop-keys cleanup
+    uv run workshop-keys destroy
     # → Revokes keys, asks if you want to delete the IAM user
 """
 
@@ -307,7 +307,7 @@ def save_state(
     logger: logging.Logger
 ) -> None:
     """
-    Save state information for cleanup command.
+    Save state information for destroy command.
 
     Args:
         project_root: Project root directory
@@ -398,7 +398,7 @@ AWS Region:            {region}
 To revoke these credentials, run:
 
 ```bash
-uv run workshop-keys cleanup
+uv run workshop-keys destroy
 ```
 
 This will:
@@ -505,7 +505,7 @@ def create_command(args: argparse.Namespace, logger: logging.Logger) -> int:
         print("\nNext steps:")
         print("1. Review the credentials in WORKSHOP_CREDENTIALS.md")
         print("2. Share credentials with workshop participants")
-        print("3. After workshop, run: uv run workshop-keys cleanup")
+        print("3. After workshop, run: uv run workshop-keys destroy")
         print("=" * 70 + "\n")
 
         return 0
@@ -521,9 +521,9 @@ def create_command(args: argparse.Namespace, logger: logging.Logger) -> int:
         return 1
 
 
-def cleanup_command(args: argparse.Namespace, logger: logging.Logger) -> int:
+def destroy_command(args: argparse.Namespace, logger: logging.Logger) -> int:
     """
-    Clean up workshop credentials and optionally delete IAM user.
+    Destroy workshop credentials and optionally delete IAM user.
 
     Args:
         args: Command line arguments
@@ -553,7 +553,7 @@ def cleanup_command(args: argparse.Namespace, logger: logging.Logger) -> int:
             print("=" * 70)
             print(f"\nNo state file ({STATE_FILE}) found.")
             print("This usually means no credentials were created with this tool,")
-            print("or they were already cleaned up.")
+            print("or they were already destroyed.")
             print("\nIf you want to manually delete workshop credentials:")
             print(f"1. AWS Console → IAM → Users → {IAM_USERNAME}")
             print("2. Delete access keys")
@@ -565,7 +565,7 @@ def cleanup_command(args: argparse.Namespace, logger: logging.Logger) -> int:
         iam_client = boto3.client('iam')
 
         print("\n" + "=" * 70)
-        print("CLEANING UP WORKSHOP CREDENTIALS")
+        print("DESTROYING WORKSHOP CREDENTIALS")
         print("=" * 70)
 
         # Delete access key
@@ -632,9 +632,9 @@ def cleanup_command(args: argparse.Namespace, logger: logging.Logger) -> int:
             logger.info(f"✓ Deleted {CREDENTIALS_FILE}")
 
         print("=" * 70)
-        print("✓ WORKSHOP CREDENTIALS CLEANED UP")
+        print("✓ WORKSHOP CREDENTIALS DESTROYED")
         print("=" * 70)
-        print("\nCleaned up:")
+        print("\nDestroyed:")
         print(f"  - Access key: {access_key_id}")
         if not args.keep_user and "Yes" in delete_user:
             print(f"  - IAM user: {state['iam_username']}")
@@ -647,7 +647,7 @@ def cleanup_command(args: argparse.Namespace, logger: logging.Logger) -> int:
         logger.error(f"AWS API error: {e}")
         return 1
     except Exception as e:
-        logger.error(f"Error cleaning up credentials: {e}")
+        logger.error(f"Error destroying credentials: {e}")
         return 1
 
 
@@ -662,10 +662,10 @@ Examples:
   %(prog)s create
 
   # After workshop - revoke credentials
-  %(prog)s cleanup
+  %(prog)s destroy
 
   # Keep IAM user for reuse
-  %(prog)s cleanup --keep-user
+  %(prog)s destroy --keep-user
         """
     )
 
@@ -682,17 +682,17 @@ Examples:
         help='Enable verbose logging'
     )
 
-    # Cleanup command
-    cleanup_parser = subparsers.add_parser(
-        'cleanup',
+    # Destroy command
+    destroy_parser = subparsers.add_parser(
+        'destroy',
         help='Revoke access keys and optionally delete IAM user'
     )
-    cleanup_parser.add_argument(
+    destroy_parser.add_argument(
         '--keep-user',
         action='store_true',
         help='Keep IAM user (for reuse in future workshops)'
     )
-    cleanup_parser.add_argument(
+    destroy_parser.add_argument(
         '--verbose',
         action='store_true',
         help='Enable verbose logging'
@@ -711,8 +711,8 @@ Examples:
     # Execute command
     if args.command == 'create':
         return create_command(args, logger)
-    elif args.command == 'cleanup':
-        return cleanup_command(args, logger)
+    elif args.command == 'destroy':
+        return destroy_command(args, logger)
     else:
         parser.print_help()
         return 1
