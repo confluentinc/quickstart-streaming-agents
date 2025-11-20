@@ -28,5 +28,7 @@ provider "random" {}
 # Azure Provider Configuration
 provider "azurerm" {
   features {}
-  subscription_id = var.azure_subscription_id
+  subscription_id            = var.azure_subscription_id
+  skip_provider_registration = true
+  use_cli                    = false
 }

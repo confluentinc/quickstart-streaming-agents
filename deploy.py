@@ -91,6 +91,11 @@ def main():
                 env_vars["TF_VAR_aws_bedrock_access_key"] = creds["aws_bedrock_access_key"]
             if "aws_bedrock_secret_key" in creds and creds["aws_bedrock_secret_key"]:
                 env_vars["TF_VAR_aws_bedrock_secret_key"] = creds["aws_bedrock_secret_key"]
+        if workshop_mode and cloud == "azure":
+            if "azure_openai_endpoint" in creds and creds["azure_openai_endpoint"]:
+                env_vars["TF_VAR_azure_openai_endpoint"] = creds["azure_openai_endpoint"]
+            if "azure_openai_api_key" in creds and creds["azure_openai_api_key"]:
+                env_vars["TF_VAR_azure_openai_api_key"] = creds["azure_openai_api_key"]
 
         print(f"✓ Credentials loaded from credentials.json")
         print(f"  Cloud: {cloud}")
@@ -189,8 +194,8 @@ def main():
         if owner_email:
             set_key(creds_file, "TF_VAR_owner_email", owner_email)
 
-        # Azure subscription ID (if Azure core)
-        if cloud == "azure" and "core" in envs_to_deploy:
+        # Azure subscription ID (if Azure core, not needed in workshop mode)
+        if cloud == "azure" and "core" in envs_to_deploy and not args.workshop:
             azure_sub = prompt_with_default("Azure Subscription ID", creds.get("TF_VAR_azure_subscription_id", ""))
             set_key(creds_file, "TF_VAR_azure_subscription_id", azure_sub)
 

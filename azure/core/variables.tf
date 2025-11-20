@@ -30,8 +30,9 @@ variable "confluent_cloud_api_secret" {
 }
 
 variable "azure_subscription_id" {
-  description = "Azure Subscription ID"
+  description = "Azure Subscription ID (not required in workshop mode)"
   type        = string
+  default     = ""
 }
 
 variable "owner_email" {

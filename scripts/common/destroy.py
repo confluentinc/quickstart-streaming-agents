@@ -115,6 +115,11 @@ def main():
                 env_vars["TF_VAR_aws_bedrock_access_key"] = creds["aws_bedrock_access_key"]
             if "aws_bedrock_secret_key" in creds and creds["aws_bedrock_secret_key"]:
                 env_vars["TF_VAR_aws_bedrock_secret_key"] = creds["aws_bedrock_secret_key"]
+        if workshop_mode and cloud == "azure":
+            if "azure_openai_endpoint" in creds and creds["azure_openai_endpoint"]:
+                env_vars["TF_VAR_azure_openai_endpoint"] = creds["azure_openai_endpoint"]
+            if "azure_openai_api_key" in creds and creds["azure_openai_api_key"]:
+                env_vars["TF_VAR_azure_openai_api_key"] = creds["azure_openai_api_key"]
 
         # Load into environment
         for key, value in env_vars.items():
