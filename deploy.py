@@ -201,6 +201,13 @@ def main():
             set_key(creds_file, "TF_VAR_aws_bedrock_access_key", aws_bedrock_key)
             set_key(creds_file, "TF_VAR_aws_bedrock_secret_key", aws_bedrock_secret)
 
+        # Workshop mode: Azure OpenAI credentials (pre-provided)
+        if args.workshop and cloud == "azure":
+            azure_openai_endpoint = prompt_with_default("Azure OpenAI Endpoint (workshop)", creds.get("TF_VAR_azure_openai_endpoint", ""))
+            azure_openai_key = prompt_with_default("Azure OpenAI API Key (workshop)", creds.get("TF_VAR_azure_openai_api_key", ""))
+            set_key(creds_file, "TF_VAR_azure_openai_endpoint", azure_openai_endpoint)
+            set_key(creds_file, "TF_VAR_azure_openai_api_key", azure_openai_key)
+
         # Lab-specific credentials
         if "lab1-tool-calling" in envs_to_deploy or "lab3-agentic-fleet-management" in envs_to_deploy:
             zapier_endpoint = prompt_with_default("Zapier SSE Endpoint (Lab 1 and Lab 3)", creds.get("TF_VAR_zapier_sse_endpoint", ""))

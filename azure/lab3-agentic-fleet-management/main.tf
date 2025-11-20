@@ -166,7 +166,6 @@ resource "null_resource" "generate_flink_sql_summary" {
   # Trigger regeneration when key resources change
   triggers = {
     ride_requests_table = confluent_flink_statement.ride_requests_table.id
-    vessel_catalog_table = confluent_flink_statement.vessel_catalog_table.id
   }
 
   provisioner "local-exec" {
@@ -175,7 +174,6 @@ resource "null_resource" "generate_flink_sql_summary" {
   }
 
   depends_on = [
-    confluent_flink_statement.ride_requests_table,
-    confluent_flink_statement.vessel_catalog_table
+    confluent_flink_statement.ride_requests_table
   ]
 }
