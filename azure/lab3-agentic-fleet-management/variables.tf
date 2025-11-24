@@ -34,3 +34,9 @@ variable "mongodb_password_lab3" {
   sensitive   = true
   default     = "pE7xOkiKth2QqTKL"
 }
+
+variable "zapier_sse_endpoint" {
+  description = "Zapier SSE endpoint for MCP connection"
+  type        = string
+  sensitive   = true
+}

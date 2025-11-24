@@ -6,8 +6,11 @@ In this lab, we'll use Apache Flink for Confluent Cloud's MCP tool calling featu
 
 ## Prerequisites
 
-- Zapier account and remote MCP server set up (instructions [here](./assets/pre-setup/Zapier-Setup.md))
-- ⚠️ **IMPORTANT: AWS Users Only:** To access Claude Sonnet 3.7 you must request access to the model by filling out an Anthropic use case form (or someone in your org must have previously done so) for your cloud region. To do so, visit the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog), select Claude 3.7 Sonnet and open it it in the Playground, then send a message in the chat - the form will appear automatically. ⚠️
+- Zapier free account and remote MCP server set up (instructions [here](./assets/pre-setup/Zapier-Setup.md))
+
+> [!WARNING]
+>
+> **AWS Users Only:** To access Claude Sonnet 3.7 you must request access to the model by filling out an Anthropic use case form (or someone in your org must have previously done so) for your cloud region. To do so, visit the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog), select Claude 3.7 Sonnet and open it it in the Playground, then send a message in the chat - the form will appear automatically.
 
 ## Deploy the Demo
 
@@ -35,7 +38,9 @@ LATERAL TABLE(ML_PREDICT('llm_textgen_model', question, MAP['debug', 'true'])) a
 
 #### Test Query 2: LLM Tool Calling Model
 
-⚠️ IMPORTANT: Add your email address where you want to receive the test email, to the query below. ⚠️️️
+> [!WARNING]
+>
+> Don't forget to add the email address where you want to receive the test email, to the query below.
 
 ```sql
  SELECT
@@ -145,7 +150,9 @@ The agent will take `orders_enriched` as input and process each order in real ti
 To run the agent continuously, we’ll execute it as part of a **Flink job**.  
 Provide a **user prompt** to guide how the agent processes each incoming enriched order, and create a new table named `price_match_results` to store the agent’s evaluation results.
 
-⚠️ **IMPORTANT:** Modify the line beginning with `EMAIL RECIPIENT:` in the query below by replacing `<<YOUR-EMAIL-ADDRESS-HERE>>` with the email address where you want the email to be delivered.⚠️
+> [!WARNING]
+>
+> Don't forget to modify the line beginning with `EMAIL RECIPIENT:` in the query below to include the email address where you want the price matching emails sent! If you don't, you will not receive the price matching emails.
 
 
 ```sql

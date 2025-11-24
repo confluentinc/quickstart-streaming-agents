@@ -98,8 +98,13 @@ workshop_mode = {str(workshop_mode).lower()}
     if owner_email:
         content += f'owner_email = "{owner_email}"\n'
 
-    if cloud == "azure" and azure_sub_id:
-        content += f'azure_subscription_id = "{azure_sub_id}"\n'
+    # Azure subscription ID (required by provider v4.x, placeholder in workshop mode)
+    if cloud == "azure":
+        if workshop_mode and not azure_sub_id:
+            # Workshop mode: use placeholder since no Azure resources are created
+            content += 'azure_subscription_id = "00000000-0000-0000-0000-000000000000"\n'
+        elif azure_sub_id:
+            content += f'azure_subscription_id = "{azure_sub_id}"\n'
 
     # Workshop mode: AWS Bedrock credentials
     if workshop_mode and cloud == "aws" and aws_bedrock_access_key and aws_bedrock_secret_key:

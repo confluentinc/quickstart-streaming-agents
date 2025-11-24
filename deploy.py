@@ -82,8 +82,13 @@ def main():
             env_vars["TF_VAR_mongodb_username"] = creds["mongodb_username"]
         if "mongodb_password" in creds and creds["mongodb_password"]:
             env_vars["TF_VAR_mongodb_password"] = creds["mongodb_password"]
-        if cloud == "azure" and "azure_subscription_id" in creds:
-            env_vars["TF_VAR_azure_subscription_id"] = creds["azure_subscription_id"]
+
+        # Azure subscription ID (use placeholder in workshop mode)
+        if cloud == "azure":
+            if workshop_mode:
+                env_vars["TF_VAR_azure_subscription_id"] = "00000000-0000-0000-0000-000000000000"
+            elif "azure_subscription_id" in creds:
+                env_vars["TF_VAR_azure_subscription_id"] = creds["azure_subscription_id"]
 
         # Workshop mode credentials
         if workshop_mode and cloud == "aws":
@@ -194,10 +199,16 @@ def main():
         if owner_email:
             set_key(creds_file, "TF_VAR_owner_email", owner_email)
 
-        # Azure subscription ID (if Azure core, not needed in workshop mode)
-        if cloud == "azure" and "core" in envs_to_deploy and not args.workshop:
-            azure_sub = prompt_with_default("Azure Subscription ID", creds.get("TF_VAR_azure_subscription_id", ""))
-            set_key(creds_file, "TF_VAR_azure_subscription_id", azure_sub)
+        # Azure subscription ID
+        if cloud == "azure" and "core" in envs_to_deploy:
+            if args.workshop:
+                # Workshop mode: use placeholder since no Azure resources are created
+                azure_sub = "00000000-0000-0000-0000-000000000000"
+                set_key(creds_file, "TF_VAR_azure_subscription_id", azure_sub)
+            else:
+                # Production mode: prompt for real subscription ID
+                azure_sub = prompt_with_default("Azure Subscription ID", creds.get("TF_VAR_azure_subscription_id", ""))
+                set_key(creds_file, "TF_VAR_azure_subscription_id", azure_sub)
 
         # Workshop mode: AWS Bedrock credentials (pre-provided)
         if args.workshop and cloud == "aws":

@@ -3,9 +3,13 @@
 Workshop mode allows participants to deploy the Real-Time Context Engine using shared cloud AI credentials without requiring full infrastructure permissions or cloud accounts.
 
 **Workflow:**
-1. **Before Workshop**: Organizer creates cloud AI credentials
-2. **During Workshop**: Participants run `python deploy.py --workshop` and enter shared credentials
-3. **After Workshop**: Organizer immediately revokes credentials
+1. **Before Workshop**: Organizer creates cloud AI credentials with `uv run workshop-keys create`
+2. **During Workshop**: Participants run `uv run deploy --workshop` and enter Bedrock API key and secret
+3. **After Workshop**: Organizer immediately revokes credentials with  `uv run workshop-keys destroy`
+
+> [!NOTE]
+>
+> Workshop Mode for Azure is not ready yet, and will fail if you attempt to run it.
 
 ---
 
@@ -17,7 +21,7 @@ Bedrock model access must be enabled at the AWS account level:
 - **Claude 3.7 Sonnet** (`us.anthropic.claude-3-7-sonnet-20250219-v1:0`)
 - **Amazon Titan Embeddings** (`amazon.titan-embed-text-v1`)
 
-Enable in AWS Console → Bedrock → Model access before creating workshop credentials.
+⚠️To access Claude Sonnet 3.7 you must request access to the model by filling out an **Anthropic use case form** (or someone in your org must have previously done so) for your cloud region (`us-east-1`). To do so, visit the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog), select **Claude 3.7 Sonnet** and open it it in the **Playground**, then send a message in the chat - the form will appear automatically. ⚠️
 
 ## For Organizers
 
@@ -36,7 +40,7 @@ uv run workshop-keys destroy
 This creates:
 - IAM user `workshop-bedrock-user` with Bedrock-only permissions
 - Access keys valid for workshop
-- `WORKSHOP_CREDENTIALS.md` file with participant instructions
+- `WORKSHOP_CREDENTIALS.md` file with keys and participant instructions, saved automatically in the root directory
 
 ### Option 2: Manual (AWS Console)
 
@@ -75,10 +79,11 @@ This creates:
    ```
 
 2. **Run in workshop mode**
+  
    ```bash
-   python deploy.py --workshop
+   uv run deploy --workshop
    ```
-
+   
 3. **Enter credentials when prompted**
    - Cloud provider: Select **aws**
    - AWS Access Key ID: `<provided-by-organizer>`
@@ -87,109 +92,71 @@ This creates:
 
 ---
 
-# Azure OpenAI Setup
+## Presenter Tips
 
-## Required Model Deployments
+### Before the Workshop
 
-Your Azure OpenAI resource **must** have deployments with these **exact names**:
-- **`gpt-4o`** (GPT-4o model for text generation)
-- **`text-embedding-3-large`** (text-embedding-3-large model for embeddings)
+**Enable Bedrock Models**
 
-**Critical**: Deployment names must match exactly. If you have different names, create new deployments with these exact names (you can have multiple deployments of the same model).
+- Ensure Claude models are properly activated in your AWS account beforehand
+- If models aren't activated, all calls will fail with a 403 error (not immediately obvious what the issue is)
+- Request model access well in advance to avoid delays
 
-### Create Model Deployments
+**Create Dedicated IAM Credentials**
+- Create your own IAM role and temporary API keys specifically for the demo
+- For proper scoping and security setup, consult with your security team (e.g., David Marsh has created properly scoped credentials for previous demos)
+- Generate credentials the day before the workshop
 
-Azure Portal → Your Azure OpenAI resource → Deployments → Create new deployment:
-1. Deploy **GPT-4o**: Model = `gpt-4o`, Deployment name = **exactly** `gpt-4o`
-2. Deploy **Embeddings**: Model = `text-embedding-3-large`, Deployment name = **exactly** `text-embedding-3-large`
+**Zapier Setup (For Small Groups)**
+- For groups of 10-15 people or fewer, create a free Zapier account 1-2 days beforehand
+- Share your SSE endpoint directly with attendees rather than having them sign up individually
+- This saves significant workshop time and reduces friction
+- Attendees can still enter their own email in the query to receive notifications
+- Free trial offers ~500 tool calls in first 2 weeks; each order uses 2 tool calls
+- ⚠️ Don't use this approach for groups larger than 10-15 until confirming Zapier rate limits
 
-## For Organizers
+### During the Workshop
 
-### Setup Workflow
+**Test Queries**
+- Use the test queries in Lab 1 to isolate issues if LLMs aren't responding as expected
+- These queries help verify each component is working correctly
 
-1. **Run Regular Terraform Deployment**
-   ```bash
-   uv run deploy
-   ```
-   Select Azure as cloud provider and complete the full deployment.
+**Don't Forget Email Addresses**
+- Remind participants (and yourself!) to add their email address to the big query in Lab 1
+- Easy to forget as everyone naturally wants to copy/paste the query quickly
 
-2. **Get Credentials from Terraform Output**
-   After deployment completes, Terraform outputs the Azure OpenAI credentials:
-   - Azure OpenAI Endpoint (e.g., `https://YOUR_INSTANCE.openai.azure.com`)
-   - Azure OpenAI API Key
+### Troubleshooting
 
-3. **Share Credentials with Participants**
-   Provide participants with:
-   - Azure OpenAI Endpoint
-   - Azure OpenAI API Key
-   - **Do not commit to Git or share publicly**
+**Restarting Data Generation**
+- If you need to restart data generation for any reason, drop all tables first before restarting
+- Restarting without dropping tables can cause duplicate customer IDs for different customers
+- This leads to duplicate emails and other downstream issues
 
-4. **After Workshop - Regenerate Keys**, or run `uv run destroy` to destroy all resources, including keys.
-   Azure Portal → Your Azure OpenAI resource → Keys and Endpoint → Regenerate Key
-   
-   - This **immediately invalidates** the old key
-   - Workshop participants can no longer access the resource
-
-## For Participants
-
-1. **Clone repository**
-   ```bash
-   git clone https://github.com/confluentinc/quickstart-streaming-agents
-   cd quickstart-streaming-agents
-   ```
-
-2. **Run in workshop mode**
-   ```bash
-   python deploy.py --workshop
-   ```
-
-3. **Enter credentials when prompted**
-   - Cloud provider: Select **azure**
-   - Azure OpenAI Endpoint: `<provided-by-organizer>`
-   - Azure OpenAI API Key: `<provided-by-organizer>`
-   - Confluent Cloud credentials: Your own Confluent Cloud API keys
-
-## Troubleshooting
-
-**Error: "Model deployment 'gpt-4o' not found"**
-- Azure resource is missing deployment named exactly `gpt-4o`
-- Create deployment with exact name in Azure Portal
-
-**Error: "Model deployment 'text-embedding-3-large' not found"**
-
-- Azure resource is missing deployment named exactly `text-embedding-3-large`
-- Create deployment with exact name in Azure Portal
-
-**Error: "Access denied" or "Invalid API key"**
-- API key is incorrect or was regenerated
-- Get fresh key from Azure Portal → Keys and Endpoint
-
-**Error: "Endpoint URL format incorrect"**
-- Endpoint must be: `https://YOUR_INSTANCE.openai.azure.com`
-- Do NOT include paths like `/openai/deployments/...`
+---
 
 ## Security Notes
 
 **For Organizers:**
-- Generate credentials just before workshop, revoke immediately after
+- Generate credentials the day before the workshop, revoke immediately after
 - Don't reuse the same keys across workshops
-- Set up billing alerts for cost monitoring
-- Distribute credentials via secure channels (never email/Slack)
+- Distribute credentials via secure channels
 
 **For Participants:**
-- Never commit credentials to Git (add `credentials.env` to `.gitignore`)
-- Delete credentials from your machine after workshop
-- Use only the credentials provided by organizer
+
+- Never commit credentials to Git
+- Delete credentials from your machine after workshop (tear down resources with `uv run destroy`, then run`rm credentials.env`)
 
 ---
 
 ## Common Issues
 
 **AWS: "ResourceNotFoundException: Could not find a model"**
+
 - Bedrock model access not enabled in AWS account
-- AWS Console → Bedrock → Model access → Request access to Claude 3.7 Sonnet and Titan Embeddings
+- ⚠️To access Claude Sonnet 3.7 you must request access to the model by filling out an **Anthropic use case form** (or someone in your org must have previously done so) for your cloud region. To do so, visit the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog), select **Claude 3.7 Sonnet** and open it it in the **Playground**, then send a message in the chat - the form will appear automatically. ⚠️
 
 **AWS: "AccessDeniedException"**
+
 - IAM policy not attached correctly
 - Verify with: `aws iam get-user-policy --user-name workshop-bedrock-user --policy-name BedrockInvokeOnly`
 

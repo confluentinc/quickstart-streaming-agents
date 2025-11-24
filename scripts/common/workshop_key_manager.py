@@ -358,7 +358,7 @@ def save_credentials_file(
 
 ## AWS Bedrock Access Keys
 
-Use these credentials when running `python deploy.py --workshop`:
+Use these credentials when running `uv run deploy --workshop`:
 
 ```
 AWS Access Key ID:     {access_key_id}
@@ -378,7 +378,7 @@ AWS Region:            {region}
 
 2. Run deployment in workshop mode:
    ```bash
-   python deploy.py --workshop
+   uv run deploy --workshop
    ```
 
 3. When prompted, enter the credentials above:
