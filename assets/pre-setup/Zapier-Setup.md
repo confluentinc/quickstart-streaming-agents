@@ -20,7 +20,7 @@ Visit [mcp.zapier.com](https://mcp.zapier.com/mcp/servers), choose **"Other"** a
 Add these tools to your MCP server:
 
 - **`Webhooks by Zapier: GET`** and **`Webhooks by Zapier: Custom Request`** tools
-- `Gmail: Send Email` tool (authenticate via SSO). This tool is needed for Lab1 only.
+- **`Gmail: Send Email`** tool (authenticate via SSO). This tool is needed for Lab1 only.
 
 <img src="./zapier-screenshots/4.png" alt="Add Tools" width="50%" />
 
@@ -35,7 +35,7 @@ Make sure the endpoint URL you have ends with `/sse`, and copy it somewhere safe
 ## :white_check_mark: Checklist
 
 - [ ] Created MCP server and chose "Other" as the MCP client ([step 2](#step-2))
-- [ ] Added  **`Webhooks by Zapier: GET`** , **`Webhooks by Zapier: Custom Request`** , and `Gmail: Send Email` tools ([step 3](#step-3))
+- [ ] Added  **`Webhooks by Zapier: GET`** , **`Webhooks by Zapier: Custom Request`** , and **`Gmail: Send Email`** tools ([step 3](#step-3))
 - [ ] Server URL ends in `/sse` ([step 4](#step-4))
 - [ ] Copied the URL somewhere safe, to enter it later during deployment ([step 4](#step-4))
 
