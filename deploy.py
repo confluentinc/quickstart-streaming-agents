@@ -6,6 +6,7 @@ Uses credentials from credentials.env or credentials.json and deploys via Terraf
 
 import argparse
 import os
+import subprocess
 import sys
 
 from dotenv import dotenv_values, set_key
@@ -132,10 +133,15 @@ def main():
             print(f"✓ Workshop mode: Using pre-provided {cloud.upper()} credentials (no CLI login required)")
         else:
             if not check_cloud_cli_login(cloud):
-                print(f"\nError: Not logged into {cloud.upper()} CLI.")
-                print(f"Please login using: {'aws configure' if cloud == 'aws' else 'az login'}")
-                sys.exit(1)
-            print(f"✓ {cloud.upper()} CLI logged in")
+                print(f"\n{'='*70}")
+                print(f"  WARNING: You are NOT logged into the {cloud.upper()} CLI!")
+                print(f"{'='*70}")
+                print(f"  Deployment may fail without proper {cloud.upper()} authentication.")
+                print(f"  To login, run: {'aws configure' if cloud == 'aws' else 'az login'}")
+                print(f"  Proceeding anyway - you have been warned!")
+                print(f"{'='*70}\n")
+            else:
+                print(f"✓ {cloud.upper()} CLI logged in")
 
         # Step 2: Select cloud region (auto-select in workshop mode)
         if args.workshop:
@@ -164,8 +170,7 @@ def main():
             "Lab 1: MCP Tool Calling",
             "Lab 2: Vector Search / RAG",
             "Lab 3: Agentic Fleet Management",
-            "All Labs (Labs 1, 2, and 3)",
-            "Core Infrastructure Only (advanced)"
+            "All Labs (Labs 1, 2, and 3)"
         ]
         env_choice = prompt_choice("What would you like to deploy?", deploy_options)
 
@@ -182,8 +187,6 @@ def main():
                 envs_to_deploy = ["core", "lab2-vector-search", "lab3-agentic-fleet-management"]
         elif env_choice == "All Labs (Labs 1, 2, and 3)":
             envs_to_deploy = ["core", "lab1-tool-calling", "lab2-vector-search", "lab3-agentic-fleet-management"]
-        else:  # Core Infrastructure Only (advanced)
-            envs_to_deploy = ["core"]
 
         # Step 5: Prompt for required credentials
         print("\n--- Credential Configuration ---")
@@ -249,6 +252,66 @@ def main():
 
         # Set workshop mode flag
         set_key(creds_file, "TF_VAR_workshop_mode", "true" if args.workshop else "false")
+
+        # Step 5.5: Validate configurations (advisory only, never blocks deployment)
+        needs_zapier = "lab1-tool-calling" in envs_to_deploy or "lab3-agentic-fleet-management" in envs_to_deploy
+        needs_mongodb = (("lab2-vector-search" in envs_to_deploy or "lab3-agentic-fleet-management" in envs_to_deploy)
+                        and not args.workshop)
+
+        if needs_zapier or needs_mongodb:
+            print("\n--- Configuration Validation (Advisory Only) ---")
+
+            # Load credentials into environment for validation
+            temp_creds = dotenv_values(creds_file)
+            for key, value in temp_creds.items():
+                if value:
+                    os.environ[key] = value
+
+            # Validate Zapier
+            if needs_zapier:
+                try:
+                    result = subprocess.run(
+                        ["uv", "run", "validate", "zapier"],
+                        cwd=root,
+                        capture_output=True,
+                        text=True,
+                        timeout=30
+                    )
+                    if result.returncode == 0:
+                        print("✓ Zapier configuration validated")
+                    else:
+                        print("⚠ Zapier validation failed (deployment will continue anyway)")
+                        if result.stdout:
+                            print(f"  Output: {result.stdout.strip()}")
+                        if result.stderr:
+                            print(f"  Error: {result.stderr.strip()}")
+                except Exception as e:
+                    print(f"⚠ Could not validate Zapier configuration: {e}")
+                    print("  (This is advisory only - deployment will continue)")
+
+            # Validate MongoDB
+            if needs_mongodb:
+                try:
+                    result = subprocess.run(
+                        ["uv", "run", "validate", "mongodb"],
+                        cwd=root,
+                        capture_output=True,
+                        text=True,
+                        timeout=30
+                    )
+                    if result.returncode == 0:
+                        print("✓ MongoDB configuration validated")
+                    else:
+                        print("⚠ MongoDB validation failed (deployment will continue anyway)")
+                        if result.stdout:
+                            print(f"  Output: {result.stdout.strip()}")
+                        if result.stderr:
+                            print(f"  Error: {result.stderr.strip()}")
+                except Exception as e:
+                    print(f"⚠ Could not validate MongoDB configuration: {e}")
+                    print("  (This is advisory only - deployment will continue)")
+
+            print()
 
         # Step 6: Show all credentials and confirm
         print("\n--- Configuration Summary ---")
