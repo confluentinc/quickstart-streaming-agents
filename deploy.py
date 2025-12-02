@@ -128,6 +128,16 @@ def main():
         # Step 1: Select cloud provider
         cloud = prompt_choice("Select cloud provider:", ["aws", "azure"])
 
+        # Check if Azure workshop mode (not supported yet)
+        if args.workshop and cloud == "azure":
+            print("\n" + "="*70)
+            print("  Workshop mode for Azure is in development but not yet supported.")
+            print("  Please either:")
+            print("    - Deploy normally without the `--workshop` flag")
+            print("    - Try again at a later date")
+            print("="*70 + "\n")
+            sys.exit(0)
+
         # Step 1.5: Check cloud CLI login (skip in workshop mode)
         if args.workshop:
             print(f"✓ Workshop mode: Using pre-provided {cloud.upper()} credentials (no CLI login required)")
@@ -138,8 +148,19 @@ def main():
                 print(f"{'='*70}")
                 print(f"  Deployment may fail without proper {cloud.upper()} authentication.")
                 print(f"  To login, run: {'aws configure' if cloud == 'aws' else 'az login'}")
-                print(f"  Proceeding anyway - you have been warned!")
                 print(f"{'='*70}\n")
+
+                # Ask user to confirm continuation
+                while True:
+                    response = input("Do you want to continue without CLI authentication? (y/n): ").strip().lower()
+                    if response in ['y', 'yes']:
+                        print("Continuing deployment without CLI authentication...\n")
+                        break
+                    elif response in ['n', 'no']:
+                        print("Deployment cancelled. Please login and try again.")
+                        sys.exit(0)
+                    else:
+                        print("Invalid input. Please enter 'y' or 'n'.")
             else:
                 print(f"✓ {cloud.upper()} CLI logged in")
 
