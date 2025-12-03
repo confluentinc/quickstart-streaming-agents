@@ -1,19 +1,17 @@
 #!/usr/bin/env python3
 """
-Generate Flink SQL command summary markdown files for labs.
+Generate Flink SQL command summary markdown files for all deployed labs.
 
-This script extracts Flink SQL from Terraform state and lab walkthrough markdown files,
-ensuring the documentation automatically stays in sync with deployed infrastructure.
+This script automatically discovers and processes all labs in a cloud provider directory,
+extracting Flink SQL from Terraform state and lab walkthrough markdown files.
+Labs that aren't deployed are silently skipped.
 
 Usage:
-    python scripts/common/generate_lab_flink_summary.py <lab-name> <cloud-provider> <terraform-dir> [key=value...]
+    uv run generate_summaries <cloud-provider>
 
 Examples:
-    python scripts/common/generate_lab_flink_summary.py lab1 aws aws/lab1-tool-calling
-    python scripts/common/generate_lab_flink_summary.py lab2 azure azure/lab2-vector-search
-    python scripts/common/generate_lab_flink_summary.py lab3 aws aws/lab3-agentic-fleet-management
-
-Note: Additional key=value arguments are accepted for backward compatibility but not currently used.
+    uv run generate_summaries aws
+    uv run generate_summaries azure
 """
 
 import json
@@ -67,43 +65,18 @@ def get_manual_commands_for_lab(lab_name: str) -> str:
         return ""
 
 
-def main():
-    """Main entry point."""
-    if len(sys.argv) < 4:
-        print("Usage: python scripts/common/generate_lab_flink_summary.py <lab-name> <cloud-provider> <terraform-dir> [key=value...]")
-        print("Example: python scripts/common/generate_lab_flink_summary.py lab1 aws aws/lab1-tool-calling")
-        sys.exit(1)
-
-    lab_name = sys.argv[1]  # e.g., "lab1"
-    cloud_provider = sys.argv[2]  # e.g., "aws"
-    terraform_dir = Path(sys.argv[3])  # e.g., "aws/lab1-tool-calling"
-
-    # Parse additional key=value arguments
-    credentials = {}
-    for arg in sys.argv[4:]:
-        if '=' in arg:
-            key, value = arg.split('=', 1)
-            credentials[key] = value
-
-    # Validate inputs
-    if cloud_provider not in ["aws", "azure"]:
-        print(f"Error: Invalid cloud provider '{cloud_provider}'. Must be 'aws' or 'azure'")
-        sys.exit(1)
-
+def generate_summary_for_lab(lab_name: str, cloud_provider: str, terraform_dir: Path) -> bool:
+    """Generate Flink SQL summary for a single lab. Returns True if successful."""
     if not terraform_dir.exists():
-        print(f"Error: Terraform directory not found: {terraform_dir}")
-        sys.exit(1)
+        return False
 
     # Get core terraform directory
     core_terraform_dir = terraform_dir.parent / "core"
     if not core_terraform_dir.exists():
-        print(f"Error: Core terraform directory not found: {core_terraform_dir}")
-        print("The extraction approach requires Core Terraform to be deployed.")
-        sys.exit(1)
+        return False
 
     # Get terraform outputs from CORE
     try:
-        print(f"Reading Terraform outputs from {core_terraform_dir}...")
         result = subprocess.run(
             ["terraform", "output", "-json"],
             cwd=core_terraform_dir,
@@ -112,9 +85,8 @@ def main():
             check=True
         )
         tf_outputs = json.loads(result.stdout)
-    except (subprocess.CalledProcessError, FileNotFoundError, json.JSONDecodeError) as e:
-        print(f"Error: Failed to read core terraform outputs: {e}")
-        sys.exit(1)
+    except (subprocess.CalledProcessError, FileNotFoundError, json.JSONDecodeError):
+        return False
 
     # EXTRACTION: Get commands from Terraform state
     print(f"Extracting Flink SQL from Terraform state in {terraform_dir}...")
@@ -126,9 +98,8 @@ def main():
         )
         print(f"  - Extracted {len(automated_commands)} automated commands")
         print(f"  - Extracted {len(core_resources)} core resources")
-    except Exception as e:
-        print(f"Error: Failed to extract SQL from Terraform: {e}")
-        sys.exit(1)
+    except Exception:
+        return False
 
     # Extract manual commands from walkthrough markdown
     manual_commands = get_manual_commands_for_lab(lab_name)
@@ -150,7 +121,57 @@ def main():
         core_resources=core_resources
     )
 
-    print(f"\nSuccess! Flink SQL summary generated at: {output_file}")
+    print(f"Success! Flink SQL summary generated at: {output_file}\n")
+    return True
+
+
+def main():
+    """Main entry point."""
+    if len(sys.argv) != 2:
+        print("Usage: uv run generate_summaries <cloud-provider>")
+        print("Example: uv run generate_summaries aws")
+        print("         uv run generate_summaries azure")
+        sys.exit(1)
+
+    cloud_provider = sys.argv[1].lower()
+
+    # Validate cloud provider
+    if cloud_provider not in ["aws", "azure"]:
+        print(f"Error: Invalid cloud provider '{cloud_provider}'. Must be 'aws' or 'azure'")
+        sys.exit(1)
+
+    # Lab configuration
+    lab_configs = {
+        'lab1': 'lab1-tool-calling',
+        'lab2': 'lab2-vector-search',
+        'lab3': 'lab3-agentic-fleet-management'
+    }
+
+    # Get project root (two levels up from scripts/common)
+    project_root = Path(__file__).parent.parent.parent
+
+    print(f"Generating Flink SQL summaries for all deployed {cloud_provider.upper()} labs...\n")
+
+    successful = []
+    skipped = []
+
+    # Try to generate summary for each lab
+    for lab_name, lab_dir_name in lab_configs.items():
+        terraform_dir = project_root / cloud_provider / lab_dir_name
+
+        print(f"Processing {lab_name}...")
+        if generate_summary_for_lab(lab_name, cloud_provider, terraform_dir):
+            successful.append(lab_name)
+        else:
+            skipped.append(lab_name)
+
+    # Print summary
+    print("=" * 60)
+    if successful:
+        print(f"Generated summaries for: {', '.join(successful)}")
+    if skipped:
+        print(f"Skipped (not deployed): {', '.join(skipped)}")
+    print("=" * 60)
 
 
 if __name__ == "__main__":

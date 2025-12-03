@@ -30,8 +30,9 @@ variable "confluent_cloud_api_secret" {
 }
 
 variable "azure_subscription_id" {
-  description = "Azure Subscription ID"
+  description = "Azure Subscription ID (placeholder value used in workshop mode since no Azure resources are created)"
   type        = string
+  default     = "00000000-0000-0000-0000-000000000000"
 }
 
 variable "owner_email" {

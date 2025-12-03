@@ -26,7 +26,9 @@ provider "confluent" {
 provider "random" {}
 
 # Azure Provider Configuration
+# Note: In workshop mode, subscription_id is a placeholder since no Azure resources are created
 provider "azurerm" {
   features {}
-  subscription_id = var.azure_subscription_id
+  subscription_id                = var.azure_subscription_id
+  resource_provider_registrations = "none"
 }

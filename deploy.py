@@ -6,6 +6,7 @@ Uses credentials from credentials.env or credentials.json and deploys via Terraf
 
 import argparse
 import os
+import subprocess
 import sys
 
 from dotenv import dotenv_values, set_key
@@ -82,8 +83,13 @@ def main():
             env_vars["TF_VAR_mongodb_username"] = creds["mongodb_username"]
         if "mongodb_password" in creds and creds["mongodb_password"]:
             env_vars["TF_VAR_mongodb_password"] = creds["mongodb_password"]
-        if cloud == "azure" and "azure_subscription_id" in creds:
-            env_vars["TF_VAR_azure_subscription_id"] = creds["azure_subscription_id"]
+
+        # Azure subscription ID (use placeholder in workshop mode)
+        if cloud == "azure":
+            if workshop_mode:
+                env_vars["TF_VAR_azure_subscription_id"] = "00000000-0000-0000-0000-000000000000"
+            elif "azure_subscription_id" in creds:
+                env_vars["TF_VAR_azure_subscription_id"] = creds["azure_subscription_id"]
 
         # Workshop mode credentials
         if workshop_mode and cloud == "aws":
@@ -91,6 +97,11 @@ def main():
                 env_vars["TF_VAR_aws_bedrock_access_key"] = creds["aws_bedrock_access_key"]
             if "aws_bedrock_secret_key" in creds and creds["aws_bedrock_secret_key"]:
                 env_vars["TF_VAR_aws_bedrock_secret_key"] = creds["aws_bedrock_secret_key"]
+        if workshop_mode and cloud == "azure":
+            if "azure_openai_endpoint" in creds and creds["azure_openai_endpoint"]:
+                env_vars["TF_VAR_azure_openai_endpoint"] = creds["azure_openai_endpoint"]
+            if "azure_openai_api_key" in creds and creds["azure_openai_api_key"]:
+                env_vars["TF_VAR_azure_openai_api_key"] = creds["azure_openai_api_key"]
 
         print(f"✓ Credentials loaded from credentials.json")
         print(f"  Cloud: {cloud}")
@@ -117,15 +128,41 @@ def main():
         # Step 1: Select cloud provider
         cloud = prompt_choice("Select cloud provider:", ["aws", "azure"])
 
+        # Check if Azure workshop mode (not supported yet)
+        if args.workshop and cloud == "azure":
+            print("\n" + "="*70)
+            print("  Workshop mode for Azure is in development but not yet supported.")
+            print("  Please either:")
+            print("    - Deploy normally without the `--workshop` flag")
+            print("    - Try again at a later date")
+            print("="*70 + "\n")
+            sys.exit(0)
+
         # Step 1.5: Check cloud CLI login (skip in workshop mode)
         if args.workshop:
             print(f"✓ Workshop mode: Using pre-provided {cloud.upper()} credentials (no CLI login required)")
         else:
             if not check_cloud_cli_login(cloud):
-                print(f"\nError: Not logged into {cloud.upper()} CLI.")
-                print(f"Please login using: {'aws configure' if cloud == 'aws' else 'az login'}")
-                sys.exit(1)
-            print(f"✓ {cloud.upper()} CLI logged in")
+                print(f"\n{'='*70}")
+                print(f"  WARNING: You are NOT logged into the {cloud.upper()} CLI!")
+                print(f"{'='*70}")
+                print(f"  Deployment may fail without proper {cloud.upper()} authentication.")
+                print(f"  To login, run: {'aws configure' if cloud == 'aws' else 'az login'}")
+                print(f"{'='*70}\n")
+
+                # Ask user to confirm continuation
+                while True:
+                    response = input("Do you want to continue without CLI authentication? (y/n): ").strip().lower()
+                    if response in ['y', 'yes']:
+                        print("Continuing deployment without CLI authentication...\n")
+                        break
+                    elif response in ['n', 'no']:
+                        print("Deployment cancelled. Please login and try again.")
+                        sys.exit(0)
+                    else:
+                        print("Invalid input. Please enter 'y' or 'n'.")
+            else:
+                print(f"✓ {cloud.upper()} CLI logged in")
 
         # Step 2: Select cloud region (auto-select in workshop mode)
         if args.workshop:
@@ -154,8 +191,7 @@ def main():
             "Lab 1: MCP Tool Calling",
             "Lab 2: Vector Search / RAG",
             "Lab 3: Agentic Fleet Management",
-            "All Labs (Labs 1, 2, and 3)",
-            "Core Infrastructure Only (advanced)"
+            "All Labs (Labs 1, 2, and 3)"
         ]
         env_choice = prompt_choice("What would you like to deploy?", deploy_options)
 
@@ -172,8 +208,6 @@ def main():
                 envs_to_deploy = ["core", "lab2-vector-search", "lab3-agentic-fleet-management"]
         elif env_choice == "All Labs (Labs 1, 2, and 3)":
             envs_to_deploy = ["core", "lab1-tool-calling", "lab2-vector-search", "lab3-agentic-fleet-management"]
-        else:  # Core Infrastructure Only (advanced)
-            envs_to_deploy = ["core"]
 
         # Step 5: Prompt for required credentials
         print("\n--- Credential Configuration ---")
@@ -189,10 +223,16 @@ def main():
         if owner_email:
             set_key(creds_file, "TF_VAR_owner_email", owner_email)
 
-        # Azure subscription ID (if Azure core)
+        # Azure subscription ID
         if cloud == "azure" and "core" in envs_to_deploy:
-            azure_sub = prompt_with_default("Azure Subscription ID", creds.get("TF_VAR_azure_subscription_id", ""))
-            set_key(creds_file, "TF_VAR_azure_subscription_id", azure_sub)
+            if args.workshop:
+                # Workshop mode: use placeholder since no Azure resources are created
+                azure_sub = "00000000-0000-0000-0000-000000000000"
+                set_key(creds_file, "TF_VAR_azure_subscription_id", azure_sub)
+            else:
+                # Production mode: prompt for real subscription ID
+                azure_sub = prompt_with_default("Azure Subscription ID", creds.get("TF_VAR_azure_subscription_id", ""))
+                set_key(creds_file, "TF_VAR_azure_subscription_id", azure_sub)
 
         # Workshop mode: AWS Bedrock credentials (pre-provided)
         if args.workshop and cloud == "aws":
@@ -200,6 +240,13 @@ def main():
             aws_bedrock_secret = prompt_with_default("AWS Bedrock Secret Key (workshop)", creds.get("TF_VAR_aws_bedrock_secret_key", ""))
             set_key(creds_file, "TF_VAR_aws_bedrock_access_key", aws_bedrock_key)
             set_key(creds_file, "TF_VAR_aws_bedrock_secret_key", aws_bedrock_secret)
+
+        # Workshop mode: Azure OpenAI credentials (pre-provided)
+        if args.workshop and cloud == "azure":
+            azure_openai_endpoint = prompt_with_default("Azure OpenAI Endpoint (workshop)", creds.get("TF_VAR_azure_openai_endpoint", ""))
+            azure_openai_key = prompt_with_default("Azure OpenAI API Key (workshop)", creds.get("TF_VAR_azure_openai_api_key", ""))
+            set_key(creds_file, "TF_VAR_azure_openai_endpoint", azure_openai_endpoint)
+            set_key(creds_file, "TF_VAR_azure_openai_api_key", azure_openai_key)
 
         # Lab-specific credentials
         if "lab1-tool-calling" in envs_to_deploy or "lab3-agentic-fleet-management" in envs_to_deploy:
@@ -226,6 +273,66 @@ def main():
 
         # Set workshop mode flag
         set_key(creds_file, "TF_VAR_workshop_mode", "true" if args.workshop else "false")
+
+        # Step 5.5: Validate configurations (advisory only, never blocks deployment)
+        needs_zapier = "lab1-tool-calling" in envs_to_deploy or "lab3-agentic-fleet-management" in envs_to_deploy
+        needs_mongodb = (("lab2-vector-search" in envs_to_deploy or "lab3-agentic-fleet-management" in envs_to_deploy)
+                        and not args.workshop)
+
+        if needs_zapier or needs_mongodb:
+            print("\n--- Configuration Validation (Advisory Only) ---")
+
+            # Load credentials into environment for validation
+            temp_creds = dotenv_values(creds_file)
+            for key, value in temp_creds.items():
+                if value:
+                    os.environ[key] = value
+
+            # Validate Zapier
+            if needs_zapier:
+                try:
+                    result = subprocess.run(
+                        ["uv", "run", "validate", "zapier"],
+                        cwd=root,
+                        capture_output=True,
+                        text=True,
+                        timeout=30
+                    )
+                    if result.returncode == 0:
+                        print("✓ Zapier configuration validated")
+                    else:
+                        print("⚠ Zapier validation failed (deployment will continue anyway)")
+                        if result.stdout:
+                            print(f"  Output: {result.stdout.strip()}")
+                        if result.stderr:
+                            print(f"  Error: {result.stderr.strip()}")
+                except Exception as e:
+                    print(f"⚠ Could not validate Zapier configuration: {e}")
+                    print("  (This is advisory only - deployment will continue)")
+
+            # Validate MongoDB
+            if needs_mongodb:
+                try:
+                    result = subprocess.run(
+                        ["uv", "run", "validate", "mongodb"],
+                        cwd=root,
+                        capture_output=True,
+                        text=True,
+                        timeout=30
+                    )
+                    if result.returncode == 0:
+                        print("✓ MongoDB configuration validated")
+                    else:
+                        print("⚠ MongoDB validation failed (deployment will continue anyway)")
+                        if result.stdout:
+                            print(f"  Output: {result.stdout.strip()}")
+                        if result.stderr:
+                            print(f"  Error: {result.stderr.strip()}")
+                except Exception as e:
+                    print(f"⚠ Could not validate MongoDB configuration: {e}")
+                    print("  (This is advisory only - deployment will continue)")
+
+            print()
 
         # Step 6: Show all credentials and confirm
         print("\n--- Configuration Summary ---")

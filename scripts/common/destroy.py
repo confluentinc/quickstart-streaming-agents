@@ -106,8 +106,13 @@ def main():
             env_vars["TF_VAR_mongodb_username"] = creds["mongodb_username"]
         if "mongodb_password" in creds and creds["mongodb_password"]:
             env_vars["TF_VAR_mongodb_password"] = creds["mongodb_password"]
-        if cloud == "azure" and "azure_subscription_id" in creds:
-            env_vars["TF_VAR_azure_subscription_id"] = creds["azure_subscription_id"]
+
+        # Azure subscription ID (use placeholder in workshop mode)
+        if cloud == "azure":
+            if workshop_mode:
+                env_vars["TF_VAR_azure_subscription_id"] = "00000000-0000-0000-0000-000000000000"
+            elif "azure_subscription_id" in creds:
+                env_vars["TF_VAR_azure_subscription_id"] = creds["azure_subscription_id"]
 
         # Workshop mode credentials
         if workshop_mode and cloud == "aws":
@@ -115,6 +120,11 @@ def main():
                 env_vars["TF_VAR_aws_bedrock_access_key"] = creds["aws_bedrock_access_key"]
             if "aws_bedrock_secret_key" in creds and creds["aws_bedrock_secret_key"]:
                 env_vars["TF_VAR_aws_bedrock_secret_key"] = creds["aws_bedrock_secret_key"]
+        if workshop_mode and cloud == "azure":
+            if "azure_openai_endpoint" in creds and creds["azure_openai_endpoint"]:
+                env_vars["TF_VAR_azure_openai_endpoint"] = creds["azure_openai_endpoint"]
+            if "azure_openai_api_key" in creds and creds["azure_openai_api_key"]:
+                env_vars["TF_VAR_azure_openai_api_key"] = creds["azure_openai_api_key"]
 
         # Load into environment
         for key, value in env_vars.items():

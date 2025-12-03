@@ -112,6 +112,74 @@ resource "confluent_flink_statement" "documents_vectordb_lab3" {
   ]
 }
 
+# Zapier MCP connection for Lab3
+resource "confluent_flink_statement" "zapier_mcp_connection_lab3" {
+  organization {
+    id = data.confluent_organization.main.id
+  }
+  environment {
+    id = data.terraform_remote_state.core.outputs.confluent_environment_id
+  }
+  compute_pool {
+    id = data.terraform_remote_state.core.outputs.confluent_flink_compute_pool_id
+  }
+  principal {
+    id = data.terraform_remote_state.core.outputs.app_manager_service_account_id
+  }
+  rest_endpoint = data.confluent_flink_region.lab3_flink_region.rest_endpoint
+  credentials {
+    key    = data.terraform_remote_state.core.outputs.app_manager_flink_api_key
+    secret = data.terraform_remote_state.core.outputs.app_manager_flink_api_secret
+  }
+
+  statement = "CREATE CONNECTION IF NOT EXISTS `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`zapier-mcp-connection` WITH ( 'type' = 'MCP_SERVER', 'endpoint' = '${var.zapier_sse_endpoint}', 'api-key' = 'api_key' );"
+
+  properties = {
+    "sql.current-catalog"  = data.terraform_remote_state.core.outputs.confluent_environment_display_name
+    "sql.current-database" = data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name
+  }
+
+  lifecycle {
+    ignore_changes = [statement]
+  }
+
+  depends_on = [
+    data.terraform_remote_state.core
+  ]
+}
+
+# Zapier MCP model for Lab3
+resource "confluent_flink_statement" "zapier_mcp_model_lab3" {
+  organization {
+    id = data.confluent_organization.main.id
+  }
+  environment {
+    id = data.terraform_remote_state.core.outputs.confluent_environment_id
+  }
+  compute_pool {
+    id = data.terraform_remote_state.core.outputs.confluent_flink_compute_pool_id
+  }
+  principal {
+    id = data.terraform_remote_state.core.outputs.app_manager_service_account_id
+  }
+  rest_endpoint = data.confluent_flink_region.lab3_flink_region.rest_endpoint
+  credentials {
+    key    = data.terraform_remote_state.core.outputs.app_manager_flink_api_key
+    secret = data.terraform_remote_state.core.outputs.app_manager_flink_api_secret
+  }
+
+  statement = "CREATE MODEL IF NOT EXISTS `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`zapier_mcp_model` INPUT (prompt STRING) OUTPUT (response STRING) WITH ( 'provider' = 'azureopenai', 'task' = 'text_generation', 'azureopenai.connection' = '${data.terraform_remote_state.core.outputs.llm_connection_name}', 'mcp.connection' = 'zapier-mcp-connection' );"
+
+  properties = {
+    "sql.current-catalog"  = data.terraform_remote_state.core.outputs.confluent_environment_display_name
+    "sql.current-database" = "default"
+  }
+
+  depends_on = [
+    confluent_flink_statement.zapier_mcp_connection_lab3
+  ]
+}
+
 # Create ride_requests table with WATERMARK
 resource "confluent_flink_statement" "ride_requests_table" {
   organization {
@@ -165,8 +233,9 @@ resource "confluent_flink_statement" "ride_requests_table" {
 resource "null_resource" "generate_flink_sql_summary" {
   # Trigger regeneration when key resources change
   triggers = {
-    ride_requests_table = confluent_flink_statement.ride_requests_table.id
-    vessel_catalog_table = confluent_flink_statement.vessel_catalog_table.id
+    zapier_mcp_connection = confluent_flink_statement.zapier_mcp_connection_lab3.id
+    zapier_mcp_model      = confluent_flink_statement.zapier_mcp_model_lab3.id
+    ride_requests_table   = confluent_flink_statement.ride_requests_table.id
   }
 
   provisioner "local-exec" {
@@ -175,7 +244,8 @@ resource "null_resource" "generate_flink_sql_summary" {
   }
 
   depends_on = [
-    confluent_flink_statement.ride_requests_table,
-    confluent_flink_statement.vessel_catalog_table
+    confluent_flink_statement.zapier_mcp_connection_lab3,
+    confluent_flink_statement.zapier_mcp_model_lab3,
+    confluent_flink_statement.ride_requests_table
   ]
 }

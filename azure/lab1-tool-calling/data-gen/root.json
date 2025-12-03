@@ -22,7 +22,7 @@
                 "overrides": {
                     "customers": {
                         "localConfigs": {
-                            "maxEvents": 100
+                            "maxEvents": 10
                         }
                     }
                 }

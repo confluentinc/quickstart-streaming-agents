@@ -1,368 +1,165 @@
-# Workshop Mode IAM Setup Guide
+# Workshop Mode Setup Guide
 
-This guide explains how to create AWS credentials for workshop participants to use the Real-Time Context Engine in **workshop mode** without requiring full AWS infrastructure permissions.
+Workshop mode allows participants to deploy the Real-Time Context Engine using shared cloud AI credentials without requiring full infrastructure permissions or cloud accounts.
 
-## Overview
+**Workflow:**
+1. **Before Workshop**: Organizer creates cloud AI credentials with `uv run workshop-keys create`
+2. **During Workshop**: Participants run `uv run deploy --workshop` and enter Bedrock API key and secret
+3. **After Workshop**: Organizer immediately revokes credentials with  `uv run workshop-keys destroy`
 
-Workshop mode allows participants to use pre-deployed infrastructure with their own AWS Bedrock credentials. The workflow is designed for ephemeral, time-limited access:
-
-1. **Day Before Workshop**: Generate fresh AWS access keys
-2. **During Workshop**: Participants use keys to invoke Bedrock models via Confluent Flink
-3. **After Workshop**: Revoke/delete keys immediately
-
-## Frequently Asked Questions
-
-### Can I reuse the same IAM User for multiple workshops?
-
-**Yes!** This is the recommended approach:
-- Create one IAM user (e.g., `workshop-bedrock-user`) and keep it
-- Generate new access keys before each workshop
-- Revoke old keys after each workshop
-- AWS allows up to 2 active access keys per user, so you can create new ones before deleting old ones for zero-downtime transitions
-
-### Do participants need to fill out the Bedrock model access form?
-
-**No!** Bedrock model access is granted at the **AWS account level**, not per IAM user:
-- If anyone in your organization has already requested and been approved for Claude model access in your AWS account, all IAM users in that account can use it (with proper permissions)
-- Participants only need the `bedrock:InvokeModel` permission
-- No need to fill out use case forms for each workshop or participant
-
-## What Permissions Are Needed?
-
-Workshop mode credentials are **only used for Bedrock model invocation**. No other AWS services are accessed:
-- ✅ AWS Bedrock Runtime (invoke models)
-- ❌ NO IAM operations
-- ❌ NO Lambda, API Gateway, DynamoDB, or other services
-
-### Models Used
-- **Claude 3.7 Sonnet** (text generation)
-- **Amazon Titan Embeddings** (embeddings)
+> [!NOTE]
+>
+> Workshop Mode for Azure is not ready yet, and will fail if you attempt to run it.
 
 ---
 
-## IAM Policy Options
+# AWS Bedrock Setup
 
-Choose one of these policies based on your security requirements:
+## Required Models
 
-### Option 1: Simple Wildcard Policy (Recommended for Workshops)
+Bedrock model access must be enabled at the AWS account level:
+- **Claude 3.7 Sonnet** (`us.anthropic.claude-3-7-sonnet-20250219-v1:0`)
+- **Amazon Titan Embeddings** (`amazon.titan-embed-text-v1`)
 
-Allows invocation of all Bedrock models:
+⚠️To access Claude Sonnet 3.7 you must request access to the model by filling out an **Anthropic use case form** (or someone in your org must have previously done so) for your cloud region (`us-east-1`). To do so, visit the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog), select **Claude 3.7 Sonnet** and open it it in the **Playground**, then send a message in the chat - the form will appear automatically. ⚠️
 
-```json
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": [
-        "bedrock:InvokeModel",
-        "bedrock:InvokeModelWithResponseStream"
-      ],
-      "Resource": "*"
-    }
-  ]
-}
-```
+## For Organizers
 
-### Option 2: Restrictive Policy (Specific Models Only)
+### Option 1: Automated (Recommended)
 
-Limits access to only Claude 3.7 Sonnet and Titan Embeddings:
-
-```json
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": [
-        "bedrock:InvokeModel",
-        "bedrock:InvokeModelWithResponseStream"
-      ],
-      "Resource": [
-        "arn:aws:bedrock:*::foundation-model/us.anthropic.claude-3-7-sonnet-20250219-v1:0",
-        "arn:aws:bedrock:*::foundation-model/eu.anthropic.claude-3-7-sonnet-20250219-v1:0",
-        "arn:aws:bedrock:*::foundation-model/apac.anthropic.claude-3-7-sonnet-20250219-v1:0",
-        "arn:aws:bedrock:*::foundation-model/amazon.titan-embed-text-v1"
-      ]
-    }
-  ]
-}
-```
-
----
-
-## Setup Instructions (AWS CLI)
-
-Use these commands if you're already authenticated to AWS CLI.
-
-### First-Time Setup (Create IAM User)
+Use the workshop key manager tool:
 
 ```bash
-# 1. Create IAM user (one-time, reuse for future workshops)
-aws iam create-user --user-name workshop-bedrock-user
+# Create credentials
+uv run workshop-keys create
 
-# 2. Create the IAM policy file
-cat > workshop-bedrock-policy.json <<'EOF'
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": [
-        "bedrock:InvokeModel",
-        "bedrock:InvokeModelWithResponseStream"
-      ],
-      "Resource": "*"
-    }
-  ]
-}
-EOF
-
-# 3. Attach the inline policy to the user
-aws iam put-user-policy \
-  --user-name workshop-bedrock-user \
-  --policy-name BedrockInvokeOnly \
-  --policy-document file://workshop-bedrock-policy.json
-
-# 4. Verify the policy was attached
-aws iam get-user-policy \
-  --user-name workshop-bedrock-user \
-  --policy-name BedrockInvokeOnly
+# After workshop - revoke credentials
+uv run workshop-keys destroy
 ```
 
-### Before Each Workshop (Generate Keys)
+This creates:
+- IAM user `workshop-bedrock-user` with Bedrock-only permissions
+- Access keys valid for workshop
+- `WORKSHOP_CREDENTIALS.md` file with keys and participant instructions, saved automatically in the root directory
 
-```bash
-# Generate new access keys for the workshop
-aws iam create-access-key --user-name workshop-bedrock-user
+### Option 2: Manual (AWS Console)
 
-# Save the output - you'll need both AccessKeyId and SecretAccessKey
-# Output looks like:
-# {
-#     "AccessKey": {
-#         "UserName": "workshop-bedrock-user",
-#         "AccessKeyId": "AKIA...",
-#         "SecretAccessKey": "wJalrXUtnFEMI...",
-#         "Status": "Active",
-#         "CreateDate": "2025-11-12T..."
-#     }
-# }
-```
+1. **Create IAM User**
+   - AWS Console → IAM → Users → Create user
+   - Username: `workshop-bedrock-user`
+   - No console access needed
 
-**Important**: Save both the `AccessKeyId` and `SecretAccessKey` - the secret is only shown once!
-
-### After Each Workshop (Revoke Keys)
-
-```bash
-# 1. List all access keys for the user
-aws iam list-access-keys --user-name workshop-bedrock-user
-
-# 2. Delete the access key (replace ACCESS_KEY_ID with actual key)
-aws iam delete-access-key \
-  --user-name workshop-bedrock-user \
-  --access-key-id ACCESS_KEY_ID
-```
-
-### Optional: Delete User Entirely
-
-If you no longer need the user:
-
-```bash
-# 1. Delete all access keys first
-aws iam list-access-keys --user-name workshop-bedrock-user
-aws iam delete-access-key --user-name workshop-bedrock-user --access-key-id <KEY_ID>
-
-# 2. Delete inline policies
-aws iam delete-user-policy --user-name workshop-bedrock-user --policy-name BedrockInvokeOnly
-
-# 3. Delete the user
-aws iam delete-user --user-name workshop-bedrock-user
-```
-
----
-
-## Setup Instructions (AWS Console/UI)
-
-### First-Time Setup (Create IAM User)
-
-1. **Open IAM Console**
-   - Go to [AWS Console](https://console.aws.amazon.com/)
-   - Navigate to **IAM** service (search "IAM" in top search bar)
-
-2. **Create IAM User**
-   - Click **Users** in left sidebar
-   - Click **Create user** button
-   - **User name**: `workshop-bedrock-user`
-   - **Do NOT** select "Provide user access to AWS Management Console" (we only need programmatic access)
-   - Click **Next**
-
-3. **Set Permissions**
-   - Select **Attach policies directly**
-   - Click **Create policy** (opens new tab)
-   - In the new tab:
-     - Click **JSON** tab
-     - Paste one of the IAM policies from above (Option 1 or 2)
-     - Click **Next**
-     - **Policy name**: `BedrockInvokeOnlyPolicy`
-     - Click **Create policy**
-   - Return to previous tab, click refresh button
-   - Search for `BedrockInvokeOnlyPolicy` and check the box
-   - Click **Next**
-
-4. **Review and Create**
-   - Review settings
-   - Click **Create user**
-
-### Before Each Workshop (Generate Keys)
-
-1. **Navigate to User**
-   - Go to **IAM** → **Users**
-   - Click on `workshop-bedrock-user`
-
-2. **Create Access Keys**
-   - Click **Security credentials** tab
-   - Scroll to **Access keys** section
-   - Click **Create access key**
-   - Select **Third-party service** as use case
-   - Check confirmation box
-   - Click **Next**
-   - (Optional) Add description tag: `Workshop-2025-11-12`
-   - Click **Create access key**
-
-3. **Download/Save Keys**
-   - **Important**: Copy both **Access key ID** and **Secret access key**
-   - Click **Download .csv file** (backup)
-   - **The secret key is only shown once!**
-   - Click **Done**
-
-### After Each Workshop (Revoke Keys)
-
-1. **Navigate to User**
-   - Go to **IAM** → **Users**
-   - Click on `workshop-bedrock-user`
-
-2. **Delete Access Keys**
-   - Click **Security credentials** tab
-   - Scroll to **Access keys** section
-   - Find the key you want to delete
-   - Click **Actions** → **Deactivate** (makes key immediately unusable)
-   - Click **Actions** → **Delete**
-   - Confirm deletion
-
-### Optional: Delete User Entirely
-
-1. **Navigate to User**
-   - Go to **IAM** → **Users**
-   - Check box next to `workshop-bedrock-user`
-   - Click **Delete** button
-
-2. **Confirm Deletion**
-   - Type the username to confirm
-   - Click **Delete**
-
----
-
-## Workshop Workflow Timeline
-
-### Day Before Workshop
-
-1. Generate fresh access keys (CLI or Console instructions above)
-2. Test the keys work:
-   ```bash
-   export AWS_ACCESS_KEY_ID="AKIA..."
-   export AWS_SECRET_ACCESS_KEY="wJalrXUt..."
-   export AWS_DEFAULT_REGION="us-east-1"  # or your region
-
-   # Test with AWS CLI
-   aws bedrock-runtime invoke-model \
-     --model-id us.anthropic.claude-3-7-sonnet-20250219-v1:0 \
-     --body '{"anthropic_version":"bedrock-2023-05-31","max_tokens":15000,"messages":[{"role":"user","content":"Hello"}]}' \
-     --region us-east-1 \
-     output.json
+2. **Attach Policy**
+   - Attach policies directly → Create policy → JSON:
+   ```json
+   {
+     "Version": "2012-10-17",
+     "Statement": [{
+       "Effect": "Allow",
+       "Action": ["bedrock:InvokeModel", "bedrock:InvokeModelWithResponseStream"],
+       "Resource": "*"
+     }]
+   }
    ```
-3. Save keys securely for distribution to participants
 
-### During Workshop
+3. **Create Access Keys**
+   - User → Security credentials → Create access key
+   - Use case: Third-party service
+   - Save both Access Key ID and Secret Access Key
 
-1. Provide participants with:
-   - AWS Access Key ID
-   - AWS Secret Access Key
-   - AWS Region (e.g., `us-east-1`)
-2. Participants run: `python deploy.py --workshop`
-3. Script will prompt for the three values above
+4. **After Workshop - Revoke**
+   - User → Security credentials → Access keys → Delete
 
-### After Workshop
+## For Participants
 
-1. **Immediately revoke keys** (within 24 hours)
-2. Delete access keys via CLI or Console (see instructions above)
-3. (Optional) Keep IAM user for next workshop
+1. **Clone repository**
+   ```bash
+   git clone https://github.com/confluentinc/quickstart-streaming-agents
+   cd quickstart-streaming-agents
+   ```
 
----
-
-## Security Best Practices
-
-### For Workshop Organizers
-
-1. **Time-Limited Keys**: Generate keys close to workshop time, revoke immediately after
-2. **Unique Keys Per Workshop**: Don't reuse the same keys across multiple workshops
-3. **Monitor Usage**: Check CloudTrail logs for unexpected Bedrock API calls
-4. **Key Distribution**: Use secure channels (password-protected docs, encrypted messages)
-5. **Cost Monitoring**: Set up billing alerts for Bedrock usage
-6. **Regional Deployment**: Deploy in regions where Bedrock costs are lowest
-
-### For Participants
-
-1. **Don't Commit Keys**: Never commit AWS keys to Git repositories
-2. **Local Storage Only**: Keep keys in local config files, not shared drives
-3. **Delete After Workshop**: Remove keys from your machine after the workshop
-4. **Don't Share**: Each participant should use the same shared keys (provided by organizer)
+2. **Run in workshop mode**
+  
+   ```bash
+   uv run deploy --workshop
+   ```
+   
+3. **Enter credentials when prompted**
+   - Cloud provider: Select **aws**
+   - AWS Access Key ID: `<provided-by-organizer>`
+   - AWS Secret Access Key: `<provided-by-organizer>`
+   - AWS Region: `us-east-1` (the *only* region supported in Workshop Mode)
 
 ---
 
-## Troubleshooting
+## Presenter Tips
 
-### Error: "User already exists"
+### Before the Workshop
 
-**Cause**: IAM user was created previously
-**Solution**: Skip user creation, go directly to key generation step
+**Enable Bedrock Models**
 
-### Error: "ResourceNotFoundException: Could not find a model"
+- Ensure Claude models are properly activated in your AWS account beforehand
+- If models aren't activated, all calls will fail with a 403 error (not immediately obvious what the issue is)
+- Request model access well in advance to avoid delays
 
-**Cause**: Bedrock model access not enabled in your AWS account
-**Solution**: Someone with admin access needs to:
-1. Go to AWS Bedrock Console → Model access
-2. Request access to Claude 3.7 Sonnet and Titan Embeddings
-3. Wait for approval (usually instant for Titan, may take time for Claude)
+**Create Dedicated IAM Credentials**
+- Create your own IAM role and temporary API keys specifically for the demo
+- For proper scoping and security setup, consult with your security team (e.g., David Marsh has created properly scoped credentials for previous demos)
+- Generate credentials the day before the workshop
 
-### Error: "AccessDeniedException"
+**Zapier Setup (For Small Groups)**
+- For groups of 10-15 people or fewer, create a free Zapier account 1-2 days beforehand
+- Share your SSE endpoint directly with attendees rather than having them sign up individually
+- This saves significant workshop time and reduces friction
+- Attendees can still enter their own email in the query to receive notifications
+- Free trial offers ~500 tool calls in first 2 weeks; each order uses 2 tool calls
+- ⚠️ Don't use this approach for groups larger than 10-15 until confirming Zapier rate limits
 
-**Cause**: IAM policy not attached or incorrect permissions
-**Solution**:
-1. Verify policy is attached: `aws iam get-user-policy --user-name workshop-bedrock-user --policy-name BedrockInvokeOnly`
-2. Check policy includes `bedrock:InvokeModel` action
-3. Ensure model access is enabled (see above)
+### During the Workshop
 
-### Error: "The security token included in the request is invalid"
+**Test Queries**
+- Use the test queries in Lab 1 to isolate issues if LLMs aren't responding as expected
+- These queries help verify each component is working correctly
 
-**Cause**: Keys are revoked, deleted, or incorrectly copied
-**Solution**:
-1. Verify keys are still active in IAM Console
-2. Re-copy keys carefully (no extra spaces/newlines)
-3. Generate new keys if needed
+**Don't Forget Email Addresses**
+- Remind participants (and yourself!) to add their email address to the big query in Lab 1
+- Easy to forget as everyone naturally wants to copy/paste the query quickly
 
-### Keys Work in AWS CLI but Not in Workshop
+### Troubleshooting
 
-**Cause**: Regional differences or Confluent Flink connection issues
-**Solution**:
-1. Ensure you're using the same region in both tests
-2. Verify Bedrock is available in your region
-3. Check Confluent Flink connection configuration
+**Restarting Data Generation**
+- If you need to restart data generation for any reason, drop all tables first before restarting
+- Restarting without dropping tables can cause duplicate customer IDs for different customers
+- This leads to duplicate emails and other downstream issues
 
 ---
 
-## Additional Resources
+## Security Notes
 
-- [AWS IAM Best Practices](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html)
-- [AWS Bedrock Model Access](https://docs.aws.amazon.com/bedrock/latest/userguide/model-access.html)
-- [AWS Bedrock Pricing](https://aws.amazon.com/bedrock/pricing/)
-- [Main README](README.md) - Full project documentation
+**For Organizers:**
+- Generate credentials the day before the workshop, revoke immediately after
+- Don't reuse the same keys across workshops
+- Distribute credentials via secure channels
+
+**For Participants:**
+
+- Never commit credentials to Git
+- Delete credentials from your machine after workshop (tear down resources with `uv run destroy`, then run`rm credentials.env`)
+
+---
+
+## Common Issues
+
+**AWS: "ResourceNotFoundException: Could not find a model"**
+
+- Bedrock model access not enabled in AWS account
+- ⚠️To access Claude Sonnet 3.7 you must request access to the model by filling out an **Anthropic use case form** (or someone in your org must have previously done so) for your cloud region. To do so, visit the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog), select **Claude 3.7 Sonnet** and open it it in the **Playground**, then send a message in the chat - the form will appear automatically. ⚠️
+
+**AWS: "AccessDeniedException"**
+
+- IAM policy not attached correctly
+- Verify with: `aws iam get-user-policy --user-name workshop-bedrock-user --policy-name BedrockInvokeOnly`
+
+**AWS: "The security token included in the request is invalid"**
+- Keys revoked or copied incorrectly
+- Generate new keys and re-copy carefully (no spaces/newlines)

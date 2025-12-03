@@ -65,7 +65,9 @@ def generate_core_tfvars_content(
     owner_email: Optional[str] = None,
     workshop_mode: bool = False,
     aws_bedrock_access_key: Optional[str] = None,
-    aws_bedrock_secret_key: Optional[str] = None
+    aws_bedrock_secret_key: Optional[str] = None,
+    azure_openai_endpoint: Optional[str] = None,
+    azure_openai_api_key: Optional[str] = None
 ) -> str:
     """
     Generate terraform.tfvars content for Core module.
@@ -80,6 +82,8 @@ def generate_core_tfvars_content(
         workshop_mode: Whether workshop mode is enabled
         aws_bedrock_access_key: AWS Bedrock access key (workshop mode only)
         aws_bedrock_secret_key: AWS Bedrock secret key (workshop mode only)
+        azure_openai_endpoint: Azure OpenAI endpoint URL (workshop mode only)
+        azure_openai_api_key: Azure OpenAI API key (workshop mode only)
 
     Returns:
         Formatted terraform.tfvars content
@@ -94,13 +98,23 @@ workshop_mode = {str(workshop_mode).lower()}
     if owner_email:
         content += f'owner_email = "{owner_email}"\n'
 
-    if cloud == "azure" and azure_sub_id:
-        content += f'azure_subscription_id = "{azure_sub_id}"\n'
+    # Azure subscription ID (required by provider v4.x, placeholder in workshop mode)
+    if cloud == "azure":
+        if workshop_mode and not azure_sub_id:
+            # Workshop mode: use placeholder since no Azure resources are created
+            content += 'azure_subscription_id = "00000000-0000-0000-0000-000000000000"\n'
+        elif azure_sub_id:
+            content += f'azure_subscription_id = "{azure_sub_id}"\n'
 
     # Workshop mode: AWS Bedrock credentials
     if workshop_mode and cloud == "aws" and aws_bedrock_access_key and aws_bedrock_secret_key:
         content += f'aws_bedrock_access_key = "{aws_bedrock_access_key}"\n'
         content += f'aws_bedrock_secret_key = "{aws_bedrock_secret_key}"\n'
+
+    # Workshop mode: Azure OpenAI credentials
+    if workshop_mode and cloud == "azure" and azure_openai_endpoint and azure_openai_api_key:
+        content += f'azure_openai_endpoint = "{azure_openai_endpoint}"\n'
+        content += f'azure_openai_api_key = "{azure_openai_api_key}"\n'
 
     return content
 
@@ -179,13 +193,16 @@ def write_tfvars_for_deployment(
         workshop_mode = workshop_mode_str == "true" if workshop_mode_str else False
         aws_bedrock_access_key = get_credential_value(creds, "aws_bedrock_access_key") if cloud == "aws" else None
         aws_bedrock_secret_key = get_credential_value(creds, "aws_bedrock_secret_key") if cloud == "aws" else None
+        azure_openai_endpoint = get_credential_value(creds, "azure_openai_endpoint") if cloud == "azure" else None
+        azure_openai_api_key = get_credential_value(creds, "azure_openai_api_key") if cloud == "azure" else None
 
         if api_key and api_secret:
             core_tfvars_path = root / cloud / "core" / "terraform.tfvars"
             content = generate_core_tfvars_content(
                 cloud, region, api_key, api_secret,
                 azure_sub_id, owner_email,
-                workshop_mode, aws_bedrock_access_key, aws_bedrock_secret_key
+                workshop_mode, aws_bedrock_access_key, aws_bedrock_secret_key,
+                azure_openai_endpoint, azure_openai_api_key
             )
             if write_tfvars_file(core_tfvars_path, content):
                 print(f"✓ Wrote {core_tfvars_path}")

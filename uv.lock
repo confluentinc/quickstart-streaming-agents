@@ -740,7 +740,6 @@ dependencies = [
     { name = "pymongo" },
     { name = "python-dotenv" },
     { name = "pyyaml" },
-    { name = "requests" },
     { name = "urllib3" },
 ]
 
@@ -774,7 +773,6 @@ requires-dist = [
     { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.0.0" },
     { name = "python-dotenv", specifier = ">=1.0.0,<2.0" },
     { name = "pyyaml", specifier = ">=6.0.1,<7.0" },
-    { name = "requests", specifier = ">=2.31.0,<3.0" },
     { name = "urllib3", specifier = ">=1.26.18,<2.0" },
 ]
 provides-extras = ["dev", "mongodb"]

@@ -90,6 +90,11 @@ deployment-summary = "scripts.common.generate_deployment_summary:main"
 #
 workshop_keys = "scripts.common.workshop_key_manager:main"
 workshop-keys = "scripts.common.workshop_key_manager:main"
+#
+generate_summaries = "scripts.common.generate_lab_flink_summary:main"
+generate-summaries = "scripts.common.generate_lab_flink_summary:main"
+#
+validate = "scripts.common.validate:main"
 
 
 [project.urls]
