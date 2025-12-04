@@ -50,7 +50,7 @@ def get_manual_commands_for_lab(lab_name: str) -> str:
         return ""
 
     # Get the project root (parent directory of scripts/)
-    project_root = Path(__file__).parent.parent
+    project_root = Path(__file__).parent.parent.parent
     markdown_path = project_root / markdown_files[lab_name]
 
     if not markdown_path.exists():

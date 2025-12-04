@@ -254,11 +254,10 @@ def main():
             set_key(creds_file, "TF_VAR_zapier_sse_endpoint", zapier_endpoint)
 
         # MongoDB credentials needed if:
-        # - Lab2 is being deployed (always needs MongoDB), OR
-        # - Lab3 is being deployed in non-workshop mode (needs MongoDB)
-        # In workshop mode, Lab3 uses hardcoded MongoDB credentials
-        needs_mongodb = ("lab2-vector-search" in envs_to_deploy) or \
-                       ("lab3-agentic-fleet-management" in envs_to_deploy and not args.workshop)
+        # - Lab2 or Lab3 is being deployed in non-workshop mode
+        # In workshop mode, both Lab2 and Lab3 use hardcoded MongoDB credentials
+        needs_mongodb = (("lab2-vector-search" in envs_to_deploy) or \
+                        ("lab3-agentic-fleet-management" in envs_to_deploy)) and not args.workshop
 
         if needs_mongodb:
             mongo_conn = prompt_with_default("MongoDB Connection String (Lab 2 and Lab 3)", creds.get("TF_VAR_mongodb_connection_string", ""))

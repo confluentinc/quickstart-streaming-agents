@@ -59,6 +59,7 @@ resource "confluent_flink_connection" "mongodb_connection" {
 
 # Create documents table - basic Kafka table for document input
 resource "confluent_flink_statement" "documents_table" {
+  count          = var.workshop_mode ? 0 : 1
   statement_name = "create-table-documents"
   organization {
     id = data.terraform_remote_state.core.outputs.confluent_organization_id
@@ -92,6 +93,7 @@ resource "confluent_flink_statement" "documents_table" {
 
 # Create documents_embed table schema first
 resource "confluent_flink_statement" "documents_embed_table" {
+  count          = var.workshop_mode ? 0 : 1
   statement_name = "create-table-documents-embed"
   organization {
     id = data.terraform_remote_state.core.outputs.confluent_organization_id
@@ -122,7 +124,7 @@ resource "confluent_flink_statement" "documents_embed_table" {
     prevent_destroy = false
   }
 
-  depends_on = [confluent_flink_statement.documents_table]
+  depends_on = [confluent_flink_statement.documents_table[0]]
 }
 
 # Create queries table - basic Kafka table for query input
@@ -195,6 +197,8 @@ resource "confluent_flink_statement" "queries_embed_table" {
 
 # MongoDB Sink Connector for streaming documents_embed to MongoDB
 resource "confluent_connector" "mongodb_sink" {
+  count = var.workshop_mode ? 0 : 1
+
   environment {
     id = data.terraform_remote_state.core.outputs.confluent_environment_id
   }
@@ -232,12 +236,13 @@ resource "confluent_connector" "mongodb_sink" {
   }
 
   depends_on = [
-    confluent_flink_statement.documents_embed_table
+    confluent_flink_statement.documents_embed_table[0]
   ]
 }
 
 # Sample data insertion - insert one document for testing
 resource "confluent_flink_statement" "documents_insert_sample" {
+  count          = var.workshop_mode ? 0 : 1
   statement_name = "documents-insert-sample"
 
   organization {
@@ -270,8 +275,8 @@ resource "confluent_flink_statement" "documents_insert_sample" {
   }
 
   depends_on = [
-    confluent_flink_statement.documents_table,
-    confluent_connector.mongodb_sink
+    confluent_flink_statement.documents_table[0],
+    confluent_connector.mongodb_sink[0]
   ]
 }
 
@@ -310,7 +315,7 @@ resource "confluent_flink_statement" "queries_insert_sample" {
 
   depends_on = [
     confluent_flink_statement.queries_table,
-    confluent_connector.mongodb_sink
+    confluent_connector.mongodb_sink[0]
   ]
 }
 
@@ -349,13 +354,14 @@ resource "confluent_flink_statement" "documents_vectordb_create_table" {
 
   depends_on = [
     confluent_flink_connection.mongodb_connection,
-    confluent_connector.mongodb_sink,
-    confluent_flink_statement.documents_insert_sample
+    confluent_connector.mongodb_sink[0],
+    confluent_flink_statement.documents_insert_sample[0]
   ]
 }
 
 # Populate documents_embed table with chunked and embedded documents
 resource "confluent_flink_statement" "documents_embed_insert_into" {
+  count          = var.workshop_mode ? 0 : 1
   statement_name = "documents-embed-insert-into"
 
   organization {
@@ -388,7 +394,7 @@ resource "confluent_flink_statement" "documents_embed_insert_into" {
   }
 
   depends_on = [
-    confluent_flink_statement.documents_embed_table,
+    confluent_flink_statement.documents_embed_table[0],
     confluent_flink_statement.documents_vectordb_create_table
   ]
 }
@@ -428,7 +434,7 @@ resource "confluent_flink_statement" "queries_embed_insert_into" {
 
   depends_on = [
     confluent_flink_statement.queries_embed_table,
-    confluent_flink_statement.documents_embed_insert_into
+    confluent_flink_statement.documents_embed_insert_into[0]
   ]
 }
 
@@ -511,10 +517,12 @@ resource "confluent_flink_statement" "search_results_response_create_table" {
 
 # Generate Flink SQL command summary
 resource "null_resource" "generate_flink_sql_summary" {
+  count = var.workshop_mode ? 0 : 1
+
   # Trigger regeneration when key resources change
   triggers = {
-    documents_table       = confluent_flink_statement.documents_table.id
-    documents_embed_table = confluent_flink_statement.documents_embed_table.id
+    documents_table       = confluent_flink_statement.documents_table[0].id
+    documents_embed_table = confluent_flink_statement.documents_embed_table[0].id
     queries_table         = confluent_flink_statement.queries_table.id
   }
 
@@ -524,8 +532,8 @@ resource "null_resource" "generate_flink_sql_summary" {
   }
 
   depends_on = [
-    confluent_flink_statement.documents_table,
-    confluent_flink_statement.documents_embed_table,
+    confluent_flink_statement.documents_table[0],
+    confluent_flink_statement.documents_embed_table[0],
     confluent_flink_statement.queries_table,
     confluent_flink_statement.queries_embed_table,
     confluent_flink_statement.search_results_create_table,
