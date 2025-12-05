@@ -297,14 +297,13 @@ def main():
                         text=True,
                         timeout=30
                     )
-                    if result.returncode == 0:
+                    if "ALL VALIDATION CHECKS PASSED" in result.stdout:
                         print("✓ Zapier configuration validated")
                     else:
-                        print("⚠ Zapier validation failed (deployment will continue anyway)")
-                        if result.stdout:
-                            print(f"  Output: {result.stdout.strip()}")
-                        if result.stderr:
-                            print(f"  Error: {result.stderr.strip()}")
+                        print(result.stdout)
+                        response = input("\nZapier validation warnings detected. Continue anyway? (y/n): ")
+                        if response.lower() != 'y':
+                            sys.exit(1)
                 except Exception as e:
                     print(f"⚠ Could not validate Zapier configuration: {e}")
                     print("  (This is advisory only - deployment will continue)")
@@ -319,14 +318,13 @@ def main():
                         text=True,
                         timeout=30
                     )
-                    if result.returncode == 0:
+                    if "ALL VALIDATION CHECKS PASSED" in result.stdout:
                         print("✓ MongoDB configuration validated")
                     else:
-                        print("⚠ MongoDB validation failed (deployment will continue anyway)")
-                        if result.stdout:
-                            print(f"  Output: {result.stdout.strip()}")
-                        if result.stderr:
-                            print(f"  Error: {result.stderr.strip()}")
+                        print(result.stdout)
+                        response = input("\nMongoDB validation warnings detected. Continue anyway? (y/n): ")
+                        if response.lower() != 'y':
+                            sys.exit(1)
                 except Exception as e:
                     print(f"⚠ Could not validate MongoDB configuration: {e}")
                     print("  (This is advisory only - deployment will continue)")

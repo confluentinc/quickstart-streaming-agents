@@ -105,7 +105,8 @@ def generate_summary_for_lab(lab_name: str, cloud_provider: str, terraform_dir: 
     manual_commands = get_manual_commands_for_lab(lab_name)
     num_headers = manual_commands.count('#') if manual_commands else 0
     num_sql = manual_commands.count('```sql') if manual_commands else 0
-    print(f"  - Extracted {num_headers} headers and {num_sql} SQL blocks from walkthrough markdown")
+    num_bash = manual_commands.count('```bash') if manual_commands else 0
+    print(f"  - Extracted {num_headers} headers, {num_sql} SQL blocks, and {num_bash} bash blocks from walkthrough markdown")
 
     # Generate the summary
     output_file = terraform_dir / "FLINK_SQL_COMMANDS.md"
