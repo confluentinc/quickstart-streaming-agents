@@ -283,21 +283,22 @@ def sanitize_sql(sql: str) -> str:
 
 def extract_sql_from_lab_walkthroughs(md_path: Path) -> str:
     """
-    Extract numbered headers and SQL blocks from lab walkthrough markdown.
+    Extract numbered headers, SQL blocks, and bash blocks from lab walkthrough markdown.
 
     This uses simple pattern matching to extract:
     - Numbered headers (H1/H2/H3 starting with a number, e.g., "## 1. Some Section")
     - SQL code blocks (```sql ... ```, but NOT ```sql no-parse)
+    - Bash code blocks (```bash ... ```, but NOT ```bash no-parse)
 
     Args:
         md_path: Path to the lab walkthrough markdown file
 
     Returns:
-        Markdown string with extracted headers and SQL blocks in document order
+        Markdown string with extracted headers, SQL blocks, and bash blocks in document order
     """
     txt = md_path.read_text()
-    # Match either: numbered headers OR sql blocks (not no-parse)
-    pattern = r'(^#{1,3}\s+\d+\.[^\n]+)|(^```sql(?!\s+no-parse)\n.*?^```)'
+    # Match either: numbered headers OR sql blocks (not no-parse) OR bash blocks (not no-parse)
+    pattern = r'(^#{1,3}\s+\d+\.[^\n]+)|(^```sql(?!\s+no-parse)\n.*?^```)|(^```bash(?!\s+no-parse)\n.*?^```)'
     return '\n\n'.join(
         m.group(0) for m in re.finditer(pattern, txt, re.MULTILINE | re.DOTALL)
     )

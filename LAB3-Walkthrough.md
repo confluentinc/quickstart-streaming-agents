@@ -45,7 +45,7 @@ uv run lab3_datagen
 <details>
 <summary>Alternative: Using Python directly</summary>
 
-```bash
+```bash no-parse
 python scripts/lab3_datagen.py
 ```
 

@@ -19,12 +19,12 @@ output "confluent_flink_compute_pool_id" {
 }
 
 output "documents_table_id" {
-  value       = confluent_flink_statement.documents_table.id
+  value       = try(confluent_flink_statement.documents_table[0].id, null)
   description = "Flink statement ID for documents table"
 }
 
 output "documents_embed_table_id" {
-  value       = confluent_flink_statement.documents_embed_table.id
+  value       = try(confluent_flink_statement.documents_embed_table[0].id, null)
   description = "Flink statement ID for documents_embed table"
 }
 
@@ -42,12 +42,12 @@ output "queries_embed_table_id" {
 # MongoDB connector outputs
 output "mongodb_sink_connector_id" {
   description = "MongoDB Sink Connector ID"
-  value       = confluent_connector.mongodb_sink.id
+  value       = try(confluent_connector.mongodb_sink[0].id, null)
 }
 
 output "mongodb_sink_connector_status" {
   description = "MongoDB Sink Connector Status"
-  value       = confluent_connector.mongodb_sink.status
+  value       = try(confluent_connector.mongodb_sink[0].status, null)
 }
 
 output "mongodb_connection_details" {

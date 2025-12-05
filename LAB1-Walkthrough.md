@@ -68,7 +68,7 @@ uv run lab1_datagen
 <details>
 <summary>Alternative: Using Python directly</summary>
 
-```bash
+```bash no-parse
 python scripts/lab1_datagen.py
 ```
 

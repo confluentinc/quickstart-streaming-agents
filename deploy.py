@@ -254,11 +254,10 @@ def main():
             set_key(creds_file, "TF_VAR_zapier_sse_endpoint", zapier_endpoint)
 
         # MongoDB credentials needed if:
-        # - Lab2 is being deployed (always needs MongoDB), OR
-        # - Lab3 is being deployed in non-workshop mode (needs MongoDB)
-        # In workshop mode, Lab3 uses hardcoded MongoDB credentials
-        needs_mongodb = ("lab2-vector-search" in envs_to_deploy) or \
-                       ("lab3-agentic-fleet-management" in envs_to_deploy and not args.workshop)
+        # - Lab2 or Lab3 is being deployed in non-workshop mode
+        # In workshop mode, both Lab2 and Lab3 use hardcoded MongoDB credentials
+        needs_mongodb = (("lab2-vector-search" in envs_to_deploy) or \
+                        ("lab3-agentic-fleet-management" in envs_to_deploy)) and not args.workshop
 
         if needs_mongodb:
             mongo_conn = prompt_with_default("MongoDB Connection String (Lab 2 and Lab 3)", creds.get("TF_VAR_mongodb_connection_string", ""))
@@ -298,14 +297,13 @@ def main():
                         text=True,
                         timeout=30
                     )
-                    if result.returncode == 0:
+                    if "ALL VALIDATION CHECKS PASSED" in result.stdout:
                         print("✓ Zapier configuration validated")
                     else:
-                        print("⚠ Zapier validation failed (deployment will continue anyway)")
-                        if result.stdout:
-                            print(f"  Output: {result.stdout.strip()}")
-                        if result.stderr:
-                            print(f"  Error: {result.stderr.strip()}")
+                        print(result.stdout)
+                        response = input("\nZapier validation warnings detected. Continue anyway? (y/n): ")
+                        if response.lower() != 'y':
+                            sys.exit(1)
                 except Exception as e:
                     print(f"⚠ Could not validate Zapier configuration: {e}")
                     print("  (This is advisory only - deployment will continue)")
@@ -320,14 +318,13 @@ def main():
                         text=True,
                         timeout=30
                     )
-                    if result.returncode == 0:
+                    if "ALL VALIDATION CHECKS PASSED" in result.stdout:
                         print("✓ MongoDB configuration validated")
                     else:
-                        print("⚠ MongoDB validation failed (deployment will continue anyway)")
-                        if result.stdout:
-                            print(f"  Output: {result.stdout.strip()}")
-                        if result.stderr:
-                            print(f"  Error: {result.stderr.strip()}")
+                        print(result.stdout)
+                        response = input("\nMongoDB validation warnings detected. Continue anyway? (y/n): ")
+                        if response.lower() != 'y':
+                            sys.exit(1)
                 except Exception as e:
                     print(f"⚠ Could not validate MongoDB configuration: {e}")
                     print("  (This is advisory only - deployment will continue)")

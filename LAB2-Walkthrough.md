@@ -19,7 +19,7 @@ uv run deploy
 <details>
 <summary>Manual alternative: Direct Python execution</summary>
 
-```bash
+```bash no-parse
 pip install . && python deploy.py
 ```
 
@@ -57,7 +57,7 @@ uv run publish_docs --lab2
 <details>
 <summary>Alternative: Using Python directly</summary>
 
-```bash
+```bash no-parse
 python scripts/lab2_publish_docs.py
 ```
 
@@ -79,7 +79,7 @@ uv run publish_queries "How do I use window functions in Flink?"
 <details>
 <summary>Alternative: Using Python directly</summary>
 
-```bash
+```bash no-parse
 python scripts/lab2_publish_queries.py # starts interactive mode, or:
 python scripts/lab2_publish_queries.py "How do I use window functions in Flink?"
 ```
@@ -119,7 +119,7 @@ SELECT query, response FROM search_results_response LIMIT 5;
 <summary>Click to expand</summary>
 
 ### Script Issues
-```bash
+```bash no-parse
 # If publish_docs.py fails
 ✗ Missing required dependencies!
 → Run: pip install .
