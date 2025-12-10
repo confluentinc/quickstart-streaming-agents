@@ -362,7 +362,15 @@ def run_shadowtraffic_docker(
             expiration_str = expiration.strftime('%Y-%m-%d') if expiration else "unknown"
 
             logger.warning(f"⚠️  ShadowTraffic license expired on {expiration_str}")
-            logger.info("📥 Attempting to download a fresh license file...")
+            logger.info("📥 Deleting expired license and downloading fresh one...")
+
+            # Delete the expired license file first to avoid permission issues
+            try:
+                env_file.unlink()
+                logger.debug(f"Deleted expired license file: {env_file}")
+            except Exception as e:
+                logger.warning(f"Could not delete expired license file: {e}")
+                # Continue anyway - download will attempt to overwrite
 
             # Try to download a new license
             new_license = download_shadowtraffic_license(datagen_dir)
