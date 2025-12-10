@@ -36,7 +36,7 @@ uv run publish_docs --lab3
 
 ### Data Generation
 
-Make sure Docker is running, then begin generating data with the following command:
+Make sure **Docker Desktop** is running, then begin generating data with the following command:
 
 ```bash
 uv run lab3_datagen
