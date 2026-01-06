@@ -488,8 +488,34 @@ def create_command(args: argparse.Namespace, logger: logging.Logger) -> int:
         # Create access key
         access_key_id, secret_access_key = create_access_key(iam_client, logger)
 
-        # Test Bedrock access
-        test_bedrock_access(access_key_id, secret_access_key, region, logger)
+        # Test Bedrock access with the actual Claude model
+        from .test_bedrock_credentials import test_bedrock_credentials
+
+        logger.info("Testing Bedrock access with Claude 3.7 Sonnet...")
+        test_success = test_bedrock_credentials(
+            access_key_id=access_key_id,
+            secret_access_key=secret_access_key,
+            region=region,
+            logger=logger
+        )
+
+        if not test_success:
+            print("\n" + "=" * 70)
+            print("⚠ WARNING: Bedrock access test did not complete successfully")
+            print("=" * 70)
+            print("\nPossible issues:")
+            print("  1. AWS credentials haven't propagated yet (wait 30-60 seconds)")
+            print("  2. Claude 3.7 Sonnet model not enabled in your AWS account")
+            print("  3. Insufficient Bedrock permissions")
+            print("\nTo verify manually:")
+            print(f"  uv run test-bedrock --access-key {access_key_id} \\")
+            print(f"    --secret-key <SECRET_KEY>")
+            print("\nTo enable Claude models:")
+            print("  AWS Console → Bedrock → Model Access → Request access")
+            print("=" * 70)
+            logger.warning("Bedrock test did not pass, but continuing anyway")
+        else:
+            logger.info("✓ Bedrock access test passed - Claude 3.7 Sonnet is accessible")
 
         # Save state and credentials
         save_state(project_root, access_key_id, owner_email, region, logger)
@@ -519,6 +545,299 @@ def create_command(args: argparse.Namespace, logger: logging.Logger) -> int:
     except Exception as e:
         logger.error(f"Error creating workshop credentials: {e}")
         return 1
+
+
+def cleanup_user_dependencies(
+    iam_client,
+    username: str,
+    logger: logging.Logger
+) -> Tuple[bool, Optional[str]]:
+    """
+    Comprehensively clean up all IAM user dependencies before deletion.
+
+    AWS requires ALL of the following to be removed before DeleteUser succeeds:
+    - Group memberships
+    - Access keys
+    - Inline policies
+    - Attached managed policies
+    - Login profile/password
+    - MFA devices
+    - SSH public keys
+    - Signing certificates
+    - Git credentials
+    - Permission boundary
+
+    Args:
+        iam_client: boto3 IAM client
+        username: IAM username to clean up
+        logger: Logger instance
+
+    Returns:
+        Tuple of (success, error_details):
+        - success: True if all cleanups succeeded, False if any failed
+        - error_details: None if success, otherwise a string with error information
+    """
+    errors = []
+
+    # 1. Remove from all groups
+    try:
+        response = iam_client.list_groups_for_user(UserName=username)
+        groups = response.get('Groups', [])
+        if groups:
+            for group in groups:
+                group_name = group['GroupName']
+                try:
+                    iam_client.remove_user_from_group(
+                        UserName=username,
+                        GroupName=group_name
+                    )
+                    logger.debug(f"  Removed from group '{group_name}'")
+                except ClientError as e:
+                    if e.response['Error']['Code'] != 'NoSuchEntity':
+                        error_msg = f"Failed to remove from group '{group_name}': {e.response['Error']['Code']}"
+                        errors.append(error_msg)
+                        logger.error(f"  ✗ {error_msg}")
+            if not errors:
+                logger.info(f"✓ Removed user from {len(groups)} group(s)")
+        else:
+            logger.info("✓ No groups to remove")
+    except ClientError as e:
+        error_msg = f"Failed to list groups: {e.response['Error']['Code']}"
+        errors.append(error_msg)
+        logger.error(f"✗ {error_msg}")
+
+    # 2. Delete all access keys
+    try:
+        response = iam_client.list_access_keys(UserName=username)
+        keys = response.get('AccessKeyMetadata', [])
+        if keys:
+            for key in keys:
+                key_id = key['AccessKeyId']
+                try:
+                    iam_client.delete_access_key(
+                        UserName=username,
+                        AccessKeyId=key_id
+                    )
+                    logger.debug(f"  Deleted access key {key_id}")
+                except ClientError as e:
+                    if e.response['Error']['Code'] != 'NoSuchEntity':
+                        error_msg = f"Failed to delete access key {key_id}: {e.response['Error']['Code']}"
+                        errors.append(error_msg)
+                        logger.error(f"  ✗ {error_msg}")
+            if not errors or len(errors) < len(keys):
+                logger.info(f"✓ Deleted {len(keys)} access key(s)")
+        else:
+            logger.info("✓ No access keys to delete")
+    except ClientError as e:
+        error_msg = f"Failed to list access keys: {e.response['Error']['Code']}"
+        errors.append(error_msg)
+        logger.error(f"✗ {error_msg}")
+
+    # 3. Detach all managed policies
+    try:
+        response = iam_client.list_attached_user_policies(UserName=username)
+        policies = response.get('AttachedPolicies', [])
+        if policies:
+            for policy in policies:
+                policy_arn = policy['PolicyArn']
+                try:
+                    iam_client.detach_user_policy(
+                        UserName=username,
+                        PolicyArn=policy_arn
+                    )
+                    logger.debug(f"  Detached policy {policy_arn}")
+                except ClientError as e:
+                    if e.response['Error']['Code'] != 'NoSuchEntity':
+                        error_msg = f"Failed to detach policy {policy_arn}: {e.response['Error']['Code']}"
+                        errors.append(error_msg)
+                        logger.error(f"  ✗ {error_msg}")
+            if not errors or len(errors) < len(policies):
+                logger.info(f"✓ Detached {len(policies)} managed policy/policies")
+        else:
+            logger.info("✓ No managed policies to detach")
+    except ClientError as e:
+        error_msg = f"Failed to list managed policies: {e.response['Error']['Code']}"
+        errors.append(error_msg)
+        logger.error(f"✗ {error_msg}")
+
+    # 4. Delete all inline policies
+    try:
+        response = iam_client.list_user_policies(UserName=username)
+        policy_names = response.get('PolicyNames', [])
+        if policy_names:
+            for policy_name in policy_names:
+                try:
+                    iam_client.delete_user_policy(
+                        UserName=username,
+                        PolicyName=policy_name
+                    )
+                    logger.debug(f"  Deleted inline policy '{policy_name}'")
+                except ClientError as e:
+                    if e.response['Error']['Code'] != 'NoSuchEntity':
+                        error_msg = f"Failed to delete inline policy '{policy_name}': {e.response['Error']['Code']}"
+                        errors.append(error_msg)
+                        logger.error(f"  ✗ {error_msg}")
+            if not errors or len(errors) < len(policy_names):
+                logger.info(f"✓ Deleted {len(policy_names)} inline policy/policies")
+        else:
+            logger.info("✓ No inline policies to delete")
+    except ClientError as e:
+        error_msg = f"Failed to list inline policies: {e.response['Error']['Code']}"
+        errors.append(error_msg)
+        logger.error(f"✗ {error_msg}")
+
+    # 5. Delete login profile
+    try:
+        iam_client.delete_login_profile(UserName=username)
+        logger.info("✓ Deleted login profile")
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'NoSuchEntity':
+            logger.info("✓ No login profile to delete")
+        else:
+            error_msg = f"Failed to delete login profile: {e.response['Error']['Code']}"
+            errors.append(error_msg)
+            logger.error(f"✗ {error_msg}")
+
+    # 6. Deactivate/delete MFA devices
+    try:
+        response = iam_client.list_mfa_devices(UserName=username)
+        devices = response.get('MFADevices', [])
+        if devices:
+            for device in devices:
+                serial = device['SerialNumber']
+                try:
+                    # Deactivate first
+                    iam_client.deactivate_mfa_device(
+                        UserName=username,
+                        SerialNumber=serial
+                    )
+                    logger.debug(f"  Deactivated MFA device {serial}")
+
+                    # If it's a virtual device, delete it
+                    if ':mfa/' in serial:
+                        try:
+                            iam_client.delete_virtual_mfa_device(SerialNumber=serial)
+                            logger.debug(f"  Deleted virtual MFA device {serial}")
+                        except ClientError as e:
+                            if e.response['Error']['Code'] != 'NoSuchEntity':
+                                logger.warning(f"  Could not delete virtual MFA device: {e.response['Error']['Code']}")
+                except ClientError as e:
+                    if e.response['Error']['Code'] != 'NoSuchEntity':
+                        error_msg = f"Failed to deactivate MFA device {serial}: {e.response['Error']['Code']}"
+                        errors.append(error_msg)
+                        logger.error(f"  ✗ {error_msg}")
+            if not errors or len(errors) < len(devices):
+                logger.info(f"✓ Deactivated {len(devices)} MFA device(s)")
+        else:
+            logger.info("✓ No MFA devices to deactivate")
+    except ClientError as e:
+        error_msg = f"Failed to list MFA devices: {e.response['Error']['Code']}"
+        errors.append(error_msg)
+        logger.error(f"✗ {error_msg}")
+
+    # 7. Delete SSH public keys
+    try:
+        response = iam_client.list_ssh_public_keys(UserName=username)
+        keys = response.get('SSHPublicKeys', [])
+        if keys:
+            for key in keys:
+                key_id = key['SSHPublicKeyId']
+                try:
+                    iam_client.delete_ssh_public_key(
+                        UserName=username,
+                        SSHPublicKeyId=key_id
+                    )
+                    logger.debug(f"  Deleted SSH key {key_id}")
+                except ClientError as e:
+                    if e.response['Error']['Code'] != 'NoSuchEntity':
+                        error_msg = f"Failed to delete SSH key {key_id}: {e.response['Error']['Code']}"
+                        errors.append(error_msg)
+                        logger.error(f"  ✗ {error_msg}")
+            if not errors or len(errors) < len(keys):
+                logger.info(f"✓ Deleted {len(keys)} SSH key(s)")
+        else:
+            logger.info("✓ No SSH keys to delete")
+    except ClientError as e:
+        error_msg = f"Failed to list SSH keys: {e.response['Error']['Code']}"
+        errors.append(error_msg)
+        logger.error(f"✗ {error_msg}")
+
+    # 8. Delete signing certificates
+    try:
+        response = iam_client.list_signing_certificates(UserName=username)
+        certs = response.get('Certificates', [])
+        if certs:
+            for cert in certs:
+                cert_id = cert['CertificateId']
+                try:
+                    iam_client.delete_signing_certificate(
+                        UserName=username,
+                        CertificateId=cert_id
+                    )
+                    logger.debug(f"  Deleted signing certificate {cert_id}")
+                except ClientError as e:
+                    if e.response['Error']['Code'] != 'NoSuchEntity':
+                        error_msg = f"Failed to delete certificate {cert_id}: {e.response['Error']['Code']}"
+                        errors.append(error_msg)
+                        logger.error(f"  ✗ {error_msg}")
+            if not errors or len(errors) < len(certs):
+                logger.info(f"✓ Deleted {len(certs)} signing certificate(s)")
+        else:
+            logger.info("✓ No signing certificates to delete")
+    except ClientError as e:
+        error_msg = f"Failed to list signing certificates: {e.response['Error']['Code']}"
+        errors.append(error_msg)
+        logger.error(f"✗ {error_msg}")
+
+    # 9. Delete Git credentials (service-specific credentials)
+    try:
+        response = iam_client.list_service_specific_credentials(UserName=username)
+        creds = response.get('ServiceSpecificCredentials', [])
+        if creds:
+            for cred in creds:
+                cred_id = cred['ServiceSpecificCredentialId']
+                service_name = cred['ServiceName']
+                try:
+                    iam_client.delete_service_specific_credential(
+                        UserName=username,
+                        ServiceSpecificCredentialId=cred_id
+                    )
+                    logger.debug(f"  Deleted {service_name} credential {cred_id}")
+                except ClientError as e:
+                    if e.response['Error']['Code'] != 'NoSuchEntity':
+                        error_msg = f"Failed to delete {service_name} credential: {e.response['Error']['Code']}"
+                        errors.append(error_msg)
+                        logger.error(f"  ✗ {error_msg}")
+            if not errors or len(errors) < len(creds):
+                logger.info(f"✓ Deleted {len(creds)} service-specific credential(s)")
+        else:
+            logger.info("✓ No service-specific credentials to delete")
+    except ClientError as e:
+        error_msg = f"Failed to list service-specific credentials: {e.response['Error']['Code']}"
+        errors.append(error_msg)
+        logger.error(f"✗ {error_msg}")
+
+    # 10. Delete permission boundary
+    try:
+        iam_client.delete_user_permissions_boundary(UserName=username)
+        logger.info("✓ Deleted permission boundary")
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'NoSuchEntity':
+            logger.info("✓ No permission boundary to delete")
+        else:
+            error_msg = f"Failed to delete permission boundary: {e.response['Error']['Code']}"
+            errors.append(error_msg)
+            logger.error(f"✗ {error_msg}")
+
+    # Return results
+    if errors:
+        error_details = "Encountered the following errors during cleanup:\n\n"
+        for i, error in enumerate(errors, 1):
+            error_details += f"{i}. {error}\n"
+        error_details += f"\nUser '{username}' could not be fully cleaned up."
+        return False, error_details
+    else:
+        return True, None
 
 
 def destroy_command(args: argparse.Namespace, logger: logging.Logger) -> int:
@@ -585,6 +904,7 @@ def destroy_command(args: argparse.Namespace, logger: logging.Logger) -> int:
                 raise
 
         # Ask about deleting user
+        user_deleted = False
         if not args.keep_user:
             print("\nDelete IAM user entirely?")
             print(f"  User: {state['iam_username']}")
@@ -596,26 +916,44 @@ def destroy_command(args: argparse.Namespace, logger: logging.Logger) -> int:
             )
 
             if "Yes" in delete_user:
-                # Delete inline policy first
-                logger.info(f"Deleting inline policy {state['policy_name']}...")
-                try:
-                    iam_client.delete_user_policy(
-                        UserName=state['iam_username'],
-                        PolicyName=state['policy_name']
-                    )
-                    logger.info(f"✓ Deleted policy {state['policy_name']}")
-                except ClientError as e:
-                    if e.response['Error']['Code'] != 'NoSuchEntity':
-                        raise
-
-                # Delete user
-                logger.info(f"Deleting IAM user {state['iam_username']}...")
-                try:
-                    iam_client.delete_user(UserName=state['iam_username'])
-                    logger.info(f"✓ Deleted IAM user {state['iam_username']}")
-                except ClientError as e:
-                    if e.response['Error']['Code'] != 'NoSuchEntity':
-                        raise
+                # Comprehensive cleanup of all user dependencies
+                logger.info("Cleaning up all IAM user dependencies...")
+                success, error_details = cleanup_user_dependencies(
+                    iam_client, state['iam_username'], logger
+                )
+                if not success:
+                    print("\n" + "=" * 70)
+                    print("⚠ WARNING: Could not fully clean up IAM user")
+                    print("=" * 70)
+                    print(f"\n{error_details}")
+                    print("\nTo manually delete the user:")
+                    print(f"1. AWS Console → IAM → Users → {state['iam_username']}")
+                    print("2. Review and remove remaining dependencies")
+                    print("3. Delete the user")
+                    print("=" * 70 + "\n")
+                    logger.warning(f"User {state['iam_username']} could not be deleted automatically")
+                else:
+                    # All dependencies cleaned up, now delete user
+                    logger.info(f"Deleting IAM user {state['iam_username']}...")
+                    try:
+                        iam_client.delete_user(UserName=state['iam_username'])
+                        logger.info(f"✓ Deleted IAM user {state['iam_username']}")
+                        user_deleted = True
+                    except ClientError as e:
+                        if e.response['Error']['Code'] == 'NoSuchEntity':
+                            logger.warning(f"User {state['iam_username']} not found (may already be deleted)")
+                            user_deleted = True
+                        else:
+                            # Unexpected error after cleanup
+                            print("\n" + "=" * 70)
+                            print("⚠ WARNING: User cleanup succeeded but deletion failed")
+                            print("=" * 70)
+                            print(f"\nError: {e}")
+                            print(f"User: {state['iam_username']}")
+                            print("\nThe user dependencies were cleaned up, but deletion failed.")
+                            print("Try running the command again, or delete manually via AWS Console.")
+                            print("=" * 70 + "\n")
+                            logger.error(f"Failed to delete user after cleanup: {e}")
         else:
             logger.info(f"Keeping IAM user {state['iam_username']} (--keep-user flag)")
 
@@ -636,8 +974,10 @@ def destroy_command(args: argparse.Namespace, logger: logging.Logger) -> int:
         print("=" * 70)
         print("\nDestroyed:")
         print(f"  - Access key: {access_key_id}")
-        if not args.keep_user and "Yes" in delete_user:
+        if user_deleted:
             print(f"  - IAM user: {state['iam_username']}")
+        elif not args.keep_user:
+            print(f"  - IAM user: {state['iam_username']} (cleanup attempted, may require manual deletion)")
         print(f"  - State files: {STATE_FILE}, {CREDENTIALS_FILE}")
         print("=" * 70 + "\n")
 
