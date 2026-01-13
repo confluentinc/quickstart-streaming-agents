@@ -1,5 +1,7 @@
 ## Zapier Remote MCP Server Setup
 
+> **Note:** SSE endpoints are now deprecated by Zapier. If you previously created an SSE endpoint, you'll need to create a new Streamable HTTP connection and copy the token instead.
+
 Create a Zapier MCP server for tool calling:
 
 <a id="step-1"></a>
@@ -25,19 +27,22 @@ Add these tools to your MCP server:
 <img src="./zapier-screenshots/4.png" alt="Add Tools" width="50%" />
 
 <a id="step-4"></a>
-### 4. Get SSE Endpoint URL
+### 4. Get Zapier Token
 
-Click **"Connect",** choose **"Other"** for your client, then change transport to **"SSE Endpoint"**, and **copy the URL.** This is the `zapier_sse_endpoint` you will need to enter when deploying the lab with `uv run deploy`.
+> **Note:** SSE endpoints are now deprecated. Use Streamable HTTP instead.
 
-<img src="./zapier-screenshots/7.png" alt="SSE Endpoint" width="50%" />
-Make sure the endpoint URL you have ends with `/sse`, and copy it somewhere safe. You will enter this value as the `zapier_sse_endpoint` when deploying labs with `uv run deploy` later.
+Click **"Connect"** to open the connection credentials dialog. The dialog shows **Option 1 (Authorization header - Recommended)** and **Option 2 (URL with token)**. **Copy the token** from the Token field. This is the `zapier_token` you will need to enter when deploying the lab with `uv run deploy`.
+
+<img src="./zapier-screenshots/7.png" alt="Streamable HTTP Token" width="50%" />
+
+The endpoint `https://mcp.zapier.com/api/v1/connect` is the same for all Zapier MCP servers - you only need to copy the token. Copy it somewhere safe. You will enter this value as the `zapier_token` when deploying labs with `uv run deploy` later.
 
 ## :white_check_mark: Checklist
 
 - [ ] Created MCP server and chose "Other" as the MCP client ([step 2](#step-2))
 - [ ] Added  **`Webhooks by Zapier: GET`** , **`Webhooks by Zapier: Custom Request`** , and **`Gmail: Send Email`** tools ([step 3](#step-3))
-- [ ] Server URL ends in `/sse` ([step 4](#step-4))
-- [ ] Copied the URL somewhere safe, to enter it later during deployment ([step 4](#step-4))
+- [ ] Copied the Streamable HTTP token from the connection credentials dialog ([step 4](#step-4))
+- [ ] Saved the token somewhere safe, to enter it later during deployment ([step 4](#step-4))
 
 ## Navigation
 

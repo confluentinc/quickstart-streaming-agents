@@ -38,6 +38,8 @@ Build real-time AI agents with [Confluent Cloud Streaming Agents](https://docs.c
 - **Lab2:** MongoDB Atlas vector database ([Setup guide](./assets/pre-setup/MongoDB-Setup.md))
 - **Lab3:** Zapier ([Setup guide](./assets/pre-setup/Zapier-Setup.md)) + MongoDB ([Setup guide](./assets/pre-setup/MongoDB-Setup.md))
 
+> **Note:** SSE endpoints are now deprecated by Zapier. If you previously created an SSE endpoint, you'll need to create a new Streamable HTTP connection and copy the token instead. See the [Zapier Setup guide](./assets/pre-setup/Zapier-Setup.md) for updated instructions.
+
 **Required tools:**
 
 - **[AWS CLI](https://github.com/aws/aws-cli)** or **[Azure CLI](https://github.com/Azure/azure-cli)** - must be logged in
@@ -87,6 +89,8 @@ That's it! The script will guide you through setup, automatically create API key
 > [!NOTE]
 >
 > For instructor-led workshops, add the `--workshop` flag: `uv run deploy --workshop`.
+> 
+> Workshop mode requires instructor-provided Bedrock API keys, which instructors can create by running `uv run workshop-keys create`. See the [Workshop Mode Setup Guide](./assets/pre-setup/Workshop-Mode-Setup.md) for more details.
 
 
 ## Directory Structure
@@ -135,7 +139,7 @@ cloud_provider = "aws"  # or "azure"
 cloud_region = "your-region"  # must be a region supported by MongoDB free tier, otherwise Lab2 deployment will not succeed
 confluent_cloud_api_key = "your-key"
 confluent_cloud_api_secret = "your-secret"
-zapier_sse_endpoint = "https://mcp.zapier.com/api/mcp/s/your-key/sse"  # Lab1 & Lab3
+zapier_token = "YTYwMDEzNjUtMTIzMC00MjFhLWJlYTAtYWFjYWM3MmZmMTRlOjZqSG5UTEJWV25EQkp5aXJYdlQvWEFhalNmdmlVgmlQTUpMY0pRcHdlc2c9"  # Lab1 & Lab3
 mongodb_connection_string = "mongodb+srv://cluster0.abc.mongodb.net"  # Lab2 & Lab3
 mongodb_username = "your-db-user"  # Lab2 & Lab3
 mongodb_password = "your-db-pass"  # Lab2 & Lab3

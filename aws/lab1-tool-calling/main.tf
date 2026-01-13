@@ -58,8 +58,9 @@ resource "confluent_flink_statement" "zapier_mcp_connection" {
     CREATE CONNECTION IF NOT EXISTS `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`zapier-mcp-connection`
     WITH (
       'type' = 'MCP_SERVER',
-      'endpoint' = '${var.zapier_sse_endpoint}',
-      'api-key' = 'api_key'
+      'endpoint' = 'https://mcp.zapier.com/api/v1/connect',
+      'token' = '${var.zapier_token}',
+      'transport-type' = 'STREAMABLE_HTTP'
     );
   EOT
 

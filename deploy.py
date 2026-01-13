@@ -250,8 +250,8 @@ def main():
 
         # Lab-specific credentials
         if "lab1-tool-calling" in envs_to_deploy or "lab3-agentic-fleet-management" in envs_to_deploy:
-            zapier_endpoint = prompt_with_default("Zapier SSE Endpoint (Lab 1 and Lab 3)", creds.get("TF_VAR_zapier_sse_endpoint", ""))
-            set_key(creds_file, "TF_VAR_zapier_sse_endpoint", zapier_endpoint)
+            zapier_token = prompt_with_default("Zapier Token (Lab 1 and Lab 3)", creds.get("TF_VAR_zapier_token", ""))
+            set_key(creds_file, "TF_VAR_zapier_token", zapier_token)
 
         # MongoDB credentials needed if:
         # - Lab2 or Lab3 is being deployed in non-workshop mode

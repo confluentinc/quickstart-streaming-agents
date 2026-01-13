@@ -35,8 +35,8 @@ variable "mongodb_password_lab3" {
   default     = "pE7xOkiKth2QqTKL"
 }
 
-variable "zapier_sse_endpoint" {
-  description = "Zapier SSE endpoint for MCP connection"
+variable "zapier_token" {
+  description = "Zapier MCP authentication token for tool calling"
   type        = string
   sensitive   = true
 }
