@@ -321,7 +321,7 @@ def validate_zapier(token: str) -> Tuple[bool, List[str]]:
     try:
         req = urllib.request.Request(endpoint)
         req.add_header('Authorization', f'Bearer {token}')
-        req.add_header('Accept', 'application/json')
+        req.add_header('Accept', 'text/event-stream')
 
         with urllib.request.urlopen(req, timeout=10) as response:
             # Check if the connection is successful
@@ -434,7 +434,7 @@ Examples:
             creds.get("TF_VAR_mongodb_username"),
             creds.get("TF_VAR_mongodb_password")
         ])
-        has_zapier = bool(creds.get("TF_VAR_zapier_sse_endpoint"))
+        has_zapier = bool(creds.get("TF_VAR_zapier_token"))
 
         if has_mongo:
             validate_mongo = True

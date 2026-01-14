@@ -451,10 +451,15 @@ LATERAL TABLE(AI_RUN_AGENT(
 ));
 ```
 
+Then view the `dispatch_summary`, `dispatch_json`, and `api_response` summary of the streaming agent's output.
+```sql
+SELECT * FROM `completed_actions`;
+```
 
+![Agent results](./assets/lab3/lab3-completed-actions.png)
 ## Conclusion
 
-By chaining these intelligent streaming components together, we’ve built an always-on, real-time, context-aware agentic pipeline that detects surges, explains their causes, and takes autonomous action — all within seconds.
+By chaining these intelligent streaming components together, we’ve built an always-on, real-time, context-aware agentic pipeline that detects ride request demand surges, explains their causes, and takes autonomous action — all within seconds.
 
 ## Troubleshooting
 <details>

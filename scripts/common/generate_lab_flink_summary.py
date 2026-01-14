@@ -19,10 +19,13 @@ import subprocess
 import sys
 from pathlib import Path
 
-# No need to add to path since we're already in scripts/common
+# Add scripts/common to path for imports when run as standalone script
+script_dir = Path(__file__).parent
+if str(script_dir) not in sys.path:
+    sys.path.insert(0, str(script_dir))
 
-from .generate_deployment_summary import generate_flink_sql_summary
-from .sql_extractors import extract_sql_from_terraform, extract_sql_from_lab_walkthroughs
+from generate_deployment_summary import generate_flink_sql_summary
+from sql_extractors import extract_sql_from_terraform, extract_sql_from_lab_walkthroughs
 
 
 def get_manual_commands_for_lab(lab_name: str) -> str:

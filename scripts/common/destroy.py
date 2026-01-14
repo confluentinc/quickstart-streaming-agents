@@ -98,8 +98,8 @@ def main():
         }
 
         # Load optional fields
-        if "zapier_sse_endpoint" in creds and creds["zapier_sse_endpoint"]:
-            env_vars["TF_VAR_zapier_sse_endpoint"] = creds["zapier_sse_endpoint"]
+        if "zapier_token" in creds and creds["zapier_token"]:
+            env_vars["TF_VAR_zapier_token"] = creds["zapier_token"]
         if "mongodb_connection_string" in creds and creds["mongodb_connection_string"]:
             env_vars["TF_VAR_mongodb_connection_string"] = creds["mongodb_connection_string"]
         if "mongodb_username" in creds and creds["mongodb_username"]:

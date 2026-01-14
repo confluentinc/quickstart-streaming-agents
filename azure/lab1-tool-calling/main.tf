@@ -110,7 +110,7 @@ resource "null_resource" "generate_flink_sql_summary" {
   }
 
   provisioner "local-exec" {
-    command     = "python ${path.module}/../../scripts/common/generate_lab_flink_summary.py lab1 azure ${path.module} zapier_endpoint='${var.zapier_sse_endpoint}' owner_email='${data.terraform_remote_state.core.outputs.owner_email}' || true"
+    command     = "python ${path.module}/../../scripts/common/generate_lab_flink_summary.py lab1 azure ${path.module} || true"
     working_dir = path.module
   }
 
