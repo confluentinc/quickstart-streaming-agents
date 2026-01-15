@@ -58,8 +58,9 @@ resource "confluent_flink_statement" "zapier_mcp_connection" {
     CREATE CONNECTION IF NOT EXISTS `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`zapier-mcp-connection`
     WITH (
       'type' = 'MCP_SERVER',
-      'endpoint' = '${var.zapier_sse_endpoint}',
-      'api-key' = 'api_key'
+      'endpoint' = 'https://mcp.zapier.com/api/v1/connect',
+      'token' = '${var.zapier_token}',
+      'transport-type' = 'STREAMABLE_HTTP'
     );
   EOT
 
@@ -132,7 +133,7 @@ resource "null_resource" "generate_flink_sql_summary" {
   }
 
   provisioner "local-exec" {
-    command     = "python ${path.module}/../../scripts/common/generate_lab_flink_summary.py lab1 aws ${path.module} zapier_endpoint='${var.zapier_sse_endpoint}' owner_email='${data.terraform_remote_state.core.outputs.owner_email}' || true"
+    command     = "python ${path.module}/../../scripts/common/generate_lab_flink_summary.py lab1 aws ${path.module} || true"
     working_dir = path.module
   }
 

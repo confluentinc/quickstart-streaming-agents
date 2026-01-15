@@ -75,8 +75,8 @@ def main():
         # Optional fields
         if "owner_email" in creds and creds["owner_email"]:
             env_vars["TF_VAR_owner_email"] = creds["owner_email"]
-        if "zapier_sse_endpoint" in creds and creds["zapier_sse_endpoint"]:
-            env_vars["TF_VAR_zapier_sse_endpoint"] = creds["zapier_sse_endpoint"]
+        if "zapier_token" in creds and creds["zapier_token"]:
+            env_vars["TF_VAR_zapier_token"] = creds["zapier_token"]
         if "mongodb_connection_string" in creds and creds["mongodb_connection_string"]:
             env_vars["TF_VAR_mongodb_connection_string"] = creds["mongodb_connection_string"]
         if "mongodb_username" in creds and creds["mongodb_username"]:
@@ -250,8 +250,8 @@ def main():
 
         # Lab-specific credentials
         if "lab1-tool-calling" in envs_to_deploy or "lab3-agentic-fleet-management" in envs_to_deploy:
-            zapier_endpoint = prompt_with_default("Zapier SSE Endpoint (Lab 1 and Lab 3)", creds.get("TF_VAR_zapier_sse_endpoint", ""))
-            set_key(creds_file, "TF_VAR_zapier_sse_endpoint", zapier_endpoint)
+            zapier_token = prompt_with_default("Zapier Token (Lab 1 and Lab 3)", creds.get("TF_VAR_zapier_token", ""))
+            set_key(creds_file, "TF_VAR_zapier_token", zapier_token)
 
         # MongoDB credentials needed if:
         # - Lab2 or Lab3 is being deployed in non-workshop mode

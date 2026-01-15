@@ -3,8 +3,8 @@ variable "cloud_region" {
   type        = string
 }
 
-variable "zapier_sse_endpoint" {
-  description = "Zapier MCP SSE Endpoint for tool calling"
+variable "zapier_token" {
+  description = "Zapier MCP authentication token for tool calling"
   type        = string
   sensitive   = true
 }

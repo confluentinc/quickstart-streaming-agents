@@ -119,7 +119,7 @@ workshop_mode = {str(workshop_mode).lower()}
     return content
 
 
-def generate_lab1_tfvars_content(zapier_endpoint: str) -> str:
+def generate_lab1_tfvars_content(zapier_token: str) -> str:
     """
     Generate terraform.tfvars content for Lab1 module.
 
@@ -127,13 +127,13 @@ def generate_lab1_tfvars_content(zapier_endpoint: str) -> str:
     so we don't include it here to avoid redundancy.
 
     Args:
-        zapier_endpoint: Zapier MCP SSE endpoint URL
+        zapier_token: Zapier MCP authentication token
 
     Returns:
         Formatted terraform.tfvars content
     """
     return f"""# Lab1 Configuration
-zapier_sse_endpoint = "{zapier_endpoint}"
+zapier_token = "{zapier_token}"
 """
 
 
@@ -164,6 +164,40 @@ mongodb_password = "{mongo_pass}"
 """
 
 
+def generate_lab3_tfvars_content(
+    zapier_token: str,
+    mongo_conn: Optional[str] = None,
+    mongo_user: Optional[str] = None,
+    mongo_pass: Optional[str] = None
+) -> str:
+    """
+    Generate terraform.tfvars content for Lab3 module.
+
+    Note: cloud_region and workshop_mode are inherited from core via terraform_remote_state.
+    In workshop mode, MongoDB credentials use defaults from variables.tf, so they're optional.
+
+    Args:
+        zapier_token: Zapier MCP authentication token
+        mongo_conn: MongoDB connection string (optional, for non-workshop mode)
+        mongo_user: MongoDB username (optional, for non-workshop mode)
+        mongo_pass: MongoDB password (optional, for non-workshop mode)
+
+    Returns:
+        Formatted terraform.tfvars content
+    """
+    content = f"""# Lab3 Configuration
+zapier_token = "{zapier_token}"
+"""
+
+    # Add MongoDB credentials if provided (non-workshop mode)
+    if mongo_conn and mongo_user and mongo_pass:
+        content += f'mongodb_connection_string_lab3 = "{mongo_conn}"\n'
+        content += f'mongodb_username_lab3 = "{mongo_user}"\n'
+        content += f'mongodb_password_lab3 = "{mongo_pass}"\n'
+
+    return content
+
+
 def write_tfvars_for_deployment(
     root: Path,
     cloud: str,
@@ -179,7 +213,7 @@ def write_tfvars_for_deployment(
         cloud: Cloud provider (aws or azure)
         region: Cloud region
         creds: Credentials dictionary (supports both TF_VAR_ prefixed and non-prefixed keys)
-        envs_to_deploy: List of environments to deploy (core, lab1-tool-calling, lab2-vector-search)
+        envs_to_deploy: List of environments to deploy (core, lab1-tool-calling, lab2-vector-search, lab3-agentic-fleet-management)
     """
     # Core terraform.tfvars
     if "core" in envs_to_deploy:
@@ -209,10 +243,10 @@ def write_tfvars_for_deployment(
 
     # Lab1 terraform.tfvars
     if "lab1-tool-calling" in envs_to_deploy:
-        zapier_endpoint = get_credential_value(creds, "zapier_sse_endpoint")
-        if zapier_endpoint:
+        zapier_token = get_credential_value(creds, "zapier_token")
+        if zapier_token:
             lab1_tfvars_path = root / cloud / "lab1-tool-calling" / "terraform.tfvars"
-            content = generate_lab1_tfvars_content(zapier_endpoint)
+            content = generate_lab1_tfvars_content(zapier_token)
             if write_tfvars_file(lab1_tfvars_path, content):
                 print(f"✓ Wrote {lab1_tfvars_path}")
 
@@ -227,3 +261,23 @@ def write_tfvars_for_deployment(
             content = generate_lab2_tfvars_content(mongo_conn, mongo_user, mongo_pass)
             if write_tfvars_file(lab2_tfvars_path, content):
                 print(f"✓ Wrote {lab2_tfvars_path}")
+
+    # Lab3 terraform.tfvars
+    if "lab3-agentic-fleet-management" in envs_to_deploy:
+        zapier_token = get_credential_value(creds, "zapier_token")
+
+        # MongoDB credentials are optional in workshop mode (uses defaults)
+        mongo_conn = get_credential_value(creds, "mongodb_connection_string")
+        mongo_user = get_credential_value(creds, "mongodb_username")
+        mongo_pass = get_credential_value(creds, "mongodb_password")
+
+        if zapier_token:
+            lab3_tfvars_path = root / cloud / "lab3-agentic-fleet-management" / "terraform.tfvars"
+            content = generate_lab3_tfvars_content(
+                zapier_token,
+                mongo_conn,
+                mongo_user,
+                mongo_pass
+            )
+            if write_tfvars_file(lab3_tfvars_path, content):
+                print(f"✓ Wrote {lab3_tfvars_path}")
