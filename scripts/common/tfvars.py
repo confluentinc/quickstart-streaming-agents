@@ -266,20 +266,10 @@ def write_tfvars_for_deployment(
     if "lab3-agentic-fleet-management" in envs_to_deploy:
         zapier_token = get_credential_value(creds, "zapier_token")
 
-        # Extract workshop_mode flag
-        workshop_mode_str = get_credential_value(creds, "workshop_mode")
-        workshop_mode = workshop_mode_str == "true" if workshop_mode_str else False
-
-        # In workshop mode, Lab3 uses hardcoded read-only MongoDB credentials from variables.tf
-        # In non-workshop mode, use user-provided credentials
-        if workshop_mode:
-            mongo_conn = None
-            mongo_user = None
-            mongo_pass = None
-        else:
-            mongo_conn = get_credential_value(creds, "mongodb_connection_string")
-            mongo_user = get_credential_value(creds, "mongodb_username")
-            mongo_pass = get_credential_value(creds, "mongodb_password")
+        # MongoDB credentials are optional in workshop mode (uses defaults)
+        mongo_conn = get_credential_value(creds, "mongodb_connection_string")
+        mongo_user = get_credential_value(creds, "mongodb_username")
+        mongo_pass = get_credential_value(creds, "mongodb_password")
 
         if zapier_token:
             lab3_tfvars_path = root / cloud / "lab3-agentic-fleet-management" / "terraform.tfvars"
