@@ -323,7 +323,7 @@ FROM (
         ) AS rad,
         LATERAL TABLE(
             VECTOR_SEARCH_AGG(
-                documents_vectordb,
+                documents_vectordb_lab3,
                 DESCRIPTOR(embedding),
                 rad.embedding,
                 3

@@ -32,9 +32,9 @@ During deployment, you'll be prompted to provide 3 MongoDB variables:
 
 Successful deployment creates the complete RAG pipeline:
 - **6 Flink tables** for the document-to-response flow (intentionally in alphabetical order from beginning to end of pipeline, to keep things tidy!):
-  - `documents` 
+  - `documents`
   - `documents_embed`
-  - `documents_vectordb` 
+  - `documents_vectordb_lab2`
   - `queries`
   - `queries_embed`
   - `search_results`

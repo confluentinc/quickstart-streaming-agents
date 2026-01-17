@@ -27,5 +27,8 @@
             "_gen": "loadJsonFile",
             "file": "/home/connections/ride-requests.json"
         }
+    },
+    "globalConfigs": {
+        "maxMs": 420000
     }
 }
