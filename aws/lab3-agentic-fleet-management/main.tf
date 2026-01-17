@@ -83,7 +83,7 @@ resource "confluent_flink_statement" "documents_vectordb_lab3" {
   statement_name = "documents-vectordb-lab3-create-table"
 
   statement = <<-EOT
-    CREATE TABLE IF NOT EXISTS documents_vectordb (
+    CREATE TABLE IF NOT EXISTS documents_vectordb_lab3 (
       document_id STRING,
       chunk STRING,
       embedding ARRAY<FLOAT>
