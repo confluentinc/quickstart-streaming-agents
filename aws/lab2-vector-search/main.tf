@@ -341,7 +341,7 @@ resource "confluent_flink_statement" "documents_vectordb_create_table" {
     secret = data.terraform_remote_state.core.outputs.app_manager_flink_api_secret
   }
 
-  statement = "CREATE TABLE IF NOT EXISTS documents_vectordb_lab2 ( document_id STRING, chunk STRING, embedding ARRAY<FLOAT> ) WITH ( 'connector' = 'mongodb', 'mongodb.connection' = 'mongodb-connection', 'mongodb.database' = '${var.MONGODB_DATABASE}', 'mongodb.collection' = 'documents_lab2', 'mongodb.index' = '${var.MONGODB_INDEX_NAME}', 'mongodb.embedding_column' = 'embedding', 'mongodb.numCandidates' = '500' );"
+  statement = "CREATE TABLE IF NOT EXISTS documents_vectordb_lab2 ( document_id STRING, chunk STRING, embedding ARRAY<FLOAT> ) WITH ( 'connector' = 'mongodb', 'mongodb.connection' = 'mongodb-connection', 'mongodb.database' = '${var.MONGODB_DATABASE}', 'mongodb.collection' = '${var.MONGODB_COLLECTION}', 'mongodb.index' = '${var.MONGODB_INDEX_NAME}', 'mongodb.embedding_column' = 'embedding', 'mongodb.numCandidates' = '500' );"
 
   properties = {
     "sql.current-catalog"  = data.terraform_remote_state.core.outputs.confluent_environment_display_name

@@ -91,7 +91,7 @@ resource "confluent_flink_statement" "documents_vectordb_lab3" {
       'connector' = 'mongodb',
       'mongodb.connection' = 'mongodb-connection-lab3',
       'mongodb.database' = 'vector_search',
-      'mongodb.collection' = 'documents_lab3',
+      'mongodb.collection' = 'documents',
       'mongodb.index' = 'vector_index',
       'mongodb.embedding_column' = 'embedding',
       'mongodb.numCandidates' = '500'
