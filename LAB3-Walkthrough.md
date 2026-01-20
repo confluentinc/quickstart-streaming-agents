@@ -16,22 +16,21 @@ All of this runs in real time on **Confluent Cloud for Apache Flink**, with no e
 ![Architecture Diagram](./assets/lab3/lab3-architecture.png)
 
 ## Prerequisites
-- Zapier remote MCP server ([Setup guide](./assets/pre-setup/Zapier-Setup.md))
-- MongoDB Atlas vector database ([Setup guide](./assets/pre-setup/MongoDB-Setup.md))
-- ⚠️ **IMPORTANT: AWS Users Only:** To access Claude Sonnet 3.7 you must request access to the model by filling out an Anthropic use case form (or someone in your org must have previously done so) for your cloud region. To do so, visit the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog), select Claude 3.7 Sonnet and open it it in the Playground, then send a message in the chat - the form will appear automatically. ⚠️
+- Zapier remote MCP server ([Setup guide](./assets/pre-setup/Zapier-Setup.md)) - this will be provided during the workshop.
+- MongoDB Atlas vector database ([Setup guide](./assets/pre-setup/MongoDB-Setup.md)) - will be provided during the workshop.
 
 ## Deploy the Demo
 
 Once you have these credentials ready, run the following command and choose **Lab3** (see [main README](./README.md)):
 
   ```sql no-parse
-  uv run deploy
+  uv run deploy --workshop
   ```
 ## Usecase Walkthrough
 
-### Data Generation
+### 0. Data Generation
 
-Make sure **Docker Desktop** is running, or if you don't have / can't set up Docker Desktop, run the following command:
+Make sure **Docker Desktop** is running, or run the following command instead:
 
 ```bash
 colima start
@@ -41,24 +40,9 @@ Then run:
 uv run lab3_datagen
 ```
 
-<details>
-<summary>Alternative: Using Python directly</summary>
-
-```bash no-parse
-python scripts/lab3_datagen.py
-```
-
-The Python script provides the same automation as the uv version.
-
-</details>
-
-The data generator produces two interconnected data streams:
+The data generator produces the following data stream:
 
 - **`ride_requests`** – Represents incoming boat ride requests. Each request includes a **pickup zone** and a **drop-off zone**.
-- **`vessel_catalog`** – A catalog of all vessels currently in the system. Each vessel has one of three statuses:
-  - `available` – ready to be hired
-  - `hired` – currently in use
-  - `in_dock` – docked and unavailable for hire
 
 
 ### 1. Anomaly Detection: Detect surge in `ride_requests` using `ML_DETECT_ANOMALIES`
@@ -490,7 +474,7 @@ Run the following command:
 ```bash
 uv run destroy
 ```
-Then, choose your cloud provider when prompted. This will remove all lab-related resources safely.
+Choose **AWS** when prompted. This will remove all lab-related resources safely.
 
 
 ## Navigation
