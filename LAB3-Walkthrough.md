@@ -27,17 +27,16 @@ Once you have these credentials ready, run the following command and choose **La
   ```sql no-parse
   uv run deploy
   ```
-  Then, publish the local event documents to MongoDB by running the following command. Choose 'yes' to clear your MongoDB database of all documents when prompted, if you previously uploaded documents for Lab2:
-```sql
-uv run publish_docs --lab3
-```
-
 ## Usecase Walkthrough
 
 ### Data Generation
 
-Make sure **Docker Desktop** is running, then begin generating data with the following command:
+Make sure **Docker Desktop** is running, or if you don't have / can't set up Docker Desktop, run the following command:
 
+```bash
+colima start
+```
+Then run:
 ```bash
 uv run lab3_datagen
 ```

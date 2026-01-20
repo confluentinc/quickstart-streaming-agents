@@ -434,7 +434,7 @@ def run_shadowtraffic(
         shadowtraffic_args.extend(["--duration", str(duration)])
 
     docker_cmd.extend([
-        "shadowtraffic/shadowtraffic:1.11.3"
+        "shadowtraffic/shadowtraffic:1.14.0"
     ] + shadowtraffic_args)
 
     logger.info(f"🚀 Starting ShadowTraffic data generation...")

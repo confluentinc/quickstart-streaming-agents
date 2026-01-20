@@ -54,7 +54,7 @@ Build real-time AI agents with [Confluent Cloud Streaming Agents](https://docs.c
 **Mac:**
 
 ```bash
-brew install uv git python && brew tap hashicorp/tap && brew install hashicorp/tap/terraform && brew install --cask confluent-cli docker-desktop && brew install awscli  # or azure-cli
+brew install uv git python docker colima && brew tap hashicorp/tap && brew install hashicorp/tap/terraform && brew install --cask confluent-cli docker-desktop
 ```
 
 **Windows:**
