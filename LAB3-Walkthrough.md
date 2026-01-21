@@ -16,6 +16,20 @@ All of this runs in real time on **Confluent Cloud for Apache Flink**, with no e
 ![Architecture Diagram](./assets/lab3/lab3-architecture.png)
 
 ## Prerequisites
+<details>
+<summary> Install prerequisites (Mac/Windows)</summary>
+**Mac:**
+
+```bash
+brew install uv git python docker colima && brew tap hashicorp/tap && brew install hashicorp/tap/terraform && brew install --cask confluent-cli
+```
+
+**Windows:**
+```powershell
+winget install astral-sh.uv Git.Git Hashicorp.Terraform ConfluentInc.Confluent-CLI Python.Python SUSE.RancherDesktop.Main
+```
+</details>
+
 - Zapier remote MCP server ([Setup guide](./assets/pre-setup/Zapier-Setup.md)) - this will be provided during the workshop.
 - MongoDB Atlas vector database ([Setup guide](./assets/pre-setup/MongoDB-Setup.md)) - will be provided during the workshop.
 
@@ -30,9 +44,10 @@ Once you have these credentials ready, run the following command and choose **La
 
 ### 0. Data Generation
 
-Make sure **Docker Desktop** is running, or run the following command instead:
+We use ShadowTraffic to generate data, which requires Docker and a Docker orchestrator to run. For Windows, open **Rancher Desktop**, and for Mac, run the following command:
 
 ```bash
+# Run the following command for Mac. Windows users, open Rancher Desktop app.
 colima start
 ```
 Then run:
@@ -42,7 +57,7 @@ uv run lab3_datagen
 
 The data generator produces the following data stream:
 
-- **`ride_requests`** – Represents incoming boat ride requests. Each request includes a **pickup zone** and a **drop-off zone**.
+- **`ride_requests`** – Represents incoming boat ride requests. Each request includes a **pickup zone**  **drop-off zone**, **timestamp**, and other user info like the ride ID and price.
 
 
 ### 1. Anomaly Detection: Detect surge in `ride_requests` using `ML_DETECT_ANOMALIES`
@@ -440,6 +455,13 @@ SELECT * FROM `completed_actions`;
 ```
 
 ![Agent results](./assets/lab3/lab3-completed-actions.png)
+
+### 5. Email challenge (Bonus)
+
+<img src="./assets/lab3/lab3-email-challenge.jpg" alt="Email challenge logo" style="max-width:25%;" />
+
+Now, see if you can build a pipeline to create a Streaming Agent that sends you an email for each anomaly that's detected in the `anomalies_per_zone` topic. The `zapier` tool already gives your agent access to the `gmail_send_email` method. Create a new agent with the `CREATE AGENT` syntax, and you'll be well on your way!
+
 ## Conclusion
 
 By chaining these intelligent streaming components together, we’ve built an always-on, real-time, context-aware agentic pipeline that detects ride request demand surges, explains their causes, and takes autonomous action — all within seconds.
