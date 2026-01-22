@@ -68,7 +68,11 @@ Read the [blog post](https://docs.confluent.io/cloud/current/ai/builtin-function
 
 In [Flink UI](https://confluen.cloud/go/flink), select your environment and open a SQL workspace.
 
-First, let's visualize the anomaly detection in action by running this query:
+First, let's visualize the anomaly detection in action by **completing the query below**, then running:
+
+> [!WARNING]
+>
+> Don't forget to fill in the missing parameters for the `ML_DETECT_ANOMALIES` function in the query below! It will not run without the correct parameters. Check out the documentation [here.](https://docs.confluent.io/cloud/current/ai/builtin-functions/detect-anomalies.html#ml-detect-anomalies)
 
 ```sql
 WITH windowed_traffic AS (
@@ -107,6 +111,7 @@ SELECT
         RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
     ) AS anomaly_result
 FROM windowed_traffic;
+
 ```
 
 Click on the **anomaly_result** graph.
@@ -371,7 +376,14 @@ WITH (
 );
 ```
 
-See [CREATE AGENT documentation](https://docs.confluent.io/cloud/current/flink/reference/statements/create-agent.html#flink-sql-create-agent).
+Next, lease complete and run the `CREATE AGENT` query below. See [CREATE AGENT documentation](https://docs.confluent.io/cloud/current/flink/reference/statements/create-agent.html#flink-sql-create-agent).
+
+> [!WARNING]
+>
+> Don't blindly copy-paste the query below! Before running, be sure to fill out:
+> 1. The factors the agent should consider before dispatching boats in **Step #3**
+> 2. A template for the "Agent Summary" field in **Step #6**
+
 ```sql
 CREATE AGENT `boat_dispatch_agent`
 USING MODEL `zapier_mcp_model`
@@ -404,18 +416,17 @@ Your workflow:
 6. FORMAT your final response with these THREE sections:
 
 Dispatch Summary:
--- EDIT: <Create a template for the agent's final summary, e.g. "Due to the surge in demand in [zone]...">
+-- EDIT: <Create a template for the agent final summary, e.g. "Due to the surge in demand in [zone]...">
 
 Dispatch JSON:
--- do not modify
+-- workshop attendees: do not modify
 {your dispatch JSON here}
 
 API Response:
--- do not modify
+-- workshop attendees: do not modify
 {the response from the API call}
 
 CRITICAL INSTRUCTIONS:
--- do not modify
 - Dispatch boats from nearby zones first
 - Dispatch more boats with larger capacities for big surges (up to 8 boats)
 - Your response MUST contain the three labeled sections
@@ -462,13 +473,21 @@ SELECT * FROM `completed_actions`;
 
 <img src="./assets/lab3/lab3-email-challenge.jpg" alt="Email challenge logo" style="max-width:25%;" />
 
-Now, see if you can build a pipeline to create a Streaming Agent that sends you an email for each anomaly that's detected in the `anomalies_per_zone` topic. The `zapier` tool already gives your agent access to the `gmail_send_email` method. Create a new agent with the `CREATE AGENT` syntax, and you'll be well on your way!
+Now, see if you can build a pipeline to create a Streaming Agent that sends an email for each anomaly that's detected in the `anomalies_per_zone` topic to `aistreamingagent@gmail.com`.
+
+The `zapier` tool already gives your agent access to the `gmail_send_email` method. Create a new agent with the `CREATE AGENT` syntax, and you'll be well on your way! Hint: specify the exact `EMAIL RECIPIENT:`, `EMAIL SUBJECT:`, and `EMAIL BODYTEMPLATE:` you want the `zapier` `gmail_send_email` tool to use. See a working example in [Lab1](./LAB1-Walkthrough.md).
+
+> [!IMPORTANT]
+>
+> To be entered to win a gift card, be sure to have your agent send the anomaly detection email to:
+> `aistreamingagent@gmail.com`
 
 ## Conclusion
 
 By chaining these intelligent streaming components together, we’ve built an always-on, real-time, context-aware agentic pipeline that detects ride request demand surges, explains their causes, and takes autonomous action — all within seconds.
 
 ## Troubleshooting
+
 <details>
 <summary>Click to expand</summary>
 
