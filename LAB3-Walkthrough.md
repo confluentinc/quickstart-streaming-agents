@@ -471,7 +471,7 @@ SELECT * FROM `completed_actions`;
 
 ### 5. Email challenge (Bonus)
 
-<img src="./assets/lab3/lab3-email-challenge.jpg" alt="Email challenge logo" style="max-width:25%;" />
+<img src="./assets/lab3/lab3-email-challenge.jpg" alt="Email challenge logo" width="250" />
 
 Now, see if you can build a pipeline to create a Streaming Agent that sends an email for each anomaly that's detected in the `anomalies_per_zone` topic to `aistreamingagent@gmail.com`.
 
