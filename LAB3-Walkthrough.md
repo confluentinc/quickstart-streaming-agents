@@ -95,10 +95,11 @@ SELECT
         CAST(request_count AS DOUBLE),
         window_time,
         JSON_OBJECT(
-            'minTrainingSize' VALUE 287,
-            'maxTrainingSize' VALUE 7000,
-            'confidencePercentage' VALUE 99.999,
-            'enableStl' VALUE FALSE
+            -- Complete this query
+            -- 'minTrainingSize' VALUE ???,
+            -- 'maxTrainingSize' VALUE ???,
+            -- 'confidencePercentage' VALUE ???,
+            -- 'enableStl' VALUE ???
         )
     ) OVER (
         PARTITION BY pickup_zone
@@ -351,7 +352,7 @@ FROM (
 );
 ```
 
-> NOTE: Leave the query running so that it runs continously.
+> NOTE: Leave the query running so that it runs continuously.
 
 ### 3. Agent Definition: Run `CREATE TOOL` and `CREATE AGENT` to define agent tools, prompt, and capabilities
 
@@ -380,10 +381,8 @@ Your workflow:
 1. ANALYZE the surge information provided (zone, time, request count, anomaly reason)
 2. REVIEW the available vessels list by sending a basic GET request using the webhooks_by_zapier_get tool to "https://p8jrtzaj78.execute-api.us-east-1.amazonaws.com/prod/api/vessel_catalog"
 3. SELECT appropriate boats to dispatch based on:
-   - Proximity to the target zone
-   - Boat capacity
-   - Current availability
-   - Surge magnitude (dispatch up to 8 boats for large surges)
+-- EDIT: <Enter factors the agent should consider here>
+
 4. CREATE a JSON dispatch request with this exact structure:
    {
      "action": "dispatch_boats",
@@ -405,15 +404,18 @@ Your workflow:
 6. FORMAT your final response with these THREE sections:
 
 Dispatch Summary:
-Due to the surge in demand in [zone] as a result of [event], we dispatched [n] additional boats from [list of zones].
+-- EDIT: <Create a template for the agent's final summary, e.g. "Due to the surge in demand in [zone]...">
 
 Dispatch JSON:
+-- do not modify
 {your dispatch JSON here}
 
 API Response:
+-- do not modify
 {the response from the API call}
 
 CRITICAL INSTRUCTIONS:
+-- do not modify
 - Dispatch boats from nearby zones first
 - Dispatch more boats with larger capacities for big surges (up to 8 boats)
 - Your response MUST contain the three labeled sections

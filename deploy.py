@@ -125,8 +125,12 @@ def main():
             sys.exit(1)
         print("✓ Confluent CLI logged in")
 
-        # Step 1: Select cloud provider
-        cloud = prompt_choice("Select cloud provider:", ["aws", "azure"])
+        # Step 1: Select cloud provider (auto-select AWS in workshop mode)
+        if args.workshop:
+            cloud = "aws"
+            print("✓ Workshop mode: Auto-selected cloud provider: AWS")
+        else:
+            cloud = prompt_choice("Select cloud provider:", ["aws", "azure"])
 
         # Check if Azure workshop mode (not supported yet)
         if args.workshop and cloud == "azure":
@@ -185,15 +189,19 @@ def main():
                 creds["TF_VAR_confluent_cloud_api_key"] = api_key
                 creds["TF_VAR_confluent_cloud_api_secret"] = api_secret
 
-        # Step 4: Select what to deploy
+        # Step 4: Select what to deploy (auto-select Lab 3 in workshop mode)
         envs_to_deploy = []
-        deploy_options = [
-            "Lab 1: MCP Tool Calling",
-            "Lab 2: Vector Search / RAG",
-            "Lab 3: Agentic Fleet Management",
-            "All Labs (Labs 1, 2, and 3)"
-        ]
-        env_choice = prompt_choice("What would you like to deploy?", deploy_options)
+        if args.workshop:
+            env_choice = "Lab 3: Agentic Fleet Management"
+            print("✓ Workshop mode: Auto-selected deployment: Lab 3: Agentic Fleet Management")
+        else:
+            deploy_options = [
+                "Lab 1: MCP Tool Calling",
+                "Lab 2: Vector Search / RAG",
+                "Lab 3: Agentic Fleet Management",
+                "All Labs (Labs 1, 2, and 3)"
+            ]
+            env_choice = prompt_choice("What would you like to deploy?", deploy_options)
 
         # Map user-friendly choice to deployment targets (core auto-included for labs)
         if env_choice == "Lab 1: MCP Tool Calling":

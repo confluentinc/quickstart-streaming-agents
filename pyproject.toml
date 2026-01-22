@@ -64,7 +64,7 @@ mongodb = [
 
 
 [project.scripts]
-deploy = "deploy:main"
+deploy = "scripts.deploy_wrapper:main"
 destroy = "scripts.common.destroy:main"
 #
 lab1_datagen = "scripts.lab1_datagen:main"
