@@ -35,9 +35,14 @@ winget install astral-sh.uv Git.Git Hashicorp.Terraform ConfluentInc.Confluent-C
 
 ## Deploy the Demo
 
-Once you have these credentials ready, run the following command and choose **Lab3** (see [main README](./README.md)):
+First, be sure to log in to Confluent Cloud with the email address associated with the isolated environment you want to deploy in:
+```bash
+confluent login
+```
 
-  ```sql no-parse
+Then, to deploy the workshop, run the following command, entering credentials when prompted. Credentials that you have previously created or entered will be saved as the default - press Enter to confirm each one, or manually enter new ones.
+
+  ```bash
   uv run deploy --workshop
   ```
 ## Usecase Walkthrough
