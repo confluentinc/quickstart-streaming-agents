@@ -181,3 +181,12 @@ addopts = [
     "--cov-report=term-missing",
     "--cov-report=html",
 ]
+
+# Force public PyPI for all users (including Confluent employees with CodeArtifact)
+# This overrides any global CodeArtifact configuration from pip-login
+[[tool.uv.index]]
+name = "pypi"
+url = "https://pypi.org/simple"
+
+[tool.uv.pip]
+index-url = "https://pypi.org/simple"

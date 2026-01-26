@@ -22,7 +22,7 @@ Visit [mcp.zapier.com](https://mcp.zapier.com/mcp/servers), choose **"Other"** a
 Add these tools to your MCP server:
 
 - **`Webhooks by Zapier: GET`** and **`Webhooks by Zapier: Custom Request`** tools
-- **`Gmail: Send Email`** tool (authenticate via SSO). This tool is needed for Lab1 only.
+- **`Gmail: Send Email`** tool (authenticate via SSO).
 
     <img src="./zapier-screenshots/4.png" alt="Add Tools" width="50%" />
 

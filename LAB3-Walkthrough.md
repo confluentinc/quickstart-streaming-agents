@@ -13,9 +13,8 @@ The system continuously monitors ride request streams in real time and performs 
 All of this runs in real time on **Confluent Cloud for Apache Flink**, with no external orchestration required.
 
 
-![Architecture Diagram](./assets/lab3/lab3-architecture.png)
+![Architecture Diagram](./assets/lab3/lab3-architecture.png)## Prerequisites
 
-## Prerequisites
 <details>
 <summary> Install prerequisites (Mac/Windows)</summary>
 **Mac:**
@@ -25,13 +24,13 @@ brew install uv git python docker colima && brew tap hashicorp/tap && brew insta
 ```
 
 **Windows:**
+
 ```powershell
 winget install astral-sh.uv Git.Git Hashicorp.Terraform ConfluentInc.Confluent-CLI Python.Python SUSE.RancherDesktop.Main
 ```
 </details>
 
-- Zapier remote MCP server ([Setup guide](./assets/pre-setup/Zapier-Setup.md)) - this will be provided during the workshop.
-- MongoDB Atlas vector database ([Setup guide](./assets/pre-setup/MongoDB-Setup.md)) - will be provided during the workshop.
+- Zapier remote MCP server API keys ([Setup guide](./assets/pre-setup/Zapier-Setup.md)) - **these will be provided during the workshop.** (You only need to follow the guide and generate API keys yourself if you are testing the workshop before GKO.)
 
 ## Deploy the Demo
 
@@ -45,16 +44,18 @@ Then, to deploy the workshop, run the following command, entering credentials wh
   ```bash
   uv run deploy --workshop
   ```
+
 ## Usecase Walkthrough
 
 ### 0. Data Generation
 
-We use ShadowTraffic to generate data, which requires Docker and a Docker orchestrator to run. For Windows, open **Rancher Desktop**, and for Mac, run the following command:
+We use **ShadowTraffic** to generate data, which requires Docker and a **Docker orchestrator** to run. For Windows, open **Rancher Desktop**, and for Mac, run the following command to get **Colima** running.
 
 ```bash
 # Run the following command for Mac. Windows users, open Rancher Desktop app.
 colima start
 ```
+
 Then run:
 ```bash
 uv run lab3_datagen
@@ -64,14 +65,13 @@ The data generator produces the following data stream:
 
 - **`ride_requests`** – Represents incoming boat ride requests. Each request includes a **pickup zone**  **drop-off zone**, **timestamp**, and other user info like the ride ID and price.
 
-
 ### 1. Anomaly Detection: Detect surge in `ride_requests` using `ML_DETECT_ANOMALIES`
 
 This step identifies unexpected surges in ride requests for each pickup zone in real time using Flink's built-in anomaly detection function. We analyze ride request counts over 5-minute windows and compare them against expected baselines derived from historical trends.
 
 Read the [blog post](https://docs.confluent.io/cloud/current/ai/builtin-functions/detect-anomalies.html) and view the [documentation](https://docs.confluent.io/cloud/current/flink/reference/functions/model-inference-functions.html#flink-sql-ml-anomaly-detect-function) on Flink anomaly detection for more details about how it works.
 
-In [Flink UI](https://confluen.cloud/go/flink), select your environment and open a SQL workspace.
+In [Flink UI](https://confluent.cloud/go/flink), select your environment and open a SQL workspace.
 
 First, let's visualize the anomaly detection in action by **completing the query below**, then running:
 
@@ -495,6 +495,8 @@ By chaining these intelligent streaming components together, we’ve built an al
 
 <details>
 <summary>Click to expand</summary>
+
+- **For Confluent employees: "No solution found when resolving dependencies" with CodeArtifact 401 error?** This project is configured to use public PyPI by default. If you still encounter this error, run `granted assume <your-aws-profile>` and `pip-login` before running `uv run deploy --workshop`.
 
 - **No anomalies detected?** Check that your data generation is running. The first anomaly should be detected after both data generation (run `uv run lab3_datagen`) and the anomaly detection query **(Query #1)** have been running for about 5 minutes. This is because the anomaly detection query uses 5-minute windows, and we have to wait for the first window to close before the detection algorithm can identify an anomaly.
 
