@@ -1,8 +1,10 @@
 # Reference to core infrastructure
+# In workshop mode, points to core-workshop (no Azure provider)
+# In production mode, points to core (with Azure provider)
 data "terraform_remote_state" "core" {
   backend = "local"
   config = {
-    path = "../core/terraform.tfstate"
+    path = var.workshop_mode ? "../core-workshop/terraform.tfstate" : "../core/terraform.tfstate"
   }
 }
 

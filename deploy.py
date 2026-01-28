@@ -64,6 +64,10 @@ def main():
         workshop_mode = creds.get("workshop", False)
         envs_to_deploy = ["core", "lab1-tool-calling", "lab2-vector-search", "lab3-agentic-fleet-management"]
 
+        # In workshop mode on Azure, replace "core" with "core-workshop" (no Azure provider)
+        if workshop_mode and cloud == "azure":
+            envs_to_deploy = ["core-workshop" if env == "core" else env for env in envs_to_deploy]
+
         # Build environment variables for Terraform
         env_vars = {
             "TF_VAR_confluent_cloud_api_key": creds["confluent_cloud_api_key"],
@@ -84,11 +88,9 @@ def main():
         if "mongodb_password" in creds and creds["mongodb_password"]:
             env_vars["TF_VAR_mongodb_password"] = creds["mongodb_password"]
 
-        # Azure subscription ID (use placeholder in workshop mode)
-        if cloud == "azure":
-            if workshop_mode:
-                env_vars["TF_VAR_azure_subscription_id"] = "00000000-0000-0000-0000-000000000000"
-            elif "azure_subscription_id" in creds:
+        # Azure subscription ID (only needed for production mode, not workshop mode)
+        if cloud == "azure" and not workshop_mode:
+            if "azure_subscription_id" in creds:
                 env_vars["TF_VAR_azure_subscription_id"] = creds["azure_subscription_id"]
 
         # Workshop mode credentials
@@ -99,7 +101,7 @@ def main():
                 env_vars["TF_VAR_aws_bedrock_secret_key"] = creds["aws_bedrock_secret_key"]
         if workshop_mode and cloud == "azure":
             if "azure_openai_endpoint" in creds and creds["azure_openai_endpoint"]:
-                env_vars["TF_VAR_azure_openai_endpoint"] = creds["azure_openai_endpoint"]
+                env_vars["TF_VAR_azure_openai_endpoint_raw"] = creds["azure_openai_endpoint"]
             if "azure_openai_api_key" in creds and creds["azure_openai_api_key"]:
                 env_vars["TF_VAR_azure_openai_api_key"] = creds["azure_openai_api_key"]
 
@@ -199,6 +201,10 @@ def main():
         elif env_choice == "All Labs (Labs 1, 2, and 3)":
             envs_to_deploy = ["core", "lab1-tool-calling", "lab2-vector-search", "lab3-agentic-fleet-management"]
 
+        # In workshop mode on Azure, replace "core" with "core-workshop" (no Azure provider)
+        if args.workshop and cloud == "azure":
+            envs_to_deploy = ["core-workshop" if env == "core" else env for env in envs_to_deploy]
+
         # Step 5: Prompt for required credentials
         print("\n--- Credential Configuration ---")
 
@@ -213,16 +219,11 @@ def main():
         if owner_email:
             set_key(creds_file, "TF_VAR_owner_email", owner_email)
 
-        # Azure subscription ID
-        if cloud == "azure" and "core" in envs_to_deploy:
-            if args.workshop:
-                # Workshop mode: use placeholder since no Azure resources are created
-                azure_sub = "00000000-0000-0000-0000-000000000000"
-                set_key(creds_file, "TF_VAR_azure_subscription_id", azure_sub)
-            else:
-                # Production mode: prompt for real subscription ID
-                azure_sub = prompt_with_default("Azure Subscription ID", creds.get("TF_VAR_azure_subscription_id", ""))
-                set_key(creds_file, "TF_VAR_azure_subscription_id", azure_sub)
+        # Azure subscription ID (only needed for production mode with core)
+        if cloud == "azure" and "core" in envs_to_deploy and not args.workshop:
+            # Production mode: prompt for real subscription ID
+            azure_sub = prompt_with_default("Azure Subscription ID", creds.get("TF_VAR_azure_subscription_id", ""))
+            set_key(creds_file, "TF_VAR_azure_subscription_id", azure_sub)
 
         # Workshop mode: AWS Bedrock credentials (pre-provided)
         if args.workshop and cloud == "aws":
@@ -233,9 +234,9 @@ def main():
 
         # Workshop mode: Azure OpenAI credentials (pre-provided)
         if args.workshop and cloud == "azure":
-            azure_openai_endpoint = prompt_with_default("Azure OpenAI Endpoint (workshop)", creds.get("TF_VAR_azure_openai_endpoint", ""))
+            azure_openai_endpoint = prompt_with_default("Azure OpenAI Endpoint (workshop)", creds.get("TF_VAR_azure_openai_endpoint_raw", ""))
             azure_openai_key = prompt_with_default("Azure OpenAI API Key (workshop)", creds.get("TF_VAR_azure_openai_api_key", ""))
-            set_key(creds_file, "TF_VAR_azure_openai_endpoint", azure_openai_endpoint)
+            set_key(creds_file, "TF_VAR_azure_openai_endpoint_raw", azure_openai_endpoint)
             set_key(creds_file, "TF_VAR_azure_openai_api_key", azure_openai_key)
 
         # Lab-specific credentials

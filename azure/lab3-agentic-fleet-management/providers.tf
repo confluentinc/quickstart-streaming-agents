@@ -24,9 +24,15 @@ terraform {
 provider "random" {}
 
 # Azure Provider Configuration
+# In workshop mode, dummy ARM_* environment variables are provided by deploy.py to allow
+# participants without Azure access to run Terraform (no actual Azure API calls are made)
 provider "azurerm" {
   features {}
-  subscription_id = var.azure_subscription_id
+  subscription_id                 = var.azure_subscription_id
+  resource_provider_registrations = "none"
+  use_cli                         = false
+  use_msi                         = false
+  use_oidc                        = false
 }
 
 # Confluent Provider Configuration (for module use)

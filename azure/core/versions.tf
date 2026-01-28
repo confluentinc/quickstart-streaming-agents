@@ -27,8 +27,13 @@ provider "random" {}
 
 # Azure Provider Configuration
 # Note: In workshop mode, subscription_id is a placeholder since no Azure resources are created
+# In workshop mode, dummy ARM_* environment variables are provided by deploy.py to allow
+# participants without Azure access to run Terraform (no actual Azure API calls are made)
 provider "azurerm" {
   features {}
-  subscription_id                = var.azure_subscription_id
+  subscription_id                 = var.azure_subscription_id
   resource_provider_registrations = "none"
+  use_cli                         = false
+  use_msi                         = false
+  use_oidc                        = false
 }
