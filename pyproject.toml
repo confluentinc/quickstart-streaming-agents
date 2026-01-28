@@ -44,6 +44,11 @@ dependencies = [
     "urllib3>=1.26.18,<2.0", # Pin to v1.x for LibreSSL compatibility on macOS
     "pymongo>=4.10.1",
     "boto3>=1.26.0,<2.0", # Required for workshop-keys command
+    "azure-identity>=1.15.0",
+    "azure-mgmt-cognitiveservices>=13.5.0",
+    "azure-mgmt-resource>=23.0.0",
+    "azure-ai-inference>=1.0.0b1",
+    "requests>=2.31.0",
 ]
 
 # Optional dependencies for enhanced functionality
@@ -91,8 +96,14 @@ deployment-summary = "scripts.common.generate_deployment_summary:main"
 workshop_keys = "scripts.common.workshop_key_manager:main"
 workshop-keys = "scripts.common.workshop_key_manager:main"
 #
+azure_workshop_keys = "scripts.common.azure_workshop_key_manager:main"
+azure-workshop-keys = "scripts.common.azure_workshop_key_manager:main"
+#
 test_bedrock = "scripts.common.test_bedrock_credentials:main"
 test-bedrock = "scripts.common.test_bedrock_credentials:main"
+#
+test_azure_openai = "scripts.common.test_azure_openai_credentials:main"
+test-azure-openai = "scripts.common.test_azure_openai_credentials:main"
 #
 generate_summaries = "scripts.common.generate_lab_flink_summary:main"
 generate-summaries = "scripts.common.generate_lab_flink_summary:main"

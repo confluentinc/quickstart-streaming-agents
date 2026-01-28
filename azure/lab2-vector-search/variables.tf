@@ -1,8 +1,8 @@
 variable "mongodb_connection_string" {
-  description = "MongoDB connection string for vector database"
+  description = "MongoDB connection string for vector database (workshop mode uses hardcoded public readonly cluster)"
   type        = string
   sensitive   = true
-  default     = "mongodb+srv://cluster0.c79vrkg.mongodb.net/"
+  default     = "mongodb+srv://cluster0.xhgx1kr.mongodb.net/"
 }
 
 variable "MONGODB_DATABASE" {
@@ -24,17 +24,17 @@ variable "MONGODB_INDEX_NAME" {
 }
 
 variable "mongodb_username" {
-  description = "MongoDB Atlas database user username (project-specific, NOT your Atlas account username). Create this in Atlas: Database Access -> Database Users -> Add New Database User. Example: 'confluent-user'"
+  description = "MongoDB Atlas database user username (workshop mode uses hardcoded public readonly user)"
   type        = string
   sensitive   = true
-  default     = "workshop-user"
+  default     = "public_readonly_user"
 }
 
 variable "mongodb_password" {
-  description = "MongoDB Atlas database user password (for the database user created above, NOT your Atlas account password). Set when creating the database user."
+  description = "MongoDB Atlas database user password (workshop mode uses hardcoded public readonly password)"
   type        = string
   sensitive   = true
-  default     = "xr6PvJl9xZz1uoKa"
+  default     = "sB948mVgIYqwUloX"
 }
 
 variable "workshop_mode" {

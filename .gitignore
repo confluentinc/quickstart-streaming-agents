@@ -63,6 +63,8 @@ AGENT_DEFINITION_SYNTAX.md
 EMAIL_REPLACEMENT_IMPLEMENTATION.md
 WORKSHOP_CREDENTIALS.md
 .workshop-keys-state.json
+AZURE_WORKSHOP_CREDENTIALS.md
+.azure-workshop-keys-state.json
 
 
 # Python (if scripts are added)

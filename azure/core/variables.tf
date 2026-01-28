@@ -52,10 +52,20 @@ variable "azure_openai_api_key" {
   type        = string
   sensitive   = true
   default     = ""
+
+  validation {
+    condition     = var.workshop_mode ? length(var.azure_openai_api_key) > 0 : true
+    error_message = "azure_openai_api_key is required when workshop_mode is enabled"
+  }
 }
 
 variable "azure_openai_endpoint" {
   description = "Azure OpenAI Endpoint URL (workshop mode only)"
   type        = string
   default     = ""
+
+  validation {
+    condition     = var.workshop_mode ? length(var.azure_openai_endpoint) > 0 : true
+    error_message = "azure_openai_endpoint is required when workshop_mode is enabled"
+  }
 }

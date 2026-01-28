@@ -42,7 +42,7 @@ def main():
     parser.add_argument("--testing", action="store_true",
                        help="Non-interactive mode using credentials.json (for automated testing)")
     parser.add_argument("--workshop", action="store_true",
-                       help="Workshop mode using pre-provided cloud credentials (no cloud CLI required)")
+                       help="Workshop mode using pre-provided cloud credentials for AWS (Bedrock) or Azure (OpenAI) - no cloud CLI required")
     args = parser.parse_args()
 
     print("=== Simple Deployment Tool ===\n")
@@ -127,16 +127,6 @@ def main():
 
         # Step 1: Select cloud provider
         cloud = prompt_choice("Select cloud provider:", ["aws", "azure"])
-
-        # Check if Azure workshop mode (not supported yet)
-        if args.workshop and cloud == "azure":
-            print("\n" + "="*70)
-            print("  Workshop mode for Azure is in development but not yet supported.")
-            print("  Please either:")
-            print("    - Deploy normally without the `--workshop` flag")
-            print("    - Try again at a later date")
-            print("="*70 + "\n")
-            sys.exit(0)
 
         # Step 1.5: Check cloud CLI login (skip in workshop mode)
         if args.workshop:
