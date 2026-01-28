@@ -89,6 +89,35 @@ def setup_logging(verbose: bool = False) -> logging.Logger:
     return logging.getLogger(__name__)
 
 
+def check_azure_cli_login() -> bool:
+    """
+    Check if user is authenticated to Azure CLI by attempting to get an access token.
+
+    This is more reliable than 'az account show' which can return cached data
+    even when not authenticated.
+
+    Returns:
+        True if authenticated and can get token, False otherwise
+    """
+    try:
+        import subprocess
+        # Try to get an access token - this requires active authentication
+        result = subprocess.run(
+            ["az", "account", "get-access-token"],
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+        # If we can get a token, we're authenticated
+        return result.returncode == 0
+    except FileNotFoundError:
+        # az command not found
+        return False
+    except Exception:
+        # Any other error means not authenticated
+        return False
+
+
 def generate_random_id(length: int = 6) -> str:
     """
     Generate random alphanumeric ID for resource naming.
@@ -274,7 +303,7 @@ def create_cognitive_account(
     )
 
     # This is a long-running operation
-    poller = cognitive_client.accounts.begin_create_or_update(
+    poller = cognitive_client.accounts.begin_create(
         resource_group_name,
         account_name,
         account
@@ -586,6 +615,20 @@ def create_command(args: argparse.Namespace, logger: logging.Logger) -> int:
         print("=" * 70)
         return 1
 
+    # Check Azure CLI login
+    if not check_azure_cli_login():
+        print("\n" + "=" * 70)
+        print("ERROR: Not logged into Azure CLI")
+        print("=" * 70)
+        print("\nYou must be logged into the Azure CLI to create workshop resources.")
+        print("\nTo log in, run:")
+        print("\n  az login")
+        print("\nAfter logging in, set your subscription:")
+        print("\n  az account set --subscription <subscription-id>")
+        print("\nThen run this command again.")
+        print("=" * 70 + "\n")
+        return 1
+
     try:
         # Get project root
         project_root = get_project_root()
@@ -744,6 +787,18 @@ def destroy_command(args: argparse.Namespace, logger: logging.Logger) -> int:
         print("=" * 70)
         print("\nPlease install required Azure packages to use this command.")
         print("=" * 70)
+        return 1
+
+    # Check Azure CLI login
+    if not check_azure_cli_login():
+        print("\n" + "=" * 70)
+        print("ERROR: Not logged into Azure CLI")
+        print("=" * 70)
+        print("\nYou must be logged into the Azure CLI to destroy workshop resources.")
+        print("\nTo log in, run:")
+        print("\n  az login")
+        print("\nThen run this command again.")
+        print("=" * 70 + "\n")
         return 1
 
     try:
