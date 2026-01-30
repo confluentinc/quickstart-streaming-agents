@@ -32,7 +32,7 @@ def get_model_id(region: str) -> str:
     Get the Claude 3.7 Sonnet model ID for the given region.
 
     Model ID pattern from aws/core/main.tf:311:
-    ${model_prefix}.anthropic.claude-3-7-sonnet-20250219-v1:0
+    ${model_prefix}.anthropic.claude-sonnet-4-5-20250514-v1:0
 
     Args:
         region: AWS region (e.g., 'us-east-1')
@@ -47,7 +47,7 @@ def get_model_id(region: str) -> str:
     else:
         prefix = 'apac'
 
-    return f"{prefix}.anthropic.claude-3-7-sonnet-20250219-v1:0"
+    return f"{prefix}.anthropic.claude-sonnet-4-5-20250514-v1:0"
 
 
 def test_bedrock_credentials(

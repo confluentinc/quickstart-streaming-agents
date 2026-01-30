@@ -18,7 +18,7 @@ Workshop mode allows participants to deploy the Real-Time Context Engine using s
 ## Required Models
 
 Bedrock model access must be enabled at the AWS account level:
-- **Claude 3.7 Sonnet** (`us.anthropic.claude-3-7-sonnet-20250219-v1:0`)
+- **Claude 3.7 Sonnet** (`us.anthropic.claude-sonnet-4-5-20250514-v1:0`)
 - **Amazon Titan Embeddings** (`amazon.titan-embed-text-v1`)
 
 ⚠️To access Claude Sonnet 3.7 you must request access to the model by filling out an **Anthropic use case form** (or someone in your org must have previously done so) for your cloud region (`us-east-1`). To do so, visit the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog), select **Claude 3.7 Sonnet** and open it it in the **Playground**, then send a message in the chat - the form will appear automatically. ⚠️
