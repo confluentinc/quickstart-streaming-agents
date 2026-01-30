@@ -491,7 +491,7 @@ def create_command(args: argparse.Namespace, logger: logging.Logger) -> int:
         # Test Bedrock access with the actual Claude model
         from .test_bedrock_credentials import test_bedrock_credentials
 
-        logger.info("Testing Bedrock access with Claude 3.7 Sonnet...")
+        logger.info("Testing Bedrock access with Claude Sonnet 4.5...")
         test_success = test_bedrock_credentials(
             access_key_id=access_key_id,
             secret_access_key=secret_access_key,
@@ -505,7 +505,7 @@ def create_command(args: argparse.Namespace, logger: logging.Logger) -> int:
             print("=" * 70)
             print("\nPossible issues:")
             print("  1. AWS credentials haven't propagated yet (wait 30-60 seconds)")
-            print("  2. Claude 3.7 Sonnet model not enabled in your AWS account")
+            print("  2. Claude Sonnet 4.5 model not enabled in your AWS account")
             print("  3. Insufficient Bedrock permissions")
             print("\nTo verify manually:")
             print(f"  uv run test-bedrock --access-key {access_key_id} \\")
@@ -515,7 +515,7 @@ def create_command(args: argparse.Namespace, logger: logging.Logger) -> int:
             print("=" * 70)
             logger.warning("Bedrock test did not pass, but continuing anyway")
         else:
-            logger.info("✓ Bedrock access test passed - Claude 3.7 Sonnet is accessible")
+            logger.info("✓ Bedrock access test passed - Claude Sonnet 4.5 is accessible")
 
         # Save state and credentials
         save_state(project_root, access_key_id, owner_email, region, logger)

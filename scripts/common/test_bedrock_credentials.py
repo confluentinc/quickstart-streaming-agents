@@ -2,7 +2,7 @@
 """
 Standalone Bedrock credentials test script.
 
-Tests whether AWS credentials can invoke the Claude 3.7 Sonnet model
+Tests whether AWS credentials can invoke the Claude Sonnet 4.5 model
 used in workshop labs.
 
 Usage:
@@ -29,10 +29,10 @@ except ImportError:
 
 def get_model_id(region: str) -> str:
     """
-    Get the Claude 3.7 Sonnet model ID for the given region.
+    Get the Claude Sonnet 4.5 model ID for the given region.
 
     Model ID pattern from aws/core/main.tf:311:
-    ${model_prefix}.anthropic.claude-sonnet-4-5-20250514-v1:0
+    ${model_prefix}.anthropic.claude-sonnet-4-5-20250929-v1:0
 
     Args:
         region: AWS region (e.g., 'us-east-1')
@@ -47,7 +47,7 @@ def get_model_id(region: str) -> str:
     else:
         prefix = 'apac'
 
-    return f"{prefix}.anthropic.claude-sonnet-4-5-20250514-v1:0"
+    return f"{prefix}.anthropic.claude-sonnet-4-5-20250929-v1:0"
 
 
 def test_bedrock_credentials(
@@ -57,7 +57,7 @@ def test_bedrock_credentials(
     logger: Optional[logging.Logger] = None
 ) -> bool:
     """
-    Test if credentials can invoke Claude 3.7 Sonnet on Bedrock.
+    Test if credentials can invoke Claude Sonnet 4.5 on Bedrock.
 
     Args:
         access_key_id: AWS access key ID
@@ -138,7 +138,7 @@ def test_bedrock_credentials(
 def main():
     """Main entry point for CLI usage."""
     parser = argparse.ArgumentParser(
-        description="Test AWS Bedrock credentials with Claude 3.7 Sonnet (us-east-1)",
+        description="Test AWS Bedrock credentials with Claude Sonnet 4.5 (us-east-1)",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:

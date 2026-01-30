@@ -39,7 +39,11 @@ First, be sure to log in to Confluent Cloud with the email address associated wi
 confluent login
 ```
 
-Then, to deploy the workshop, run the following command, entering credentials when prompted. Credentials that you have previously created or entered will be saved as the default - press Enter to confirm each one, or manually enter new ones.
+> [!CAUTION]
+>
+> Be sure you are NOT logged into a **shared** Confluent Cloud environment. Use an aliased Cloud account (`youremail+anyalias@confluent.io`) just for the demo, and make sure that you have added a credit card (you will not be charged).
+
+Then, to deploy the workshop, run the following command, entering credentials when prompted.
 
   ```bash
   uv run deploy --workshop
@@ -67,13 +71,13 @@ The data generator produces the following data stream:
 
 ### 1. Anomaly Detection: Detect surge in `ride_requests` using `ML_DETECT_ANOMALIES`
 
-This step identifies unexpected surges in ride requests for each pickup zone in real time using Flink's built-in anomaly detection function. We analyze ride request counts over 5-minute windows and compare them against expected baselines derived from historical trends.
+This step identifies unexpected surges in ride requests for each pickup zone in real time using Flink's built-in [anomaly detection](https://docs.confluent.io/cloud/current/flink/reference/functions/model-inference-functions.html#flink-sql-ml-anomaly-detect-function) function. We analyze ride request counts over 5-minute windows and compare them against expected baselines derived from historical trends.
 
-Read the [blog post](https://docs.confluent.io/cloud/current/ai/builtin-functions/detect-anomalies.html) and view the [documentation](https://docs.confluent.io/cloud/current/flink/reference/functions/model-inference-functions.html#flink-sql-ml-anomaly-detect-function) on Flink anomaly detection for more details about how it works.
+Read the [blog post](https://docs.confluent.io/cloud/current/ai/builtin-functions/detect-anomalies.html) and view the [documentation](https://docs.confluent.io/cloud/current/flink/reference/functions/model-inference-functions.html#flink-sql-ml-anomaly-detect-function) for more details about how it works.
 
-In [Flink UI](https://confluent.cloud/go/flink), select your environment and open a SQL workspace.
+In the [Flink UI](https://confluent.cloud/go/flink), select your `streaming-agents-xxxxx` environment and open a SQL workspace.
 
-First, let's visualize the anomaly detection in action by **completing the query below**, then running:
+First, let's visualize the anomaly detection in action by **researching and filling in the parameters in the query below**, then running:
 
 > [!WARNING]
 >
@@ -498,7 +502,7 @@ By chaining these intelligent streaming components together, we’ve built an al
 
 - **For Confluent employees: "No solution found when resolving dependencies" with CodeArtifact 401 error?** This project is configured to use public PyPI by default. If you still encounter this error, run `granted assume <your-aws-profile>` and `pip-login` before running `uv run deploy --workshop`.
 
-- **No anomalies detected?** Check that your data generation is running. The first anomaly should be detected after both data generation (run `uv run lab3_datagen`) and the anomaly detection query **(Query #1)** have been running for about 5 minutes. This is because the anomaly detection query uses 5-minute windows, and we have to wait for the first window to close before the detection algorithm can identify an anomaly.
+- **No anomalies detected?** Check that your data generation is running via `uv run lab3_datagen`. The first anomaly should be detected after both data generation and the anomaly detection query **(Query #1)** have been running for about 5 minutes. This is because the anomaly detection query uses 5-minute windows, and we have to wait for the first window to close before the detection algorithm can identify an anomaly.
 
 - **Error when running Query #1?:** `The window function requires the timecol is a time attribute type, but is TIMESTAMP_WITH_LOCAL_TIME_ZONE(3).`
   - Run the query below and try again. This can occur if you drop the pre-created `ride_requests` table and then re-run data generation, because neither Flink nor the data generator know we want to use `request_ts` as our watermark column until we tell them.
@@ -510,10 +514,9 @@ MODIFY (WATERMARK FOR request_ts AS request_ts - INTERVAL '5' SECOND);
   - Press "Stop" on the running `CREATE TABLE anomalies_detected_per_zone` statement in the SQL Workspace.
     - The anomaly detection algorithm expects data to be flowing through it, and the statement will change to "degraded" after some time if you turn off data generation. Turning it off will stop the problem, or it will automatically resume running properly once data begins flowing again.
 
-- `Runtime received bad response code 403. Please also double check if your model has multiple versions.` error?
-  - **AWS?** Ensure you've activated Claude 3.7 Sonnet in your AWS account. See: [Prerequisites](#prerequisites)
-  - **Azure?** Increase the tokens per minute quota for your GPT-4 model. Quota is low by default.
-  </details>
+- `Runtime received bad response code 403. Please also double check if your model has multiple versions.` **error?**
+  - Did you enter the API keys correctly? Review `credentials.env` in the root of the repo to confirm exactly what you entered.
+  - Run `DESCRIBE CONNECTION llm-textgen-connection` to view the LLM connection.
 
 ## 🧹 Clean-up
 

@@ -10,6 +10,7 @@
 .vscode/
 .cursor/
 *.cursor-*
+.serena
 *.swp
 *.swo
 
