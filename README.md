@@ -75,7 +75,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 **Clone the repository and navigate to the Quickstart directory:**
 
 ```bash
-git clone https://github.com/confluentinc/quickstart-streaming-agents.git
+git clone -b gko https://github.com/confluentinc/quickstart-streaming-agents.git
 cd quickstart-streaming-agents
 ```
 **One command deployment:**

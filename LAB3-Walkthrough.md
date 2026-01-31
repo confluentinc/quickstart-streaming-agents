@@ -32,6 +32,10 @@ winget install astral-sh.uv Git.Git Hashicorp.Terraform ConfluentInc.Confluent-C
 
 - Zapier remote MCP server API keys ([Setup guide](./assets/pre-setup/Zapier-Setup.md)) - **these will be provided during the workshop.** (You only need to follow the guide and generate API keys yourself if you are testing the workshop before GKO.)
 
+Finally, before deploying, make sure you're on the `gko` branch and pull recent changes:
+```sql
+git fetch origin && git switch -C gko origin/gko
+```
 ## Deploy the Demo
 
 First, be sure to log in to Confluent Cloud with the email address associated with the isolated environment you want to deploy in:
