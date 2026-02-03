@@ -30,9 +30,16 @@ winget install astral-sh.uv Git.Git Hashicorp.Terraform ConfluentInc.Confluent-C
 ```
 </details>
 
-- Zapier remote MCP server API keys ([Setup guide](./assets/pre-setup/Zapier-Setup.md)) - **these will be provided during the workshop.** (You only need to follow the guide and generate API keys yourself if you are testing the workshop before GKO.)
+- Zapier remote MCP server API keys - **these will be provided during the workshop.**
 
-Finally, before deploying, make sure you're on the `gko` branch and pull recent changes:
+Clone the **GKO branch** of the repo:
+
+```sh
+git clone -b gko https://github.com/confluentinc/quickstart-streaming-agents.git
+cd quickstart-streaming-agents
+```
+
+If you previously cloned the master branch my mistake, make sure you're on the `gko` branch and pull recent changes:
 ```sql
 git fetch origin && git switch -C gko origin/gko
 ```
