@@ -6,14 +6,6 @@ data "terraform_remote_state" "core" {
   }
 }
 
-# Reference to Lab2 infrastructure (non-workshop mode only)
-data "terraform_remote_state" "lab2" {
-  count   = var.workshop_mode ? 0 : 1
-  backend = "local"
-  config = {
-    path = "../lab2-vector-search/terraform.tfstate"
-  }
-}
 
 # Use cloud_region from core infrastructure
 locals {
@@ -29,9 +21,8 @@ data "confluent_flink_region" "lab3_flink_region" {
   region = local.cloud_region
 }
 
-# MongoDB connection for Lab3 vector search (workshop mode only)
+# MongoDB connection for Lab3 vector search
 resource "confluent_flink_connection" "mongodb_connection_lab3" {
-  count = var.workshop_mode ? 1 : 0
 
   organization {
     id = data.confluent_organization.main.id
@@ -58,9 +49,8 @@ resource "confluent_flink_connection" "mongodb_connection_lab3" {
   password     = var.mongodb_password_lab3
 }
 
-# MongoDB vector database table for Lab3 (workshop mode only)
+# MongoDB vector database table for Lab3
 resource "confluent_flink_statement" "documents_vectordb_lab3" {
-  count = var.workshop_mode ? 1 : 0
 
   organization {
     id = data.confluent_organization.main.id

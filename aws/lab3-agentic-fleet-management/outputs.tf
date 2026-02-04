@@ -35,11 +35,11 @@ output "ride_requests_table_id" {
 }
 
 output "documents_vectordb_table_id" {
-  value       = var.workshop_mode ? (length(confluent_flink_statement.documents_vectordb_lab3) > 0 ? confluent_flink_statement.documents_vectordb_lab3[0].id : null) : null
-  description = "Flink statement ID for documents_vectordb table (workshop mode only)"
+  value       = confluent_flink_statement.documents_vectordb_lab3.id
+  description = "Flink statement ID for documents_vectordb table"
 }
 
 output "mongodb_connection_name" {
-  value       = var.workshop_mode ? (length(confluent_flink_connection.mongodb_connection_lab3) > 0 ? confluent_flink_connection.mongodb_connection_lab3[0].display_name : null) : null
-  description = "MongoDB connection name for Lab3 vector search (workshop mode only)"
+  value       = confluent_flink_connection.mongodb_connection_lab3.display_name
+  description = "MongoDB connection name for Lab3 vector search"
 }

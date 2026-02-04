@@ -375,7 +375,20 @@ def main():
             print(f"\nDeployment failed at {env}. Stopping.")
             sys.exit(1)
 
-    print("\n✓ All deployments completed successfully!")
+    print("\n" + "=" * 60)
+    print("DEPLOYMENT COMPLETE")
+    print("=" * 60)
+    print("✓ All deployments completed successfully!")
+    if "lab3-agentic-fleet-management" in envs_to_deploy:
+        print("\nNext steps:")
+        print("  1. Publish ride_requests data:")
+        print("     - With ShadowTraffic: uv run lab3_datagen")
+        print("     - Without ShadowTraffic: uv run lab3_datagen --local")
+        print("  2. Follow LAB3-Walkthrough.md to:")
+        print("     - Verify ride_requests table in Flink")
+        print("     - Run anomaly detection queries")
+        print("     - Create agents for fleet management")
+    print("=" * 60)
 
 
 if __name__ == "__main__":

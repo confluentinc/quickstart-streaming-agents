@@ -105,13 +105,13 @@ output "cloud_region" {
 }
 
 output "aws_access_key_id" {
-  value       = var.workshop_mode ? var.aws_bedrock_access_key : module.aws_ai_services[0].aws_access_key_id
+  value       = var.aws_bedrock_access_key
   sensitive   = true
   description = "AWS access key ID for Bedrock user"
 }
 
 output "aws_secret_access_key" {
-  value       = var.workshop_mode ? var.aws_bedrock_secret_key : module.aws_ai_services[0].aws_secret_access_key
+  value       = var.aws_bedrock_secret_key
   sensitive   = true
   description = "AWS secret access key for Bedrock user"
 }

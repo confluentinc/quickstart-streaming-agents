@@ -257,36 +257,14 @@ resource "confluent_kafka_acl" "app-manager-read-on-group" {
 # LLM INFRASTRUCTURE - SHARED ACROSS ALL LABS
 # ------------------------------------------------------
 
-# AWS AI Services Module (production mode - creates IAM resources)
-module "aws_ai_services" {
-  count  = var.workshop_mode ? 0 : 1
-  source = "./modules/aws-ai"
-
-  cloud_region                     = var.cloud_region
-  random_id                        = random_id.resource_suffix.hex
-  model_prefix                     = length(regexall("^us-", var.cloud_region)) > 0 ? "us" : (length(regexall("^eu-", var.cloud_region)) > 0 ? "eu" : "apac")
-  confluent_organization_id        = data.confluent_organization.main.id
-  confluent_environment_id         = confluent_environment.staging.id
-  confluent_compute_pool_id        = confluent_flink_compute_pool.flinkpool-main.id
-  confluent_service_account_id     = confluent_service_account.app-manager.id
-  confluent_flink_rest_endpoint    = data.confluent_flink_region.demo_flink_region.rest_endpoint
-  confluent_flink_api_key_id       = confluent_api_key.app-manager-flink-api-key.id
-  confluent_flink_api_key_secret   = confluent_api_key.app-manager-flink-api-key.secret
-  confluent_flink_api_key_resource = confluent_api_key.app-manager-flink-api-key
-  confluent_role_binding_resource  = confluent_role_binding.app-manager-kafka-cluster-admin
-  owner_email                      = var.owner_email
-  project_root_path                = local.project_root_path
-}
-
 # Workshop Mode: Direct Bedrock Connections (using pre-provided credentials)
 # Model prefix for Bedrock endpoint
 locals {
   model_prefix = length(regexall("^us-", var.cloud_region)) > 0 ? "us" : (length(regexall("^eu-", var.cloud_region)) > 0 ? "eu" : "apac")
 }
 
-# Bedrock Text Generation Connection (workshop mode)
+# Bedrock Text Generation Connection
 resource "confluent_flink_connection" "bedrock_connection_workshop" {
-  count = var.workshop_mode ? 1 : 0
 
   organization {
     id = data.confluent_organization.main.id
@@ -322,9 +300,8 @@ resource "confluent_flink_connection" "bedrock_connection_workshop" {
   }
 }
 
-# Bedrock Embedding Connection (workshop mode)
+# Bedrock Embedding Connection
 resource "confluent_flink_connection" "bedrock_embedding_connection_workshop" {
-  count = var.workshop_mode ? 1 : 0
 
   organization {
     id = data.confluent_organization.main.id
@@ -360,10 +337,10 @@ resource "confluent_flink_connection" "bedrock_embedding_connection_workshop" {
   }
 }
 
-# Locals to abstract connection names based on mode
+# Locals for connection names
 locals {
-  bedrock_connection_name          = var.workshop_mode ? confluent_flink_connection.bedrock_connection_workshop[0].display_name : module.aws_ai_services[0].flink_connection_name
-  bedrock_embedding_connection_name = var.workshop_mode ? confluent_flink_connection.bedrock_embedding_connection_workshop[0].display_name : module.aws_ai_services[0].flink_embedding_connection_name
+  bedrock_connection_name          = confluent_flink_connection.bedrock_connection_workshop.display_name
+  bedrock_embedding_connection_name = confluent_flink_connection.bedrock_embedding_connection_workshop.display_name
 }
 
 
@@ -400,7 +377,6 @@ resource "confluent_flink_statement" "llm_textgen_model_aws" {
   # }
 
   depends_on = [
-    module.aws_ai_services,
     confluent_flink_connection.bedrock_connection_workshop
   ]
 }
@@ -438,7 +414,6 @@ resource "confluent_flink_statement" "llm_embedding_model_aws" {
   # }
 
   depends_on = [
-    module.aws_ai_services,
     confluent_flink_connection.bedrock_embedding_connection_workshop
   ]
 }

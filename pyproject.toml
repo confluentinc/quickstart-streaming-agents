@@ -44,6 +44,7 @@ dependencies = [
     "urllib3>=1.26.18,<2.0", # Pin to v1.x for LibreSSL compatibility on macOS
     "pymongo>=4.10.1",
     "boto3>=1.26.0,<2.0", # Required for workshop-keys command
+    "confluent-kafka>=2.3.0,<3.0", # Required for publishing pre-generated Lab3 data
 ]
 
 # Optional dependencies for enhanced functionality
@@ -75,6 +76,12 @@ lab3-datagen = "scripts.lab3_datagen:main"
 #
 publish_docs = "scripts.publish_docs:main"
 publish-docs = "scripts.publish_docs:main"
+#
+publish_lab3_data = "scripts.publish_lab3_data:main"
+publish-lab3-data = "scripts.publish_lab3_data:main"
+#
+capture_lab3_data = "scripts.capture_lab3_data:main"
+capture-lab3-data = "scripts.capture_lab3_data:main"
 #
 clear_mongodb = "scripts.common.clear_mongodb:main"
 clear-mongodb = "scripts.common.clear_mongodb:main"
