@@ -64,7 +64,7 @@ Then, to deploy the workshop, run the following command, entering credentials wh
 
 ### 0. Data Generation
 
-We use **ShadowTraffic** to generate data, which requires Docker and a **Docker orchestrator** to run. For Windows, open **Rancher Desktop**, and for Mac, run the following command to get **Colima** running.
+We use **ShadowTraffic** to stream synthetic data, which requires Docker and a **Docker orchestrator** to run. For Windows, open **Rancher Desktop**, and for Mac, run the following command to get **Colima** running.
 
 ```bash
 # Run the following command for Mac. Windows users, open Rancher Desktop app.
@@ -75,6 +75,13 @@ Then run:
 ```bash
 uv run lab3_datagen
 ```
+
+> [!NOTE]
+>
+> If you are having trouble with Wifi or getting Docker to run, or it's taking too long for ShadowTraffic to download, try running the following command to generate the data instead. This will directly publish the data to the repo:
+> ```sh
+> uv run lab3_datagen --local
+> ```
 
 The data generator produces the following data stream:
 
