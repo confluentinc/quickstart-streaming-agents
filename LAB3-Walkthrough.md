@@ -20,17 +20,14 @@ All of this runs in real time on **Confluent Cloud for Apache Flink**, with no e
 **Mac:**
 
 ```bash
-brew install uv git python && brew tap hashicorp/tap && brew install hashicorp/tap/terraform && brew install --cask confluent-cli
+brew install uv git python docker colima && brew tap hashicorp/tap && brew install hashicorp/tap/terraform && brew install --cask confluent-cli
 ```
 
 **Windows:**
 
 ```powershell
-winget install astral-sh.uv Git.Git Hashicorp.Terraform ConfluentInc.Confluent-CLI Python.Python
+winget install astral-sh.uv Git.Git Hashicorp.Terraform ConfluentInc.Confluent-CLI Python.Python SUSE.RancherDesktop.Main
 ```
-
-> **Note:** Docker is **not required** for Lab3 in workshop mode! Data is pre-generated and automatically published during deployment.
-
 </details>
 
 - Zapier remote MCP server API keys - **these will be provided during the workshop.**
@@ -67,19 +64,19 @@ Then, to deploy the workshop, run the following command, entering credentials wh
 
 ### 0. Data Generation
 
-**Good news!** Lab3 ride request data is **automatically published** during deployment. No Docker or ShadowTraffic setup required!
+We use **ShadowTraffic** to generate data, which requires Docker and a **Docker orchestrator** to run. For Windows, open **Rancher Desktop**, and for Mac, run the following command to get **Colima** running.
 
-The deployment script (`uv run deploy`) automatically publishes **60 pre-generated ride requests** with realistic surge patterns to the `ride_requests` topic. This includes:
-- **27 French Quarter pickups** for surge detection
-- **Unix timestamps** for proper watermark-based windowing
-- **Realistic price and passenger data**
+```bash
+# Run the following command for Mac. Windows users, open Rancher Desktop app.
+colima start
+```
 
-> **Note:** Data is automatically published during `uv run deploy`. If you need to republish data manually:
-> ```bash
-> uv run publish_lab3_data --data-file assets/lab3/data/ride_requests.jsonl
-> ```
+Then run:
+```bash
+uv run lab3_datagen
+```
 
-The pre-generated data stream includes:
+The data generator produces the following data stream:
 
 - **`ride_requests`** – Represents incoming boat ride requests. Each request includes a **pickup zone**  **drop-off zone**, **timestamp**, and other user info like the ride ID and price.
 
@@ -510,18 +507,17 @@ By chaining these intelligent streaming components together, we’ve built an al
 
 - **For Confluent employees: "No solution found when resolving dependencies" with CodeArtifact 401 error?** This project is configured to use public PyPI by default. If you still encounter this error, run `granted assume <your-aws-profile>` and `pip-login` before running `uv run deploy --workshop`.
 
-- **No anomalies detected?** The pre-generated data includes surge patterns that should be detected immediately. If no anomalies appear:
-  - Verify data was published: `SELECT COUNT(*) FROM ride_requests;` (should show 60 records)
-  - Check French Quarter pickups: `SELECT COUNT(*) FROM ride_requests WHERE pickup_zone = 'French Quarter';` (should show 27 records)
-  - If data is missing, republish: `uv run publish_lab3_data --data-file assets/lab3/data/ride_requests.jsonl`
-  - Note: With pre-generated batch data, anomalies appear immediately (no 5-minute wait needed)
+- **No anomalies detected?** Check that your data generation is running via `uv run lab3_datagen`. The first anomaly should be detected after both data generation and the anomaly detection query **(Query #1)** have been running for about 5 minutes. This is because the anomaly detection query uses 5-minute windows, and we have to wait for the first window to close before the detection algorithm can identify an anomaly.
 
 - **Error when running Query #1?:** `The window function requires the timecol is a time attribute type, but is TIMESTAMP_WITH_LOCAL_TIME_ZONE(3).`
-  - The `ride_requests` table is pre-created with the watermark defined in Terraform. If you dropped the table and recreated it manually, add the watermark:
+  - Run the query below and try again. This can occur if you drop the pre-created `ride_requests` table and then re-run data generation, because neither Flink nor the data generator know we want to use `request_ts` as our watermark column until we tell them.
 ```sql no-parse
 ALTER TABLE ride_requests
 MODIFY (WATERMARK FOR request_ts AS request_ts - INTERVAL '5' SECOND);
 ```
+- **Email about a degraded Flink statement?**
+  - Press "Stop" on the running `CREATE TABLE anomalies_detected_per_zone` statement in the SQL Workspace.
+    - The anomaly detection algorithm expects data to be flowing through it, and the statement will change to "degraded" after some time if you turn off data generation. Turning it off will stop the problem, or it will automatically resume running properly once data begins flowing again.
 
 - `Runtime received bad response code 403. Please also double check if your model has multiple versions.` **error?**
   - Did you enter the API keys correctly? Review `credentials.env` in the root of the repo to confirm exactly what you entered.
