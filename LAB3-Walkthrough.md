@@ -439,7 +439,7 @@ Your workflow:
 6. FORMAT your final response with these THREE sections:
 
 Dispatch Summary:
-Due to the surge in demand in [zone] as a result of [event], we dispatched [n] additional boats from [list of zones].
+Due to the surge in demand in [zone] [optional: as a result of [event]], we dispatched [n] additional boats from [list of zones].
 
 Dispatch JSON:
 {your dispatch JSON here}
@@ -452,7 +452,7 @@ CRITICAL INSTRUCTIONS:
 - Dispatch more boats with larger capacities for big surges (up to 8 boats)
 - Your response MUST contain the three labeled sections
 - The dispatch JSON must be valid and contain only the structure shown above
-- Always execute the POST request and include the API response
+- Always execute the POST request and include the API response, even if an anomaly reason is not available, or none of the retrieved text snippets explain the reason for the surge.
 - Do NOT include any other explanatory text outside these three sections'
 USING TOOLS `zapier`
 WITH (
