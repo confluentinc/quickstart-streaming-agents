@@ -67,12 +67,13 @@ def detect_from_state_files(project_root: Optional[Path] = None) -> Optional[str
     aws_core = project_root / "aws" / "core" / "terraform.tfstate"
     aws_lab2 = project_root / "aws" / "lab2-vector-search" / "terraform.tfstate"
 
-    # Check for Azure state files
+    # Check for Azure state files (workshop mode uses core-workshop/)
     azure_core = project_root / "azure" / "core" / "terraform.tfstate"
+    azure_core_workshop = project_root / "azure" / "core-workshop" / "terraform.tfstate"
     azure_lab2 = project_root / "azure" / "lab2-vector-search" / "terraform.tfstate"
 
     aws_exists = aws_core.exists()
-    azure_exists = azure_core.exists()
+    azure_exists = azure_core.exists() or azure_core_workshop.exists()
 
     if aws_exists and azure_exists:
         logger.warning("Both AWS and Azure state files found, cannot auto-detect")
@@ -194,9 +195,10 @@ def suggest_cloud_provider(project_root: Optional[Path] = None) -> None:
     else:
         logger.info("  ✗ aws (no state files)")
 
-    # Check Azure
+    # Check Azure (workshop mode uses core-workshop/)
     azure_core = project_root / "azure" / "core" / "terraform.tfstate"
-    if azure_core.exists():
+    azure_core_workshop = project_root / "azure" / "core-workshop" / "terraform.tfstate"
+    if azure_core.exists() or azure_core_workshop.exists():
         logger.info("  ✓ azure (state files found)")
     else:
         logger.info("  ✗ azure (no state files)")

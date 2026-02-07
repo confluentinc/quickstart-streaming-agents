@@ -52,6 +52,7 @@ except ImportError:
     AZURE_SDK_AVAILABLE = False
 
 from dotenv import dotenv_values
+from dotenv import set_key
 
 from .terraform import get_project_root
 from .ui import prompt_choice, prompt_with_default
@@ -66,14 +67,14 @@ PROJECT_URL = "https://github.com/confluentinc/quickstart-streaming-agents"
 
 # Model deployment configurations
 DEPLOYMENTS = {
-    "gpt-4o": {
-        "model": "gpt-4o",
-        "version": "2024-08-06",
+    "gpt-5-mini": {
+        "model": "gpt-5-mini",
+        "version": "2025-08-07",
         "capacity": 50
     },
-    "text-embedding-3-large": {
-        "model": "text-embedding-3-large",
-        "version": "1",
+    "text-embedding-ada-002": {
+        "model": "text-embedding-ada-002",
+        "version": "2",
         "capacity": 120
     }
 }
@@ -336,7 +337,7 @@ def create_model_deployment(
         resource_group_name: Resource group name
         account_name: Cognitive account name
         deployment_name: Name for the deployment
-        model_name: Model to deploy (e.g., 'gpt-4o')
+        model_name: Model to deploy (e.g., 'gpt-5-mini')
         model_version: Model version
         capacity: Tokens-per-minute capacity
         logger: Logger instance
@@ -352,7 +353,7 @@ def create_model_deployment(
             )
         ),
         sku=CognitiveServicesSku(
-            name="Standard",
+            name="GlobalStandard",
             capacity=capacity
         )
     )
@@ -512,8 +513,8 @@ Azure Region:          eastus2
 
 ## Available Models
 
-- **gpt-4o** (Chat completions, version: 2024-08-06, capacity: 50 TPM)
-- **text-embedding-3-large** (Embeddings, version: 1, capacity: 120 TPM)
+- **gpt-5-mini** (Chat completions, version: 2025-08-07, capacity: 50 TPM)
+- **text-embedding-ada-002** (Embeddings, version: 2, capacity: 120 TPM)
 
 ## Usage Instructions
 
@@ -552,7 +553,7 @@ uv run azure-workshop-keys destroy
 ```
 
 This will:
-1. Delete model deployments (gpt-4o, text-embedding-3-large)
+1. Delete model deployments (gpt-5-mini, text-embedding-ada-002)
 2. Ask if you want to delete the entire resource group
 3. Clean up state files
 
@@ -560,7 +561,7 @@ This will:
 
 **Resource Group:** `{resource_group}`
 **Cognitive Account:** `{cognitive_account}`
-**Deployments:** gpt-4o, text-embedding-3-large
+**Deployments:** gpt-5-mini, text-embedding-ada-002
 **Region:** {region}
 """
 
@@ -568,6 +569,13 @@ This will:
         f.write(content)
 
     logger.info(f"✓ Saved credentials to {creds_file}")
+
+    # Also update credentials.env if it exists, so `uv run deploy` picks up the new values
+    env_file = project_root / "credentials.env"
+    if env_file.exists():
+        set_key(str(env_file), "TF_VAR_azure_openai_endpoint_raw", endpoint)
+        set_key(str(env_file), "TF_VAR_azure_openai_api_key", api_key)
+        logger.info(f"✓ Updated credentials.env with new Azure OpenAI credentials")
 
 
 def load_state(project_root: Path) -> Optional[Dict]:

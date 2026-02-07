@@ -67,6 +67,14 @@ def find_state_files(cloud_provider: str, base_dir: Path) -> Tuple[Path, Path]:
     """
     provider_dir = base_dir / cloud_provider
     core_state = provider_dir / "core" / "terraform.tfstate"
+
+    # Azure workshop mode uses core-workshop/ instead of core/
+    if not core_state.exists() and cloud_provider == "azure":
+        workshop_state = provider_dir / "core-workshop" / "terraform.tfstate"
+        if workshop_state.exists():
+            logger.info("Using Azure workshop mode state (core-workshop/)")
+            core_state = workshop_state
+
     local_state = provider_dir / "lab2-vector-search" / "terraform.tfstate"
 
     if not core_state.exists():

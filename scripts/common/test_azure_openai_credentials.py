@@ -2,8 +2,8 @@
 """
 Standalone Azure OpenAI credentials test script.
 
-Tests whether Azure OpenAI credentials can invoke the gpt-4o and
-text-embedding-3-large models used in workshop labs.
+Tests whether Azure OpenAI credentials can invoke the gpt-5-mini and
+text-embedding-ada-002 models used in workshop labs.
 
 Usage:
     uv run test-azure-openai --endpoint https://xxx.openai.azure.com/ --api-key xxx
@@ -37,8 +37,8 @@ def test_azure_openai_credentials(
     Test if credentials can invoke Azure OpenAI models.
 
     Tests both:
-    1. Chat completions (gpt-4o)
-    2. Embeddings (text-embedding-3-large)
+    1. Chat completions (gpt-5-mini)
+    2. Embeddings (text-embedding-ada-002)
 
     Args:
         endpoint: Azure OpenAI endpoint URL
@@ -61,13 +61,13 @@ def test_azure_openai_credentials(
 
     success = True
 
-    # Test 1: Chat completions with gpt-4o
+    # Test 1: Chat completions with gpt-5-mini
     try:
-        logger.info("Testing chat completions (gpt-4o)...")
+        logger.info("Testing chat completions (gpt-5-mini)...")
 
         # Use the azure-ai-inference SDK for testing
         # Note: We need to construct the deployment-specific endpoint
-        chat_endpoint = f"{endpoint}openai/deployments/gpt-4o"
+        chat_endpoint = f"{endpoint}openai/deployments/gpt-5-mini"
 
         client = ChatCompletionsClient(
             endpoint=chat_endpoint,
@@ -83,7 +83,7 @@ def test_azure_openai_credentials(
         )
 
         if response and response.choices:
-            logger.info("✓ Chat completions test passed (gpt-4o)")
+            logger.info("✓ Chat completions test passed (gpt-5-mini)")
             logger.debug(f"Response: {response.choices[0].message.content}")
         else:
             logger.error("✗ Chat completions test failed: empty response")
@@ -96,7 +96,7 @@ def test_azure_openai_credentials(
         if e.status_code == 401:
             logger.warning("Invalid API key or endpoint")
         elif e.status_code == 404:
-            logger.warning("Deployment 'gpt-4o' not found - ensure it exists")
+            logger.warning("Deployment 'gpt-5-mini' not found - ensure it exists")
         elif e.status_code == 429:
             logger.warning("Rate limit exceeded - deployments may still be initializing")
 
@@ -106,15 +106,15 @@ def test_azure_openai_credentials(
         logger.error(f"✗ Chat completions test failed: {e}")
         success = False
 
-    # Test 2: Embeddings with text-embedding-3-large
+    # Test 2: Embeddings with text-embedding-ada-002
     try:
-        logger.info("Testing embeddings (text-embedding-3-large)...")
+        logger.info("Testing embeddings (text-embedding-ada-002)...")
 
         # For embeddings, we need to use the REST API directly
         # as azure-ai-inference doesn't have a dedicated embeddings client yet
         import requests
 
-        embeddings_url = f"{endpoint}openai/deployments/text-embedding-3-large/embeddings?api-version=2024-08-01-preview"
+        embeddings_url = f"{endpoint}openai/deployments/text-embedding-ada-002/embeddings?api-version=2024-08-01-preview"
 
         headers = {
             "api-key": api_key,
@@ -130,7 +130,7 @@ def test_azure_openai_credentials(
         if response.status_code == 200:
             data = response.json()
             if data.get('data') and len(data['data']) > 0:
-                logger.info("✓ Embeddings test passed (text-embedding-3-large)")
+                logger.info("✓ Embeddings test passed (text-embedding-ada-002)")
                 logger.debug(f"Embedding dimensions: {len(data['data'][0].get('embedding', []))}")
             else:
                 logger.error("✗ Embeddings test failed: empty response")
@@ -142,7 +142,7 @@ def test_azure_openai_credentials(
             if response.status_code == 401:
                 logger.warning("Invalid API key or endpoint")
             elif response.status_code == 404:
-                logger.warning("Deployment 'text-embedding-3-large' not found - ensure it exists")
+                logger.warning("Deployment 'text-embedding-ada-002' not found - ensure it exists")
             elif response.status_code == 429:
                 logger.warning("Rate limit exceeded - deployments may still be initializing")
 
@@ -163,7 +163,7 @@ def test_azure_openai_credentials(
 def main():
     """Main entry point for CLI usage."""
     parser = argparse.ArgumentParser(
-        description="Test Azure OpenAI credentials with gpt-4o and text-embedding-3-large",
+        description="Test Azure OpenAI credentials with gpt-5-mini and text-embedding-ada-002",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:

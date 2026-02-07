@@ -88,8 +88,12 @@ def main():
         cloud = creds["cloud"]
         envs_to_destroy = ["lab3-agentic-fleet-management", "lab2-vector-search", "lab1-tool-calling", "core"]  # Reverse order
 
-        # Build environment variables
+        # Azure workshop mode: use core-workshop instead of core
         workshop_mode = creds.get("workshop", False)
+        if workshop_mode and cloud == "azure":
+            envs_to_destroy = ["core-workshop" if e == "core" else e for e in envs_to_destroy]
+
+        # Build environment variables
         env_vars = {
             "TF_VAR_confluent_cloud_api_key": creds["confluent_cloud_api_key"],
             "TF_VAR_confluent_cloud_api_secret": creds["confluent_cloud_api_secret"],
@@ -163,6 +167,13 @@ def main():
             print("Destroy cancelled.")
             sys.exit(0)
 
+    # Azure workshop mode: use core-workshop instead of core
+    if cloud == "azure":
+        workshop_core = root / cloud / "core-workshop" / "terraform.tfstate"
+        regular_core = root / cloud / "core" / "terraform.tfstate"
+        if workshop_core.exists() and not regular_core.exists():
+            envs_to_destroy = ["core-workshop" if e == "core" else e for e in envs_to_destroy]
+
     # Step 5: Destroy environments
     print("\n=== Starting Destroy ===")
     for env in envs_to_destroy:
@@ -170,7 +181,7 @@ def main():
         if not env_path.exists():
             print(f"⊘ Skipping {env}: directory does not exist")
             continue
-        
+
         # Check if terraform state exists (indicates it was deployed)
         state_file = env_path / "terraform.tfstate"
         if not state_file.exists():

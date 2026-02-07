@@ -3,11 +3,6 @@ variable "cloud_region" {
   type        = string
 }
 
-variable "azure_subscription_id" {
-  description = "Azure Subscription ID"
-  type        = string
-}
-
 variable "workshop_mode" {
   description = "Enable workshop mode (uses pre-provided MongoDB credentials for Lab3 vector search)"
   type        = bool

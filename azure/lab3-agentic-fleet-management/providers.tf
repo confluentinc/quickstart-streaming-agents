@@ -28,7 +28,7 @@ provider "random" {}
 # participants without Azure access to run Terraform (no actual Azure API calls are made)
 provider "azurerm" {
   features {}
-  subscription_id                 = var.azure_subscription_id
+  subscription_id                 = data.terraform_remote_state.core.outputs.azure_subscription_id
   resource_provider_registrations = "none"
   use_cli                         = false
   use_msi                         = false

@@ -298,7 +298,7 @@ resource "confluent_flink_connection" "azureopenai_connection_workshop" {
 
   display_name = "llm-textgen-connection"
   type         = "AZUREOPENAI"
-  endpoint     = "${var.azure_openai_endpoint}/openai/deployments/gpt-4o/chat/completions?api-version=2024-08-01-preview"
+  endpoint     = "${var.azure_openai_endpoint}/openai/deployments/gpt-5-mini/chat/completions?api-version=2024-08-01-preview"
   api_key      = var.azure_openai_api_key
 
   depends_on = [
@@ -335,7 +335,7 @@ resource "confluent_flink_connection" "azureopenai_embedding_connection_workshop
 
   display_name = "llm-embedding-connection"
   type         = "AZUREOPENAI"
-  endpoint     = "${var.azure_openai_endpoint}/openai/deployments/text-embedding-3-large/embeddings?api-version=2024-08-01-preview"
+  endpoint     = "${var.azure_openai_endpoint}/openai/deployments/text-embedding-ada-002/embeddings?api-version=2024-08-01-preview"
   api_key      = var.azure_openai_api_key
 
   depends_on = [
@@ -374,7 +374,7 @@ resource "confluent_flink_statement" "llm_textgen_model" {
     secret = confluent_api_key.app-manager-flink-api-key.secret
   }
 
-  statement = "CREATE MODEL `${confluent_environment.staging.display_name}`.`${confluent_kafka_cluster.standard.display_name}`.`llm_textgen_model` INPUT (prompt STRING) OUTPUT (response STRING) WITH( 'provider' = 'azureopenai', 'task' = 'text_generation', 'azureopenai.connection' = '${local.azureopenai_connection_name}', 'azureopenai.model_version' = '2024-08-06', 'azureopenai.PARAMS.max_tokens' = '16384' );"
+  statement = "CREATE MODEL `${confluent_environment.staging.display_name}`.`${confluent_kafka_cluster.standard.display_name}`.`llm_textgen_model` INPUT (prompt STRING) OUTPUT (response STRING) WITH( 'provider' = 'azureopenai', 'task' = 'text_generation', 'azureopenai.connection' = '${local.azureopenai_connection_name}', 'azureopenai.model_version' = '2025-08-07', 'azureopenai.PARAMS.max_completion_tokens' = '16384' );"
 
   properties = {
     "sql.current-catalog"  = confluent_environment.staging.display_name
