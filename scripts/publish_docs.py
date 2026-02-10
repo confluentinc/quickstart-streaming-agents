@@ -41,15 +41,7 @@ try:
 except ImportError:
     CLEAR_MONGODB_AVAILABLE = False
 
-
-def setup_logging(verbose: bool = False) -> logging.Logger:
-    """Set up logging configuration."""
-    level = logging.DEBUG if verbose else logging.INFO
-    logging.basicConfig(
-        level=level,
-        format="%(asctime)s - %(levelname)s - %(message)s"
-    )
-    return logging.getLogger(__name__)
+from .common.logging_utils import setup_logging
 
 
 class FlinkDocsPublisherCLI:

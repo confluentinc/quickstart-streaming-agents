@@ -113,6 +113,9 @@ generate_summaries = "scripts.common.generate_lab_flink_summary:main"
 generate-summaries = "scripts.common.generate_lab_flink_summary:main"
 #
 validate = "scripts.common.validate:main"
+#
+test_mongodb = "scripts.common.test_mongodb_connections:main"
+test-mongodb = "scripts.common.test_mongodb_connections:main"
 
 
 [project.urls]

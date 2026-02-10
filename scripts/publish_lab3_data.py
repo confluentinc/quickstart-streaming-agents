@@ -29,16 +29,7 @@ except ImportError:
 
 from .common.cloud_detection import auto_detect_cloud_provider, validate_cloud_provider, suggest_cloud_provider
 from .common.terraform import extract_kafka_credentials, validate_terraform_state, get_project_root
-
-
-def setup_logging(verbose: bool = False) -> logging.Logger:
-    """Set up logging configuration."""
-    level = logging.DEBUG if verbose else logging.INFO
-    logging.basicConfig(
-        level=level,
-        format="%(asctime)s - %(levelname)s - %(message)s"
-    )
-    return logging.getLogger(__name__)
+from .common.logging_utils import setup_logging
 
 
 class Lab3DataPublisher:

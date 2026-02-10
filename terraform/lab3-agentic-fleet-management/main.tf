@@ -13,7 +13,7 @@ locals {
 
   # Cloud-specific MongoDB defaults
   mongodb_defaults = {
-    aws   = { conn = "mongodb+srv://cluster0.w9n3o45.mongodb.net/", user = "workshop-user", pass = "xr6PvJl9xZz1uoKa" }
+    aws   = { conn = "mongodb+srv://cluster0.w9n3o45.mongodb.net/", user = "workshop-user", pass = "JHcZajJzWYwKe6dt" }
     azure = { conn = "mongodb+srv://cluster0.iir6woe.mongodb.net/", user = "public_readonly_user", pass = "pE7xOkiKth2QqTKL" }
   }
 
@@ -31,8 +31,8 @@ data "confluent_flink_region" "lab3_flink_region" {
   region = local.cloud_region
 }
 
-# MongoDB connection for Lab3 vector search
-resource "confluent_flink_connection" "mongodb_connection_lab3" {
+# Create MongoDB connection via Flink SQL statement for Lab3
+resource "confluent_flink_statement" "mongodb_connection_statement_lab3" {
   organization {
     id = data.confluent_organization.main.id
   }
@@ -51,11 +51,31 @@ resource "confluent_flink_connection" "mongodb_connection_lab3" {
     secret = data.terraform_remote_state.core.outputs.app_manager_flink_api_secret
   }
 
-  display_name = "mongodb-connection-lab3"
-  type         = "MONGODB"
-  endpoint     = local.effective_mongodb_conn
-  username     = local.effective_mongodb_user
-  password     = local.effective_mongodb_pass
+  statement_name = "mongodb-connection-create-lab3"
+
+  statement = <<-EOT
+    CREATE CONNECTION IF NOT EXISTS `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`mongodb-connection-lab3`
+    WITH (
+      'type' = 'MONGODB',
+      'endpoint' = '${local.effective_mongodb_conn}',
+      'username' = '${local.effective_mongodb_user}',
+      'password' = '${local.effective_mongodb_pass}'
+    );
+  EOT
+
+  properties = {
+    "sql.current-catalog"  = data.terraform_remote_state.core.outputs.confluent_environment_display_name
+    "sql.current-database" = data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name
+  }
+
+  lifecycle {
+    ignore_changes  = [statement]
+    prevent_destroy = false
+  }
+
+  depends_on = [
+    data.terraform_remote_state.core
+  ]
 }
 
 # MongoDB vector database table for Lab3
@@ -106,7 +126,7 @@ resource "confluent_flink_statement" "documents_vectordb_lab3" {
   }
 
   depends_on = [
-    confluent_flink_connection.mongodb_connection_lab3
+    confluent_flink_statement.mongodb_connection_statement_lab3
   ]
 }
 

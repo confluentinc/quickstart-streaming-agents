@@ -2,16 +2,17 @@
 """
 Generate Flink SQL command summary markdown files for all deployed labs.
 
-This script automatically discovers and processes all labs in a cloud provider directory,
+This script automatically discovers and processes all labs in the terraform directory,
 extracting Flink SQL from Terraform state and lab walkthrough markdown files.
 Labs that aren't deployed are silently skipped.
 
 Usage:
-    uv run generate_summaries <cloud-provider>
+    uv run generate_summaries [cloud-provider]
 
 Examples:
-    uv run generate_summaries aws
-    uv run generate_summaries azure
+    uv run generate_summaries          # Interactive mode (prompts for cloud provider)
+    uv run generate_summaries aws      # Non-interactive with AWS
+    uv run generate_summaries azure    # Non-interactive with Azure
 """
 
 import json
@@ -131,13 +132,30 @@ def generate_summary_for_lab(lab_name: str, cloud_provider: str, terraform_dir: 
 
 def main():
     """Main entry point."""
-    if len(sys.argv) != 2:
-        print("Usage: uv run generate_summaries <cloud-provider>")
-        print("Example: uv run generate_summaries aws")
-        print("         uv run generate_summaries azure")
+    # Get cloud provider from args or prompt user
+    if len(sys.argv) > 2:
+        print("Usage: uv run generate_summaries [cloud-provider]")
+        print("Example: uv run generate_summaries          # Interactive mode")
+        print("         uv run generate_summaries aws      # Non-interactive")
+        print("         uv run generate_summaries azure    # Non-interactive")
         sys.exit(1)
 
-    cloud_provider = sys.argv[1].lower()
+    if len(sys.argv) == 2:
+        cloud_provider = sys.argv[1].lower()
+    else:
+        # Interactive mode - prompt user
+        print("Select cloud provider:")
+        print("  1. AWS")
+        print("  2. Azure")
+        choice = input("Enter choice (1-2): ").strip()
+
+        if choice == "1":
+            cloud_provider = "aws"
+        elif choice == "2":
+            cloud_provider = "azure"
+        else:
+            print("Error: Invalid choice. Please enter 1 or 2.")
+            sys.exit(1)
 
     # Validate cloud provider
     if cloud_provider not in ["aws", "azure"]:
@@ -161,7 +179,7 @@ def main():
 
     # Try to generate summary for each lab
     for lab_name, lab_dir_name in lab_configs.items():
-        terraform_dir = project_root / cloud_provider / lab_dir_name
+        terraform_dir = project_root / "terraform" / lab_dir_name
 
         print(f"Processing {lab_name}...")
         if generate_summary_for_lab(lab_name, cloud_provider, terraform_dir):

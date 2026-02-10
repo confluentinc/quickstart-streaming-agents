@@ -79,6 +79,7 @@ from dotenv import dotenv_values, set_key
 
 from .terraform import get_project_root
 from .ui import prompt_choice, prompt_with_default
+from .logging_utils import setup_logging
 
 
 # ============================================================================
@@ -118,24 +119,7 @@ AZURE_DEPLOYMENTS = {
 # COMMON UTILITIES
 # ============================================================================
 
-def setup_logging(verbose: bool = False) -> logging.Logger:
-    """Set up logging configuration."""
-    level = logging.DEBUG if verbose else logging.INFO
-    logging.basicConfig(
-        level=level,
-        format="%(asctime)s - %(levelname)s - %(message)s"
-    )
-
-    # Suppress verbose Azure SDK logging unless --verbose is used
-    if not verbose:
-        # Suppress Azure HTTP request/response logging
-        logging.getLogger("azure.core.pipeline.policies.http_logging_policy").setLevel(logging.WARNING)
-        logging.getLogger("azure.identity").setLevel(logging.WARNING)
-        logging.getLogger("azure.mgmt").setLevel(logging.WARNING)
-        # Suppress urllib3 connection pool messages
-        logging.getLogger("urllib3").setLevel(logging.WARNING)
-
-    return logging.getLogger(__name__)
+# setup_logging is now imported from logging_utils with suppress_azure parameter
 
 
 def get_tags(project_root: Path, owner_email: str) -> Dict[str, str]:
@@ -1709,7 +1693,7 @@ Examples:
         return 1
 
     # Set up logging
-    logger = setup_logging(getattr(args, 'verbose', False))
+    logger = setup_logging(getattr(args, 'verbose', False), suppress_azure=True)
 
     # Handle interactive cloud selection (for both create and destroy)
     if not args.cloud:

@@ -139,7 +139,7 @@ def _cleanup_deployment_summary(env_path: Path) -> None:
     Delete DEPLOYED_RESOURCES.md file after successful Core destroy.
 
     Args:
-        env_path: Path to the terraform core directory (e.g., aws/core or azure/core)
+        env_path: Path to the terraform core directory (e.g., terraform/core)
     """
     try:
         output_file = env_path / "DEPLOYED_RESOURCES.md"

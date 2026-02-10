@@ -9,8 +9,9 @@ Usage:
     generate_credentials_markdown(cloud_provider, tf_outputs, output_path)
 
     # Standalone (manual)
-    uv run deployment-summary aws/core
-    uv run deployment-summary azure/core
+    uv run deployment-summary core
+    uv run deployment-summary lab1-tool-calling
+    uv run deployment-summary lab2-vector-search
 """
 
 import json
@@ -312,15 +313,18 @@ def main():
     Main entry point for standalone script execution.
 
     Usage:
-        uv run deployment-summary terraform/core
+        uv run deployment-summary <env-name>
     """
     if len(sys.argv) != 2:
-        print("Usage: uv run deployment-summary <terraform-core-path>")
-        print("Example: uv run deployment-summary terraform/core")
+        print("Usage: uv run deployment-summary <env-name>")
+        print("Example: uv run deployment-summary core")
+        print("         uv run deployment-summary lab1-tool-calling")
+        print("         uv run deployment-summary lab2-vector-search")
         sys.exit(1)
 
-    # Parse arguments
-    terraform_dir = Path(sys.argv[1])
+    # Parse arguments - prepend terraform/ to the env name
+    env_name = sys.argv[1]
+    terraform_dir = Path("terraform") / env_name
 
     # Validate path
     if not terraform_dir.exists():

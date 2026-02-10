@@ -37,8 +37,8 @@ locals {
 # Lab2 uses the shared LLM infrastructure from core
 # LLM embedding and text generation models are available via core terraform state
 
-# Create MongoDB Flink Connection for vector search
-resource "confluent_flink_connection" "mongodb_connection" {
+# Create MongoDB connection via Flink SQL statement
+resource "confluent_flink_statement" "mongodb_connection_statement_lab2" {
   organization {
     id = data.terraform_remote_state.core.outputs.confluent_organization_id
   }
@@ -57,15 +57,31 @@ resource "confluent_flink_connection" "mongodb_connection" {
     secret = data.terraform_remote_state.core.outputs.app_manager_flink_api_secret
   }
 
-  display_name = "mongodb-connection"
-  type         = "MONGODB"
-  endpoint     = local.effective_mongodb_conn
-  username     = local.effective_mongodb_user
-  password     = local.effective_mongodb_pass
+  statement_name = "mongodb-connection-create"
+
+  statement = <<-EOT
+    CREATE CONNECTION IF NOT EXISTS `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`mongodb-connection`
+    WITH (
+      'type' = 'MONGODB',
+      'endpoint' = '${local.effective_mongodb_conn}',
+      'username' = '${local.effective_mongodb_user}',
+      'password' = '${local.effective_mongodb_pass}'
+    );
+  EOT
+
+  properties = {
+    "sql.current-catalog"  = data.terraform_remote_state.core.outputs.confluent_environment_display_name
+    "sql.current-database" = data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name
+  }
 
   lifecycle {
+    ignore_changes  = [statement]
     prevent_destroy = false
   }
+
+  depends_on = [
+    data.terraform_remote_state.core
+  ]
 }
 
 # Create queries table - basic Kafka table for query input
@@ -208,7 +224,7 @@ resource "confluent_flink_statement" "documents_vectordb_create_table" {
   }
 
   depends_on = [
-    confluent_flink_connection.mongodb_connection
+    confluent_flink_statement.mongodb_connection_statement_lab2
   ]
 }
 
@@ -333,7 +349,7 @@ resource "null_resource" "generate_flink_sql_summary" {
   # Trigger regeneration when key resources change
   triggers = {
     queries_table         = confluent_flink_statement.queries_table.id
-    mongodb_connection    = confluent_flink_connection.mongodb_connection.id
+    mongodb_connection    = confluent_flink_statement.mongodb_connection_statement_lab2.id
   }
 
   provisioner "local-exec" {

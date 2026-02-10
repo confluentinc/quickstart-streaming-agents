@@ -28,21 +28,19 @@ from typing import Any, Dict
 
 from .common.cloud_detection import auto_detect_cloud_provider, validate_cloud_provider, suggest_cloud_provider
 from .common.terraform import extract_kafka_credentials, validate_terraform_state, get_project_root
+from .common.logging_utils import setup_logging as _base_setup_logging
 
 
 def setup_logging(verbose: bool = False) -> logging.Logger:
-    """Set up logging configuration."""
-    level = logging.DEBUG if verbose else logging.ERROR
-    logging.basicConfig(
-        level=level,
-        format="%(asctime)s - %(levelname)s - %(message)s"
-    )
+    """Set up logging configuration with module-specific suppressions."""
+    logger = _base_setup_logging(verbose, default_level="ERROR")
 
-    # Suppress noisy modules
-    logging.getLogger("scripts.common.terraform").setLevel(logging.ERROR)
-    logging.getLogger("scripts.common.cloud_detection").setLevel(logging.ERROR)
+    # Suppress noisy modules even in verbose mode
+    if not verbose:
+        logging.getLogger("scripts.common.terraform").setLevel(logging.ERROR)
+        logging.getLogger("scripts.common.cloud_detection").setLevel(logging.ERROR)
 
-    return logging.getLogger(__name__)
+    return logger
 
 
 class QueryPublisherCLI:

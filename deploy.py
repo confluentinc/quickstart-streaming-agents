@@ -24,10 +24,11 @@ from scripts.common.credentials import (
     generate_confluent_api_keys
 )
 from scripts.common.login_checks import check_confluent_login
-from scripts.common.terraform import get_project_root
+from scripts.common.terraform import get_project_root, run_terraform_output
 from scripts.common.terraform_runner import run_terraform
 from scripts.common.tfvars import write_tfvars_for_deployment
 from scripts.common.ui import prompt_choice, prompt_with_default
+from scripts.common.validate import validate_aws_bedrock_credentials, validate_azure_openai_credentials
 
 # Valid cloud regions (MongoDB M0 free tier compatible)
 # NOTE: These are kept for reference and testing mode, but interactive mode
@@ -184,12 +185,40 @@ def main():
             set_key(creds_file, "TF_VAR_aws_bedrock_access_key", aws_bedrock_key)
             set_key(creds_file, "TF_VAR_aws_bedrock_secret_key", aws_bedrock_secret)
 
+            # Validate AWS credentials format (advisory only)
+            print("\nValidating AWS Bedrock credentials format...")
+            passed, messages = validate_aws_bedrock_credentials(aws_bedrock_key, aws_bedrock_secret)
+            for msg in messages:
+                print(msg)
+
+            if not passed:
+                print("\n⚠️  Credential format validation failed.")
+                proceed = input("Do you want to proceed anyway? (y/n): ").strip().lower()
+                if proceed != 'y':
+                    print("Deployment cancelled. Please correct your credentials and try again.")
+                    sys.exit(1)
+                print("Proceeding with deployment despite validation warnings...\n")
+
         # Azure OpenAI credentials
         if cloud == "azure":
             azure_openai_endpoint = prompt_with_default("Azure OpenAI Endpoint", creds.get("TF_VAR_azure_openai_endpoint_raw", ""))
             azure_openai_key = prompt_with_default("Azure OpenAI API Key", creds.get("TF_VAR_azure_openai_api_key", ""))
             set_key(creds_file, "TF_VAR_azure_openai_endpoint_raw", azure_openai_endpoint)
             set_key(creds_file, "TF_VAR_azure_openai_api_key", azure_openai_key)
+
+            # Validate Azure credentials format (advisory only)
+            print("\nValidating Azure OpenAI credentials format...")
+            passed, messages = validate_azure_openai_credentials(azure_openai_endpoint, azure_openai_key)
+            for msg in messages:
+                print(msg)
+
+            if not passed:
+                print("\n⚠️  Credential format validation failed.")
+                proceed = input("Do you want to proceed anyway? (y/n): ").strip().lower()
+                if proceed != 'y':
+                    print("Deployment cancelled. Please correct your credentials and try again.")
+                    sys.exit(1)
+                print("Proceeding with deployment despite validation warnings...\n")
 
         # Lab-specific credentials
         if "lab1-tool-calling" in envs_to_deploy or "lab3-agentic-fleet-management" in envs_to_deploy:
@@ -294,6 +323,18 @@ def main():
             sys.exit(1)
 
     print("\n✓ All deployments completed successfully!")
+
+    # Display the environment name
+    try:
+        core_state_path = root / "terraform" / "core" / "terraform.tfstate"
+        if core_state_path.exists():
+            core_outputs = run_terraform_output(core_state_path)
+            if "confluent_environment_display_name" in core_outputs:
+                env_name = core_outputs["confluent_environment_display_name"]
+                print(f"\nEnvironment name: {env_name}")
+    except Exception as e:
+        # Don't fail deployment if we can't read the environment name
+        print(f"\n⚠ Could not read environment name: {e}")
 
 
 if __name__ == "__main__":

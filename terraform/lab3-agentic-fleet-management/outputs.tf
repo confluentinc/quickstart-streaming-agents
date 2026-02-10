@@ -40,6 +40,6 @@ output "documents_vectordb_table_id" {
 }
 
 output "mongodb_connection_name" {
-  value       = confluent_flink_connection.mongodb_connection_lab3.display_name
+  value       = "mongodb-connection-lab3"
   description = "MongoDB connection name for Lab3 vector search"
 }

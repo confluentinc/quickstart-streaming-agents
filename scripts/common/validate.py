@@ -29,16 +29,7 @@ except ImportError:
 
 from dotenv import dotenv_values
 from .terraform import get_project_root
-
-
-def setup_logging(verbose: bool = False) -> logging.Logger:
-    """Set up logging configuration."""
-    level = logging.DEBUG if verbose else logging.INFO
-    logging.basicConfig(
-        level=level,
-        format="%(asctime)s - %(levelname)s - %(message)s"
-    )
-    return logging.getLogger(__name__)
+from .logging_utils import setup_logging
 
 
 def colorize(text: str, color: str) -> str:
@@ -286,6 +277,109 @@ def validate_mongodb(
     except Exception as e:
         messages.append(colorize(f"✗ Unexpected MongoDB error: {e}", 'red'))
         all_passed = False
+
+    return all_passed, messages
+
+
+def validate_aws_bedrock_credentials(access_key: str, secret_key: str) -> Tuple[bool, List[str]]:
+    """
+    Validate AWS Bedrock credential format (advisory only).
+
+    Checks:
+    - Access key format (should start with AKIA and be 20 chars)
+    - Secret key format (should be ~40 chars base64-like)
+
+    Args:
+        access_key: AWS access key ID
+        secret_key: AWS secret access key
+
+    Returns:
+        Tuple of (all_checks_passed, list_of_messages)
+    """
+    messages = []
+    all_passed = True
+
+    # Check access key format
+    if not access_key:
+        messages.append(colorize("⚠️  Warning: AWS access key is empty", 'yellow'))
+        all_passed = False
+    elif not access_key.startswith("AKIA"):
+        messages.append(colorize("⚠️  Warning: AWS access key should start with 'AKIA'", 'yellow'))
+        messages.append("   → Verify this is a valid IAM access key")
+        all_passed = False
+    elif len(access_key) != 20:
+        messages.append(colorize(f"⚠️  Warning: AWS access key should be 20 characters (found {len(access_key)})", 'yellow'))
+        messages.append("   → Verify this is a valid IAM access key")
+        all_passed = False
+    else:
+        messages.append(colorize("✓ AWS access key format looks valid", 'green'))
+
+    # Check secret key format
+    if not secret_key:
+        messages.append(colorize("⚠️  Warning: AWS secret key is empty", 'yellow'))
+        all_passed = False
+    elif len(secret_key) != 40:
+        messages.append(colorize(f"⚠️  Warning: AWS secret key should be 40 characters (found {len(secret_key)})", 'yellow'))
+        messages.append("   → Verify this is a valid IAM secret key")
+        all_passed = False
+    elif not all(c.isalnum() or c in '+/=' for c in secret_key):
+        messages.append(colorize("⚠️  Warning: AWS secret key contains unexpected characters", 'yellow'))
+        messages.append("   → Should only contain alphanumeric, +, /, and = characters")
+        all_passed = False
+    else:
+        messages.append(colorize("✓ AWS secret key format looks valid", 'green'))
+
+    return all_passed, messages
+
+
+def validate_azure_openai_credentials(endpoint: str, api_key: str) -> Tuple[bool, List[str]]:
+    """
+    Validate Azure OpenAI credential format (advisory only).
+
+    Checks:
+    - Endpoint URL format (should be https://[name].openai.azure.com/)
+    - API key format (should be 32 hex characters)
+
+    Args:
+        endpoint: Azure OpenAI endpoint URL
+        api_key: Azure OpenAI API key
+
+    Returns:
+        Tuple of (all_checks_passed, list_of_messages)
+    """
+    messages = []
+    all_passed = True
+
+    # Check endpoint format
+    if not endpoint:
+        messages.append(colorize("⚠️  Warning: Azure OpenAI endpoint is empty", 'yellow'))
+        all_passed = False
+    elif not endpoint.startswith("https://"):
+        messages.append(colorize("⚠️  Warning: Azure OpenAI endpoint should start with 'https://'", 'yellow'))
+        messages.append(f"   → Current: {endpoint}")
+        all_passed = False
+    elif ".openai.azure.com" not in endpoint:
+        messages.append(colorize("⚠️  Warning: Azure OpenAI endpoint should contain '.openai.azure.com'", 'yellow'))
+        messages.append(f"   → Current: {endpoint}")
+        messages.append("   → Expected format: https://[name].openai.azure.com/")
+        all_passed = False
+    else:
+        messages.append(colorize("✓ Azure OpenAI endpoint format looks valid", 'green'))
+
+    # Check API key format
+    if not api_key:
+        messages.append(colorize("⚠️  Warning: Azure OpenAI API key is empty", 'yellow'))
+        all_passed = False
+    elif len(api_key) != 32:
+        messages.append(colorize(f"⚠️  Warning: Azure OpenAI API key should be 32 characters (found {len(api_key)})", 'yellow'))
+        messages.append("   → Verify this is a valid Azure OpenAI API key")
+        all_passed = False
+    elif not all(c in '0123456789abcdefABCDEF' for c in api_key):
+        messages.append(colorize("⚠️  Warning: Azure OpenAI API key should only contain hex characters (0-9, a-f)", 'yellow'))
+        messages.append("   → Verify this is a valid Azure OpenAI API key")
+        all_passed = False
+    else:
+        messages.append(colorize("✓ Azure OpenAI API key format looks valid", 'green'))
 
     return all_passed, messages
 

@@ -89,7 +89,7 @@ That's it! The script will prompt you to choose a cloud provider (AWS or Azure) 
 
 ```
 quickstart-streaming-agents/
-├── terraform/                          # Unified Terraform configs (supports AWS & Azure)
+├── terraform/                          
 │   ├── core/                           # Shared Confluent Cloud infra for all labs
 │   ├── lab1-tool-calling/              # Lab-specific infra
 │   ├── lab2-vector-search/             # Lab-specific infra
@@ -98,16 +98,8 @@ quickstart-streaming-agents/
 └── scripts/                            # Python utilities
 ```
 
-<details>
-<summary>🔄 Alternative deployment methods</summary>
-**Traditional Python:**
-
-```bash
-pip install -e . && python deploy.py
-```
-</details>
-
 ## Cleanup
+
 ```bash
 # Automated
 uv run destroy

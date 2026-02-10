@@ -34,83 +34,17 @@ from typing import Dict, Optional
 
 from .common.cloud_detection import auto_detect_cloud_provider, validate_cloud_provider, suggest_cloud_provider
 from .common.terraform import extract_kafka_credentials, validate_terraform_state, get_project_root
-from .common.datagen_helpers import generate_all_connections
-
-
-def setup_logging(verbose: bool = False) -> logging.Logger:
-    """Set up logging configuration."""
-    level = logging.DEBUG if verbose else logging.INFO
-    logging.basicConfig(
-        level=level,
-        format="%(asctime)s - %(levelname)s - %(message)s"
-    )
-    return logging.getLogger(__name__)
-
-
-def check_dependencies() -> Dict[str, bool]:
-    """
-    Check if required dependencies are available.
-
-    Returns:
-        Dictionary with dependency availability status
-    """
-    dependencies = {}
-
-    # Check Docker
-    try:
-        result = subprocess.run(
-            ["docker", "--version"],
-            capture_output=True,
-            text=True,
-            check=True,
-            timeout=10
-        )
-        dependencies["docker"] = True
-    except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired):
-        dependencies["docker"] = False
-
-    # Check terraform
-    try:
-        result = subprocess.run(
-            ["terraform", "version"],
-            capture_output=True,
-            text=True,
-            check=True,
-            timeout=10
-        )
-        dependencies["terraform"] = True
-    except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired):
-        dependencies["terraform"] = False
-
-    return dependencies
-
-
-def validate_dependencies(dependencies: Dict[str, bool]) -> bool:
-    """
-    Validate that all required dependencies are available.
-
-    Args:
-        dependencies: Dictionary with dependency availability status
-
-    Returns:
-        True if all dependencies are available, False otherwise
-    """
-    logger = logging.getLogger(__name__)
-
-    missing = [name for name, available in dependencies.items() if not available]
-
-    if not missing:
-        logger.info("✓ All required dependencies are available")
-        return True
-
-    logger.error("✗ Missing required dependencies:")
-    for dep in missing:
-        if dep == "docker":
-            logger.error("  - Docker: https://docs.docker.com/get-docker/")
-        elif dep == "terraform":
-            logger.error("  - Terraform: https://developer.hashicorp.com/terraform/install")
-
-    return False
+from .common.datagen_helpers import (
+    generate_all_connections,
+    check_dependencies,
+    validate_dependencies,
+    check_shadowtraffic_config,
+    check_docker_env_file,
+    download_shadowtraffic_license,
+    get_license_expiration,
+    is_license_expired
+)
+from .common.logging_utils import setup_logging
 
 
 def find_datagen_directories(cloud_provider: str, project_root: Path) -> Dict[str, Path]:
@@ -153,146 +87,6 @@ def find_datagen_directories(cloud_provider: str, project_root: Path) -> Dict[st
         raise ValueError(f"Unsupported cloud provider: {cloud_provider}")
 
     return paths
-
-
-def check_shadowtraffic_config(paths: Dict[str, Path]) -> bool:
-    """
-    Check that ShadowTraffic configuration files exist.
-
-    Args:
-        paths: Dictionary with relevant paths
-
-    Returns:
-        True if all config files exist, False otherwise
-    """
-    logger = logging.getLogger(__name__)
-
-    required_files = [
-        paths["root_config"],
-        paths["generators_dir"] / "customers.json",
-        paths["generators_dir"] / "products.json",
-        paths["generators_dir"] / "orders.json",
-    ]
-
-    missing_files = [f for f in required_files if not f.exists()]
-
-    if missing_files:
-        logger.error("✗ Missing ShadowTraffic configuration files:")
-        for f in missing_files:
-            logger.error(f"  - {f}")
-        return False
-
-    logger.info("✓ All ShadowTraffic configuration files found")
-    return True
-
-
-def check_docker_env_file(datagen_dir: Path) -> Optional[Path]:
-    """
-    Check for ShadowTraffic Docker environment file.
-
-    Args:
-        datagen_dir: Data generation directory
-
-    Returns:
-        Path to environment file if found, None otherwise
-    """
-    env_files = [
-        "free-trial-license-docker.env",
-        "shadowtraffic.env",
-        ".env"
-    ]
-
-    for env_file in env_files:
-        env_path = datagen_dir / env_file
-        if env_path.exists():
-            return env_path
-
-    return None
-
-
-def download_shadowtraffic_license(datagen_dir: Path) -> Optional[Path]:
-    """
-    Download ShadowTraffic free trial license file if not present.
-
-    Args:
-        datagen_dir: Data generation directory
-
-    Returns:
-        Path to the downloaded license file, or None if download failed
-    """
-    logger = logging.getLogger(__name__)
-
-    license_url = "https://raw.githubusercontent.com/ShadowTraffic/shadowtraffic-examples/master/free-trial-license-docker.env"
-    license_path = datagen_dir / "free-trial-license-docker.env"
-
-    try:
-        logger.info("📥 Downloading ShadowTraffic license file...")
-
-        with urllib.request.urlopen(license_url, timeout=30) as response:
-            license_content = response.read()
-
-        with open(license_path, 'wb') as f:
-            f.write(license_content)
-
-        logger.info(f"✓ License file downloaded to: {license_path}")
-        return license_path
-
-    except Exception as e:
-        logger.warning(f"⚠️  Failed to download license file: {e}")
-        logger.warning("   Continuing with trial limits")
-        return None
-
-
-def get_license_expiration(license_path: Path) -> Optional[datetime]:
-    """
-    Extract expiration date from ShadowTraffic license file.
-
-    Args:
-        license_path: Path to the license file
-
-    Returns:
-        Expiration datetime if found and valid, None otherwise
-    """
-    logger = logging.getLogger(__name__)
-
-    try:
-        with open(license_path, 'r') as f:
-            for line in f:
-                line = line.strip()
-                if line.startswith('LICENSE_EXPIRATION='):
-                    expiration_str = line.split('=', 1)[1]
-                    # Parse YYYY-MM-DD format
-                    return datetime.strptime(expiration_str, '%Y-%m-%d')
-
-        logger.debug(f"No LICENSE_EXPIRATION found in {license_path}")
-        return None
-
-    except Exception as e:
-        logger.debug(f"Failed to parse license expiration from {license_path}: {e}")
-        return None
-
-
-def is_license_expired(license_path: Path) -> bool:
-    """
-    Check if a ShadowTraffic license is expired.
-
-    Args:
-        license_path: Path to the license file
-
-    Returns:
-        True if license is expired or expiration cannot be determined, False otherwise
-    """
-    expiration = get_license_expiration(license_path)
-
-    if expiration is None:
-        # Cannot determine expiration, assume not expired
-        return False
-
-    # Compare with today's date (ignore time component)
-    today = datetime.now().date()
-    expiration_date = expiration.date()
-
-    return expiration_date < today
 
 
 def run_shadowtraffic(
