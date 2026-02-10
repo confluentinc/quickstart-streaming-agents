@@ -38,11 +38,10 @@ Build real-time AI agents with [Confluent Cloud Streaming Agents](https://docs.c
 - **Lab2:** MongoDB Atlas vector database ([Setup guide](./assets/pre-setup/MongoDB-Setup.md))
 - **Lab3:** Zapier ([Setup guide](./assets/pre-setup/Zapier-Setup.md)) + MongoDB ([Setup guide](./assets/pre-setup/MongoDB-Setup.md))
 
-> **Note:** SSE endpoints are now deprecated by Zapier. If you previously created an SSE endpoint, you'll need to create a new Streamable HTTP connection and copy the token instead. See the [Zapier Setup guide](./assets/pre-setup/Zapier-Setup.md) for updated instructions.
+> **Note:** SSE endpoints are now deprecated by Zapier. If you previously created an SSE endpoint, you'll need to create a new Streamable HTTP endpoint and copy the Zapier token instead. See the [Zapier Setup guide](./assets/pre-setup/Zapier-Setup.md) for updated instructions.
 
 **Required tools:**
 
-- **[AWS CLI](https://github.com/aws/aws-cli)** or **[Azure CLI](https://github.com/Azure/azure-cli)** - must be logged in
 - **[Confluent CLI](https://docs.confluent.io/confluent-cli/current/overview.html)** - must be logged in
 - **[Docker](https://github.com/docker)** - for Lab1 & Lab3 data generation only
 - **[Git](https://github.com/git/git)**
@@ -50,24 +49,17 @@ Build real-time AI agents with [Confluent Cloud Streaming Agents](https://docs.c
 - **[uv](https://github.com/astral-sh/uv)**
 
 <details>
-<summary> Installation commands (Mac/Windows/Linux)</summary>
+<summary> Installation commands (Mac/Windows)</summary>
 **Mac:**
 
 ```bash
-brew install uv git python && brew tap hashicorp/tap && brew install hashicorp/tap/terraform && brew install --cask confluent-cli docker-desktop && brew install awscli  # or azure-cli
+brew install uv git python && brew tap hashicorp/tap && brew install hashicorp/tap/terraform && brew install --cask confluent-cli docker-desktop
 ```
 
 **Windows:**
 ```powershell
-winget install astral-sh.uv Git.Git Docker.DockerDesktop Hashicorp.Terraform ConfluentInc.Confluent-CLI Python.Python Amazon.AWSCLI # or Microsoft.AzureCLI
+winget install astral-sh.uv Git.Git Docker.DockerDesktop Hashicorp.Terraform ConfluentInc.Confluent-CLI Python.Python
 ```
-
-**Linux:**
-```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-# Install other tools via your package manager
-```
-
 </details>
 
 ## 🚀 Quick Start
@@ -84,71 +76,34 @@ cd quickstart-streaming-agents
 uv run deploy
 ```
 
-That's it! The script will guide you through setup, automatically create API keys, and deploy your chosen lab(s).
+That's it! The script will prompt you to choose a cloud provider (AWS or Azure) and guide you through setup, automatically create API keys, and deploy your chosen lab(s).
 
 > [!NOTE]
 >
-> For instructor-led workshops, add the `--workshop` flag: `uv run deploy --workshop`.
-> 
-> Workshop mode requires instructor-provided Bedrock API keys, which instructors can create by running `uv run workshop-keys create`. See the [Workshop Mode Setup Guide](./assets/pre-setup/Workshop-Mode-Setup.md) for more details.
+> Workshop participants only need: Confluent Cloud API keys + LLM API keys (Bedrock access key/secret for AWS, or Azure OpenAI endpoint/key for Azure). No AWS account or Azure subscription is needed.
+>
+> Instructors can create shared LLM credentials with `uv run workshop-keys create {aws|azure}`. See the [Workshop Mode Setup Guide](./assets/pre-setup/Workshop-Mode-Setup.md) for more details.
 
 
 ## Directory Structure
 
 ```
 quickstart-streaming-agents/
-├── aws|azure/                          # Choose a cloud
+├── terraform/                          # Unified Terraform configs (supports AWS & Azure)
 │   ├── core/                           # Shared Confluent Cloud infra for all labs
 │   ├── lab1-tool-calling/              # Lab-specific infra
 │   ├── lab2-vector-search/             # Lab-specific infra
 │   └── lab3-agentic-fleet-management/  # Lab-specific infra
-├── deploy.py                           # 🚀 Start here
+├── deploy.py                           # Start here
 └── scripts/                            # Python utilities
 ```
 
 <details>
 <summary>🔄 Alternative deployment methods</summary>
-
 **Traditional Python:**
+
 ```bash
 pip install -e . && python deploy.py
-```
-
-</details>
-
-<details>
-<summary>🔧 Manual terraform deployment</summary>
-
-### Prerequisites
-- All tools installed and authenticated
-- Confluent Cloud API keys (Cloud Resource Management keys with EnvironmentAdmin role)
-
-### Deploy
-```bash
-cd aws/  # or azure/
-cd core/
-terraform init && terraform apply --auto-approve
-cd ../lab1-tool-calling/  # or lab2-vector-search
-terraform init && terraform apply --auto-approve
-```
-
-### Required terraform.tfvars
-
-```hcl
-cloud_provider = "aws"  # or "azure"
-cloud_region = "your-region"  # must be a region supported by MongoDB free tier, otherwise Lab2 deployment will not succeed
-confluent_cloud_api_key = "your-key"
-confluent_cloud_api_secret = "your-secret"
-zapier_token = "YTYwMDEzNjUtMTIzMC00MjFhLWJlYTAtYWFjYWM3MmZmMTRlOjZqSG5UTEJWV25EQkp5aXJYdlQvWEFhalNmdmlVgmlQTUpMY0pRcHdlc2c9"  # Lab1 & Lab3
-mongodb_connection_string = "mongodb+srv://cluster0.abc.mongodb.net"  # Lab2 & Lab3
-mongodb_username = "your-db-user"  # Lab2 & Lab3
-mongodb_password = "your-db-pass"  # Lab2 & Lab3
-```
-
-### Tear down
-```bash
-cd aws/lab1-tool-calling && terraform destroy --auto-approve
-cd ../core && terraform destroy --auto-approve
 ```
 </details>
 

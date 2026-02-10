@@ -129,10 +129,10 @@ def find_datagen_directories(cloud_provider: str, project_root: Path) -> Dict[st
     """
     paths = {}
 
-    if cloud_provider in ["aws", "azure"]:
-        base_dir = project_root / cloud_provider
-        core_dir = base_dir / "core"
-        lab1_dir = base_dir / "lab1-tool-calling"
+    if cloud_provider in ["aws", "azure", "terraform"]:
+        terraform_dir = project_root / "terraform"
+        core_dir = terraform_dir / "core"
+        lab1_dir = terraform_dir / "lab1-tool-calling"
         datagen_dir = lab1_dir / "data-gen"
 
         if not core_dir.exists():
@@ -143,24 +143,6 @@ def find_datagen_directories(cloud_provider: str, project_root: Path) -> Dict[st
         paths.update({
             "core_dir": core_dir,
             "lab1_dir": lab1_dir,
-            "datagen_dir": datagen_dir,
-            "connections_dir": datagen_dir / "connections",
-            "generators_dir": datagen_dir / "generators",
-            "root_config": datagen_dir / "root.json",
-        })
-
-    elif cloud_provider == "terraform":
-        terraform_dir = project_root / "terraform"
-        core_dir = terraform_dir / "core"
-        datagen_dir = terraform_dir / "data-gen"
-
-        if not terraform_dir.exists():
-            raise FileNotFoundError(f"Terraform directory not found: {terraform_dir}")
-        if not datagen_dir.exists():
-            raise FileNotFoundError(f"Terraform data generation directory not found: {datagen_dir}")
-
-        paths.update({
-            "core_dir": core_dir,
             "datagen_dir": datagen_dir,
             "connections_dir": datagen_dir / "connections",
             "generators_dir": datagen_dir / "generators",
@@ -434,7 +416,7 @@ def run_shadowtraffic(
         shadowtraffic_args.extend(["--duration", str(duration)])
 
     docker_cmd.extend([
-        "shadowtraffic/shadowtraffic:1.11.3"
+        "shadowtraffic/shadowtraffic:1.14.1"
     ] + shadowtraffic_args)
 
     logger.info(f"🚀 Starting ShadowTraffic data generation...")
@@ -633,7 +615,7 @@ def main() -> None:
         if cloud_provider in ["aws", "azure"]:
             if not validate_terraform_state(cloud_provider, project_root):
                 logger.error(f"Terraform state validation failed for {cloud_provider}")
-                logger.error(f"Please run 'terraform apply' in {cloud_provider}/core/ and {cloud_provider}/lab1-tool-calling/")
+                logger.error(f"Please run 'terraform apply' in terraform/core/ and terraform/lab1-tool-calling/")
                 sys.exit(1)
 
         # Run data generation

@@ -2,6 +2,13 @@
 """
 Simple deployment script for Confluent streaming agents quickstart.
 Uses credentials from credentials.env or credentials.json and deploys via Terraform.
+
+IMPORTANT: Interactive mode always uses hardcoded regions:
+- AWS: us-east-1 (required for workshop mode MongoDB compatibility)
+- Azure: eastus2 (required for workshop mode MongoDB compatibility)
+
+Testing mode (--testing flag) respects the region in credentials.json,
+allowing developers to override the default regions if needed.
 """
 
 import argparse
@@ -16,13 +23,15 @@ from scripts.common.credentials import (
     load_credentials_json,
     generate_confluent_api_keys
 )
-from scripts.common.login_checks import check_confluent_login, check_cloud_cli_login
+from scripts.common.login_checks import check_confluent_login
 from scripts.common.terraform import get_project_root
 from scripts.common.terraform_runner import run_terraform
 from scripts.common.tfvars import write_tfvars_for_deployment
 from scripts.common.ui import prompt_choice, prompt_with_default
 
 # Valid cloud regions (MongoDB M0 free tier compatible)
+# NOTE: These are kept for reference and testing mode, but interactive mode
+# always uses us-east-1 (AWS) or eastus2 (Azure) for workshop compatibility
 AWS_REGIONS = [
     "us-east-1", "us-west-2", "sa-east-1",
     "ap-southeast-1", "ap-southeast-2", "ap-south-1",
@@ -41,15 +50,11 @@ def main():
     parser = argparse.ArgumentParser(description="Simple deployment tool for Confluent streaming agents")
     parser.add_argument("--testing", action="store_true",
                        help="Non-interactive mode using credentials.json (for automated testing)")
-    parser.add_argument("--workshop", action="store_true",
-                       help="Workshop mode using pre-provided cloud credentials for AWS (Bedrock) or Azure (OpenAI) - no cloud CLI required")
     args = parser.parse_args()
 
     print("=== Simple Deployment Tool ===\n")
     if args.testing:
         print("Running in TESTING mode (non-interactive)\n")
-    if args.workshop:
-        print("Running in WORKSHOP mode (pre-provided cloud credentials)\n")
 
     root = get_project_root()
     print(f"Project root: {root}")
@@ -58,22 +63,17 @@ def main():
     if args.testing:
         creds = load_credentials_json(root)
 
-        # Extract values from JSON
-        cloud = creds["cloud"]
+        # Extract values from JSON (ensure cloud provider is lowercase)
+        cloud = creds["cloud"].lower()
         region = creds["region"]
-        workshop_mode = creds.get("workshop", False)
         envs_to_deploy = ["core", "lab1-tool-calling", "lab2-vector-search", "lab3-agentic-fleet-management"]
-
-        # In workshop mode on Azure, replace "core" with "core-workshop" (no Azure provider)
-        if workshop_mode and cloud == "azure":
-            envs_to_deploy = ["core-workshop" if env == "core" else env for env in envs_to_deploy]
 
         # Build environment variables for Terraform
         env_vars = {
             "TF_VAR_confluent_cloud_api_key": creds["confluent_cloud_api_key"],
             "TF_VAR_confluent_cloud_api_secret": creds["confluent_cloud_api_secret"],
             "TF_VAR_cloud_region": region,
-            "TF_VAR_workshop_mode": "true" if workshop_mode else "false",
+            "TF_VAR_cloud_provider": cloud,
         }
 
         # Optional fields
@@ -88,18 +88,13 @@ def main():
         if "mongodb_password" in creds and creds["mongodb_password"]:
             env_vars["TF_VAR_mongodb_password"] = creds["mongodb_password"]
 
-        # Azure subscription ID (only needed for production mode, not workshop mode)
-        if cloud == "azure" and not workshop_mode:
-            if "azure_subscription_id" in creds:
-                env_vars["TF_VAR_azure_subscription_id"] = creds["azure_subscription_id"]
-
-        # Workshop mode credentials
-        if workshop_mode and cloud == "aws":
+        # Cloud-specific LLM credentials
+        if cloud == "aws":
             if "aws_bedrock_access_key" in creds and creds["aws_bedrock_access_key"]:
                 env_vars["TF_VAR_aws_bedrock_access_key"] = creds["aws_bedrock_access_key"]
             if "aws_bedrock_secret_key" in creds and creds["aws_bedrock_secret_key"]:
                 env_vars["TF_VAR_aws_bedrock_secret_key"] = creds["aws_bedrock_secret_key"]
-        if workshop_mode and cloud == "azure":
+        if cloud == "azure":
             if "azure_openai_endpoint" in creds and creds["azure_openai_endpoint"]:
                 env_vars["TF_VAR_azure_openai_endpoint_raw"] = creds["azure_openai_endpoint"]
             if "azure_openai_api_key" in creds and creds["azure_openai_api_key"]:
@@ -130,39 +125,10 @@ def main():
         # Step 1: Select cloud provider
         cloud = prompt_choice("Select cloud provider:", ["aws", "azure"])
 
-        # Step 1.5: Check cloud CLI login (skip in workshop mode)
-        if args.workshop:
-            print(f"✓ Workshop mode: Using pre-provided {cloud.upper()} credentials (no CLI login required)")
-        else:
-            if not check_cloud_cli_login(cloud):
-                print(f"\n{'='*70}")
-                print(f"  WARNING: You are NOT logged into the {cloud.upper()} CLI!")
-                print(f"{'='*70}")
-                print(f"  Deployment may fail without proper {cloud.upper()} authentication.")
-                print(f"  To login, run: {'aws configure' if cloud == 'aws' else 'az login'}")
-                print(f"{'='*70}\n")
-
-                # Ask user to confirm continuation
-                while True:
-                    response = input("Do you want to continue without CLI authentication? (y/n): ").strip().lower()
-                    if response in ['y', 'yes']:
-                        print("Continuing deployment without CLI authentication...\n")
-                        break
-                    elif response in ['n', 'no']:
-                        print("Deployment cancelled. Please login and try again.")
-                        sys.exit(0)
-                    else:
-                        print("Invalid input. Please enter 'y' or 'n'.")
-            else:
-                print(f"✓ {cloud.upper()} CLI logged in")
-
-        # Step 2: Select cloud region (auto-select in workshop mode)
-        if args.workshop:
-            region = "us-east-1" if cloud == "aws" else "eastus2"
-            print(f"✓ Workshop mode: Auto-selected region: {region}")
-        else:
-            regions = AWS_REGIONS if cloud == "aws" else AZURE_REGIONS
-            region = prompt_choice("Select cloud region:", regions)
+        # Step 2: Set cloud region (hardcoded for simplicity)
+        # Note: AWS MUST use us-east-1, Azure MUST use eastus2 for workshop mode compatibility
+        region = "us-east-1" if cloud == "aws" else "eastus2"
+        print(f"Using region: {region} (required for workshop mode compatibility)")
 
         # Load credentials file
         creds_file, creds = load_or_create_credentials_file(root)
@@ -193,17 +159,9 @@ def main():
         elif env_choice == "Lab 2: Vector Search / RAG":
             envs_to_deploy = ["core", "lab2-vector-search"]
         elif env_choice == "Lab 3: Agentic Fleet Management":
-            # In workshop mode, Lab3 is standalone (has its own MongoDB connection)
-            if args.workshop:
-                envs_to_deploy = ["core", "lab3-agentic-fleet-management"]
-            else:
-                envs_to_deploy = ["core", "lab2-vector-search", "lab3-agentic-fleet-management"]
+            envs_to_deploy = ["core", "lab3-agentic-fleet-management"]
         elif env_choice == "All Labs (Labs 1, 2, and 3)":
             envs_to_deploy = ["core", "lab1-tool-calling", "lab2-vector-search", "lab3-agentic-fleet-management"]
-
-        # In workshop mode on Azure, replace "core" with "core-workshop" (no Azure provider)
-        if args.workshop and cloud == "azure":
-            envs_to_deploy = ["core-workshop" if env == "core" else env for env in envs_to_deploy]
 
         # Step 5: Prompt for required credentials
         print("\n--- Credential Configuration ---")
@@ -219,23 +177,17 @@ def main():
         if owner_email:
             set_key(creds_file, "TF_VAR_owner_email", owner_email)
 
-        # Azure subscription ID (only needed for production mode with core)
-        if cloud == "azure" and "core" in envs_to_deploy and not args.workshop:
-            # Production mode: prompt for real subscription ID
-            azure_sub = prompt_with_default("Azure Subscription ID", creds.get("TF_VAR_azure_subscription_id", ""))
-            set_key(creds_file, "TF_VAR_azure_subscription_id", azure_sub)
-
-        # Workshop mode: AWS Bedrock credentials (pre-provided)
-        if args.workshop and cloud == "aws":
-            aws_bedrock_key = prompt_with_default("AWS Bedrock Access Key (workshop)", creds.get("TF_VAR_aws_bedrock_access_key", ""))
-            aws_bedrock_secret = prompt_with_default("AWS Bedrock Secret Key (workshop)", creds.get("TF_VAR_aws_bedrock_secret_key", ""))
+        # AWS Bedrock credentials
+        if cloud == "aws":
+            aws_bedrock_key = prompt_with_default("AWS Bedrock Access Key", creds.get("TF_VAR_aws_bedrock_access_key", ""))
+            aws_bedrock_secret = prompt_with_default("AWS Bedrock Secret Key", creds.get("TF_VAR_aws_bedrock_secret_key", ""))
             set_key(creds_file, "TF_VAR_aws_bedrock_access_key", aws_bedrock_key)
             set_key(creds_file, "TF_VAR_aws_bedrock_secret_key", aws_bedrock_secret)
 
-        # Workshop mode: Azure OpenAI credentials (pre-provided)
-        if args.workshop and cloud == "azure":
-            azure_openai_endpoint = prompt_with_default("Azure OpenAI Endpoint (workshop)", creds.get("TF_VAR_azure_openai_endpoint_raw", ""))
-            azure_openai_key = prompt_with_default("Azure OpenAI API Key (workshop)", creds.get("TF_VAR_azure_openai_api_key", ""))
+        # Azure OpenAI credentials
+        if cloud == "azure":
+            azure_openai_endpoint = prompt_with_default("Azure OpenAI Endpoint", creds.get("TF_VAR_azure_openai_endpoint_raw", ""))
+            azure_openai_key = prompt_with_default("Azure OpenAI API Key", creds.get("TF_VAR_azure_openai_api_key", ""))
             set_key(creds_file, "TF_VAR_azure_openai_endpoint_raw", azure_openai_endpoint)
             set_key(creds_file, "TF_VAR_azure_openai_api_key", azure_openai_key)
 
@@ -244,32 +196,15 @@ def main():
             zapier_token = prompt_with_default("Zapier Token (Lab 1 and Lab 3)", creds.get("TF_VAR_zapier_token", ""))
             set_key(creds_file, "TF_VAR_zapier_token", zapier_token)
 
-        # MongoDB credentials needed if:
-        # - Lab2 or Lab3 is being deployed in non-workshop mode
-        # In workshop mode, both Lab2 and Lab3 use hardcoded MongoDB credentials
-        needs_mongodb = (("lab2-vector-search" in envs_to_deploy) or \
-                        ("lab3-agentic-fleet-management" in envs_to_deploy)) and not args.workshop
-
-        if needs_mongodb:
-            mongo_conn = prompt_with_default("MongoDB Connection String (Lab 2 and Lab 3)", creds.get("TF_VAR_mongodb_connection_string", ""))
-            mongo_user = prompt_with_default("MongoDB Username (Lab 2 and Lab 3)", creds.get("TF_VAR_mongodb_username", ""))
-            mongo_pass = prompt_with_default("MongoDB Password (Lab 2 and Lab 3)", creds.get("TF_VAR_mongodb_password", ""))
-            set_key(creds_file, "TF_VAR_mongodb_connection_string", mongo_conn)
-            set_key(creds_file, "TF_VAR_mongodb_username", mongo_user)
-            set_key(creds_file, "TF_VAR_mongodb_password", mongo_pass)
-
-        # Set cloud region
+        # Set cloud region and cloud provider
         set_key(creds_file, "TF_VAR_cloud_region", region)
-
-        # Set workshop mode flag
-        set_key(creds_file, "TF_VAR_workshop_mode", "true" if args.workshop else "false")
+        set_key(creds_file, "TF_VAR_cloud_provider", cloud)
 
         # Step 5.5: Validate configurations (advisory only, never blocks deployment)
         needs_zapier = "lab1-tool-calling" in envs_to_deploy or "lab3-agentic-fleet-management" in envs_to_deploy
-        needs_mongodb = (("lab2-vector-search" in envs_to_deploy or "lab3-agentic-fleet-management" in envs_to_deploy)
-                        and not args.workshop)
+        needs_mongodb = False  # MongoDB uses terraform defaults
 
-        if needs_zapier or needs_mongodb:
+        if needs_zapier:
             print("\n--- Configuration Validation (Advisory Only) ---")
 
             # Load credentials into environment for validation
@@ -349,7 +284,7 @@ def main():
 
     print("\n=== Starting Deployment ===")
     for env in envs_to_deploy:
-        env_path = root / cloud / env
+        env_path = root / "terraform" / env
         if not env_path.exists():
             print(f"Warning: {env_path} does not exist, skipping.")
             continue

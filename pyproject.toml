@@ -49,6 +49,7 @@ dependencies = [
     "azure-mgmt-resource>=23.0.0",
     "azure-ai-inference>=1.0.0b1",
     "requests>=2.31.0",
+    "confluent-kafka>=2.3.0",
 ]
 
 # Optional dependencies for enhanced functionality
@@ -78,6 +79,12 @@ lab1-datagen = "scripts.lab1_datagen:main"
 lab3_datagen = "scripts.lab3_datagen:main"
 lab3-datagen = "scripts.lab3_datagen:main"
 #
+publish_lab3_data = "scripts.publish_lab3_data:main"
+publish-lab3-data = "scripts.publish_lab3_data:main"
+#
+capture_lab3_data = "scripts.capture_lab3_data:main"
+capture-lab3-data = "scripts.capture_lab3_data:main"
+#
 publish_docs = "scripts.publish_docs:main"
 publish-docs = "scripts.publish_docs:main"
 #
@@ -95,9 +102,6 @@ deployment-summary = "scripts.common.generate_deployment_summary:main"
 #
 workshop_keys = "scripts.common.workshop_key_manager:main"
 workshop-keys = "scripts.common.workshop_key_manager:main"
-#
-azure_workshop_keys = "scripts.common.azure_workshop_key_manager:main"
-azure-workshop-keys = "scripts.common.azure_workshop_key_manager:main"
 #
 test_bedrock = "scripts.common.test_bedrock_credentials:main"
 test-bedrock = "scripts.common.test_bedrock_credentials:main"

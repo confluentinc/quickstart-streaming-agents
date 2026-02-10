@@ -6,7 +6,7 @@ In this lab, we'll create a Retrieval-Augmented Generation (RAG) pipeline using 
 
 ## Prerequisites
 - MongoDB free account with Atlas cluster (M0 - Free Tier) with vector search enabled (instructions [here](./assets/pre-setup/MongoDB-Setup.md)).
-- ⚠️ **IMPORTANT: AWS Users Only:** To access Claude Sonnet 3.7 you must request access to the model by filling out an Anthropic use case form (or someone in your org must have previously done so) for your cloud region. To do so, visit the **[Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog)**, select Claude 3.7 Sonnet and open it it in the Playground, then send a message in the chat - the form will appear automatically. ⚠️
+- ⚠️ **IMPORTANT: AWS Users Only:** To access Claude Sonnet 4.5 you must request access to the model by filling out an Anthropic use case form (or someone in your org must have previously done so) for your cloud region. To do so, visit the **[Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog)**, select Claude Sonnet 4.5 and open it it in the Playground, then send a message in the chat - the form will appear automatically. ⚠️
 
 ## Deployment
 

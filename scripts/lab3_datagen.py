@@ -70,7 +70,7 @@ def run_lab3_datagen(
     try:
         # Get project root and build lab3 paths
         project_root = get_project_root()
-        lab3_dir = project_root / cloud_provider / LAB3_DIR_NAME
+        lab3_dir = project_root / "terraform" / LAB3_DIR_NAME
         datagen_dir = lab3_dir / "data-gen"
 
         if not datagen_dir.exists():
@@ -129,16 +129,21 @@ def create_argument_parser() -> argparse.ArgumentParser:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  uv run lab3_datagen                      # Auto-detect cloud provider
+  uv run lab3_datagen                      # Auto-detect cloud provider (ShadowTraffic)
+  uv run lab3_datagen --local              # Use pre-generated data (no Docker)
   uv run lab3_datagen aws                  # Generate data for AWS environment
   uv run lab3_datagen azure                # Generate data for Azure environment
   uv run lab3_datagen --duration 300       # Run for 5 minutes
   uv run lab3_datagen -m 20                # Generate 20 ride requests per minute
   uv run lab3_datagen --dry-run            # Validate setup only
 
-Dependencies:
+Dependencies (--local mode):
+  - Confluent CLI: https://docs.confluent.io/confluent-cli/current/install.html
+
+Dependencies (ShadowTraffic mode):
   - Docker: https://docs.docker.com/get-docker/
   - Terraform: https://developer.hashicorp.com/terraform/install
+  - Confluent CLI: https://docs.confluent.io/confluent-cli/current/install.html
         """.strip()
     )
 
@@ -173,6 +178,12 @@ Dependencies:
         help="Show detailed output and debug information"
     )
 
+    parser.add_argument(
+        "--local",
+        action="store_true",
+        help="Use pre-generated local data instead of ShadowTraffic (no Docker required)"
+    )
+
     return parser
 
 
@@ -183,6 +194,32 @@ def main() -> None:
 
     logger = setup_logging(args.verbose)
     logger.info("Lab3 Anomaly Detection - Data Generation")
+
+    # Handle --local flag: use pre-generated data instead of ShadowTraffic
+    if args.local:
+        logger.info("Using local pre-generated data (no ShadowTraffic/Docker required)")
+        try:
+            project_root = get_project_root()
+            data_file = project_root / "assets" / "lab3" / "data" / "ride_requests.jsonl"
+
+            if not data_file.exists():
+                logger.error(f"Data file not found: {data_file}")
+                sys.exit(1)
+
+            # Call publish_lab3_data script
+            import subprocess
+            cmd = ["uv", "run", "publish_lab3_data", "--data-file", str(data_file)]
+            if args.verbose:
+                cmd.append("--verbose")
+            if args.dry_run:
+                cmd.append("--dry-run")
+
+            result = subprocess.run(cmd, cwd=project_root)
+            sys.exit(result.returncode)
+
+        except Exception as e:
+            logger.error(f"Failed to publish local data: {e}")
+            sys.exit(1)
 
     try:
         # Get project root
@@ -203,7 +240,7 @@ def main() -> None:
         # Validate terraform state
         if not validate_terraform_state(cloud_provider, project_root):
             logger.error(f"Terraform state validation failed for {cloud_provider}")
-            logger.error(f"Please run 'terraform apply' in {cloud_provider}/core/ and {cloud_provider}/{LAB3_DIR_NAME}/")
+            logger.error(f"Please run 'terraform apply' in terraform/core/ and terraform/{LAB3_DIR_NAME}/")
             sys.exit(1)
 
         # Run data generation

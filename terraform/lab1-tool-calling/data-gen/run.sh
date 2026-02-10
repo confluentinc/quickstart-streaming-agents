@@ -9,5 +9,5 @@ docker run \
        -v $(pwd)/root.json:/home/root.json \
        -v $(pwd)/generators:/home/generators \
        -v $(pwd)/connections:/home/connections \
-       shadowtraffic/shadowtraffic:1.11.3 \
+       shadowtraffic/shadowtraffic:1.14.1 \
        --config /home/root.json

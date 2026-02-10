@@ -12,5 +12,5 @@ docker run \
        -v "$(pwd)/functions:/home/functions" \
        -v "$(pwd)/zones:/home/zones" \
        -v "$(pwd)/functions:/home/functions" \
-       shadowtraffic/shadowtraffic:1.11.3 \
+       shadowtraffic/shadowtraffic:1.14.1 \
        --config /home/root.json

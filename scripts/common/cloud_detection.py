@@ -31,16 +31,6 @@ def detect_from_directory(cwd: Optional[Path] = None) -> Optional[str]:
 
     cwd_str = str(cwd).lower()
 
-    # Check if we're in an AWS directory tree
-    if "/aws/" in cwd_str or cwd_str.endswith("/aws"):
-        logger.debug(f"Detected AWS from directory: {cwd}")
-        return "aws"
-
-    # Check if we're in an Azure directory tree
-    if "/azure/" in cwd_str or cwd_str.endswith("/azure"):
-        logger.debug(f"Detected Azure from directory: {cwd}")
-        return "azure"
-
     # Check if we're in the terraform directory
     if "/terraform/" in cwd_str or cwd_str.endswith("/terraform"):
         logger.debug(f"Detected terraform from directory: {cwd}")
@@ -57,34 +47,31 @@ def detect_from_state_files(project_root: Optional[Path] = None) -> Optional[str
         project_root: Project root directory (defaults to auto-detection)
 
     Returns:
-        'aws', 'azure', or None if not detected
+        'aws', 'azure', 'terraform', or None if not detected
     """
     if project_root is None:
         from .terraform import get_project_root
         project_root = get_project_root()
 
-    # Check for AWS state files
-    aws_core = project_root / "aws" / "core" / "terraform.tfstate"
-    aws_lab2 = project_root / "aws" / "lab2-vector-search" / "terraform.tfstate"
-
-    # Check for Azure state files (workshop mode uses core-workshop/)
-    azure_core = project_root / "azure" / "core" / "terraform.tfstate"
-    azure_core_workshop = project_root / "azure" / "core-workshop" / "terraform.tfstate"
-    azure_lab2 = project_root / "azure" / "lab2-vector-search" / "terraform.tfstate"
-
-    aws_exists = aws_core.exists()
-    azure_exists = azure_core.exists() or azure_core_workshop.exists()
-
-    if aws_exists and azure_exists:
-        logger.warning("Both AWS and Azure state files found, cannot auto-detect")
-        logger.warning("Please specify cloud provider explicitly")
-        return None
-    elif aws_exists:
-        logger.debug("Detected AWS from state files")
-        return "aws"
-    elif azure_exists:
-        logger.debug("Detected Azure from state files")
-        return "azure"
+    # Check for unified terraform directory state files
+    terraform_core = project_root / "terraform" / "core" / "terraform.tfstate"
+    if terraform_core.exists():
+        # Read state file to determine actual cloud provider
+        try:
+            import json
+            with open(terraform_core, 'r') as f:
+                state = json.load(f)
+            # Try to find cloud_provider in outputs
+            outputs = state.get("outputs", {})
+            if "cloud_provider" in outputs:
+                cloud = outputs["cloud_provider"].get("value", "").lower()
+                if cloud in ("aws", "azure"):
+                    logger.debug(f"Detected {cloud} from terraform state file")
+                    return cloud
+        except Exception:
+            pass
+        logger.debug("Detected terraform from state files")
+        return "terraform"
 
     return None
 
@@ -186,29 +173,30 @@ def suggest_cloud_provider(project_root: Optional[Path] = None) -> None:
             logger.error("Could not find project root")
             return
 
-    logger.info("Available cloud providers in this project:")
-
-    # Check AWS
-    aws_core = project_root / "aws" / "core" / "terraform.tfstate"
-    if aws_core.exists():
-        logger.info("  ✓ aws (state files found)")
-    else:
-        logger.info("  ✗ aws (no state files)")
-
-    # Check Azure (workshop mode uses core-workshop/)
-    azure_core = project_root / "azure" / "core" / "terraform.tfstate"
-    azure_core_workshop = project_root / "azure" / "core-workshop" / "terraform.tfstate"
-    if azure_core.exists() or azure_core_workshop.exists():
-        logger.info("  ✓ azure (state files found)")
-    else:
-        logger.info("  ✗ azure (no state files)")
+    logger.info("Checking for terraform infrastructure:")
 
     # Check terraform directory
     terraform_dir = project_root / "terraform"
-    if terraform_dir.exists() and terraform_dir.is_dir():
-        logger.info("  ✓ terraform (directory found)")
+    terraform_core = terraform_dir / "core" / "terraform.tfstate"
+
+    if terraform_core.exists():
+        logger.info("  ✓ terraform infrastructure deployed (state file found)")
+
+        # Try to detect cloud provider from state
+        try:
+            import json
+            with open(terraform_core) as f:
+                state = json.load(f)
+                outputs = state.get("outputs", {})
+                if "cloud_provider" in outputs:
+                    cloud = outputs["cloud_provider"].get("value", "").lower()
+                    logger.info(f"  ✓ Cloud provider: {cloud}")
+        except Exception:
+            pass
+    elif terraform_dir.exists() and terraform_dir.is_dir():
+        logger.info("  ✓ terraform directory found (not yet deployed)")
     else:
-        logger.info("  ✗ terraform (no directory)")
+        logger.info("  ✗ terraform directory not found")
 
     logger.info("")
     logger.info("Usage examples:")

@@ -1,15 +1,11 @@
 # Workshop Mode Setup Guide
 
-Workshop mode allows participants to deploy the Real-Time Context Engine using shared cloud AI credentials without requiring full infrastructure permissions or cloud accounts.
+Workshop mode allows participants to deploy the Streaming Agents quickstart using shared cloud AI credentials without requiring an AWS account or Azure subscription.
 
 **Workflow:**
-1. **Before Workshop**: Organizer creates cloud AI credentials with `uv run workshop-keys create`
-2. **During Workshop**: Participants run `uv run deploy --workshop` and enter Bedrock API key and secret
-3. **After Workshop**: Organizer immediately revokes credentials with  `uv run workshop-keys destroy`
-
-> [!NOTE]
->
-> Workshop Mode for Azure is not ready yet, and will fail if you attempt to run it.
+1. **Before Workshop**: Organizer creates cloud AI credentials with `uv run workshop-keys create {aws|azure}`
+2. **During Workshop**: Participants run `uv run deploy`, select their cloud provider, and enter LLM credentials
+3. **After Workshop**: Organizer immediately revokes credentials with `uv run workshop-keys destroy {aws|azure}`
 
 ---
 
@@ -18,10 +14,10 @@ Workshop mode allows participants to deploy the Real-Time Context Engine using s
 ## Required Models
 
 Bedrock model access must be enabled at the AWS account level:
-- **Claude 3.7 Sonnet** (`us.anthropic.claude-3-7-sonnet-20250219-v1:0`)
+- **Claude Sonnet 4.5** (`us.anthropic.claude-sonnet-4-5-20250929-v1:0`)
 - **Amazon Titan Embeddings** (`amazon.titan-embed-text-v1`)
 
-⚠️To access Claude Sonnet 3.7 you must request access to the model by filling out an **Anthropic use case form** (or someone in your org must have previously done so) for your cloud region (`us-east-1`). To do so, visit the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog), select **Claude 3.7 Sonnet** and open it it in the **Playground**, then send a message in the chat - the form will appear automatically. ⚠️
+⚠️To access Claude Sonnet 4.5 you must request access to the model by filling out an **Anthropic use case form** (or someone in your org must have previously done so) for your cloud region (`us-east-1`). To do so, visit the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog), select **Claude Sonnet 4.5** and open it it in the **Playground**, then send a message in the chat - the form will appear automatically. ⚠️
 
 ## For Organizers
 
@@ -31,16 +27,16 @@ Use the workshop key manager tool:
 
 ```bash
 # Create credentials
-uv run workshop-keys create
+uv run workshop-keys create aws
 
 # After workshop - revoke credentials
-uv run workshop-keys destroy
+uv run workshop-keys destroy aws
 ```
 
 This creates:
 - IAM user `workshop-bedrock-user` with Bedrock-only permissions
 - Access keys valid for workshop
-- `WORKSHOP_CREDENTIALS.md` file with keys and participant instructions, saved automatically in the root directory
+- `WORKSHOP_KEYS_AWS.md` file with keys and participant instructions, saved automatically in the root directory
 
 ### Option 2: Manual (AWS Console)
 
@@ -78,17 +74,110 @@ This creates:
    cd quickstart-streaming-agents
    ```
 
-2. **Run in workshop mode**
-  
+2. **Run deployment**
+
    ```bash
-   uv run deploy --workshop
+   uv run deploy
    ```
-   
+
 3. **Enter credentials when prompted**
    - Cloud provider: Select **aws**
+   - Region: Select from available AWS regions (default: `us-east-1`)
+   - Confluent Cloud API key and secret (auto-generated if desired)
    - AWS Access Key ID: `<provided-by-organizer>`
    - AWS Secret Access Key: `<provided-by-organizer>`
-   - AWS Region: `us-east-1` (the *only* region supported in Workshop Mode)
+
+---
+
+# Azure OpenAI Setup
+
+## Required Models
+
+Azure OpenAI deployments must be created in the organizer's Azure subscription:
+- **gpt-5-mini** (Chat completions, version: 2025-08-07)
+- **text-embedding-ada-002** (Embeddings, version: 2)
+
+⚠️ **Important**: Azure workshop mode MUST use **eastus2** region because the hardcoded MongoDB clusters for Lab2 and Lab3 are located in eastus2. Using any other region will cause MongoDB connection failures.
+
+## For Organizers
+
+### Option 1: Automated (Recommended)
+
+Use the workshop key manager tool:
+
+```bash
+# Create credentials
+uv run workshop-keys create azure
+
+# After workshop - revoke credentials
+uv run workshop-keys destroy azure
+```
+
+This creates:
+- Resource group with unique ID (e.g., `rg-workshop-openai-abc123`)
+- Azure Cognitive Services account for OpenAI
+- Model deployments for gpt-5-mini and text-embedding-ada-002
+- `WORKSHOP_CREDENTIALS_AZURE.md` file with endpoint, API key, and participant instructions, saved automatically in the root directory
+
+**Prerequisites:**
+- Azure CLI installed and authenticated (`az login`)
+- Active Azure subscription with OpenAI service enabled
+- Permissions to create resource groups and Cognitive Services
+
+### Option 2: Manual (Azure Portal)
+
+1. **Create Resource Group**
+   - Azure Portal → Resource Groups → Create
+   - Name: `rg-workshop-openai-<unique-id>`
+   - Region: **eastus2** (required for workshop mode)
+
+2. **Create Cognitive Services Account**
+   - Azure Portal → Create a resource → Azure OpenAI
+   - Resource group: Use the one created above
+   - Region: **eastus2**
+   - Name: `workshop-openai-<unique-id>`
+   - Pricing tier: Standard S0
+
+3. **Create Model Deployments**
+   - Navigate to Azure OpenAI Studio
+   - Deployments → Create new deployment:
+     - **Deployment 1:**
+       - Model: gpt-5-mini
+       - Version: 2025-08-07
+       - Deployment name: `gpt-5-mini`
+       - Capacity: 50 TPM (adjust based on workshop size)
+     - **Deployment 2:**
+       - Model: text-embedding-ada-002
+       - Version: 2
+       - Deployment name: `text-embedding-ada-002`
+       - Capacity: 120 TPM
+
+4. **Get Credentials**
+   - Keys and Endpoint → Copy Key 1 and Endpoint URL
+
+5. **After Workshop - Revoke**
+   - Delete the model deployments
+   - Optionally delete the entire resource group
+
+## For Participants
+
+1. **Clone repository**
+   ```bash
+   git clone https://github.com/confluentinc/quickstart-streaming-agents
+   cd quickstart-streaming-agents
+   ```
+
+2. **Run deployment**
+   ```bash
+   uv run deploy
+   ```
+
+3. **Enter credentials when prompted**
+   - Cloud provider: Select **azure**
+   - Region: **eastus2** (auto-selected for workshop mode)
+   - Confluent Cloud API key and secret (auto-generated if desired)
+   - Azure OpenAI Endpoint: `<provided-by-organizer>`
+   - Azure OpenAI API Key: `<provided-by-organizer>`
 
 ---
 
@@ -109,11 +198,12 @@ This creates:
 
 **Zapier Setup (For Small Groups)**
 - For groups of 10-15 people or fewer, create a free Zapier account 1-2 days beforehand
-- Share your SSE endpoint directly with attendees rather than having them sign up individually
+- Share your Streamable HTTP token directly with attendees rather than having them sign up individually
 - This saves significant workshop time and reduces friction
 - Attendees can still enter their own email in the query to receive notifications
 - Free trial offers ~500 tool calls in first 2 weeks; each order uses 2 tool calls
 - ⚠️ Don't use this approach for groups larger than 10-15 until confirming Zapier rate limits
+- Note: SSE endpoints are now deprecated by Zapier - use Streamable HTTP connections instead
 
 ### During the Workshop
 
@@ -153,7 +243,7 @@ This creates:
 **AWS: "ResourceNotFoundException: Could not find a model"**
 
 - Bedrock model access not enabled in AWS account
-- ⚠️To access Claude Sonnet 3.7 you must request access to the model by filling out an **Anthropic use case form** (or someone in your org must have previously done so) for your cloud region. To do so, visit the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog), select **Claude 3.7 Sonnet** and open it it in the **Playground**, then send a message in the chat - the form will appear automatically. ⚠️
+- ⚠️To access Claude Sonnet 4.5 you must request access to the model by filling out an **Anthropic use case form** (or someone in your org must have previously done so) for your cloud region. To do so, visit the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog), select **Claude Sonnet 4.5** and open it it in the **Playground**, then send a message in the chat - the form will appear automatically. ⚠️
 
 **AWS: "AccessDeniedException"**
 

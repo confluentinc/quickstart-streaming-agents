@@ -18,7 +18,7 @@ All of this runs in real time on **Confluent Cloud for Apache Flink**, with no e
 ## Prerequisites
 - Zapier remote MCP server ([Setup guide](./assets/pre-setup/Zapier-Setup.md))
 - MongoDB Atlas vector database ([Setup guide](./assets/pre-setup/MongoDB-Setup.md))
-- ⚠️ **IMPORTANT: AWS Users Only:** To access Claude Sonnet 3.7 you must request access to the model by filling out an Anthropic use case form (or someone in your org must have previously done so) for your cloud region. To do so, visit the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog), select Claude 3.7 Sonnet and open it it in the Playground, then send a message in the chat - the form will appear automatically. ⚠️
+- ⚠️ **IMPORTANT: AWS Users Only:** To access Claude Sonnet 4.5 you must request access to the model by filling out an Anthropic use case form (or someone in your org must have previously done so) for your cloud region. To do so, visit the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog), select Claude Sonnet 4.5 and open it it in the Playground, then send a message in the chat - the form will appear automatically. ⚠️
 
 ## Deploy the Demo
 
@@ -479,7 +479,7 @@ MODIFY (WATERMARK FOR request_ts AS request_ts - INTERVAL '5' SECOND);
     - The anomaly detection algorithm expects data to be flowing through it, and the statement will change to "degraded" after some time if you turn off data generation. Turning it off will stop the problem, or it will automatically resume running properly once data begins flowing again.
 
 - `Runtime received bad response code 403. Please also double check if your model has multiple versions.` error?
-  - **AWS?** Ensure you've activated Claude 3.7 Sonnet in your AWS account. See: [Prerequisites](#prerequisites)
+  - **AWS?** Ensure you've activated Claude Sonnet 4.5 in your AWS account. See: [Prerequisites](#prerequisites)
   - **Azure?** Increase the tokens per minute quota for your GPT-4 model. Quota is low by default.
   </details>
 

@@ -422,7 +422,7 @@ def run_shadowtraffic_docker(
         shadowtraffic_args.extend(["--duration", str(duration)])
 
     docker_cmd.extend([
-        "shadowtraffic/shadowtraffic:1.11.3"  # pinned for stability
+        "shadowtraffic/shadowtraffic:1.14.1"  # pinned for stability
     ] + shadowtraffic_args)
 
     logger.info(f"🚀 Starting ShadowTraffic data generation...")

@@ -10,7 +10,7 @@ In this lab, we'll use Apache Flink for Confluent Cloud's MCP tool calling featu
 
 > [!WARNING]
 >
-> **AWS Users Only:** To access Claude Sonnet 3.7 you must request access to the model by filling out an Anthropic use case form (or someone in your org must have previously done so) for your cloud region. To do so, visit the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog), select Claude 3.7 Sonnet and open it it in the Playground, then send a message in the chat - the form will appear automatically.
+> **AWS Users Only:** To access Claude Sonnet 4.5 you must request access to the model by filling out an Anthropic use case form (or someone in your org must have previously done so) for your cloud region. To do so, visit the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog), select Claude Sonnet 4.5 and open it it in the Playground, then send a message in the chat - the form will appear automatically.
 
 ## Deploy the Demo
 
@@ -239,7 +239,7 @@ Check out your email for price matched orders:
   - Drop `orders`, `customers`, and `products` tables to start with a clean slate before re-running `uv run lab1_datagen`. The data generator randomly generates new customer information beginning with the same customer ID each time it is run, causing collisions if you do not clear the tables before restarting.
 
 - `Runtime received bad response code 403. Please also double check if your model has multiple versions.` error?
-  - **AWS?** Ensure you've activated Claude 3.7 Sonnet in your AWS account. See: [Prerequisites](#prerequisites)
+  - **AWS?** Ensure you've activated Claude Sonnet 4.5 in your AWS account. See: [Prerequisites](#prerequisites)
   - **Azure?** Increase the tokens per minute quota for your GPT-4 model. Quota is low by default.
 
 - `MCP error -32602: Invalid arguments for tool gmail_send_email` error?

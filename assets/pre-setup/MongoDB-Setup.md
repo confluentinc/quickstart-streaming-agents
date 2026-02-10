@@ -21,7 +21,7 @@ If running Lab2 or Lab3, set up a free MongoDB Atlas account and cluster. First 
 <img src="./mongodb-screenshots/02_create_cluster.png" alt="Create Cluster" width="50%" />
 
 <a id="step-3"></a>
-#### 3. Choose the **Free Tier (M0).** Then choose your cloud provider (AWS or Azure) and region. Make sure this is the same region that your Confluent Cloud deployment is in. Click **Create Cluster.**
+#### 3. Choose the **Free Tier (M0).** Then choose your cloud provider (AWS or Azure) and region. **IMPORTANT: You must use `us-east-1` for AWS or `eastus2` for Azure** to match the deployment script's default regions. Click **Create Cluster.**
 
 <img src="./mongodb-screenshots/03_choose_free_tier_and_region.png" alt="Choose Free Tier" width="50%" />
 
