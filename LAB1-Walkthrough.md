@@ -6,11 +6,14 @@ In this lab, we'll use Apache Flink for Confluent Cloud's MCP tool calling featu
 
 ## Prerequisites
 
-- Zapier free account and remote MCP server set up (instructions [here](./assets/pre-setup/Zapier-Setup.md))
+- **Zapier:** Free account and remote MCP server ([Setup guide](./assets/pre-setup/Zapier-Setup.md))
+- **LLM Access:** AWS Bedrock API keys **OR** Azure OpenAI endpoint + API key
+  - No AWS/Azure account required - just the LLM API credentials!
+  - **Easy key creation:** Run `uv run workshop-keys create` to quickly generate ready-to-use credentials
 
 > [!WARNING]
 >
-> **AWS Users Only:** To access Claude Sonnet 4.5 you must request access to the model by filling out an Anthropic use case form (or someone in your org must have previously done so) for your cloud region. To do so, visit the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog), select Claude Sonnet 4.5 and open it it in the Playground, then send a message in the chat - the form will appear automatically.
+> **AWS Bedrock Users:** You must request access to Claude Sonnet 4.5 by filling out an Anthropic use case form. Visit the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog), select Claude Sonnet 4.5, open it in the Playground, and send a message - the form will appear automatically.
 
 ## Deploy the Demo
 
@@ -64,17 +67,6 @@ Open **Docker Desktop**, then begin generating data with the following command:
 ```bash
 uv run lab1_datagen
 ```
-
-<details>
-<summary>Alternative: Using Python directly</summary>
-
-```bash no-parse
-python scripts/lab1_datagen.py
-```
-
-The Python script provides the same automation as the uv version.
-
-</details>
 
 The data generator creates three typical ecommerce data streams:
 

@@ -63,9 +63,9 @@ updated-queries.md
 FLINK_SQL_COMMANDS_EXTRACTED.md
 AGENT_DEFINITION_SYNTAX.md
 EMAIL_REPLACEMENT_IMPLEMENTATION.md
-WORKSHOP_KEYS_AWS.md
+API-KEYS-AWS.md
 .workshop-keys-state-aws.json
-WORKSHOP_CREDENTIALS_AZURE.md
+API-KEYS-AZURE.md
 .workshop-keys-state-azure.json
 
 

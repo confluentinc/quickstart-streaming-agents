@@ -24,10 +24,10 @@ Examples:
 
     # Day before workshop - direct
     uv run workshop-keys create aws
-    # → Creates WORKSHOP_KEYS_AWS.md
+    # → Creates API-KEYS-AWS.md
 
     uv run workshop-keys create azure
-    # → Creates WORKSHOP_CREDENTIALS_AZURE.md
+    # → Creates API-KEYS-AZURE.md
 
     # After workshop - interactive
     uv run workshop-keys destroy
@@ -92,13 +92,13 @@ PROJECT_URL = "https://github.com/confluentinc/quickstart-streaming-agents"
 AWS_IAM_USERNAME = "workshop-bedrock-user"
 AWS_POLICY_NAME = "BedrockInvokeOnly"
 AWS_STATE_FILE = ".workshop-keys-state-aws.json"
-AWS_CREDENTIALS_FILE = "WORKSHOP_KEYS_AWS.md"
+AWS_CREDENTIALS_FILE = "API-KEYS-AWS.md"
 
 # Azure Constants
 AZURE_RESOURCE_GROUP_PREFIX = "rg-workshop-openai"
 AZURE_COGNITIVE_ACCOUNT_PREFIX = "workshop-openai"
 AZURE_STATE_FILE = ".workshop-keys-state-azure.json"
-AZURE_CREDENTIALS_FILE = "WORKSHOP_CREDENTIALS_AZURE.md"
+AZURE_CREDENTIALS_FILE = "API-KEYS-AZURE.md"
 
 # Azure model deployment configurations
 AZURE_DEPLOYMENTS = {
@@ -403,6 +403,13 @@ The workshop-keys destroy command will:
         f.write(content)
 
     logger.info(f"✓ Saved credentials to {creds_file}")
+
+    # Also update credentials.env if it exists
+    env_file = project_root / "credentials.env"
+    if env_file.exists():
+        set_key(str(env_file), "TF_VAR_aws_bedrock_access_key", access_key_id)
+        set_key(str(env_file), "TF_VAR_aws_bedrock_secret_key", secret_access_key)
+        logger.info(f"✓ Updated credentials.env with new AWS Bedrock credentials")
 
 
 def load_aws_state(project_root: Path) -> Optional[Dict]:

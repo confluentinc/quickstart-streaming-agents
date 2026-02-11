@@ -3,9 +3,9 @@
 Workshop mode allows participants to deploy the Streaming Agents quickstart using shared cloud AI credentials without requiring an AWS account or Azure subscription.
 
 **Workflow:**
-1. **Before Workshop**: Organizer creates cloud AI credentials with `uv run workshop-keys create {aws|azure}`
+1. **Before Workshop**: Organizer creates cloud AI credentials with `uv run workshop-keys create`
 2. **During Workshop**: Participants run `uv run deploy`, select their cloud provider, and enter LLM credentials
-3. **After Workshop**: Organizer immediately revokes credentials with `uv run workshop-keys destroy {aws|azure}`
+3. **After Workshop**: Organizer immediately revokes credentials with `uv run workshop-keys destroy`
 
 ---
 
@@ -17,7 +17,9 @@ Bedrock model access must be enabled at the AWS account level:
 - **Claude Sonnet 4.5** (`us.anthropic.claude-sonnet-4-5-20250929-v1:0`)
 - **Amazon Titan Embeddings** (`amazon.titan-embed-text-v1`)
 
-⚠️To access Claude Sonnet 4.5 you must request access to the model by filling out an **Anthropic use case form** (or someone in your org must have previously done so) for your cloud region (`us-east-1`). To do so, visit the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog), select **Claude Sonnet 4.5** and open it it in the **Playground**, then send a message in the chat - the form will appear automatically. ⚠️
+> [!WARNING]
+>
+> To access Claude Sonnet 4.5 you must request access to the model by filling out an **Anthropic use case form** (or someone in your org must have previously done so) for your cloud region (`us-east-1`). To do so, visit the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog), select **Claude Sonnet 4.5** and open it it in the **Playground**, then send a message in the chat - the form will appear automatically.
 
 ## For Organizers
 
@@ -27,16 +29,16 @@ Use the workshop key manager tool:
 
 ```bash
 # Create credentials
-uv run workshop-keys create aws
+uv run workshop-keys create
 
 # After workshop - revoke credentials
-uv run workshop-keys destroy aws
+uv run workshop-keys destroy
 ```
 
 This creates:
 - IAM user `workshop-bedrock-user` with Bedrock-only permissions
-- Access keys valid for workshop
-- `WORKSHOP_KEYS_AWS.md` file with keys and participant instructions, saved automatically in the root directory
+- Bedrock API keys
+- `API-KEYS-AWS.md` file with API keys and participant instructions, saved automatically in the root directory and auto-populated in `credentials.env`
 
 ### Option 2: Manual (AWS Console)
 
@@ -82,10 +84,10 @@ This creates:
 
 3. **Enter credentials when prompted**
    - Cloud provider: Select **aws**
-   - Region: Select from available AWS regions (default: `us-east-1`)
+   - Region: `us-east-1` (by default)
    - Confluent Cloud API key and secret (auto-generated if desired)
-   - AWS Access Key ID: `<provided-by-organizer>`
-   - AWS Secret Access Key: `<provided-by-organizer>`
+   - AWS Access Key ID: `<auto-filled if generated with uv run workshop-keys create>`
+   - AWS Secret Access Key: `<auto-filled if generated with uv run workshop-keys create>`
 
 ---
 
@@ -97,7 +99,9 @@ Azure OpenAI deployments must be created in the organizer's Azure subscription:
 - **gpt-5-mini** (Chat completions, version: 2025-08-07)
 - **text-embedding-ada-002** (Embeddings, version: 2)
 
-⚠️ **Important**: Azure workshop mode MUST use **eastus2** region because the hardcoded MongoDB clusters for Lab2 and Lab3 are located in eastus2. Using any other region will cause MongoDB connection failures.
+> [!WARNING]
+>
+> Azure workshop is auto-deployed in **eastus2** region because the hardcoded MongoDB clusters for Lab2 and Lab3 are located in eastus2. Using any other region will cause MongoDB connection failures.
 
 ## For Organizers
 
@@ -107,19 +111,20 @@ Use the workshop key manager tool:
 
 ```bash
 # Create credentials
-uv run workshop-keys create azure
+uv run workshop-keys create
 
 # After workshop - revoke credentials
-uv run workshop-keys destroy azure
+uv run workshop-keys destroy
 ```
 
 This creates:
 - Resource group with unique ID (e.g., `rg-workshop-openai-abc123`)
 - Azure Cognitive Services account for OpenAI
-- Model deployments for gpt-5-mini and text-embedding-ada-002
-- `WORKSHOP_CREDENTIALS_AZURE.md` file with endpoint, API key, and participant instructions, saved automatically in the root directory
+- Model deployments for `gpt-5-mini` and `text-embedding-ada-002`
+- `API-KEYS-AZURE.md` file with endpoint, API key, and participant instructions, saved automatically in the root directory and auto-populated in `credentials.env`
 
 **Prerequisites:**
+
 - Azure CLI installed and authenticated (`az login`)
 - Active Azure subscription with OpenAI service enabled
 - Permissions to create resource groups and Cognitive Services
@@ -176,8 +181,8 @@ This creates:
    - Cloud provider: Select **azure**
    - Region: **eastus2** (auto-selected for workshop mode)
    - Confluent Cloud API key and secret (auto-generated if desired)
-   - Azure OpenAI Endpoint: `<provided-by-organizer>`
-   - Azure OpenAI API Key: `<provided-by-organizer>`
+   - Azure OpenAI Endpoint: `<auto-filled if generated with uv run workshop-keys create>`
+   - Azure OpenAI API Key: `<auto-filled if generated with uv run workshop-keys create>`
 
 ---
 
@@ -208,6 +213,7 @@ This creates:
 ### During the Workshop
 
 **Test Queries**
+
 - Use the test queries in Lab 1 to isolate issues if LLMs aren't responding as expected
 - These queries help verify each component is working correctly
 
