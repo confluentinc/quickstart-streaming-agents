@@ -9,8 +9,9 @@ Usage:
     generate_credentials_markdown(cloud_provider, tf_outputs, output_path)
 
     # Standalone (manual)
-    uv run deployment-summary aws/core
-    uv run deployment-summary azure/core
+    uv run deployment-summary core
+    uv run deployment-summary lab1-tool-calling
+    uv run deployment-summary lab2-vector-search
 """
 
 import json
@@ -312,17 +313,18 @@ def main():
     Main entry point for standalone script execution.
 
     Usage:
-        uv run deployment-summary aws/core
-        uv run deployment-summary azure/core
+        uv run deployment-summary <env-name>
     """
     if len(sys.argv) != 2:
-        print("Usage: uv run deployment-summary <terraform-core-path>")
-        print("Example: uv run deployment-summary aws/core")
-        print("Example: uv run deployment-summary azure/core")
+        print("Usage: uv run deployment-summary <env-name>")
+        print("Example: uv run deployment-summary core")
+        print("         uv run deployment-summary lab1-tool-calling")
+        print("         uv run deployment-summary lab2-vector-search")
         sys.exit(1)
 
-    # Parse arguments
-    terraform_dir = Path(sys.argv[1])
+    # Parse arguments - prepend terraform/ to the env name
+    env_name = sys.argv[1]
+    terraform_dir = Path("terraform") / env_name
 
     # Validate path
     if not terraform_dir.exists():
@@ -333,11 +335,24 @@ def main():
         print(f"Error: Not a valid terraform directory (no main.tf found): {terraform_dir}")
         sys.exit(1)
 
-    # Detect cloud provider from parent directory
-    cloud_provider = terraform_dir.parent.name
-    if cloud_provider not in ["aws", "azure"]:
-        print(f"Error: Could not determine cloud provider from path: {terraform_dir}")
-        print("Expected path like: aws/core or azure/core")
+    # Detect cloud provider from terraform state file
+    state_file = terraform_dir / "terraform.tfstate"
+    cloud_provider = None
+
+    if state_file.exists():
+        try:
+            import json
+            with open(state_file) as f:
+                state = json.load(f)
+                outputs = state.get("outputs", {})
+                if "cloud_provider" in outputs:
+                    cloud_provider = outputs["cloud_provider"].get("value", "").lower()
+        except Exception as e:
+            print(f"Warning: Could not read cloud provider from state file: {e}")
+
+    if not cloud_provider or cloud_provider not in ["aws", "azure"]:
+        print(f"Error: Could not determine cloud provider from terraform state")
+        print(f"Expected 'cloud_provider' output in {state_file}")
         sys.exit(1)
 
     # Run terraform output -json

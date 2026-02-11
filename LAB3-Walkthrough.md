@@ -16,21 +16,35 @@ All of this runs in real time on **Confluent Cloud for Apache Flink**, with no e
 ![Architecture Diagram](./assets/lab3/lab3-architecture.png)
 
 ## Prerequisites
-- Zapier remote MCP server ([Setup guide](./assets/pre-setup/Zapier-Setup.md))
-- MongoDB Atlas vector database ([Setup guide](./assets/pre-setup/MongoDB-Setup.md))
-- ⚠️ **IMPORTANT: AWS Users Only:** To access Claude Sonnet 3.7 you must request access to the model by filling out an Anthropic use case form (or someone in your org must have previously done so) for your cloud region. To do so, visit the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog), select Claude 3.7 Sonnet and open it it in the Playground, then send a message in the chat - the form will appear automatically. ⚠️
+
+- **Zapier:** Free account and remote MCP server ([Setup guide](./assets/pre-setup/Zapier-Setup.md))
+- **LLM Access:** AWS Bedrock API keys **OR** Azure OpenAI endpoint + API key
+  - **Easy key creation:** Run `uv run workshop-keys create` to quickly auto-generate credentials
+- **MongoDB:** Pre-configured and managed for you - no setup required!
+
+> [!WARNING]
+>
+> **AWS Bedrock Users:** You must request access to Claude Sonnet 4.5 by filling out an Anthropic use case form. Visit the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog), select Claude Sonnet 4.5, open it in the Playground, and send a message - the form will appear automatically.
 
 ## Deploy the Demo
 
-Once you have these credentials ready, run the following command and choose **Lab3** (see [main README](./README.md)):
+First, clone the repo:
 
-  ```sql no-parse
-  uv run deploy
-  ```
-  Then, publish the local event documents to MongoDB by running the following command. Choose 'yes' to clear your MongoDB database of all documents when prompted, if you previously uploaded documents for Lab2:
 ```sql
-uv run publish_docs --lab3
+git clone https://github.com/confluentinc/quickstart-streaming-agents.git
+cd quickstart-streaming-agents
 ```
+
+Once you have your credentials ready, run the deployment script and choose **Lab3**:
+
+```bash
+uv run deploy
+```
+
+The deployment script will prompt you for your:
+- Cloud provider (AWS/Azure)
+- LLM API keys (Bedrock keys or Azure OpenAI endpoint/key - run `uv run workshop-keys create` beforehand or see [Workshop Mode Setup Guide](./assets/pre-setup/Workshop-Mode-Setup.md) for more info)
+- Zapier MCP token ([Setup guide](./assets/pre-setup/Zapier-Setup.md))
 
 ## Usecase Walkthrough
 
@@ -39,38 +53,24 @@ uv run publish_docs --lab3
 Make sure **Docker Desktop** is running, then begin generating data with the following command:
 
 ```bash
+# live streaming
 uv run lab3_datagen
+
+# or, lightweight instant deployment that skips Docker & ShadowTraffic download requirements
+uv un lab3_datagen --local
 ```
 
-<details>
-<summary>Alternative: Using Python directly</summary>
-
-```bash no-parse
-python scripts/lab3_datagen.py
-```
-
-The Python script provides the same automation as the uv version.
-
-</details>
-
-The data generator produces two interconnected data streams:
+The data generator produces the following data stream:
 
 - **`ride_requests`** – Represents incoming boat ride requests. Each request includes a **pickup zone** and a **drop-off zone**.
-- **`vessel_catalog`** – A catalog of all vessels currently in the system. Each vessel has one of three statuses:
-  - `available` – ready to be hired
-  - `hired` – currently in use
-  - `in_dock` – docked and unavailable for hire
 
-
-### 1. Anomaly Detection: Detect surge in `ride_requests` using `ML_DETECT_ANOMALIES`
+### 1. Visualize surge in `ride_requests` using `ML_DETECT_ANOMALIES`
 
 This step identifies unexpected surges in ride requests for each pickup zone in real time using Flink's built-in anomaly detection function. We analyze ride request counts over 5-minute windows and compare them against expected baselines derived from historical trends.
 
 Read the [blog post](https://docs.confluent.io/cloud/current/ai/builtin-functions/detect-anomalies.html) and view the [documentation](https://docs.confluent.io/cloud/current/flink/reference/functions/model-inference-functions.html#flink-sql-ml-anomaly-detect-function) on Flink anomaly detection for more details about how it works.
 
-In [Flink UI](https://confluen.cloud/go/flink), select your environment and open a SQL workspace.
-
-First, let's visualize the anomaly detection in action by running this query:
+In the [Flink UI](https://confluen.cloud/go/flink), select your new environment and open a SQL workspace. Then, visualize the anomaly detection in action by running this query:
 
 ```sql
 WITH windowed_traffic AS (
@@ -176,10 +176,7 @@ WHERE anomaly_result.is_anomaly = true
 
 > [!NOTE]
 >
-> It will typically take around five minutes for Flink to detect an anomaly. The reason for this is that we're detecting anomalies in 5-minute "windows", and we need to wait for the first window to close before Flink can detect one.
-
-
-> NOTE: Leave the query running so that it runs continously.
+> Leave the query above running. Flink will typically take around five minutes to detect an anomaly. The reason for this is that we're detecting anomalies in 5-minute "windows", and we need to wait for the first window to close before Flink can detect one.
 
 In a new cell, run the following to view the results.
 
@@ -193,8 +190,7 @@ You should see an anomaly in the `French Quarter` zone.
 
 These detected surges are then used as triggers for the next steps — contextual understanding and agentic vessel movement.
 
-
-### 2. Enrich `anomalies_per_zone` with possible causes of the anomaly using vector search
+### 2. Anomaly detection: Enrich `anomalies_per_zone` with possible causes of the anomaly using vector search
 
 Once a surge is detected, we want to **understand why** it happened. This step enriches detected anomalies with real-world context using **Vector Search** and **LLM-based reasoning**. These detected surges are then used as triggers for the next steps — contextual understanding and agentic vessel movement.
 
@@ -457,6 +453,7 @@ SELECT * FROM `completed_actions`;
 ```
 
 ![Agent results](./assets/lab3/lab3-completed-actions.png)
+
 ## Conclusion
 
 By chaining these intelligent streaming components together, we’ve built an always-on, real-time, context-aware agentic pipeline that detects ride request demand surges, explains their causes, and takes autonomous action — all within seconds.
@@ -478,7 +475,7 @@ MODIFY (WATERMARK FOR request_ts AS request_ts - INTERVAL '5' SECOND);
     - The anomaly detection algorithm expects data to be flowing through it, and the statement will change to "degraded" after some time if you turn off data generation. Turning it off will stop the problem, or it will automatically resume running properly once data begins flowing again.
 
 - `Runtime received bad response code 403. Please also double check if your model has multiple versions.` error?
-  - **AWS?** Ensure you've activated Claude 3.7 Sonnet in your AWS account. See: [Prerequisites](#prerequisites)
+  - **AWS?** Ensure you've activated Claude Sonnet 4.5 in your AWS account. See: [Prerequisites](#prerequisites)
   - **Azure?** Increase the tokens per minute quota for your GPT-4 model. Quota is low by default.
   </details>
 

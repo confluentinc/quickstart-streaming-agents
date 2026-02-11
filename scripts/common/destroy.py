@@ -89,12 +89,11 @@ def main():
         envs_to_destroy = ["lab3-agentic-fleet-management", "lab2-vector-search", "lab1-tool-calling", "core"]  # Reverse order
 
         # Build environment variables
-        workshop_mode = creds.get("workshop", False)
         env_vars = {
             "TF_VAR_confluent_cloud_api_key": creds["confluent_cloud_api_key"],
             "TF_VAR_confluent_cloud_api_secret": creds["confluent_cloud_api_secret"],
             "TF_VAR_cloud_region": creds["region"],
-            "TF_VAR_workshop_mode": "true" if workshop_mode else "false",
+            "TF_VAR_cloud_provider": cloud,
         }
 
         # Load optional fields
@@ -107,22 +106,15 @@ def main():
         if "mongodb_password" in creds and creds["mongodb_password"]:
             env_vars["TF_VAR_mongodb_password"] = creds["mongodb_password"]
 
-        # Azure subscription ID (use placeholder in workshop mode)
-        if cloud == "azure":
-            if workshop_mode:
-                env_vars["TF_VAR_azure_subscription_id"] = "00000000-0000-0000-0000-000000000000"
-            elif "azure_subscription_id" in creds:
-                env_vars["TF_VAR_azure_subscription_id"] = creds["azure_subscription_id"]
-
-        # Workshop mode credentials
-        if workshop_mode and cloud == "aws":
+        # Cloud-specific LLM credentials
+        if cloud == "aws":
             if "aws_bedrock_access_key" in creds and creds["aws_bedrock_access_key"]:
                 env_vars["TF_VAR_aws_bedrock_access_key"] = creds["aws_bedrock_access_key"]
             if "aws_bedrock_secret_key" in creds and creds["aws_bedrock_secret_key"]:
                 env_vars["TF_VAR_aws_bedrock_secret_key"] = creds["aws_bedrock_secret_key"]
-        if workshop_mode and cloud == "azure":
+        if cloud == "azure":
             if "azure_openai_endpoint" in creds and creds["azure_openai_endpoint"]:
-                env_vars["TF_VAR_azure_openai_endpoint"] = creds["azure_openai_endpoint"]
+                env_vars["TF_VAR_azure_openai_endpoint_raw"] = creds["azure_openai_endpoint"]
             if "azure_openai_api_key" in creds and creds["azure_openai_api_key"]:
                 env_vars["TF_VAR_azure_openai_api_key"] = creds["azure_openai_api_key"]
 
@@ -166,11 +158,11 @@ def main():
     # Step 5: Destroy environments
     print("\n=== Starting Destroy ===")
     for env in envs_to_destroy:
-        env_path = root / cloud / env
+        env_path = root / "terraform" / env
         if not env_path.exists():
             print(f"⊘ Skipping {env}: directory does not exist")
             continue
-        
+
         # Check if terraform state exists (indicates it was deployed)
         state_file = env_path / "terraform.tfstate"
         if not state_file.exists():

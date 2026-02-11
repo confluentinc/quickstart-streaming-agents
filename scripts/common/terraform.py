@@ -65,8 +65,9 @@ def find_state_files(cloud_provider: str, base_dir: Path) -> Tuple[Path, Path]:
     Raises:
         FileNotFoundError: If required state files are not found
     """
-    provider_dir = base_dir / cloud_provider
+    provider_dir = base_dir / "terraform"
     core_state = provider_dir / "core" / "terraform.tfstate"
+
     local_state = provider_dir / "lab2-vector-search" / "terraform.tfstate"
 
     if not core_state.exists():
@@ -95,7 +96,7 @@ def extract_kafka_credentials(
         KeyError: If required outputs are missing from state
         ValueError: If cloud_provider is not supported
     """
-    if cloud_provider not in ["aws", "azure"]:
+    if cloud_provider not in ["aws", "azure", "terraform"]:
         raise ValueError(f"Unsupported cloud provider: {cloud_provider}")
 
     if project_root is None:
@@ -132,6 +133,8 @@ def extract_kafka_credentials(
         "confluent_kafka_cluster_display_name": "cluster_name",
         "confluent_environment_id": "environment_id",
         "confluent_kafka_cluster_id": "cluster_id",
+        "confluent_flink_compute_pool_id": "compute_pool_id",
+        "app_manager_service_account_id": "service_account_id",
     }
 
     credentials = {}

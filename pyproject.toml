@@ -44,6 +44,12 @@ dependencies = [
     "urllib3>=1.26.18,<2.0", # Pin to v1.x for LibreSSL compatibility on macOS
     "pymongo>=4.10.1",
     "boto3>=1.26.0,<2.0", # Required for workshop-keys command
+    "azure-identity>=1.15.0",
+    "azure-mgmt-cognitiveservices>=13.5.0",
+    "azure-mgmt-resource>=23.0.0",
+    "azure-ai-inference>=1.0.0b1",
+    "requests>=2.31.0",
+    "confluent-kafka>=2.3.0",
 ]
 
 # Optional dependencies for enhanced functionality
@@ -73,6 +79,12 @@ lab1-datagen = "scripts.lab1_datagen:main"
 lab3_datagen = "scripts.lab3_datagen:main"
 lab3-datagen = "scripts.lab3_datagen:main"
 #
+publish_lab3_data = "scripts.publish_lab3_data:main"
+publish-lab3-data = "scripts.publish_lab3_data:main"
+#
+capture_lab3_data = "scripts.capture_lab3_data:main"
+capture-lab3-data = "scripts.capture_lab3_data:main"
+#
 publish_docs = "scripts.publish_docs:main"
 publish-docs = "scripts.publish_docs:main"
 #
@@ -94,10 +106,16 @@ workshop-keys = "scripts.common.workshop_key_manager:main"
 test_bedrock = "scripts.common.test_bedrock_credentials:main"
 test-bedrock = "scripts.common.test_bedrock_credentials:main"
 #
+test_azure_openai = "scripts.common.test_azure_openai_credentials:main"
+test-azure-openai = "scripts.common.test_azure_openai_credentials:main"
+#
 generate_summaries = "scripts.common.generate_lab_flink_summary:main"
 generate-summaries = "scripts.common.generate_lab_flink_summary:main"
 #
 validate = "scripts.common.validate:main"
+#
+test_mongodb = "scripts.common.test_mongodb_connections:main"
+test-mongodb = "scripts.common.test_mongodb_connections:main"
 
 
 [project.urls]

@@ -61,9 +61,8 @@ def generate_core_tfvars_content(
     region: str,
     api_key: str,
     api_secret: str,
-    azure_sub_id: Optional[str] = None,
+    cloud_provider: Optional[str] = None,
     owner_email: Optional[str] = None,
-    workshop_mode: bool = False,
     aws_bedrock_access_key: Optional[str] = None,
     aws_bedrock_secret_key: Optional[str] = None,
     azure_openai_endpoint: Optional[str] = None,
@@ -77,43 +76,36 @@ def generate_core_tfvars_content(
         region: Cloud region
         api_key: Confluent Cloud API key
         api_secret: Confluent Cloud API secret
-        azure_sub_id: Azure subscription ID (required for Azure)
+        cloud_provider: Cloud provider value for terraform variable (defaults to cloud)
         owner_email: Owner email for resource tagging (optional)
-        workshop_mode: Whether workshop mode is enabled
-        aws_bedrock_access_key: AWS Bedrock access key (workshop mode only)
-        aws_bedrock_secret_key: AWS Bedrock secret key (workshop mode only)
-        azure_openai_endpoint: Azure OpenAI endpoint URL (workshop mode only)
-        azure_openai_api_key: Azure OpenAI API key (workshop mode only)
+        aws_bedrock_access_key: AWS Bedrock access key
+        aws_bedrock_secret_key: AWS Bedrock secret key
+        azure_openai_endpoint: Azure OpenAI endpoint URL
+        azure_openai_api_key: Azure OpenAI API key
 
     Returns:
         Formatted terraform.tfvars content
     """
+    # Ensure cloud provider is lowercase for terraform validation
+    provider = (cloud_provider or cloud).lower()
     content = f"""# Core Infrastructure Configuration
 cloud_region = "{region}"
 confluent_cloud_api_key = "{api_key}"
 confluent_cloud_api_secret = "{api_secret}"
-workshop_mode = {str(workshop_mode).lower()}
+cloud_provider = "{provider}"
 """
 
     if owner_email:
         content += f'owner_email = "{owner_email}"\n'
 
-    # Azure subscription ID (required by provider v4.x, placeholder in workshop mode)
-    if cloud == "azure":
-        if workshop_mode and not azure_sub_id:
-            # Workshop mode: use placeholder since no Azure resources are created
-            content += 'azure_subscription_id = "00000000-0000-0000-0000-000000000000"\n'
-        elif azure_sub_id:
-            content += f'azure_subscription_id = "{azure_sub_id}"\n'
-
-    # Workshop mode: AWS Bedrock credentials
-    if workshop_mode and cloud == "aws" and aws_bedrock_access_key and aws_bedrock_secret_key:
+    # AWS Bedrock credentials
+    if cloud == "aws" and aws_bedrock_access_key and aws_bedrock_secret_key:
         content += f'aws_bedrock_access_key = "{aws_bedrock_access_key}"\n'
         content += f'aws_bedrock_secret_key = "{aws_bedrock_secret_key}"\n'
 
-    # Workshop mode: Azure OpenAI credentials
-    if workshop_mode and cloud == "azure" and azure_openai_endpoint and azure_openai_api_key:
-        content += f'azure_openai_endpoint = "{azure_openai_endpoint}"\n'
+    # Azure OpenAI credentials
+    if cloud == "azure" and azure_openai_endpoint and azure_openai_api_key:
+        content += f'azure_openai_endpoint_raw = "{azure_openai_endpoint}"\n'
         content += f'azure_openai_api_key = "{azure_openai_api_key}"\n'
 
     return content
@@ -219,24 +211,22 @@ def write_tfvars_for_deployment(
     if "core" in envs_to_deploy:
         api_key = get_credential_value(creds, "confluent_cloud_api_key")
         api_secret = get_credential_value(creds, "confluent_cloud_api_secret")
-        azure_sub_id = get_credential_value(creds, "azure_subscription_id") if cloud == "azure" else None
         owner_email = get_credential_value(creds, "owner_email")
 
-        # Workshop mode parameters
-        workshop_mode_str = get_credential_value(creds, "workshop_mode")
-        workshop_mode = workshop_mode_str == "true" if workshop_mode_str else False
         aws_bedrock_access_key = get_credential_value(creds, "aws_bedrock_access_key") if cloud == "aws" else None
         aws_bedrock_secret_key = get_credential_value(creds, "aws_bedrock_secret_key") if cloud == "aws" else None
         azure_openai_endpoint = get_credential_value(creds, "azure_openai_endpoint") if cloud == "azure" else None
         azure_openai_api_key = get_credential_value(creds, "azure_openai_api_key") if cloud == "azure" else None
 
         if api_key and api_secret:
-            core_tfvars_path = root / cloud / "core" / "terraform.tfvars"
+            core_tfvars_path = root / "terraform" / "core" / "terraform.tfvars"
             content = generate_core_tfvars_content(
                 cloud, region, api_key, api_secret,
-                azure_sub_id, owner_email,
-                workshop_mode, aws_bedrock_access_key, aws_bedrock_secret_key,
-                azure_openai_endpoint, azure_openai_api_key
+                cloud_provider=cloud, owner_email=owner_email,
+                aws_bedrock_access_key=aws_bedrock_access_key,
+                aws_bedrock_secret_key=aws_bedrock_secret_key,
+                azure_openai_endpoint=azure_openai_endpoint,
+                azure_openai_api_key=azure_openai_api_key
             )
             if write_tfvars_file(core_tfvars_path, content):
                 print(f"✓ Wrote {core_tfvars_path}")
@@ -245,7 +235,7 @@ def write_tfvars_for_deployment(
     if "lab1-tool-calling" in envs_to_deploy:
         zapier_token = get_credential_value(creds, "zapier_token")
         if zapier_token:
-            lab1_tfvars_path = root / cloud / "lab1-tool-calling" / "terraform.tfvars"
+            lab1_tfvars_path = root / "terraform" / "lab1-tool-calling" / "terraform.tfvars"
             content = generate_lab1_tfvars_content(zapier_token)
             if write_tfvars_file(lab1_tfvars_path, content):
                 print(f"✓ Wrote {lab1_tfvars_path}")
@@ -257,7 +247,7 @@ def write_tfvars_for_deployment(
         mongo_pass = get_credential_value(creds, "mongodb_password")
 
         if mongo_conn and mongo_user and mongo_pass:
-            lab2_tfvars_path = root / cloud / "lab2-vector-search" / "terraform.tfvars"
+            lab2_tfvars_path = root / "terraform" / "lab2-vector-search" / "terraform.tfvars"
             content = generate_lab2_tfvars_content(mongo_conn, mongo_user, mongo_pass)
             if write_tfvars_file(lab2_tfvars_path, content):
                 print(f"✓ Wrote {lab2_tfvars_path}")
@@ -266,13 +256,13 @@ def write_tfvars_for_deployment(
     if "lab3-agentic-fleet-management" in envs_to_deploy:
         zapier_token = get_credential_value(creds, "zapier_token")
 
-        # MongoDB credentials are optional in workshop mode (uses defaults)
+        # MongoDB credentials are optional (uses terraform defaults)
         mongo_conn = get_credential_value(creds, "mongodb_connection_string")
         mongo_user = get_credential_value(creds, "mongodb_username")
         mongo_pass = get_credential_value(creds, "mongodb_password")
 
         if zapier_token:
-            lab3_tfvars_path = root / cloud / "lab3-agentic-fleet-management" / "terraform.tfvars"
+            lab3_tfvars_path = root / "terraform" / "lab3-agentic-fleet-management" / "terraform.tfvars"
             content = generate_lab3_tfvars_content(
                 zapier_token,
                 mongo_conn,

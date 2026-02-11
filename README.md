@@ -17,7 +17,7 @@ Build real-time AI agents with [Confluent Cloud Streaming Agents](https://docs.c
 </tr>
 <tr>
 <td><a href="./LAB1-Walkthrough.md"><strong>Lab1 - Price Matching Orders With MCP Tool Calling</strong></a></td>
-<td><b>*NEW!*</b> Now using new Agent Definition (CREATE AGENT) syntax. Price matching agent that scrapes competitor websites and adjusts prices in real-time<br><br><img src="./assets/lab1/lab1-architecture.png" alt="Lab1 architecture diagram"></td>
+<td><b>*NEW!*</b> Now using new Agent Definition (CREATE AGENT) syntax. Price matching agent that scrapes competitor websites and adjusts prices in real-time.<br><br><img src="./assets/lab1/lab1-architecture.png" alt="Lab1 architecture diagram"></td>
 </tr>
 <tr>
 <td><a href="./LAB2-Walkthrough.md"><strong>Lab2 - Vector Search & RAG</strong></a></td>
@@ -34,15 +34,13 @@ Build real-time AI agents with [Confluent Cloud Streaming Agents](https://docs.c
 **Required accounts & credentials:**
 
 - [![Sign up for Confluent Cloud](https://img.shields.io/badge/Sign%20up%20for%20Confluent%20Cloud-007BFF?style=for-the-badge&logo=apachekafka&logoColor=white)](https://www.confluent.io/get-started/?utm_campaign=tm.pmm_cd.q4fy25-quickstart-streaming-agents&utm_source=github&utm_medium=demo)
-- **Lab1:** Zapier remote MCP server ([Setup guide](./assets/pre-setup/Zapier-Setup.md))
-- **Lab2:** MongoDB Atlas vector database ([Setup guide](./assets/pre-setup/MongoDB-Setup.md))
-- **Lab3:** Zapier ([Setup guide](./assets/pre-setup/Zapier-Setup.md)) + MongoDB ([Setup guide](./assets/pre-setup/MongoDB-Setup.md))
+- **LLM Provider:** AWS Bedrock API keys **OR** Azure OpenAI keys - or BYOK
+- **Lab1 & Lab3:** Zapier remote MCP server ([Setup guide](./assets/pre-setup/Zapier-Setup.md))
 
-> **Note:** SSE endpoints are now deprecated by Zapier. If you previously created an SSE endpoint, you'll need to create a new Streamable HTTP connection and copy the token instead. See the [Zapier Setup guide](./assets/pre-setup/Zapier-Setup.md) for updated instructions.
+> **Note:** SSE endpoints are now deprecated by Zapier. If you previously created an SSE endpoint, you'll need to create a new Streamable HTTP endpoint and copy the Zapier token instead. See the [Zapier Setup guide](./assets/pre-setup/Zapier-Setup.md) for updated instructions.
 
 **Required tools:**
 
-- **[AWS CLI](https://github.com/aws/aws-cli)** or **[Azure CLI](https://github.com/Azure/azure-cli)** - must be logged in
 - **[Confluent CLI](https://docs.confluent.io/confluent-cli/current/overview.html)** - must be logged in
 - **[Docker](https://github.com/docker)** - for Lab1 & Lab3 data generation only
 - **[Git](https://github.com/git/git)**
@@ -50,109 +48,66 @@ Build real-time AI agents with [Confluent Cloud Streaming Agents](https://docs.c
 - **[uv](https://github.com/astral-sh/uv)**
 
 <details>
-<summary> Installation commands (Mac/Windows/Linux)</summary>
+<summary> Installation commands (Mac/Windows)</summary>
 **Mac:**
 
 ```bash
-brew install uv git python && brew tap hashicorp/tap && brew install hashicorp/tap/terraform && brew install --cask confluent-cli docker-desktop && brew install awscli  # or azure-cli
+brew install uv git python && brew tap hashicorp/tap && brew install hashicorp/tap/terraform && brew install --cask confluent-cli docker-desktop
 ```
 
 **Windows:**
+
 ```powershell
-winget install astral-sh.uv Git.Git Docker.DockerDesktop Hashicorp.Terraform ConfluentInc.Confluent-CLI Python.Python Amazon.AWSCLI # or Microsoft.AzureCLI
+winget install astral-sh.uv Git.Git Docker.DockerDesktop Hashicorp.Terraform ConfluentInc.Confluent-CLI Python.Python
 ```
-
-**Linux:**
-```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-# Install other tools via your package manager
-```
-
 </details>
 
 ## 🚀 Quick Start
 
-**Clone the repository and navigate to the Quickstart directory:**
+**1. Clone the repository and navigate to the Quickstart directory:**
 
 ```bash
 git clone https://github.com/confluentinc/quickstart-streaming-agents.git
 cd quickstart-streaming-agents
 ```
-**One command deployment:**
+**2. Auto-generate AWS Bedrock or Azure OpenAI keys:**
+
+```bash
+# Creates API-KEYS-[AWS|AZURE].md and auto-populates them in next step
+uv run workshop-keys create
+```
+
+3. **One command deployment:**
 
 ```bash
 uv run deploy
 ```
 
-That's it! The script will guide you through setup, automatically create API keys, and deploy your chosen lab(s).
-
+That's it! The script will autofill generated credentials and guide you through setup and deployment of your chosen lab(s).
 > [!NOTE]
 >
-> For instructor-led workshops, add the `--workshop` flag: `uv run deploy --workshop`.
-> 
-> Workshop mode requires instructor-provided Bedrock API keys, which instructors can create by running `uv run workshop-keys create`. See the [Workshop Mode Setup Guide](./assets/pre-setup/Workshop-Mode-Setup.md) for more details.
-
+> See the [Workshop Mode Setup Guide](./assets/pre-setup/Workshop-Mode-Setup.md) for details about auto-generating API keys and tips for running demo workshops.
 
 ## Directory Structure
 
 ```
 quickstart-streaming-agents/
-├── aws|azure/                          # Choose a cloud
+├── terraform/                          
 │   ├── core/                           # Shared Confluent Cloud infra for all labs
-│   ├── lab1-tool-calling/              # Lab-specific infra
-│   ├── lab2-vector-search/             # Lab-specific infra
-│   └── lab3-agentic-fleet-management/  # Lab-specific infra
-├── deploy.py                           # 🚀 Start here
-└── scripts/                            # Python utilities
+│   ├── lab1-tool-calling/              # Lab1-specific infra
+│   ├── lab2-vector-search/             # Lab2-specific infra
+│   └── lab3-agentic-fleet-management/  # Lab3-specific infra
+├── deploy.py                           # Start here with uv run deploy
+└── scripts/                            # Python utilities invoked with uv
 ```
 
-<details>
-<summary>🔄 Alternative deployment methods</summary>
+**[NEW!] Streamlined architecture:**
 
-**Traditional Python:**
-```bash
-pip install -e . && python deploy.py
-```
-
-</details>
-
-<details>
-<summary>🔧 Manual terraform deployment</summary>
-
-### Prerequisites
-- All tools installed and authenticated
-- Confluent Cloud API keys (Cloud Resource Management keys with EnvironmentAdmin role)
-
-### Deploy
-```bash
-cd aws/  # or azure/
-cd core/
-terraform init && terraform apply --auto-approve
-cd ../lab1-tool-calling/  # or lab2-vector-search
-terraform init && terraform apply --auto-approve
-```
-
-### Required terraform.tfvars
-
-```hcl
-cloud_provider = "aws"  # or "azure"
-cloud_region = "your-region"  # must be a region supported by MongoDB free tier, otherwise Lab2 deployment will not succeed
-confluent_cloud_api_key = "your-key"
-confluent_cloud_api_secret = "your-secret"
-zapier_token = "YTYwMDEzNjUtMTIzMC00MjFhLWJlYTAtYWFjYWM3MmZmMTRlOjZqSG5UTEJWV25EQkp5aXJYdlQvWEFhalNmdmlVgmlQTUpMY0pRcHdlc2c9"  # Lab1 & Lab3
-mongodb_connection_string = "mongodb+srv://cluster0.abc.mongodb.net"  # Lab2 & Lab3
-mongodb_username = "your-db-user"  # Lab2 & Lab3
-mongodb_password = "your-db-pass"  # Lab2 & Lab3
-```
-
-### Tear down
-```bash
-cd aws/lab1-tool-calling && terraform destroy --auto-approve
-cd ../core && terraform destroy --auto-approve
-```
-</details>
+- No heavyweight AWS/Azure Terraform providers needed - just LLM API keys generated with one command
+- **MongoDB is now pre-configured:** No need to set up your own MongoDB Atlas cluster anymore - we provide MongoDB endpoints with read-only credentials, pre-populated with vectorized documents so you can get started faster
 
 ## Cleanup
+
 ```bash
 # Automated
 uv run destroy

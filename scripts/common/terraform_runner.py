@@ -104,12 +104,9 @@ def _generate_deployment_summary(env_path: Path) -> None:
     Generate DEPLOYED_RESOURCES.md file after successful Core deployment.
 
     Args:
-        env_path: Path to the terraform core directory (e.g., aws/core or azure/core)
+        env_path: Path to the terraform core directory (e.g., terraform/core)
     """
     try:
-        # Detect cloud provider from parent directory
-        cloud_provider = env_path.parent.name  # "aws" or "azure"
-
         # Get terraform outputs as JSON
         print("\nGenerating deployment summary...")
         result = subprocess.run(
@@ -122,6 +119,11 @@ def _generate_deployment_summary(env_path: Path) -> None:
 
         # Parse terraform outputs
         tf_outputs = json.loads(result.stdout)
+
+        # Extract cloud_provider from terraform output, default to "aws"
+        cloud_provider = "aws"
+        if "cloud_provider" in tf_outputs:
+            cloud_provider = tf_outputs["cloud_provider"].get("value", "aws") if isinstance(tf_outputs["cloud_provider"], dict) else tf_outputs["cloud_provider"]
 
         # Generate markdown file
         output_file = env_path / "DEPLOYED_RESOURCES.md"
@@ -137,7 +139,7 @@ def _cleanup_deployment_summary(env_path: Path) -> None:
     Delete DEPLOYED_RESOURCES.md file after successful Core destroy.
 
     Args:
-        env_path: Path to the terraform core directory (e.g., aws/core or azure/core)
+        env_path: Path to the terraform core directory (e.g., terraform/core)
     """
     try:
         output_file = env_path / "DEPLOYED_RESOURCES.md"

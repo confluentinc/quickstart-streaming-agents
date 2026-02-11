@@ -10,8 +10,8 @@ Usage:
 
     # Extract from Terraform state
     automated, core_resources = extract_sql_from_terraform(
-        lab_terraform_dir=Path("aws/lab1-tool-calling"),
-        core_terraform_dir=Path("aws/core"),
+        lab_terraform_dir=Path("terraform/lab1-tool-calling"),
+        core_terraform_dir=Path("terraform/core"),
         cloud_provider="aws"
     )
 
