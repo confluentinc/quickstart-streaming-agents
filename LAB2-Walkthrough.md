@@ -7,7 +7,7 @@ In this lab, we'll create a Retrieval-Augmented Generation (RAG) pipeline using 
 ## Prerequisites
 
 - **LLM Access:** AWS Bedrock API keys **OR** Azure OpenAI endpoint + API key
-  - **Easy key creation:** Run `uv run workshop-keys create` to quickly generate ready-to-use credentials
+  - **Easy key creation:** Run `uv run api-keys create` to quickly generate ready-to-use credentials
 - **MongoDB vector database:** Pre-configured and managed for you - no setup required.
 
 > [!WARNING]

@@ -6,36 +6,38 @@ This script helps workshop organizers create properly-scoped credentials for par
 to use AI models without requiring full cloud infrastructure permissions.
 
 Usage:
-    uv run workshop-keys create           # Interactive cloud selection
-    uv run workshop-keys create aws       # Create AWS Bedrock credentials
-    uv run workshop-keys create azure     # Create Azure OpenAI credentials
-    uv run workshop-keys destroy          # Interactive cloud selection
-    uv run workshop-keys destroy aws      # Destroy AWS credentials
-    uv run workshop-keys destroy azure    # Destroy Azure credentials
+    uv run api-keys create           # Interactive cloud selection
+    uv run api-keys create aws       # Create AWS Bedrock credentials
+    uv run api-keys create azure     # Create Azure OpenAI credentials
+    uv run api-keys destroy          # Interactive cloud selection
+    uv run api-keys destroy aws      # Destroy AWS credentials
+    uv run api-keys destroy azure    # Destroy Azure credentials
 
     # With options:
-    uv run workshop-keys create aws --verbose
-    uv run workshop-keys destroy azure --keep-resource-group
+    uv run api-keys create aws --verbose
+    uv run api-keys destroy azure --keep-resource-group
 
 Examples:
     # Day before workshop - interactive
-    uv run workshop-keys create
+    uv run api-keys create
     # → Prompts for AWS or Azure, then creates credentials
 
     # Day before workshop - direct
-    uv run workshop-keys create aws
+    uv run api-keys create aws
     # → Creates API-KEYS-AWS.md
 
-    uv run workshop-keys create azure
+    uv run api-keys create azure
     # → Creates API-KEYS-AZURE.md
 
     # After workshop - interactive
-    uv run workshop-keys destroy
+    uv run api-keys destroy
     # → Prompts for AWS or Azure, then destroys credentials
 
     # After workshop - direct
-    uv run workshop-keys destroy aws
-    uv run workshop-keys destroy azure
+    uv run api-keys destroy aws
+    uv run api-keys destroy azure
+
+Note: The legacy command 'uv run workshop-keys' is still supported for backward compatibility.
 """
 
 import argparse
@@ -95,7 +97,7 @@ AWS_STATE_FILE = ".workshop-keys-state-aws.json"
 AWS_CREDENTIALS_FILE = "API-KEYS-AWS.md"
 
 # Azure Constants
-AZURE_RESOURCE_GROUP_PREFIX = "rg-workshop-openai"
+AZURE_RESOURCE_GROUP_PREFIX = "streaming-agents-openai"
 AZURE_COGNITIVE_ACCOUNT_PREFIX = "workshop-openai"
 AZURE_STATE_FILE = ".workshop-keys-state-azure.json"
 AZURE_CREDENTIALS_FILE = "API-KEYS-AZURE.md"
@@ -190,19 +192,12 @@ def get_bedrock_policy() -> Dict:
 
 
 def get_aws_region(project_root: Path) -> str:
-    """Get AWS region from credentials.env or prompt user."""
-    creds_file = project_root / "credentials.env"
+    """
+    Get AWS region for workshop mode.
 
-    # Try to load from credentials.env
-    if creds_file.exists():
-        creds = dotenv_values(creds_file)
-        if "TF_VAR_cloud_region" in creds and creds["TF_VAR_cloud_region"]:
-            return creds["TF_VAR_cloud_region"].strip("'\"")
-
-    # Prompt user with common defaults
-    print("\nSelect AWS region:")
-    regions = ["us-east-1", "us-west-2", "eu-west-1", "ap-southeast-1"]
-    return prompt_choice("AWS Region", regions)
+    AWS workshop mode always uses us-east-1.
+    """
+    return "us-east-1"
 
 
 def create_or_get_iam_user(iam_client, tags: Dict[str, str], logger: logging.Logger) -> bool:
@@ -367,7 +362,7 @@ AWS Secret Access Key: {secret_access_key}
 To revoke these credentials, run:
 
 ```bash
-uv run workshop-keys destroy
+uv run api-keys destroy
 ```
 
 Or delete the IAM user directly with AWS CLI:
@@ -379,7 +374,7 @@ aws iam delete-user-policy --user-name {AWS_IAM_USERNAME} --policy-name {AWS_POL
 aws iam delete-user --user-name {AWS_IAM_USERNAME}
 ```
 
-The workshop-keys destroy command will:
+The api-keys destroy command will:
 1. Delete the access key `{access_key_id}`
 2. Ask if you want to delete the IAM user (for reuse in future workshops)
 3. Clean up state files
@@ -984,7 +979,7 @@ Azure OpenAI API Key:  {api_key}
 To revoke these credentials and clean up resources, run:
 
 ```bash
-uv run workshop-keys destroy
+uv run api-keys destroy
 ```
 
 Or delete the resource group directly in Azure CLI:
@@ -994,7 +989,7 @@ Or delete the resource group directly in Azure CLI:
 az group delete --name {resource_group} --yes --no-wait
 ```
 
-The workshop-keys destroy command will:
+The api-keys destroy command will:
 1. Delete model deployments (`gpt-5-mini`, `text-embedding-ada-002`)
 2. Ask if you want to delete the entire resource group
 3. Clean up state files
@@ -1126,7 +1121,7 @@ def create_aws_command(args: argparse.Namespace, logger: logging.Logger) -> int:
         print("\nNext steps:")
         print(f"1. Review the credentials in {AWS_CREDENTIALS_FILE}")
         print("2. Share credentials with workshop participants")
-        print("3. After workshop, run: uv run workshop-keys destroy aws")
+        print("3. After workshop, run: uv run api-keys destroy aws")
         print("=" * 70 + "\n")
 
         return 0
@@ -1437,7 +1432,7 @@ def create_azure_command(args: argparse.Namespace, logger: logging.Logger) -> in
         print("\nNext steps:")
         print(f"1. Review the credentials in {AZURE_CREDENTIALS_FILE}")
         print("2. Share credentials with workshop participants")
-        print("3. After workshop, run: uv run workshop-keys destroy azure")
+        print("3. After workshop, run: uv run api-keys destroy azure")
         print("=" * 70 + "\n")
 
         return 0
@@ -1494,7 +1489,7 @@ def destroy_azure_command(args: argparse.Namespace, logger: logging.Logger) -> i
             print("or they were already destroyed.")
             print("\nIf you want to manually delete workshop resources:")
             print("1. Azure Portal → Resource Groups")
-            print(f"2. Find resource groups starting with '{AZURE_RESOURCE_GROUP_PREFIX}'")
+            print(f"2. Find resource groups starting with 'streaming-agents-openai'")
             print("3. Delete the resource group and all its resources")
             print("=" * 70 + "\n")
             return 1

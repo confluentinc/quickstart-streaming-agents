@@ -16,22 +16,22 @@ Usage:
 import argparse
 import logging
 import sys
+import time
 from typing import Optional
 
 try:
-    from azure.ai.inference import ChatCompletionsClient
-    from azure.ai.inference.models import SystemMessage, UserMessage
-    from azure.core.credentials import AzureKeyCredential
-    from azure.core.exceptions import HttpResponseError
-    AZURE_INFERENCE_AVAILABLE = True
+    import requests
+    REQUESTS_AVAILABLE = True
 except ImportError:
-    AZURE_INFERENCE_AVAILABLE = False
+    REQUESTS_AVAILABLE = False
 
 
 def test_azure_openai_credentials(
     endpoint: str,
     api_key: str,
-    logger: Optional[logging.Logger] = None
+    logger: Optional[logging.Logger] = None,
+    max_retries: int = 3,
+    retry_delay: int = 5
 ) -> bool:
     """
     Test if credentials can invoke Azure OpenAI models.
@@ -44,6 +44,8 @@ def test_azure_openai_credentials(
         endpoint: Azure OpenAI endpoint URL
         api_key: Azure OpenAI API key
         logger: Optional logger instance
+        max_retries: Maximum number of retry attempts (default: 3)
+        retry_delay: Initial delay between retries in seconds (default: 5)
 
     Returns:
         True if both tests succeeded, False otherwise
@@ -51,8 +53,8 @@ def test_azure_openai_credentials(
     if logger is None:
         logger = logging.getLogger(__name__)
 
-    if not AZURE_INFERENCE_AVAILABLE:
-        logger.error("azure-ai-inference is not installed - cannot test Azure OpenAI access")
+    if not REQUESTS_AVAILABLE:
+        logger.error("requests library is not installed - cannot test Azure OpenAI access")
         return False
 
     # Ensure endpoint ends with /
@@ -62,94 +64,124 @@ def test_azure_openai_credentials(
     success = True
 
     # Test 1: Chat completions with gpt-5-mini
-    try:
-        logger.info("Testing chat completions (gpt-5-mini)...")
+    logger.info("Testing chat completions (gpt-5-mini)...")
 
-        # Use the azure-ai-inference SDK for testing
-        # Note: We need to construct the deployment-specific endpoint
-        chat_endpoint = f"{endpoint}openai/deployments/gpt-5-mini"
+    chat_url = f"{endpoint}openai/deployments/gpt-5-mini/chat/completions?api-version=2024-08-01-preview"
 
-        client = ChatCompletionsClient(
-            endpoint=chat_endpoint,
-            credential=AzureKeyCredential(api_key)
-        )
+    headers = {
+        "api-key": api_key,
+        "Content-Type": "application/json"
+    }
 
-        response = client.complete(
-            messages=[
-                SystemMessage(content="You are a helpful assistant."),
-                UserMessage(content="Say 'test'")
-            ],
-            max_tokens=10
-        )
+    payload = {
+        "messages": [
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": "Say 'test'"}
+        ],
+        "max_tokens": 10
+    }
 
-        if response and response.choices:
-            logger.info("✓ Chat completions test passed (gpt-5-mini)")
-            logger.debug(f"Response: {response.choices[0].message.content}")
-        else:
-            logger.error("✗ Chat completions test failed: empty response")
-            success = False
+    chat_success = False
+    for attempt in range(max_retries):
+        try:
+            if attempt > 0:
+                wait_time = retry_delay * (2 ** (attempt - 1))
+                logger.info(f"Waiting {wait_time}s for deployment to be ready (attempt {attempt + 1}/{max_retries})...")
+                time.sleep(wait_time)
 
-    except HttpResponseError as e:
-        logger.error(f"✗ Chat completions test failed: {e.status_code}")
-        logger.debug(f"Error details: {e.message}")
+            response = requests.post(chat_url, json=payload, headers=headers, timeout=30)
 
-        if e.status_code == 401:
-            logger.warning("Invalid API key or endpoint")
-        elif e.status_code == 404:
-            logger.warning("Deployment 'gpt-5-mini' not found - ensure it exists")
-        elif e.status_code == 429:
-            logger.warning("Rate limit exceeded - deployments may still be initializing")
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('choices') and len(data['choices']) > 0:
+                    logger.info("✓ Chat completions test passed (gpt-5-mini)")
+                    logger.debug(f"Response: {data['choices'][0].get('message', {}).get('content', 'N/A')}")
+                    chat_success = True
+                    break
+                else:
+                    logger.error("✗ Chat completions test failed: empty response")
+                    break
+            else:
+                # Retry on certain errors (deployment not ready)
+                if response.status_code in [400, 429] and attempt < max_retries - 1:
+                    logger.warning(f"Chat completions not ready (HTTP {response.status_code}), will retry...")
+                    continue
 
-        success = False
+                logger.error(f"✗ Chat completions test failed: {response.status_code}")
+                logger.debug(f"Error details: {response.text}")
 
-    except Exception as e:
-        logger.error(f"✗ Chat completions test failed: {e}")
+                if response.status_code == 401:
+                    logger.warning("Invalid API key or endpoint")
+                elif response.status_code == 404:
+                    logger.warning("Deployment 'gpt-5-mini' not found - ensure it exists")
+                elif response.status_code == 429:
+                    logger.warning("Rate limit exceeded - deployments may still be initializing")
+                elif response.status_code == 400:
+                    logger.warning("Bad request - deployment may not be fully initialized")
+
+                break
+
+        except Exception as e:
+            logger.error(f"✗ Chat completions test failed: {e}")
+            break
+
+    if not chat_success:
         success = False
 
     # Test 2: Embeddings with text-embedding-ada-002
-    try:
-        logger.info("Testing embeddings (text-embedding-ada-002)...")
+    logger.info("Testing embeddings (text-embedding-ada-002)...")
 
-        # For embeddings, we need to use the REST API directly
-        # as azure-ai-inference doesn't have a dedicated embeddings client yet
-        import requests
+    embeddings_url = f"{endpoint}openai/deployments/text-embedding-ada-002/embeddings?api-version=2024-08-01-preview"
 
-        embeddings_url = f"{endpoint}openai/deployments/text-embedding-ada-002/embeddings?api-version=2024-08-01-preview"
+    payload = {
+        "input": "test embedding"
+    }
 
-        headers = {
-            "api-key": api_key,
-            "Content-Type": "application/json"
-        }
+    embeddings_success = False
+    for attempt in range(max_retries):
+        try:
+            if attempt > 0:
+                wait_time = retry_delay * (2 ** (attempt - 1))
+                logger.info(f"Waiting {wait_time}s for deployment to be ready (attempt {attempt + 1}/{max_retries})...")
+                time.sleep(wait_time)
 
-        payload = {
-            "input": "test embedding"
-        }
+            response = requests.post(embeddings_url, json=payload, headers=headers, timeout=30)
 
-        response = requests.post(embeddings_url, json=payload, headers=headers, timeout=30)
-
-        if response.status_code == 200:
-            data = response.json()
-            if data.get('data') and len(data['data']) > 0:
-                logger.info("✓ Embeddings test passed (text-embedding-ada-002)")
-                logger.debug(f"Embedding dimensions: {len(data['data'][0].get('embedding', []))}")
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('data') and len(data['data']) > 0:
+                    logger.info("✓ Embeddings test passed (text-embedding-ada-002)")
+                    logger.debug(f"Embedding dimensions: {len(data['data'][0].get('embedding', []))}")
+                    embeddings_success = True
+                    break
+                else:
+                    logger.error("✗ Embeddings test failed: empty response")
+                    break
             else:
-                logger.error("✗ Embeddings test failed: empty response")
-                success = False
-        else:
-            logger.error(f"✗ Embeddings test failed: {response.status_code}")
-            logger.debug(f"Error details: {response.text}")
+                # Retry on certain errors (deployment not ready)
+                if response.status_code in [400, 429] and attempt < max_retries - 1:
+                    logger.warning(f"Embeddings not ready (HTTP {response.status_code}), will retry...")
+                    continue
 
-            if response.status_code == 401:
-                logger.warning("Invalid API key or endpoint")
-            elif response.status_code == 404:
-                logger.warning("Deployment 'text-embedding-ada-002' not found - ensure it exists")
-            elif response.status_code == 429:
-                logger.warning("Rate limit exceeded - deployments may still be initializing")
+                logger.error(f"✗ Embeddings test failed: {response.status_code}")
+                logger.debug(f"Error details: {response.text}")
 
-            success = False
+                if response.status_code == 401:
+                    logger.warning("Invalid API key or endpoint")
+                elif response.status_code == 404:
+                    logger.warning("Deployment 'text-embedding-ada-002' not found - ensure it exists")
+                elif response.status_code == 429:
+                    logger.warning("Rate limit exceeded - deployments may still be initializing")
+                elif response.status_code == 400:
+                    logger.warning("Bad request - deployment may not be fully initialized")
 
-    except Exception as e:
-        logger.error(f"✗ Embeddings test failed: {e}")
+                break
+
+        except Exception as e:
+            logger.error(f"✗ Embeddings test failed: {e}")
+            break
+
+    if not embeddings_success:
         success = False
 
     if success:

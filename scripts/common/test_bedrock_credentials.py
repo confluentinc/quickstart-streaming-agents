@@ -17,6 +17,7 @@ import argparse
 import json
 import logging
 import sys
+import time
 from typing import Optional
 
 try:
@@ -54,7 +55,9 @@ def test_bedrock_credentials(
     access_key_id: str,
     secret_access_key: str,
     region: str,
-    logger: Optional[logging.Logger] = None
+    logger: Optional[logging.Logger] = None,
+    max_retries: int = 3,
+    retry_delay: int = 5
 ) -> bool:
     """
     Test if credentials can invoke Claude Sonnet 4.5 on Bedrock.
@@ -64,6 +67,8 @@ def test_bedrock_credentials(
         secret_access_key: AWS secret access key
         region: AWS region
         logger: Optional logger instance
+        max_retries: Maximum number of retry attempts (default: 3)
+        retry_delay: Initial delay between retries in seconds (default: 5)
 
     Returns:
         True if test succeeded, False otherwise
@@ -75,64 +80,79 @@ def test_bedrock_credentials(
         logger.error("boto3 is not installed - cannot test Bedrock access")
         return False
 
-    try:
-        model_id = get_model_id(region)
+    model_id = get_model_id(region)
+    logger.info(f"Testing credentials in region: {region}")
+    logger.info(f"Model: {model_id}")
 
-        logger.info(f"Testing credentials in region: {region}")
-        logger.info(f"Model: {model_id}")
+    # Create Bedrock Runtime client
+    bedrock_client = boto3.client(
+        'bedrock-runtime',
+        aws_access_key_id=access_key_id,
+        aws_secret_access_key=secret_access_key,
+        region_name=region
+    )
 
-        # Create Bedrock Runtime client
-        bedrock_client = boto3.client(
-            'bedrock-runtime',
-            aws_access_key_id=access_key_id,
-            aws_secret_access_key=secret_access_key,
-            region_name=region
-        )
+    # Minimal test message
+    request_body = {
+        "anthropic_version": "bedrock-2023-05-31",
+        "max_tokens": 10,
+        "messages": [
+            {
+                "role": "user",
+                "content": "Say 'test'"
+            }
+        ]
+    }
 
-        # Minimal test message
-        request_body = {
-            "anthropic_version": "bedrock-2023-05-31",
-            "max_tokens": 10,
-            "messages": [
-                {
-                    "role": "user",
-                    "content": "Say 'test'"
-                }
-            ]
-        }
+    # Retry loop to handle credential propagation delays
+    for attempt in range(max_retries):
+        try:
+            if attempt > 0:
+                # Wait before retry (exponential backoff)
+                wait_time = retry_delay * (2 ** (attempt - 1))
+                logger.info(f"Waiting {wait_time}s for credentials to propagate (attempt {attempt + 1}/{max_retries})...")
+                time.sleep(wait_time)
 
-        response = bedrock_client.invoke_model(
-            modelId=model_id,
-            body=json.dumps(request_body)
-        )
+            response = bedrock_client.invoke_model(
+                modelId=model_id,
+                body=json.dumps(request_body)
+            )
 
-        response_body = json.loads(response['body'].read())
+            response_body = json.loads(response['body'].read())
 
-        logger.info("✓ Bedrock access test passed!")
-        logger.debug(f"Model response: {response_body.get('content', [{}])[0].get('text', 'N/A')}")
+            logger.info("✓ Bedrock access test passed!")
+            logger.debug(f"Model response: {response_body.get('content', [{}])[0].get('text', 'N/A')}")
 
-        return True
+            return True
 
-    except ClientError as e:
-        error_code = e.response['Error']['Code']
-        error_msg = e.response['Error']['Message']
+        except ClientError as e:
+            error_code = e.response['Error']['Code']
+            error_msg = e.response['Error']['Message']
 
-        logger.error(f"✗ Bedrock test failed: {error_code}")
-        logger.debug(f"Error details: {error_msg}")
+            # Only retry on UnrecognizedClientException (credential propagation issue)
+            if error_code == 'UnrecognizedClientException' and attempt < max_retries - 1:
+                logger.warning(f"Credentials not yet recognized (attempt {attempt + 1}/{max_retries})")
+                continue
 
-        if error_code == 'UnrecognizedClientException':
-            logger.warning("Credentials may be invalid or haven't propagated yet (wait 30-60s)")
-        elif error_code == 'ResourceNotFoundException':
-            logger.warning(f"Model '{model_id}' not available in region {region}")
-            logger.warning("You may need to enable Claude models in AWS Bedrock console")
-        elif error_code == 'AccessDeniedException':
-            logger.warning("Credentials lack bedrock:InvokeModel permission")
+            # Log error and return False for final attempt or non-retryable errors
+            logger.error(f"✗ Bedrock test failed: {error_code}")
+            logger.debug(f"Error details: {error_msg}")
 
-        return False
+            if error_code == 'UnrecognizedClientException':
+                logger.warning("Credentials may be invalid or still haven't propagated")
+            elif error_code == 'ResourceNotFoundException':
+                logger.warning(f"Model '{model_id}' not available in region {region}")
+                logger.warning("You may need to enable Claude models in AWS Bedrock console")
+            elif error_code == 'AccessDeniedException':
+                logger.warning("Credentials lack bedrock:InvokeModel permission")
 
-    except Exception as e:
-        logger.error(f"✗ Unexpected error: {e}")
-        return False
+            return False
+
+        except Exception as e:
+            logger.error(f"✗ Unexpected error: {e}")
+            return False
+
+    return False
 
 
 def main():

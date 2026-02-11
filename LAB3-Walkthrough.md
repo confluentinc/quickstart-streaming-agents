@@ -16,7 +16,8 @@ All of this runs in real time on **Confluent Cloud for Apache Flink**, with no e
 ![Architecture Diagram](./assets/lab3/lab3-architecture.png)
 
 ## Prerequisites
-**Installation instructions:**\
+**Installation instructions:**
+
 ```bash
 brew install uv git python && brew tap hashicorp/tap && brew install hashicorp/tap/terraform && brew install --cask confluent-cli docker-desktop
 ```
@@ -27,7 +28,7 @@ winget install astral-sh.uv Git.Git Docker.DockerDesktop Hashicorp.Terraform Con
 Once software is installed, you'll need:
 - **Zapier:** Free account and remote MCP server ([Setup guide](./assets/pre-setup/Zapier-Setup.md))
 - **LLM Access:** AWS Bedrock API keys **OR** Azure OpenAI endpoint + API key
-  - **Easy key creation:** Run `uv run workshop-keys create` to quickly auto-generate credentials
+  - **Easy key creation:** Run `uv run api-keys create` to quickly auto-generate credentials
 
 > [!WARNING]
 >
@@ -50,7 +51,7 @@ uv run deploy
 
 The deployment script will prompt you for your:
 - Cloud provider (AWS/Azure)
-- LLM API keys (Bedrock keys or Azure OpenAI endpoint/key - run `uv run workshop-keys create` beforehand or see [Workshop Mode Setup Guide](./assets/pre-setup/Workshop-Mode-Setup.md) for more info)
+- LLM API keys (Bedrock keys or Azure OpenAI endpoint/key - run `uv run api-keys create` beforehand or see [Workshop Mode Setup Guide](./assets/pre-setup/Workshop-Mode-Setup.md) for more info)
 - Zapier MCP token ([Setup guide](./assets/pre-setup/Zapier-Setup.md))
 
 ## Usecase Walkthrough

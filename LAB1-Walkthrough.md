@@ -9,7 +9,7 @@ In this lab, we'll use Apache Flink for Confluent Cloud's MCP tool calling featu
 - **Zapier:** Free account and remote MCP server ([Setup guide](./assets/pre-setup/Zapier-Setup.md))
 - **LLM Access:** AWS Bedrock API keys **OR** Azure OpenAI endpoint + API key
   - No AWS/Azure account required - just the LLM API credentials!
-  - **Easy key creation:** Run `uv run workshop-keys create` to quickly generate ready-to-use credentials
+  - **Easy key creation:** Run `uv run api-keys create` to quickly generate ready-to-use credentials
 
 > [!WARNING]
 >
