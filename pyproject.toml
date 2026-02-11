@@ -102,6 +102,8 @@ deployment-summary = "scripts.common.generate_deployment_summary:main"
 #
 workshop_keys = "scripts.common.workshop_key_manager:main"
 workshop-keys = "scripts.common.workshop_key_manager:main"
+api_keys = "scripts.common.workshop_key_manager:main"
+api-keys = "scripts.common.workshop_key_manager:main"
 #
 test_bedrock = "scripts.common.test_bedrock_credentials:main"
 test-bedrock = "scripts.common.test_bedrock_credentials:main"

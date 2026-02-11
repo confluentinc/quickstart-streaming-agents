@@ -46,13 +46,14 @@ Build real-time AI agents with [Confluent Cloud Streaming Agents](https://docs.c
 - **[Git](https://github.com/git/git)**
 - **[Terraform](https://github.com/hashicorp/terraform)**
 - **[uv](https://github.com/astral-sh/uv)**
+- **[AWS CLI](https://github.com/aws/aws-cli)** or **[Azure CLI](https://github.com/Azure/azure-cli)** tools for generating API keys
 
 <details>
 <summary> Installation commands (Mac/Windows)</summary>
 **Mac:**
 
 ```bash
-brew install uv git python && brew tap hashicorp/tap && brew install hashicorp/tap/terraform && brew install --cask confluent-cli docker-desktop
+brew install uv git python && brew tap hashicorp/tap && brew install hashicorp/tap/terraform && brew install --cask confluent-cli docker-desktop && brew install awscli # or azure-cli
 ```
 
 **Windows:**
@@ -74,7 +75,7 @@ cd quickstart-streaming-agents
 
 ```bash
 # Creates API-KEYS-[AWS|AZURE].md and auto-populates them in next step
-uv run workshop-keys create
+uv run api-keys create
 ```
 
 3. **One command deployment:**

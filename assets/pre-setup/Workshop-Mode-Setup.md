@@ -3,9 +3,9 @@
 Workshop mode allows participants to deploy the Streaming Agents quickstart using shared cloud AI credentials without requiring an AWS account or Azure subscription.
 
 **Workflow:**
-1. **Before Workshop**: Organizer creates cloud AI credentials with `uv run workshop-keys create`
+1. **Before Workshop**: Organizer creates cloud AI credentials with `uv run api-keys create`
 2. **During Workshop**: Participants run `uv run deploy`, select their cloud provider, and enter LLM credentials
-3. **After Workshop**: Organizer immediately revokes credentials with `uv run workshop-keys destroy`
+3. **After Workshop**: Organizer immediately revokes credentials with `uv run api-keys destroy`
 
 ---
 
@@ -29,10 +29,10 @@ Use the workshop key manager tool:
 
 ```bash
 # Create credentials
-uv run workshop-keys create
+uv run api-keys create
 
 # After workshop - revoke credentials
-uv run workshop-keys destroy
+uv run api-keys destroy
 ```
 
 This creates:
@@ -86,8 +86,8 @@ This creates:
    - Cloud provider: Select **aws**
    - Region: `us-east-1` (by default)
    - Confluent Cloud API key and secret (auto-generated if desired)
-   - AWS Access Key ID: `<auto-filled if generated with uv run workshop-keys create>`
-   - AWS Secret Access Key: `<auto-filled if generated with uv run workshop-keys create>`
+   - AWS Access Key ID: `<auto-filled if generated with uv run api-keys create>`
+   - AWS Secret Access Key: `<auto-filled if generated with uv run api-keys create>`
 
 ---
 
@@ -111,10 +111,10 @@ Use the workshop key manager tool:
 
 ```bash
 # Create credentials
-uv run workshop-keys create
+uv run api-keys create
 
 # After workshop - revoke credentials
-uv run workshop-keys destroy
+uv run api-keys destroy
 ```
 
 This creates:
@@ -181,8 +181,8 @@ This creates:
    - Cloud provider: Select **azure**
    - Region: **eastus2** (auto-selected for workshop mode)
    - Confluent Cloud API key and secret (auto-generated if desired)
-   - Azure OpenAI Endpoint: `<auto-filled if generated with uv run workshop-keys create>`
-   - Azure OpenAI API Key: `<auto-filled if generated with uv run workshop-keys create>`
+   - Azure OpenAI Endpoint: `<auto-filled if generated with uv run api-keys create>`
+   - Azure OpenAI API Key: `<auto-filled if generated with uv run api-keys create>`
 
 ---
 
