@@ -16,11 +16,18 @@ All of this runs in real time on **Confluent Cloud for Apache Flink**, with no e
 ![Architecture Diagram](./assets/lab3/lab3-architecture.png)
 
 ## Prerequisites
-
+**Installation instructions:**\
+```bash
+brew install uv git python && brew tap hashicorp/tap && brew install hashicorp/tap/terraform && brew install --cask confluent-cli docker-desktop
+```
+**Windows:**
+```powershell
+winget install astral-sh.uv Git.Git Docker.DockerDesktop Hashicorp.Terraform ConfluentInc.Confluent-CLI Python.Python
+```
+Once software is installed, you'll need:
 - **Zapier:** Free account and remote MCP server ([Setup guide](./assets/pre-setup/Zapier-Setup.md))
 - **LLM Access:** AWS Bedrock API keys **OR** Azure OpenAI endpoint + API key
   - **Easy key creation:** Run `uv run workshop-keys create` to quickly auto-generate credentials
-- **MongoDB:** Pre-configured and managed for you - no setup required!
 
 > [!WARNING]
 >
