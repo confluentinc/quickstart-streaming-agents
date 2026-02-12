@@ -1,0 +1,8 @@
+# Ignore test artifacts but keep test code
+credentials.json
+reports/
+.pytest_cache/
+__pycache__/
+*.pyc
+htmlcov/
+.coverage

@@ -57,6 +57,8 @@ dependencies = [
 dev = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
+    "pytest-timeout>=2.2.0",
+    "pytest-order>=1.2.0",
     "black>=23.0.0",
     "isort>=5.12.0",
     "flake8>=6.0.0",
@@ -118,6 +120,8 @@ validate = "scripts.common.validate:main"
 #
 test_mongodb = "scripts.common.test_mongodb_connections:main"
 test-mongodb = "scripts.common.test_mongodb_connections:main"
+#
+tests = "scripts.run_tests:main"
 
 
 [project.urls]
@@ -189,7 +193,7 @@ warn_unreachable = true
 strict_equality = true
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["testing"]
 python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
@@ -197,7 +201,5 @@ addopts = [
     "--strict-markers",
     "--strict-config",
     "--verbose",
-    "--cov=scripts",
-    "--cov-report=term-missing",
-    "--cov-report=html",
+    "-s",  # Show output in real-time (capture=no)
 ]
