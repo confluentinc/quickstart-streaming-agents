@@ -338,7 +338,7 @@ def validate_azure_openai_credentials(endpoint: str, api_key: str) -> Tuple[bool
 
     Checks:
     - Endpoint URL format (should be https://[name].openai.azure.com/)
-    - API key format (should be 32 hex characters)
+    - API key format (84 chars modern format or 32 chars legacy format)
 
     Args:
         endpoint: Azure OpenAI endpoint URL
@@ -367,19 +367,32 @@ def validate_azure_openai_credentials(endpoint: str, api_key: str) -> Tuple[bool
         messages.append(colorize("✓ Azure OpenAI endpoint format looks valid", 'green'))
 
     # Check API key format
+    # Modern Azure OpenAI keys are 84 characters (base64-like)
+    # Legacy keys were 32 characters (hex)
     if not api_key:
         messages.append(colorize("⚠️  Warning: Azure OpenAI API key is empty", 'yellow'))
         all_passed = False
-    elif len(api_key) != 32:
-        messages.append(colorize(f"⚠️  Warning: Azure OpenAI API key should be 32 characters (found {len(api_key)})", 'yellow'))
-        messages.append("   → Verify this is a valid Azure OpenAI API key")
-        all_passed = False
-    elif not all(c in '0123456789abcdefABCDEF' for c in api_key):
-        messages.append(colorize("⚠️  Warning: Azure OpenAI API key should only contain hex characters (0-9, a-f)", 'yellow'))
-        messages.append("   → Verify this is a valid Azure OpenAI API key")
-        all_passed = False
+    elif len(api_key) == 84:
+        # Modern format: 84 characters, alphanumeric + some special chars
+        if all(c.isalnum() for c in api_key):
+            messages.append(colorize("✓ Azure OpenAI API key format looks valid (modern format)", 'green'))
+        else:
+            messages.append(colorize("⚠️  Warning: Azure OpenAI API key contains unexpected characters", 'yellow'))
+            messages.append("   → Should only contain alphanumeric characters")
+            all_passed = False
+    elif len(api_key) == 32:
+        # Legacy format: 32 characters, hex only
+        if all(c in '0123456789abcdefABCDEF' for c in api_key):
+            messages.append(colorize("✓ Azure OpenAI API key format looks valid (legacy format)", 'green'))
+        else:
+            messages.append(colorize("⚠️  Warning: Azure OpenAI API key should only contain hex characters (0-9, a-f)", 'yellow'))
+            messages.append("   → Verify this is a valid Azure OpenAI API key")
+            all_passed = False
     else:
-        messages.append(colorize("✓ Azure OpenAI API key format looks valid", 'green'))
+        messages.append(colorize(f"⚠️  Warning: Azure OpenAI API key length is {len(api_key)} (expected 84 or 32)", 'yellow'))
+        messages.append("   → Modern keys are 84 chars, legacy keys are 32 chars")
+        messages.append("   → Verify this is a valid Azure OpenAI API key")
+        all_passed = False
 
     return all_passed, messages
 

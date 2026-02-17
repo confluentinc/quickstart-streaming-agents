@@ -78,7 +78,7 @@ def test_azure_openai_credentials(
             {"role": "system", "content": "You are a helpful assistant."},
             {"role": "user", "content": "Say 'test'"}
         ],
-        "max_tokens": 10
+        "max_completion_tokens": 10
     }
 
     chat_success = False
@@ -103,7 +103,8 @@ def test_azure_openai_credentials(
                     break
             else:
                 # Retry on certain errors (deployment not ready)
-                if response.status_code in [400, 429] and attempt < max_retries - 1:
+                # Include 401 as newly created deployments may temporarily return this during propagation
+                if response.status_code in [400, 401, 429] and attempt < max_retries - 1:
                     logger.warning(f"Chat completions not ready (HTTP {response.status_code}), will retry...")
                     continue
 
@@ -111,7 +112,7 @@ def test_azure_openai_credentials(
                 logger.debug(f"Error details: {response.text}")
 
                 if response.status_code == 401:
-                    logger.warning("Invalid API key or endpoint")
+                    logger.warning("Invalid API key or endpoint (or deployment not fully propagated)")
                 elif response.status_code == 404:
                     logger.warning("Deployment 'gpt-5-mini' not found - ensure it exists")
                 elif response.status_code == 429:
@@ -159,7 +160,8 @@ def test_azure_openai_credentials(
                     break
             else:
                 # Retry on certain errors (deployment not ready)
-                if response.status_code in [400, 429] and attempt < max_retries - 1:
+                # Include 401 as newly created deployments may temporarily return this during propagation
+                if response.status_code in [400, 401, 429] and attempt < max_retries - 1:
                     logger.warning(f"Embeddings not ready (HTTP {response.status_code}), will retry...")
                     continue
 
@@ -167,7 +169,7 @@ def test_azure_openai_credentials(
                 logger.debug(f"Error details: {response.text}")
 
                 if response.status_code == 401:
-                    logger.warning("Invalid API key or endpoint")
+                    logger.warning("Invalid API key or endpoint (or deployment not fully propagated)")
                 elif response.status_code == 404:
                     logger.warning("Deployment 'text-embedding-ada-002' not found - ensure it exists")
                 elif response.status_code == 429:

@@ -46,6 +46,7 @@ import logging
 import random
 import string
 import sys
+import time
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Optional, Tuple
@@ -98,7 +99,7 @@ AWS_CREDENTIALS_FILE = "API-KEYS-AWS.md"
 
 # Azure Constants
 AZURE_RESOURCE_GROUP_PREFIX = "streaming-agents-openai"
-AZURE_COGNITIVE_ACCOUNT_PREFIX = "workshop-openai"
+AZURE_COGNITIVE_ACCOUNT_PREFIX = "streaming-agents-openai"
 AZURE_STATE_FILE = ".workshop-keys-state-azure.json"
 AZURE_CREDENTIALS_FILE = "API-KEYS-AZURE.md"
 
@@ -107,12 +108,12 @@ AZURE_DEPLOYMENTS = {
     "gpt-5-mini": {
         "model": "gpt-5-mini",
         "version": "2025-08-07",
-        "capacity": 50
+        "capacity": 500
     },
     "text-embedding-ada-002": {
         "model": "text-embedding-ada-002",
         "version": "2",
-        "capacity": 120
+        "capacity": 250
     }
 }
 
@@ -1382,6 +1383,10 @@ def create_azure_command(args: argparse.Namespace, logger: logging.Logger) -> in
             account_name,
             logger
         )
+
+        # Wait for deployments to fully propagate
+        logger.info("Waiting 10 seconds for deployments to fully propagate...")
+        time.sleep(10)
 
         # Test Azure OpenAI access
         test_success = test_azure_openai_credentials(endpoint, api_key, logger)
