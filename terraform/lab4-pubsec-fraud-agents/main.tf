@@ -47,7 +47,7 @@ resource "confluent_flink_statement" "claims_table" {
     CREATE TABLE `claims` (
       `claim_id` STRING NOT NULL,
       `applicant_name` STRING,
-      `zip_code` STRING NOT NULL,
+      `city` STRING NOT NULL,
       `is_primary_residence` STRING,
       `damage_assessed` STRING,
       `claim_amount` STRING NOT NULL,

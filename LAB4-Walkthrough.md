@@ -66,7 +66,7 @@ Select **"Lab 4: FEMA Fraud Detection"** from the menu.
 Generate synthetic FEMA claims data:
 
 ```bash
-uv run lab4_datagen --local
+uv run lab4_datagen
 ```
 
 This publishes ~36,000 synthetic claims across 8 Florida cities over a 14-day period following Hurricane Helena (March 1, 2025).
