@@ -67,7 +67,7 @@ def main():
         # Extract values from JSON (ensure cloud provider is lowercase)
         cloud = creds["cloud"].lower()
         region = creds["region"]
-        envs_to_deploy = ["core", "lab1-tool-calling", "lab2-vector-search", "lab3-agentic-fleet-management"]
+        envs_to_deploy = ["core", "lab1-tool-calling", "lab2-vector-search", "lab3-agentic-fleet-management", "lab4-pubsec-fraud-agents"]
 
         # Build environment variables for Terraform
         env_vars = {
@@ -75,6 +75,7 @@ def main():
             "TF_VAR_confluent_cloud_api_secret": creds["confluent_cloud_api_secret"],
             "TF_VAR_cloud_region": region,
             "TF_VAR_cloud_provider": cloud,
+            "TF_VAR_enable_testing_sql": "true",
         }
 
         # Optional fields
@@ -150,7 +151,8 @@ def main():
             "Lab 1: MCP Tool Calling",
             "Lab 2: Vector Search / RAG",
             "Lab 3: Agentic Fleet Management",
-            "All Labs (Labs 1, 2, and 3)"
+            "Lab 4: FEMA Fraud Detection",
+            "All Labs (Labs 1, 2, 3, and 4)"
         ]
         env_choice = prompt_choice("What would you like to deploy?", deploy_options)
 
@@ -161,8 +163,10 @@ def main():
             envs_to_deploy = ["core", "lab2-vector-search"]
         elif env_choice == "Lab 3: Agentic Fleet Management":
             envs_to_deploy = ["core", "lab3-agentic-fleet-management"]
-        elif env_choice == "All Labs (Labs 1, 2, and 3)":
-            envs_to_deploy = ["core", "lab1-tool-calling", "lab2-vector-search", "lab3-agentic-fleet-management"]
+        elif env_choice == "Lab 4: FEMA Fraud Detection":
+            envs_to_deploy = ["core", "lab4-pubsec-fraud-agents"]
+        elif env_choice == "All Labs (Labs 1, 2, 3, and 4)":
+            envs_to_deploy = ["core", "lab1-tool-calling", "lab2-vector-search", "lab3-agentic-fleet-management", "lab4-pubsec-fraud-agents"]
 
         # Step 5: Prompt for required credentials
         print("\n--- Credential Configuration ---")

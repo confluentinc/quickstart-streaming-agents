@@ -86,7 +86,7 @@ def main():
     if args.testing:
         creds = load_credentials_json(root)
         cloud = creds["cloud"]
-        envs_to_destroy = ["lab3-agentic-fleet-management", "lab2-vector-search", "lab1-tool-calling", "core"]  # Reverse order
+        envs_to_destroy = ["lab4-pubsec-fraud-agents", "lab3-agentic-fleet-management", "lab2-vector-search", "lab1-tool-calling", "core"]  # Reverse order
 
         # Build environment variables
         env_vars = {
@@ -133,7 +133,7 @@ def main():
         cloud = prompt_choice("Select cloud provider to destroy:", ["aws", "azure"])
 
         # Step 2: Always destroy all environments
-        envs_to_destroy = ["lab3-agentic-fleet-management", "lab2-vector-search", "lab1-tool-calling", "core"]
+        envs_to_destroy = ["lab4-pubsec-fraud-agents", "lab3-agentic-fleet-management", "lab2-vector-search", "lab1-tool-calling", "core"]
         print(f"✓ Will destroy all environments: {', '.join(envs_to_destroy)}")
 
         # Load credentials file

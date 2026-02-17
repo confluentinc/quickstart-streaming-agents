@@ -49,7 +49,7 @@ dependencies = [
     "azure-mgmt-resource>=23.0.0",
     "azure-ai-inference>=1.0.0b1",
     "requests>=2.31.0",
-    "confluent-kafka>=2.3.0",
+    "confluent-kafka[avro,schema-registry]>=2.3.0",
 ]
 
 # Optional dependencies for enhanced functionality
@@ -80,6 +80,9 @@ lab1-datagen = "scripts.lab1_datagen:main"
 #
 lab3_datagen = "scripts.lab3_datagen:main"
 lab3-datagen = "scripts.lab3_datagen:main"
+#
+lab4_datagen = "scripts.lab4_datagen:main"
+lab4-datagen = "scripts.lab4_datagen:main"
 #
 publish_lab3_data = "scripts.publish_lab3_data:main"
 publish-lab3-data = "scripts.publish_lab3_data:main"
