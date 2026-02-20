@@ -100,13 +100,15 @@ class Lab4DataPublisher:
             # Create Avro serializer with minimal type conversions
             def claim_to_avro(claim, ctx):
                 """Convert claim dict - only convert timestamp to millis."""
-                from datetime import datetime
+                from datetime import datetime, timezone
 
                 claim_copy = claim.copy()
 
-                # Convert timestamp to milliseconds since epoch
+                # Convert timestamp to milliseconds since epoch.
+                # Timestamps in the CSV have no timezone info; treat as UTC
+                # so the result is consistent regardless of the local machine timezone.
                 if 'claim_timestamp' in claim_copy and isinstance(claim_copy['claim_timestamp'], str):
-                    dt = datetime.fromisoformat(claim_copy['claim_timestamp'])
+                    dt = datetime.fromisoformat(claim_copy['claim_timestamp']).replace(tzinfo=timezone.utc)
                     claim_copy['claim_timestamp'] = int(dt.timestamp() * 1000)
 
                 return claim_copy
@@ -168,9 +170,6 @@ class Lab4DataPublisher:
                 value=claim,
                 on_delivery=self.delivery_callback
             )
-
-            # Poll to trigger delivery callbacks
-            self.producer.poll(0)
 
             return True
 
@@ -239,10 +238,10 @@ class Lab4DataPublisher:
                 results["failed"] += 1
 
             # Periodic flush and progress update
-            if not self.dry_run and idx % 50 == 0:
-                self.producer.poll(0.1)
-
             if not self.dry_run and idx % 100 == 0:
+                self.producer.poll(0)
+
+            if not self.dry_run and idx % 1000 == 0:
                 self.producer.flush()
                 self.logger.info(
                     f"Progress: {idx}/{results['total']} claims "
@@ -312,7 +311,6 @@ Examples:
         action="store_true",
         help="Enable verbose logging"
     )
-
     args = parser.parse_args()
 
     # Set up logging
@@ -334,14 +332,11 @@ Examples:
     if args.data_file:
         data_file = args.data_file
     else:
-        # Auto-detect in data-gen directory
-        data_file = project_root / "terraform" / "lab4-pubsec-fraud-agents" / "data-gen" / "fema_claims_synthetic.csv"
+        # Auto-detect in assets directory
+        data_file = project_root / "assets" / "lab4" / "data" / "fema_claims_synthetic.csv"
 
     if not data_file.exists():
         logger.error(f"Data file does not exist: {data_file}")
-        logger.error("Please run the data generation first:")
-        logger.error("  cd terraform/lab4-pubsec-fraud-agents/data-gen")
-        logger.error("  uv run python generate_fema_claims_data.py")
         return 1
 
     logger.info(f"Publishing Lab4 FEMA claims data from {data_file}")
@@ -421,7 +416,11 @@ Examples:
         if args.dry_run:
             print("\n[DRY RUN COMPLETE - No messages were actually published]")
         else:
-            print(f"\n✅ Published {results['success']} FEMA claims to '{args.topic}' topic")
+            env_name = credentials.get("environment_name")
+            if env_name:
+                print(f"\n✅ Published {results['success']} FEMA claims to '{args.topic}' topic in environment: {env_name}")
+            else:
+                print(f"\n✅ Published {results['success']} FEMA claims to '{args.topic}' topic")
             print(f"Ready for Flink anomaly detection!")
 
         return 0 if results['failed'] == 0 else 1

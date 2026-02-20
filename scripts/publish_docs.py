@@ -47,7 +47,7 @@ from .common.logging_utils import setup_logging
 class FlinkDocsPublisherCLI:
     """Publisher for documentation to Kafka using Confluent CLI."""
 
-    # Avro schema for documents
+    # Avro schema for documents with full metadata
     DOCUMENT_VALUE_SCHEMA = {
         "type": "record",
         "name": "documents_value",
@@ -61,6 +61,36 @@ class FlinkDocsPublisherCLI:
             {
                 "name": "document_text",
                 "type": ["null", "string"],
+                "default": None,
+            },
+            {
+                "name": "pages",
+                "type": ["null", "string"],
+                "default": None,
+            },
+            {
+                "name": "section_reference",
+                "type": ["null", "string"],
+                "default": None,
+            },
+            {
+                "name": "title",
+                "type": ["null", "string"],
+                "default": None,
+            },
+            {
+                "name": "fraud_categories",
+                "type": ["null", {"type": "array", "items": ["null", "string"]}],
+                "default": None,
+            },
+            {
+                "name": "policy_keywords",
+                "type": ["null", {"type": "array", "items": ["null", "string"]}],
+                "default": None,
+            },
+            {
+                "name": "char_count",
+                "type": ["null", "int"],
                 "default": None,
             },
         ],
@@ -173,7 +203,13 @@ class FlinkDocsPublisherCLI:
             return {
                 "document_id": document_id,
                 "document_text": document_text,
-                "metadata": frontmatter,
+                "pages": frontmatter.get("pages"),
+                "section_reference": frontmatter.get("section_reference"),
+                "title": title,
+                "fraud_categories": frontmatter.get("fraud_categories", []),
+                "policy_keywords": frontmatter.get("policy_keywords", []),
+                "char_count": frontmatter.get("char_count"),
+                "metadata": frontmatter,  # Keep for backwards compatibility
             }
 
         except Exception as e:
@@ -200,9 +236,23 @@ class FlinkDocsPublisherCLI:
 
             # Create Avro record with union type formatting
             # For union types ["null", "string"], values must be wrapped as {"string": "value"}
+            # For arrays with union item types ["null", "string"], each item must be wrapped
+
+            # Helper to wrap array items
+            def wrap_string_array(items):
+                if not items:
+                    return None
+                return {"array": [{"string": str(item)} if item is not None else None for item in items]}
+
             value = {
-                "document_id": {"string": document["document_id"]},
-                "document_text": {"string": document["document_text"]},
+                "document_id": {"string": str(document["document_id"])},
+                "document_text": {"string": str(document["document_text"])},
+                "pages": {"string": str(document["pages"])} if document.get("pages") is not None else None,
+                "section_reference": {"string": str(document["section_reference"])} if document.get("section_reference") is not None else None,
+                "title": {"string": str(document["title"])} if document.get("title") is not None else None,
+                "fraud_categories": wrap_string_array(document.get("fraud_categories")),
+                "policy_keywords": wrap_string_array(document.get("policy_keywords")),
+                "char_count": {"int": int(document["char_count"])} if document.get("char_count") is not None else None,
             }
 
             if self.dry_run:
@@ -479,11 +529,12 @@ Examples:
   %(prog)s --lab2
   %(prog)s --lab3
   %(prog)s --lab2 --dry-run
+  %(prog)s --docs-dir temp_pdf_extraction/output_chunks --topic documents
         """
     )
 
-    # Create mutually exclusive group for lab selection
-    lab_group = parser.add_mutually_exclusive_group(required=True)
+    # Create mutually exclusive group for lab selection (optional if --docs-dir is provided)
+    lab_group = parser.add_mutually_exclusive_group(required=False)
     lab_group.add_argument(
         "--lab2",
         action="store_true",
@@ -542,42 +593,55 @@ Examples:
 
     logger.info("✓ Confluent CLI logged in")
 
-    # Determine lab number
-    if args.lab2:
-        lab = 2
-        lab_name = "Lab2 (Flink SQL documentation)"
-    else:  # args.lab3
-        lab = 3
-        lab_name = "Lab3 (New Orleans event documentation)"
+    # Determine lab number and docs directory
+    if args.docs_dir:
+        # Custom docs directory provided, skip lab detection
+        lab = None
+        lab_name = f"custom directory ({args.docs_dir})"
+        docs_dir = args.docs_dir
+        logger.info(f"Publishing documents from {docs_dir}")
 
-    logger.info(f"Publishing documents for {lab_name}")
-
-    # Auto-detect cloud provider
-    cloud_provider = auto_detect_cloud_provider()
-    if not cloud_provider:
-        suggestion = suggest_cloud_provider()
-        if suggestion:
-            logger.info(f"Auto-detected cloud provider: {suggestion}")
-            cloud_provider = suggestion
-        else:
-            logger.error("Could not auto-detect cloud provider. Please check your terraform deployment.")
+        # Skip cloud provider detection and terraform validation for custom directory
+        cloud_provider = None
+    else:
+        # Lab-based publishing (original behavior)
+        if not (args.lab2 or args.lab3):
+            logger.error("Either --lab2, --lab3, or --docs-dir must be specified")
             return 1
 
-    # Validate cloud provider
-    if not validate_cloud_provider(cloud_provider):
-        logger.error(f"Invalid cloud provider: {cloud_provider}")
-        return 1
+        if args.lab2:
+            lab = 2
+            lab_name = "Lab2 (Flink SQL documentation)"
+        else:  # args.lab3
+            lab = 3
+            lab_name = "Lab3 (New Orleans event documentation)"
 
-    # Get project root
-    try:
-        project_root = get_project_root()
-    except Exception as e:
-        logger.error(f"Could not find project root: {e}")
-        return 1
+        logger.info(f"Publishing documents for {lab_name}")
 
-    # Find docs directory
-    docs_dir = args.docs_dir
-    if not docs_dir:
+        # Auto-detect cloud provider
+        cloud_provider = auto_detect_cloud_provider()
+        if not cloud_provider:
+            suggestion = suggest_cloud_provider()
+            if suggestion:
+                logger.info(f"Auto-detected cloud provider: {suggestion}")
+                cloud_provider = suggestion
+            else:
+                logger.error("Could not auto-detect cloud provider. Please check your terraform deployment.")
+                return 1
+
+        # Validate cloud provider
+        if not validate_cloud_provider(cloud_provider):
+            logger.error(f"Invalid cloud provider: {cloud_provider}")
+            return 1
+
+        # Get project root
+        try:
+            project_root = get_project_root()
+        except Exception as e:
+            logger.error(f"Could not find project root: {e}")
+            return 1
+
+        # Find docs directory
         docs_dir = find_docs_directory(project_root, lab, cloud_provider)
         if not docs_dir:
             logger.error(f"Could not find documentation directory for Lab{lab}. Please specify --docs-dir")
@@ -588,24 +652,38 @@ Examples:
         logger.error(f"Documentation directory does not exist: {docs_dir}")
         return 1
 
-    # Validate terraform state
-    try:
-        validate_terraform_state(cloud_provider, project_root)
-    except Exception as e:
-        logger.error(f"Terraform validation failed: {e}")
-        return 1
+    # Only validate terraform and clear MongoDB for lab-based publishing
+    if cloud_provider:
+        # Validate terraform state
+        try:
+            validate_terraform_state(cloud_provider, project_root)
+        except Exception as e:
+            logger.error(f"Terraform validation failed: {e}")
+            return 1
 
-    # Extract Kafka credentials
-    try:
-        credentials = extract_kafka_credentials(cloud_provider, project_root)
-    except Exception as e:
-        logger.error(f"Failed to extract Kafka credentials: {e}")
-        return 1
+        # Extract Kafka credentials
+        try:
+            credentials = extract_kafka_credentials(cloud_provider, project_root)
+        except Exception as e:
+            logger.error(f"Failed to extract Kafka credentials: {e}")
+            return 1
 
-    # Prompt to clear MongoDB collection (if not in dry-run mode)
-    if not args.dry_run:
-        if not prompt_clear_mongodb(cloud_provider, project_root, logger):
-            logger.error("MongoDB clearing failed")
+        # Prompt to clear MongoDB collection (if not in dry-run mode)
+        if not args.dry_run:
+            if not prompt_clear_mongodb(cloud_provider, project_root, logger):
+                logger.error("MongoDB clearing failed")
+                return 1
+    else:
+        # Custom directory mode - extract credentials from terraform in current directory
+        try:
+            project_root = get_project_root()
+            cloud_provider_temp = auto_detect_cloud_provider()
+            if not cloud_provider_temp:
+                cloud_provider_temp = suggest_cloud_provider()
+            credentials = extract_kafka_credentials(cloud_provider_temp, project_root)
+        except Exception as e:
+            logger.error(f"Failed to extract Kafka credentials: {e}")
+            logger.error("Make sure you're running from a terraform-deployed project directory")
             return 1
 
     # Initialize publisher

@@ -69,14 +69,14 @@ Generate synthetic FEMA claims data:
 uv run lab4_datagen
 ```
 
-This publishes ~36,000 synthetic claims across 8 Florida cities over a 14-day period following Hurricane Helena (March 1, 2025).
+This publishes ~36,000 synthetic claims across 8 Florida cities over a 14-day period following Hurricane Helene (March 1, 2025).
 
 The data includes:
 - **`claims`** table – FEMA disaster assistance claims with applicant info, damage assessments, claim amounts, and detailed narratives
 
 **Data Pattern:**
 - **7 cities** show normal exponential decay (claims decrease over time)
-- **1 city (Naples)** shows an anomalous spike on Days 10-11, containing 47 specifically designed claims with fraud indicators, policy violations, and legitimate claims for testing
+- **1 city (Naples)** shows an anomalous spike on Day 3, containing specifically designed claims with fraud indicators, policy violations, and legitimate claims for testing
 
 ---
 
@@ -100,10 +100,10 @@ WITH windowed_claims AS (
         city,
         COUNT(*) AS claim_count,
         SUM(CAST(claim_amount AS DOUBLE)) AS total_claim_amount,
-        AVG(CAST(claim_amount AS DOUBLE)) AS avg_claim_amount,
+        CAST(ROUND(AVG(CAST(claim_amount AS DOUBLE))) AS BIGINT) AS avg_claim_amount,
         SUM(CAST(damage_assessed AS DOUBLE)) AS total_damage_assessed
     FROM TABLE(
-        TUMBLE(TABLE claims, DESCRIPTOR(claim_timestamp), INTERVAL '3' HOUR)
+        TUMBLE(TABLE claims, DESCRIPTOR(claim_timestamp), INTERVAL '6' HOUR)
     )
     GROUP BY window_start, window_end, window_time, city
 ),
@@ -119,7 +119,7 @@ anomaly_detection AS (
             CAST(total_claim_amount AS DOUBLE),
             window_time,
             JSON_OBJECT(
-                'minTrainingSize' VALUE 16,
+                'minTrainingSize' VALUE 8,
                 'maxTrainingSize' VALUE 50,
                 'confidencePercentage' VALUE 95.0,
                 'enableStl' VALUE FALSE
@@ -141,7 +141,7 @@ SELECT
     CAST(ROUND(anomaly_result.forecast_value) AS BIGINT) AS expected_claim_amount,
     anomaly_result.upper_bound AS upper_bound,
     anomaly_result.lower_bound AS lower_bound,
-    anomaly_result.is_anomaly AS is_fraud_spike
+    anomaly_result.is_anomaly AS is_anomaly
 FROM anomaly_detection
 WHERE anomaly_result.is_anomaly = true
   AND total_claim_amount > anomaly_result.upper_bound;
@@ -166,14 +166,12 @@ SELECT * FROM claims_anomalies_by_city;
 **Expected Results:**
 
 ```
-city   | window_time         | claim_count | total_claim_amount | expected_claim_amount | is_fraud_spike
+city   | window_time         | claim_count | total_claim_amount | expected_claim_amount | is_anomaly
 -------|---------------------|-------------|--------------------|-----------------------|----------------
 Naples | 2025-03-03 08:59:59 | 47          | 5863000           | 2826604               | true
 ```
 
-You should see **1 anomaly** detected in Naples on Day 3, containing 47 claims in the 3-hour window.
-
-![Anomaly Screenshot](./assets/lab4/lab4-anomaly-results.png)
+You should see **1 anomaly** detected in Naples on Day 3, containing all claims from that 3-hour window.
 
 ---
 
@@ -205,155 +203,236 @@ SELECT
     c.claim_timestamp,
     a.window_time AS anomaly_window_time,
     a.total_claim_amount AS anomaly_total_amount,
-    a.is_fraud_spike
+    a.is_anomaly
 FROM claims c
 INNER JOIN claims_anomalies_by_city a
     ON c.city = a.city
-    AND c.claim_timestamp >= a.window_time - INTERVAL '3' HOUR
-    AND c.claim_timestamp <= a.window_time;
+    AND c.claim_timestamp >= a.window_time - INTERVAL '6' HOUR
+    AND c.claim_timestamp <= a.window_time
+WHERE c.claim_narrative <> ''
+LIMIT 10;
 ```
 
-This creates a table with all 47 claims from the Naples anomaly window. Now query it to identify fraud patterns:
+This creates a table with all claims from the Naples anomaly window. Now query it to see what was flagged:
 
 ```sql
-SELECT * FROM claims_to_investigate ORDER BY claim_timestamp;
+SELECT * FROM claims_to_investigate;
 ```
 
-**Look for fraud indicators in the claims:**
-
-#### Policy Violations - Basement/Below-Grade Items
 ```sql
--- FEMA does not cover basement items, crawl spaces, or below-grade damage
-SELECT claim_id, applicant_name, claim_amount, claim_narrative
-FROM claims_to_investigate
-WHERE claim_narrative LIKE '%basement%'
-   OR claim_narrative LIKE '%crawl space%'
-   OR claim_narrative LIKE '%garden level%';
+ SET 'sql.state-ttl' = '14 d';
+                                    
+  CREATE TABLE claims_to_investigate_with_policies AS                 
+  WITH embedded AS (                                                   
+      SELECT
+          c.*,
+          e.embedding AS narrative_embedding
+      FROM claims_to_investigate c,
+      LATERAL TABLE(ML_PREDICT('llm_embedding_model', c.claim_narrative)) e
+  )
+  SELECT
+      c.claim_id,
+      c.applicant_name,
+      c.city,
+      c.claim_amount,
+      c.damage_assessed,
+      c.has_insurance,
+      c.insurance_amount,
+      c.is_primary_residence,
+      c.claim_narrative,
+      c.assessment_date,
+      c.disaster_date,
+      c.assessment_source,
+      c.shared_account,
+      c.shared_phone,
+      c.previous_claims_count,
+      c.last_claim_date,
+      c.claim_timestamp,
+      c.anomaly_window_time,
+      c.anomaly_total_amount,
+      c.is_anomaly,
+      vs.search_results[1].chunk AS policy_chunk_1,
+      vs.search_results[1].score AS policy_score_1,
+      vs.search_results[1].pages AS policy_pages_1,
+      vs.search_results[1].section_reference AS policy_section_1,
+      vs.search_results[1].title AS policy_title_1,
+      vs.search_results[1].fraud_categories AS policy_fraud_cats_1,
+      vs.search_results[1].policy_keywords AS policy_keywords_1,
+      vs.search_results[2].chunk AS policy_chunk_2,
+      vs.search_results[2].score AS policy_score_2,
+      vs.search_results[2].pages AS policy_pages_2,
+      vs.search_results[2].section_reference AS policy_section_2,
+      vs.search_results[2].title AS policy_title_2,
+      vs.search_results[2].fraud_categories AS policy_fraud_cats_2,
+      vs.search_results[2].policy_keywords AS policy_keywords_2,
+      vs.search_results[3].chunk AS policy_chunk_3,
+      vs.search_results[3].score AS policy_score_3,
+      vs.search_results[3].pages AS policy_pages_3,
+      vs.search_results[3].section_reference AS policy_section_3,
+      vs.search_results[3].title AS policy_title_3,
+      vs.search_results[3].fraud_categories AS policy_fraud_cats_3,
+      vs.search_results[3].policy_keywords AS policy_keywords_3
+  FROM embedded c,
+  LATERAL TABLE(
+      VECTOR_SEARCH_AGG(
+          fema_policies_vectordb,
+          DESCRIPTOR(embedding),
+          c.narrative_embedding,
+          3
+      )
+  ) vs;
 ```
 
-**Red Flag:** Claims for basement items (home theaters, furniture in basements) are not covered by FEMA
-
-#### Policy Violations - Non-Primary Residence
+Then view the results:
 ```sql
--- FEMA only covers primary residences
-SELECT claim_id, applicant_name, claim_amount, is_primary_residence, claim_narrative
-FROM claims_to_investigate
-WHERE is_primary_residence = 'no'
-   OR claim_narrative LIKE '%vacation rental%'
-   OR claim_narrative LIKE '%second home%';
+SELECT * FROM `claims_to_investigate_with_policies`;
 ```
 
-**Red Flag:** Vacation rentals, investment properties not eligible
 
-#### Policy Violations - Ineligible Items
-```sql
--- Pools, landscaping, boats, fences are not covered
-SELECT claim_id, applicant_name, claim_amount, claim_narrative
-FROM claims_to_investigate
-WHERE claim_narrative LIKE '%pool%'
-   OR claim_narrative LIKE '%landscape%'
-   OR claim_narrative LIKE '%boat%'
-   OR claim_narrative LIKE '%RV%'
-   OR claim_narrative LIKE '%fence%'
-   OR claim_narrative LIKE '%deck%';
-```
-
-**Red Flag:** Non-essential items not covered by FEMA Individual Assistance
-
-#### Timeline Violations - Pre-Disaster Assessments
-```sql
--- Claims assessed BEFORE the disaster occurred (March 1, 2025)
-SELECT claim_id, applicant_name, assessment_date, disaster_date,
-       claim_amount, damage_assessed
-FROM claims_to_investigate
-WHERE assessment_date < disaster_date;
-```
-
-**Red Flag:** Assessment dated February 27-28 before March 1 disaster = impossible/fraud
-
-#### Self-Assessment Fraud
-```sql
--- Self-assessed claims often inflated
-SELECT claim_id, applicant_name, claim_amount, damage_assessed,
-       assessment_source, claim_narrative
-FROM claims_to_investigate
-WHERE assessment_source = 'Self';
-```
-
-**Red Flag:** Self-assessments with very high amounts or vague justification
-
-#### Duplicate Benefits
-```sql
--- Already received insurance or SBA loans for same damage
-SELECT claim_id, applicant_name, claim_amount, insurance_amount, claim_narrative
-FROM claims_to_investigate
-WHERE claim_narrative LIKE '%Insurance company paid%'
-   OR claim_narrative LIKE '%SBA%loan%'
-   OR claim_narrative LIKE '%already received%';
-```
-
-**Red Flag:** Requesting FEMA funds for damage already compensated
 
 ---
 
-### 3. Fraud Analysis Summary
+### 3. Define the Fraud Detection Agent
 
-Query the breakdown of the 47 claims in the anomaly window:
+With each claim enriched with FEMA policy context, the next step is to define an AI agent that analyzes every claim holistically — checking the arithmetic, cross-referencing the narrative against structured fields, and citing specific FEMA IAPPG policy sections to justify each verdict.
+
+Unlike the anomaly detection and RAG steps, which are pure SQL transforms, this agent performs multi-step reasoning: it evaluates each claim against a checklist of policy violations in sequence, weighs competing signals, and produces a structured verdict.
+
+See [CREATE AGENT documentation](https://docs.confluent.io/cloud/current/flink/reference/statements/create-agent.html).
 
 ```sql
-SELECT
-    CASE
-        WHEN claim_narrative LIKE '%basement%'
-          OR claim_narrative LIKE '%crawl space%'
-          OR claim_narrative LIKE '%garden level%'
-          OR claim_narrative LIKE '%pool%'
-          OR claim_narrative LIKE '%landscape%'
-          OR claim_narrative LIKE '%boat%'
-          OR claim_narrative LIKE '%RV%'
-          OR claim_narrative LIKE '%fence%'
-          OR is_primary_residence = 'no'
-          OR claim_narrative LIKE '%vacation rental%'
-            THEN 'Policy Violation'
-        WHEN assessment_date < disaster_date
-          OR assessment_source = 'Self'
-          OR claim_amount > damage_assessed * 2
-            THEN 'Clear Fraud'
-        WHEN claim_amount > damage_assessed * 1.3
-          OR claim_narrative LIKE '%Insurance company paid%'
-          OR claim_narrative LIKE '%foundation%'
-            THEN 'Suspicious/Edge Case'
-        ELSE 'Legitimate'
-    END as category,
-    COUNT(*) as count,
-    ROUND(AVG(CAST(claim_amount AS DOUBLE)), 0) as avg_claim_amount
-FROM claims_to_investigate
-GROUP BY category
-ORDER BY count DESC;
-```
+CREATE AGENT `fema_fraud_agent`
+USING MODEL `llm_textgen_model`
+USING PROMPT 'OUTPUT RULES — read before anything else:
+1. Respond with ONLY these four labeled sections, in this exact order:
+   Verdict:
+   Issues Found:
+   Policy Basis:
+   Summary:
+2. NO markdown. No asterisks, no bold, no headers, no pound signs. Plain text only.
+3. The Verdict line must contain exactly one word: APPROVE, APPROVE_PARTIAL, REQUEST_DOCS, DENY_INELIGIBLE, or DENY_FRAUD.
 
-**Expected Distribution:**
-- ~15 Policy Violations (basement, pools, non-primary residence, ineligible items)
-- ~10 Clear Fraud (pre-disaster assessments, self-assessed, heavily inflated)
-- ~12 Suspicious/Edge Cases (borderline issues requiring review)
-- ~10 Legitimate (should be approved)
+Correct format example:
+Verdict: DENY_INELIGIBLE
+
+Issues Found:
+- Property is not a primary residence. Narrative states "our Naples beach house we rent out seasonally."
+- is_primary_residence = "no" confirmed in structured data.
+
+Policy Basis:
+FEMA IAPPG Section 3 — IHP Housing Assistance is restricted to the applicants primary dwelling. Rental and vacation properties are categorically excluded.
+
+Summary:
+Claim denied. The property is a seasonal rental, not a primary residence, and is therefore ineligible for IHP assistance regardless of the damage amount.
 
 ---
+
+You are a FEMA IHP fraud detection agent reviewing Hurricane Helene (March 1, 2025) disaster assistance claims.
+
+CHECKLIST — evaluate all nine in order:
+
+1. CLAIM CEILING: Does claim_amount > damage_assessed? Auto-violation — FEMA cannot pay above verified assessed damage.
+2. DUPLICATION OF BENEFITS: Does claim_amount > (damage_assessed minus insurance_amount)? FEMA covers only the uncompensated gap.
+3. PRIMARY RESIDENCE: Is is_primary_residence = "no"? IHP covers primary dwellings only — vacation homes, investment properties, and rentals are ineligible.
+4. ASSESSMENT SOURCE: Is assessment_source = "Self"? Self-assessments are not accepted. Flag if narrative claims a "FEMA inspection" but source = "Contractor".
+5. PROPERTY USE (narrative): Does the narrative reveal a vacation rental, second home, or income-producing property?
+6. INELIGIBLE ITEMS (narrative): Does the narrative claim pools, boats, landscaping, fences, outdoor furniture, or other non-essential property?
+7. PRE-EXISTING DAMAGE (narrative): Does the narrative disclose wear, deterioration, or damage that predates the disaster?
+8. EXPLICIT DUPLICATION (narrative): Does the narrative admit receiving insurance payment for the same damage while also claiming FEMA funds?
+9. PRIOR CLAIMS: Does previous_claims_count > 0? Weight more heavily when combined with other violations.
+
+VERDICTS:
+- APPROVE: All checks pass, claim eligible as submitted.
+- APPROVE_PARTIAL: Property is eligible and damage is verified, but the claim amount exceeds the allowable ceiling or includes specific ineligible items. Approve the eligible portion. State the calculated eligible amount in Issues Found (e.g., "Eligible amount: $45,000 (damage_assessed ceiling)").
+- REQUEST_DOCS: No clear violation, but a determination requires additional documentation before a final decision.
+- DENY_INELIGIBLE: Property or claim is categorically ineligible regardless of amount — non-primary residence declared in structured data, vacation rental or income-producing property revealed in narrative, or self-assessment with no third-party verification. No portion is approvable.
+- DENY_FRAUD: Deliberate misrepresentation — false primary residence claim, explicit insurance duplication, or mathematically impossible amounts. Refer to OIG.
+
+In Issues Found: cite dollar amounts and quote key phrases from the narrative. For APPROVE_PARTIAL, state the eligible amount. Write "None — claim passes all checks." if APPROVE.
+In Policy Basis: cite specific section titles and references from the retrieved FEMA policy chunks.
+
+REMINDER: Plain text only. No asterisks, no bold, no markdown of any kind.'
+WITH (
+  'max_iterations' = '10'
+);
+```
+
+---
+
+### 4. Run the Agent on All Flagged Claims
+
+Now invoke the agent continuously against every claim in `claims_to_investigate_with_policies`. As each claim streams through, the agent receives the full structured data plus the three most relevant FEMA policy chunks, performs its checklist analysis, and writes a structured verdict to the output table.
+
+The `REGEXP_EXTRACT` calls parse the four labeled sections from the agent's free-text response into typed columns.
+
+See [AI_RUN_AGENT documentation](https://docs.confluent.io/cloud/current/flink/reference/functions/model-inference-functions.html#flink-sql-ai-run-agent-function).
+
+```sql
+SET 'sql.state-ttl' = '14 d';
+
+CREATE TABLE claims_reviewed (
+    PRIMARY KEY (claim_id) NOT ENFORCED
+)
+WITH ('changelog.mode' = 'append')
+AS SELECT
+    claim_id,
+    TRIM(REGEXP_EXTRACT(CAST(response AS STRING), '\*{0,2}Verdict:\*{0,2}\s*([A-Z_]+)', 1)) AS verdict,
+    TRIM(REGEXP_EXTRACT(CAST(response AS STRING), '\*{0,2}Summary:\*{0,2}\n([\s\S]+?)$', 1)) AS summary,
+    TRIM(REGEXP_EXTRACT(CAST(response AS STRING), '\*{0,2}Issues Found:\*{0,2}\n([\s\S]+?)(?=\n\*{0,2}(?:Policy Basis|Summary|Verdict):|$)', 1)) AS issues_found,
+    TRIM(REGEXP_EXTRACT(CAST(response AS STRING), '\*{0,2}Policy Basis:\*{0,2}\n([\s\S]+?)(?=\n\*{0,2}(?:Summary|Verdict):|$)', 1)) AS policy_basis,
+    applicant_name,
+    claim_amount,
+    damage_assessed,
+    insurance_amount,
+    is_primary_residence,
+    assessment_source,
+    previous_claims_count,
+    CAST(response AS STRING) AS raw_response
+FROM claims_to_investigate_with_policies,
+LATERAL TABLE(AI_RUN_AGENT(
+    `fema_fraud_agent`,
+    CONCAT(
+        'CLAIM FOR REVIEW: ', claim_id, '\n',
+        'Applicant: ', applicant_name, '\n',
+        'Claim Amount: $', claim_amount, '\n',
+        'Total Damage Assessed: $', COALESCE(CAST(damage_assessed AS STRING), '0'), '\n',
+        'Insurance Payout: $', COALESCE(CAST(insurance_amount AS STRING), '0'), '\n',
+        'Uncompensated Gap (damage minus insurance): $',
+            CAST(CAST(
+                COALESCE(CAST(damage_assessed AS DOUBLE), 0.0) -
+                COALESCE(CAST(insurance_amount AS DOUBLE), 0.0)
+            AS BIGINT) AS STRING), '\n',
+        'Is Primary Residence: ', COALESCE(is_primary_residence, 'unknown'), '\n',
+        'Assessment Source: ', COALESCE(assessment_source, 'unknown'), '\n',
+        'Prior FEMA Claims: ', COALESCE(CAST(previous_claims_count AS STRING), '0'), '\n',
+        '\nCLAIM NARRATIVE:\n', COALESCE(claim_narrative, '(none)'), '\n',
+        '\nRETRIEVED FEMA POLICY SECTIONS:\n',
+        '1. ', COALESCE(policy_title_1, 'N/A'), ' (', COALESCE(policy_section_1, 'N/A'), '):\n',
+        COALESCE(policy_chunk_1, ''), '\n\n',
+        '2. ', COALESCE(policy_title_2, 'N/A'), ' (', COALESCE(policy_section_2, 'N/A'), '):\n',
+        COALESCE(policy_chunk_2, ''), '\n\n',
+        '3. ', COALESCE(policy_title_3, 'N/A'), ' (', COALESCE(policy_section_3, 'N/A'), '):\n',
+        COALESCE(policy_chunk_3, '')
+    ),
+    MAP['debug', 'true']
+));
+```
+
+```sql
+SELECT * FROM `claims_reviewed`;
+```
+
+
 
 ## Conclusion
 
-By using Confluent's ML_DETECT_ANOMALIES function, we've built an always-on, real-time fraud detection system that:
+By chaining these streaming components together, we've built an always-on, real-time fraud detection pipeline that:
 
-1. **Detects** suspicious claim patterns in 3-hour windows across cities
-2. **Identifies** exactly when and where fraud is occurring (Naples, Day 3)
-3. **Enables** rapid investigation of flagged claims with SQL queries
+1. **Detects** anomalous claim spikes in 3-hour windows across cities using `ML_DETECT_ANOMALIES`
+2. **Isolates** the suspicious window and enriches every claim with relevant FEMA IAPPG policy sections using vector search
+3. **Investigates** each claim autonomously using an AI agent that checks arithmetic, cross-references narrative against structured fields, and cites specific policy violations
 
-The system detected 1 anomalous window with 47 claims, revealing:
-- **15 Policy Violations** - Basement items, pools, non-primary residences, ineligible items
-- **10 Clear Fraud** - Pre-disaster assessments, self-assessed inflated claims
-- **12 Suspicious/Edge Cases** - Duplicate benefits, foundation issues, underinsurance
-- **10 Legitimate Claims** - Should be approved
-
-All in real-time, protecting taxpayer dollars while ensuring legitimate disaster victims get help fast.
+The result is a streaming verdict for every flagged claim — approve, request documentation, deny for policy violation, or deny for fraud — delivered in real time as claims arrive, with specific FEMA policy citations to support each decision.
 
 ---
 
