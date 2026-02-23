@@ -94,13 +94,11 @@ PROJECT_URL = "https://github.com/confluentinc/quickstart-streaming-agents"
 # AWS Constants
 AWS_IAM_USERNAME = "workshop-bedrock-user"
 AWS_POLICY_NAME = "BedrockInvokeOnly"
-AWS_STATE_FILE = ".workshop-keys-state-aws.json"
 AWS_CREDENTIALS_FILE = "API-KEYS-AWS.md"
 
 # Azure Constants
 AZURE_RESOURCE_GROUP_PREFIX = "streaming-agents-openai"
 AZURE_COGNITIVE_ACCOUNT_PREFIX = "streaming-agents-openai"
-AZURE_STATE_FILE = ".workshop-keys-state-azure.json"
 AZURE_CREDENTIALS_FILE = "API-KEYS-AZURE.md"
 
 # Azure model deployment configurations
@@ -282,29 +280,6 @@ def test_bedrock_credentials(
     )
 
 
-def save_aws_state(
-    project_root: Path,
-    access_key_id: str,
-    owner_email: str,
-    region: str,
-    logger: logging.Logger
-) -> None:
-    """Save AWS state information for destroy command."""
-    state_file = project_root / AWS_STATE_FILE
-
-    state = {
-        "iam_username": AWS_IAM_USERNAME,
-        "policy_name": AWS_POLICY_NAME,
-        "access_key_id": access_key_id,
-        "owner_email": owner_email,
-        "region": region,
-        "created_at": datetime.utcnow().isoformat() + "Z"
-    }
-
-    with open(state_file, 'w') as f:
-        json.dump(state, f, indent=2)
-
-    logger.debug(f"Saved state to {state_file}")
 
 
 def save_aws_credentials_file(
@@ -408,15 +383,6 @@ The api-keys destroy command will:
         logger.info(f"✓ Updated credentials.env with new AWS Bedrock credentials")
 
 
-def load_aws_state(project_root: Path) -> Optional[Dict]:
-    """Load AWS state from previous create command."""
-    state_file = project_root / AWS_STATE_FILE
-
-    if not state_file.exists():
-        return None
-
-    with open(state_file, 'r') as f:
-        return json.load(f)
 
 
 def cleanup_user_dependencies(
@@ -895,23 +861,14 @@ def save_azure_state(
     owner_email: str,
     logger: logging.Logger
 ) -> None:
-    """Save Azure state information for destroy command."""
-    state_file = project_root / AZURE_STATE_FILE
-
-    state = {
-        "resource_group": resource_group,
-        "cognitive_account": cognitive_account,
-        "deployments": deployments,
-        "endpoint": endpoint,
-        "region": region,
-        "owner_email": owner_email,
-        "created_at": datetime.utcnow().isoformat() + "Z"
-    }
-
-    with open(state_file, 'w') as f:
-        json.dump(state, f, indent=2)
-
-    logger.debug(f"Saved state to {state_file}")
+    """Save Azure resource identifiers to credentials.env for use by destroy."""
+    env_file = project_root / "credentials.env"
+    if not env_file.exists():
+        env_file.touch()
+    set_key(str(env_file), "AZURE_RESOURCE_GROUP",   resource_group)
+    set_key(str(env_file), "AZURE_COGNITIVE_ACCOUNT", cognitive_account)
+    set_key(str(env_file), "AZURE_DEPLOYMENTS",       ",".join(deployments))
+    logger.debug(f"Saved Azure state to credentials.env")
 
 
 def save_azure_credentials_file(
@@ -1027,14 +984,20 @@ The api-keys destroy command will:
 
 
 def load_azure_state(project_root: Path) -> Optional[Dict]:
-    """Load Azure state from previous create command."""
-    state_file = project_root / AZURE_STATE_FILE
-
-    if not state_file.exists():
+    """Load Azure resource identifiers from credentials.env."""
+    env_file = project_root / "credentials.env"
+    if not env_file.exists():
         return None
-
-    with open(state_file, 'r') as f:
-        return json.load(f)
+    creds = dotenv_values(str(env_file))
+    rg = creds.get("AZURE_RESOURCE_GROUP")
+    if not rg:
+        return None
+    deployments_raw = creds.get("AZURE_DEPLOYMENTS", "")
+    return {
+        "resource_group":    rg,
+        "cognitive_account": creds.get("AZURE_COGNITIVE_ACCOUNT", ""),
+        "deployments":       [d.strip() for d in deployments_raw.split(",") if d.strip()],
+    }
 
 
 # ============================================================================
@@ -1108,8 +1071,7 @@ def create_aws_command(args: argparse.Namespace, logger: logging.Logger) -> int:
         else:
             logger.info("✓ Bedrock access test passed - Claude Sonnet 4.5 is accessible")
 
-        # Save state and credentials
-        save_aws_state(project_root, access_key_id, owner_email, region, logger)
+        # Save credentials
         save_aws_credentials_file(
             project_root, access_key_id, secret_access_key, region, tags, logger
         )
@@ -1118,7 +1080,6 @@ def create_aws_command(args: argparse.Namespace, logger: logging.Logger) -> int:
         print("✓ AWS WORKSHOP CREDENTIALS CREATED SUCCESSFULLY")
         print("=" * 70)
         print(f"\nCredentials saved to: {AWS_CREDENTIALS_FILE}")
-        print(f"State saved to:       {AWS_STATE_FILE}")
         print("\nNext steps:")
         print(f"1. Review the credentials in {AWS_CREDENTIALS_FILE}")
         print("2. Share credentials with workshop participants")
@@ -1152,14 +1113,16 @@ def destroy_aws_command(args: argparse.Namespace, logger: logging.Logger) -> int
         # Get project root
         project_root = get_project_root()
 
-        # Load state
-        state = load_aws_state(project_root)
+        # Load access key from credentials.env
+        env_file = project_root / "credentials.env"
+        env_creds = dotenv_values(str(env_file)) if env_file.exists() else {}
+        access_key_id = env_creds.get("TF_VAR_aws_bedrock_access_key")
 
-        if not state:
+        if not access_key_id:
             print("\n" + "=" * 70)
-            print("WARNING: No state file found")
+            print("WARNING: No AWS credentials found")
             print("=" * 70)
-            print(f"\nNo state file ({AWS_STATE_FILE}) found.")
+            print("\nNo AWS Bedrock access key found in credentials.env.")
             print("This usually means no credentials were created with this tool,")
             print("or they were already destroyed.")
             print("\nIf you want to manually delete workshop credentials:")
@@ -1175,14 +1138,11 @@ def destroy_aws_command(args: argparse.Namespace, logger: logging.Logger) -> int
         print("\n" + "=" * 70)
         print("DESTROYING AWS WORKSHOP CREDENTIALS")
         print("=" * 70)
-
-        # Delete access key
-        access_key_id = state['access_key_id']
         logger.info(f"Deleting access key {access_key_id}...")
 
         try:
             iam_client.delete_access_key(
-                UserName=state['iam_username'],
+                UserName=AWS_IAM_USERNAME,
                 AccessKeyId=access_key_id
             )
             logger.info(f"✓ Deleted access key {access_key_id}")
@@ -1196,7 +1156,7 @@ def destroy_aws_command(args: argparse.Namespace, logger: logging.Logger) -> int
         user_deleted = False
         if not args.keep_user:
             print("\nDelete IAM user entirely?")
-            print(f"  User: {state['iam_username']}")
+            print(f"  User: {AWS_IAM_USERNAME}")
             print("  (Saying 'No' allows you to reuse this user for future workshops)")
 
             delete_user = prompt_choice(
@@ -1208,7 +1168,7 @@ def destroy_aws_command(args: argparse.Namespace, logger: logging.Logger) -> int
                 # Comprehensive cleanup of all user dependencies
                 logger.info("Cleaning up all IAM user dependencies...")
                 success, error_details = cleanup_user_dependencies(
-                    iam_client, state['iam_username'], logger
+                    iam_client, AWS_IAM_USERNAME, logger
                 )
                 if not success:
                     print("\n" + "=" * 70)
@@ -1216,43 +1176,45 @@ def destroy_aws_command(args: argparse.Namespace, logger: logging.Logger) -> int
                     print("=" * 70)
                     print(f"\n{error_details}")
                     print("\nTo manually delete the user:")
-                    print(f"1. AWS Console → IAM → Users → {state['iam_username']}")
+                    print(f"1. AWS Console → IAM → Users → {AWS_IAM_USERNAME}")
                     print("2. Review and remove remaining dependencies")
                     print("3. Delete the user")
                     print("=" * 70 + "\n")
-                    logger.warning(f"User {state['iam_username']} could not be deleted automatically")
+                    logger.warning(f"User {AWS_IAM_USERNAME} could not be deleted automatically")
                 else:
                     # All dependencies cleaned up, now delete user
-                    logger.info(f"Deleting IAM user {state['iam_username']}...")
+                    logger.info(f"Deleting IAM user {AWS_IAM_USERNAME}...")
                     try:
-                        iam_client.delete_user(UserName=state['iam_username'])
-                        logger.info(f"✓ Deleted IAM user {state['iam_username']}")
+                        iam_client.delete_user(UserName=AWS_IAM_USERNAME)
+                        logger.info(f"✓ Deleted IAM user {AWS_IAM_USERNAME}")
                         user_deleted = True
                     except ClientError as e:
                         if e.response['Error']['Code'] == 'NoSuchEntity':
-                            logger.warning(f"User {state['iam_username']} not found (may already be deleted)")
+                            logger.warning(f"User {AWS_IAM_USERNAME} not found (may already be deleted)")
                             user_deleted = True
                         else:
                             print("\n" + "=" * 70)
                             print("⚠ WARNING: User cleanup succeeded but deletion failed")
                             print("=" * 70)
                             print(f"\nError: {e}")
-                            print(f"User: {state['iam_username']}")
+                            print(f"User: {AWS_IAM_USERNAME}")
                             print("\nThe user dependencies were cleaned up, but deletion failed.")
                             print("Try running the command again, or delete manually via AWS Console.")
                             print("=" * 70 + "\n")
                             logger.error(f"Failed to delete user after cleanup: {e}")
         else:
-            logger.info(f"Keeping IAM user {state['iam_username']} (--keep-user flag)")
+            logger.info(f"Keeping IAM user {AWS_IAM_USERNAME} (--keep-user flag)")
 
-        # Delete state files
-        state_file = project_root / AWS_STATE_FILE
+        # Clear credentials from credentials.env; delete legacy state file if present
+        if env_file.exists():
+            from dotenv import unset_key
+            unset_key(str(env_file), "TF_VAR_aws_bedrock_access_key")
+            unset_key(str(env_file), "TF_VAR_aws_bedrock_secret_key")
+        legacy_state = project_root / ".workshop-keys-state-aws.json"
+        if legacy_state.exists():
+            legacy_state.unlink()
+            logger.info("✓ Removed legacy .workshop-keys-state-aws.json")
         creds_file = project_root / AWS_CREDENTIALS_FILE
-
-        if state_file.exists():
-            state_file.unlink()
-            logger.info(f"✓ Deleted {AWS_STATE_FILE}")
-
         if creds_file.exists():
             creds_file.unlink()
             logger.info(f"✓ Deleted {AWS_CREDENTIALS_FILE}")
@@ -1263,10 +1225,10 @@ def destroy_aws_command(args: argparse.Namespace, logger: logging.Logger) -> int
         print("\nDestroyed:")
         print(f"  - Access key: {access_key_id}")
         if user_deleted:
-            print(f"  - IAM user: {state['iam_username']}")
+            print(f"  - IAM user: {AWS_IAM_USERNAME}")
         elif not args.keep_user:
-            print(f"  - IAM user: {state['iam_username']} (cleanup attempted, may require manual deletion)")
-        print(f"  - State files: {AWS_STATE_FILE}, {AWS_CREDENTIALS_FILE}")
+            print(f"  - IAM user: {AWS_IAM_USERNAME} (cleanup attempted, may require manual deletion)")
+        print(f"  - Credentials cleared from credentials.env")
         print("=" * 70 + "\n")
 
         return 0
@@ -1433,7 +1395,6 @@ def create_azure_command(args: argparse.Namespace, logger: logging.Logger) -> in
         print("✓ AZURE WORKSHOP CREDENTIALS CREATED SUCCESSFULLY")
         print("=" * 70)
         print(f"\nCredentials saved to: {AZURE_CREDENTIALS_FILE}")
-        print(f"State saved to:       {AZURE_STATE_FILE}")
         print("\nNext steps:")
         print(f"1. Review the credentials in {AZURE_CREDENTIALS_FILE}")
         print("2. Share credentials with workshop participants")
@@ -1487,9 +1448,9 @@ def destroy_azure_command(args: argparse.Namespace, logger: logging.Logger) -> i
 
         if not state:
             print("\n" + "=" * 70)
-            print("WARNING: No state file found")
+            print("WARNING: No Azure credentials found")
             print("=" * 70)
-            print(f"\nNo state file ({AZURE_STATE_FILE}) found.")
+            print(f"\nNo Azure resource info found in credentials.env.")
             print("This usually means no credentials were created with this tool,")
             print("or they were already destroyed.")
             print("\nIf you want to manually delete workshop resources:")
@@ -1577,14 +1538,20 @@ def destroy_azure_command(args: argparse.Namespace, logger: logging.Logger) -> i
         else:
             logger.info(f"Keeping resource group '{resource_group}' (--keep-resource-group flag)")
 
-        # Delete state files
-        state_file = project_root / AZURE_STATE_FILE
+        # Clear Azure state from credentials.env; delete legacy state file if present
+        env_file = project_root / "credentials.env"
+        if env_file.exists():
+            from dotenv import unset_key
+            unset_key(str(env_file), "AZURE_RESOURCE_GROUP")
+            unset_key(str(env_file), "AZURE_COGNITIVE_ACCOUNT")
+            unset_key(str(env_file), "AZURE_DEPLOYMENTS")
+            unset_key(str(env_file), "TF_VAR_azure_openai_endpoint_raw")
+            unset_key(str(env_file), "TF_VAR_azure_openai_api_key")
+        legacy_state = project_root / ".workshop-keys-state-azure.json"
+        if legacy_state.exists():
+            legacy_state.unlink()
+            logger.info("✓ Removed legacy .workshop-keys-state-azure.json")
         creds_file = project_root / AZURE_CREDENTIALS_FILE
-
-        if state_file.exists():
-            state_file.unlink()
-            logger.info(f"✓ Deleted {AZURE_STATE_FILE}")
-
         if creds_file.exists():
             creds_file.unlink()
             logger.info(f"✓ Deleted {AZURE_CREDENTIALS_FILE}")
@@ -1598,7 +1565,7 @@ def destroy_azure_command(args: argparse.Namespace, logger: logging.Logger) -> i
             print(f"  - Resource group: {resource_group}")
         elif not args.keep_resource_group:
             print(f"  - Cognitive account: {cognitive_account}")
-        print(f"  - State files: {AZURE_STATE_FILE}, {AZURE_CREDENTIALS_FILE}")
+        print(f"  - Credentials cleared from credentials.env")
         print("=" * 70 + "\n")
 
         return 0

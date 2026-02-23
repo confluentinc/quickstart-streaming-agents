@@ -58,6 +58,8 @@ mcp_commands.txt
 updated-queries.md
 .setup_config.json
 **/.setup_config.json
+.deploy-config.json
+**/.deploy-config.json
 **/DEPLOYED_RESOURCES.md
 **/FLINK_SQL_COMMANDS.md
 FLINK_SQL_COMMANDS_EXTRACTED.md

@@ -50,6 +50,8 @@ dependencies = [
     "azure-ai-inference>=1.0.0b1",
     "requests>=2.31.0",
     "confluent-kafka[avro,schema-registry]>=2.3.0",
+    "questionary>=2.0.0",
+    "rich>=13.0.0",
 ]
 
 # Optional dependencies for enhanced functionality
@@ -73,7 +75,9 @@ mongodb = [
 
 [project.scripts]
 deploy = "deploy:main"
+deploy2 = "deploy2:main"
 destroy = "scripts.common.destroy:main"
+destroy2 = "scripts.common.destroy2:main"
 #
 lab1_datagen = "scripts.lab1_datagen:main"
 lab1-datagen = "scripts.lab1_datagen:main"

@@ -1,6 +1,6 @@
 # Lab4: FEMA Fraud Detection Using Confluent Intelligence
 
-![FEMA Fraud Detection](./assets/lab4/lab4-fraud-detection-logo.png)
+![FEMA Fraud Detection](./assets/lab4/lab4-architecture.png)
 
 This demo showcases an intelligent, real-time fraud detection system that autonomously identifies suspicious claim patterns in FEMA disaster assistance applications. Built on [Confluent Intelligence](https://www.confluent.io/product/confluent-intelligence/), the system combines stream processing, anomaly detection, and AI-powered analysis to detect organized fraud rings and policy violations in real-time.
 
