@@ -301,7 +301,7 @@ Unlike the anomaly detection and RAG steps, which are pure SQL transforms, this 
 See [CREATE AGENT documentation](https://docs.confluent.io/cloud/current/flink/reference/statements/create-agent.html).
 
 ```sql
-CREATE AGENT `fema_fraud_agent`
+CREATE AGENT `claims_fraud_investigation_agent`
 USING MODEL `llm_textgen_model`
 USING PROMPT 'OUTPUT RULES — read before anything else:
 1. Respond with ONLY these four labeled sections, in this exact order:
@@ -390,7 +390,7 @@ AS SELECT
     CAST(response AS STRING) AS raw_response
 FROM claims_to_investigate_with_policies,
 LATERAL TABLE(AI_RUN_AGENT(
-    `fema_fraud_agent`,
+    `claims_fraud_investigation_agent`,
     CONCAT(
         'CLAIM FOR REVIEW: ', claim_id, '\n',
         'Applicant: ', applicant_name, '\n',

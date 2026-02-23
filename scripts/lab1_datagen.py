@@ -300,7 +300,7 @@ def run_datagen(
         generate_all_connections(credentials, paths["connections_dir"], ["orders", "customers", "products"])
 
         # Check ShadowTraffic configuration
-        if not check_shadowtraffic_config(paths):
+        if not check_shadowtraffic_config(paths["generators_dir"], ["orders.json", "customers.json", "products.json"]):
             return 1
 
         # Run ShadowTraffic

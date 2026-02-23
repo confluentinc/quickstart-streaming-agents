@@ -9,15 +9,27 @@ Usage:
     uv run test-azure-openai --endpoint https://xxx.openai.azure.com/ --api-key xxx
 
     # Or call from Python:
-    from scripts.common.test_azure_openai_credentials import test_azure_openai_credentials
-    success = test_azure_openai_credentials(endpoint, api_key, logger)
+    from scripts.common.test_azure_openai_credentials import (
+        test_azure_openai_chat,
+        test_azure_openai_embeddings,
+        test_azure_openai_credentials,
+    )
+    ok, error_type = test_azure_openai_chat(endpoint, api_key)
+    ok, error_type = test_azure_openai_embeddings(endpoint, api_key)
+
+Error types returned:
+    None                    - success
+    "invalid_credentials"   - 401 Unauthorized
+    "deployment_not_found"  - 404 (deployment name not found in this resource)
+    "no_requests"           - requests library not installed
+    "error"                 - unexpected error
 """
 
 import argparse
 import logging
 import sys
 import time
-from typing import Optional
+from typing import Optional, Tuple
 
 try:
     import requests
@@ -25,225 +37,177 @@ try:
 except ImportError:
     REQUESTS_AVAILABLE = False
 
+_API_VERSION = "2024-08-01-preview"
 
-def test_azure_openai_credentials(
+
+def _ensure_trailing_slash(endpoint: str) -> str:
+    return endpoint if endpoint.endswith("/") else endpoint + "/"
+
+
+def _invoke_azure(
+    url: str,
+    headers: dict,
+    payload: dict,
+    label: str,
+    logger: logging.Logger,
+    max_retries: int,
+    retry_delay: int,
+) -> Tuple[bool, Optional[str]]:
+    """Shared HTTP POST loop. Returns (success, error_type)."""
+    for attempt in range(max_retries):
+        try:
+            if attempt > 0:
+                wait = retry_delay * (2 ** (attempt - 1))
+                logger.info(f"Waiting {wait}s before retry (attempt {attempt + 1}/{max_retries})...")
+                time.sleep(wait)
+
+            response = requests.post(url, json=payload, headers=headers, timeout=30)
+
+            if response.status_code == 200:
+                logger.info(f"✓ {label} accessible")
+                return True, None
+
+            if response.status_code == 401:
+                logger.debug(f"{label} returned 401 Unauthorized")
+                return False, "invalid_credentials"
+
+            if response.status_code == 404:
+                logger.debug(f"{label} returned 404 — deployment not found")
+                return False, "deployment_not_found"
+
+            # Retry on 400/429 (rate limit / not-yet-ready)
+            if response.status_code in (400, 429) and attempt < max_retries - 1:
+                logger.warning(f"{label} not ready (HTTP {response.status_code}), will retry...")
+                continue
+
+            logger.debug(f"{label} returned unexpected HTTP {response.status_code}: {response.text[:200]}")
+            return False, "error"
+
+        except Exception as e:
+            logger.debug(f"{label} request failed: {e}")
+            return False, "error"
+
+    return False, "error"
+
+
+def test_azure_openai_chat(
     endpoint: str,
     api_key: str,
     logger: Optional[logging.Logger] = None,
-    max_retries: int = 3,
-    retry_delay: int = 5
-) -> bool:
+    max_retries: int = 2,
+    retry_delay: int = 5,
+) -> Tuple[bool, Optional[str]]:
     """
-    Test if credentials can invoke Azure OpenAI models.
-
-    Tests both:
-    1. Chat completions (gpt-5-mini)
-    2. Embeddings (text-embedding-ada-002)
-
-    Args:
-        endpoint: Azure OpenAI endpoint URL
-        api_key: Azure OpenAI API key
-        logger: Optional logger instance
-        max_retries: Maximum number of retry attempts (default: 3)
-        retry_delay: Initial delay between retries in seconds (default: 5)
+    Test chat completions endpoint (gpt-5-mini deployment).
 
     Returns:
-        True if both tests succeeded, False otherwise
+        (True, None) on success, or (False, error_type) on failure.
     """
     if logger is None:
         logger = logging.getLogger(__name__)
 
     if not REQUESTS_AVAILABLE:
-        logger.error("requests library is not installed - cannot test Azure OpenAI access")
-        return False
+        return False, "no_requests"
 
-    # Ensure endpoint ends with /
-    if not endpoint.endswith('/'):
-        endpoint = endpoint + '/'
-
-    success = True
-
-    # Test 1: Chat completions with gpt-5-mini
-    logger.info("Testing chat completions (gpt-5-mini)...")
-
-    chat_url = f"{endpoint}openai/deployments/gpt-5-mini/chat/completions?api-version=2024-08-01-preview"
-
-    headers = {
-        "api-key": api_key,
-        "Content-Type": "application/json"
-    }
-
+    endpoint = _ensure_trailing_slash(endpoint)
+    url = f"{endpoint}openai/deployments/gpt-5-mini/chat/completions?api-version={_API_VERSION}"
+    headers = {"api-key": api_key, "Content-Type": "application/json"}
     payload = {
         "messages": [
             {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": "Say 'test'"}
+            {"role": "user", "content": "Say 'test'"},
         ],
-        "max_completion_tokens": 10
+        "max_completion_tokens": 10,
     }
 
-    chat_success = False
-    for attempt in range(max_retries):
-        try:
-            if attempt > 0:
-                wait_time = retry_delay * (2 ** (attempt - 1))
-                logger.info(f"Waiting {wait_time}s for deployment to be ready (attempt {attempt + 1}/{max_retries})...")
-                time.sleep(wait_time)
-
-            response = requests.post(chat_url, json=payload, headers=headers, timeout=30)
-
-            if response.status_code == 200:
-                data = response.json()
-                if data.get('choices') and len(data['choices']) > 0:
-                    logger.info("✓ Chat completions test passed (gpt-5-mini)")
-                    logger.debug(f"Response: {data['choices'][0].get('message', {}).get('content', 'N/A')}")
-                    chat_success = True
-                    break
-                else:
-                    logger.error("✗ Chat completions test failed: empty response")
-                    break
-            else:
-                # Retry on certain errors (deployment not ready)
-                # Include 401 as newly created deployments may temporarily return this during propagation
-                if response.status_code in [400, 401, 429] and attempt < max_retries - 1:
-                    logger.warning(f"Chat completions not ready (HTTP {response.status_code}), will retry...")
-                    continue
-
-                logger.error(f"✗ Chat completions test failed: {response.status_code}")
-                logger.debug(f"Error details: {response.text}")
-
-                if response.status_code == 401:
-                    logger.warning("Invalid API key or endpoint (or deployment not fully propagated)")
-                elif response.status_code == 404:
-                    logger.warning("Deployment 'gpt-5-mini' not found - ensure it exists")
-                elif response.status_code == 429:
-                    logger.warning("Rate limit exceeded - deployments may still be initializing")
-                elif response.status_code == 400:
-                    logger.warning("Bad request - deployment may not be fully initialized")
-
-                break
-
-        except Exception as e:
-            logger.error(f"✗ Chat completions test failed: {e}")
-            break
-
-    if not chat_success:
-        success = False
-
-    # Test 2: Embeddings with text-embedding-ada-002
-    logger.info("Testing embeddings (text-embedding-ada-002)...")
-
-    embeddings_url = f"{endpoint}openai/deployments/text-embedding-ada-002/embeddings?api-version=2024-08-01-preview"
-
-    payload = {
-        "input": "test embedding"
-    }
-
-    embeddings_success = False
-    for attempt in range(max_retries):
-        try:
-            if attempt > 0:
-                wait_time = retry_delay * (2 ** (attempt - 1))
-                logger.info(f"Waiting {wait_time}s for deployment to be ready (attempt {attempt + 1}/{max_retries})...")
-                time.sleep(wait_time)
-
-            response = requests.post(embeddings_url, json=payload, headers=headers, timeout=30)
-
-            if response.status_code == 200:
-                data = response.json()
-                if data.get('data') and len(data['data']) > 0:
-                    logger.info("✓ Embeddings test passed (text-embedding-ada-002)")
-                    logger.debug(f"Embedding dimensions: {len(data['data'][0].get('embedding', []))}")
-                    embeddings_success = True
-                    break
-                else:
-                    logger.error("✗ Embeddings test failed: empty response")
-                    break
-            else:
-                # Retry on certain errors (deployment not ready)
-                # Include 401 as newly created deployments may temporarily return this during propagation
-                if response.status_code in [400, 401, 429] and attempt < max_retries - 1:
-                    logger.warning(f"Embeddings not ready (HTTP {response.status_code}), will retry...")
-                    continue
-
-                logger.error(f"✗ Embeddings test failed: {response.status_code}")
-                logger.debug(f"Error details: {response.text}")
-
-                if response.status_code == 401:
-                    logger.warning("Invalid API key or endpoint (or deployment not fully propagated)")
-                elif response.status_code == 404:
-                    logger.warning("Deployment 'text-embedding-ada-002' not found - ensure it exists")
-                elif response.status_code == 429:
-                    logger.warning("Rate limit exceeded - deployments may still be initializing")
-                elif response.status_code == 400:
-                    logger.warning("Bad request - deployment may not be fully initialized")
-
-                break
-
-        except Exception as e:
-            logger.error(f"✗ Embeddings test failed: {e}")
-            break
-
-    if not embeddings_success:
-        success = False
-
-    if success:
-        logger.info("✓ All Azure OpenAI tests passed!")
-    else:
-        logger.warning("⚠ Some Azure OpenAI tests failed")
-
-    return success
+    return _invoke_azure(url, headers, payload, "gpt-5-mini", logger, max_retries, retry_delay)
 
 
-def main():
-    """Main entry point for CLI usage."""
+def test_azure_openai_embeddings(
+    endpoint: str,
+    api_key: str,
+    logger: Optional[logging.Logger] = None,
+    max_retries: int = 2,
+    retry_delay: int = 5,
+) -> Tuple[bool, Optional[str]]:
+    """
+    Test embeddings endpoint (text-embedding-ada-002 deployment).
+
+    Returns:
+        (True, None) on success, or (False, error_type) on failure.
+    """
+    if logger is None:
+        logger = logging.getLogger(__name__)
+
+    if not REQUESTS_AVAILABLE:
+        return False, "no_requests"
+
+    endpoint = _ensure_trailing_slash(endpoint)
+    url = f"{endpoint}openai/deployments/text-embedding-ada-002/embeddings?api-version={_API_VERSION}"
+    headers = {"api-key": api_key, "Content-Type": "application/json"}
+    payload = {"input": "test"}
+
+    return _invoke_azure(url, headers, payload, "text-embedding-ada-002", logger, max_retries, retry_delay)
+
+
+def test_azure_openai_credentials(
+    endpoint: str,
+    api_key: str,
+    logger: Optional[logging.Logger] = None,
+    max_retries: int = 2,
+    retry_delay: int = 5,
+) -> Tuple[bool, Optional[str]]:
+    """
+    Test both gpt-5-mini and text-embedding-ada-002. Returns on first failure.
+
+    Returns:
+        (True, None) if both pass, or (False, error_type) on first failure.
+    """
+    if logger is None:
+        logger = logging.getLogger(__name__)
+
+    chat_ok, chat_err = test_azure_openai_chat(endpoint, api_key, logger, max_retries, retry_delay)
+    if not chat_ok:
+        return False, chat_err
+
+    emb_ok, emb_err = test_azure_openai_embeddings(endpoint, api_key, logger, max_retries, retry_delay)
+    if not emb_ok:
+        return False, emb_err
+
+    return True, None
+
+
+def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Test Azure OpenAI credentials with gpt-5-mini and text-embedding-ada-002",
+        description="Test Azure OpenAI credentials (gpt-5-mini + text-embedding-ada-002)",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Test workshop credentials
   %(prog)s --endpoint https://workshop-openai-abc123.openai.azure.com/ --api-key xxx
-
-  # Test with verbose output
   %(prog)s --endpoint https://workshop-openai-abc123.openai.azure.com/ --api-key xxx --verbose
-        """
+        """,
     )
-
-    parser.add_argument(
-        '--endpoint',
-        required=True,
-        help='Azure OpenAI endpoint URL'
-    )
-    parser.add_argument(
-        '--api-key',
-        required=True,
-        help='Azure OpenAI API key'
-    )
-    parser.add_argument(
-        '--verbose',
-        action='store_true',
-        help='Enable verbose output'
-    )
-
+    parser.add_argument("--endpoint", required=True, help="Azure OpenAI endpoint URL")
+    parser.add_argument("--api-key", required=True, help="Azure OpenAI API key")
+    parser.add_argument("--verbose", action="store_true", help="Enable verbose output")
     args = parser.parse_args()
 
-    # Setup logging
     level = logging.DEBUG if args.verbose else logging.INFO
-    logging.basicConfig(
-        level=level,
-        format="%(asctime)s - %(levelname)s - %(message)s"
-    )
+    logging.basicConfig(level=level, format="%(asctime)s - %(levelname)s - %(message)s")
     logger = logging.getLogger(__name__)
 
-    # Test credentials
-    success = test_azure_openai_credentials(
-        args.endpoint,
-        args.api_key,
-        logger
-    )
+    chat_ok, chat_err = test_azure_openai_chat(args.endpoint, args.api_key, logger)
+    emb_ok, emb_err = test_azure_openai_embeddings(args.endpoint, args.api_key, logger)
 
-    # Exit with appropriate code
-    sys.exit(0 if success else 1)
+    if chat_ok and emb_ok:
+        print("\n✓ All Azure OpenAI checks passed.")
+        sys.exit(0)
+    else:
+        if not chat_ok:
+            print(f"\n✗ gpt-5-mini check failed: {chat_err}")
+        if not emb_ok:
+            print(f"\n✗ text-embedding-ada-002 check failed: {emb_err}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

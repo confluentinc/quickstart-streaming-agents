@@ -138,7 +138,8 @@
     },
     "localConfigs": {
         "maxEvents": 17,
-        "kafkaValueAvroSchemaHint": {
+        "avroSchemaHint": {
+            "value": {
             "type": "record",
             "name": "products_value",
             "namespace": "org.apache.flink.avro.generated.record",
@@ -167,6 +168,7 @@
                     }
                 }
             ]
+            }
         }
     }
 }

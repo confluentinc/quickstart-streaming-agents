@@ -128,6 +128,12 @@ validate = "scripts.common.validate:main"
 test_mongodb = "scripts.common.test_mongodb_connections:main"
 test-mongodb = "scripts.common.test_mongodb_connections:main"
 #
+test_cosmosdb = "scripts.common.test_cosmosdb_credentials:main"
+test-cosmosdb = "scripts.common.test_cosmosdb_credentials:main"
+#
+test_mongodb_creds = "scripts.common.test_mongodb_credentials:main"
+test-mongodb-creds = "scripts.common.test_mongodb_credentials:main"
+#
 tests = "scripts.run_tests:main"
 
 

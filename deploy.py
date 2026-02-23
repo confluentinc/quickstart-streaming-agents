@@ -203,6 +203,34 @@ def main():
                     sys.exit(1)
                 print("Proceeding with deployment despite validation warnings...\n")
 
+            # Live Bedrock model access check (advisory)
+            if aws_bedrock_key and aws_bedrock_secret:
+                import logging
+                from scripts.common.test_bedrock_credentials import test_bedrock_credentials, test_titan_embeddings
+                _log = logging.getLogger("deploy.bedrock")
+                _log.setLevel(logging.CRITICAL)
+                print("\nChecking AWS Bedrock model access...")
+                _region = "us-east-1"
+                sonnet_ok, sonnet_err = test_bedrock_credentials(aws_bedrock_key, aws_bedrock_secret, _region, logger=_log, max_retries=1)
+                titan_ok,  titan_err  = test_titan_embeddings(aws_bedrock_key, aws_bedrock_secret, _region, logger=_log, max_retries=1)
+                print(f"  {'✓' if sonnet_ok else '✗'} Claude Sonnet 4.5 accessible ({_region})")
+                print(f"  {'✓' if titan_ok  else '✗'} Titan Embeddings accessible ({_region})")
+                if not sonnet_ok or not titan_ok:
+                    print()
+                    if (sonnet_err == "invalid_keys" or titan_err == "invalid_keys"):
+                        print("⚠️  WARNING: AWS credentials were not recognized by Bedrock.")
+                        print("   Generate fresh credentials with:  uv run api-keys create aws")
+                    else:
+                        print("⚠️  WARNING: One or more Bedrock models could not be accessed.")
+                        print("   To enable Claude models, visit the AWS Bedrock Model Catalog:")
+                        print("     https://console.aws.amazon.com/bedrock/home#/model-catalog")
+                        print("   Select Claude Sonnet 4.5 → open in Playground → send a message.")
+                        print("   The access request form will appear automatically.")
+                    proceed = input("\nContinue anyway? (y/n): ").strip().lower()
+                    if proceed != 'y':
+                        print("Deployment cancelled.")
+                        sys.exit(1)
+
         # Azure OpenAI credentials
         if cloud == "azure":
             azure_openai_endpoint = prompt_with_default("Azure OpenAI Endpoint", creds.get("TF_VAR_azure_openai_endpoint_raw", ""))
@@ -224,6 +252,31 @@ def main():
                     sys.exit(1)
                 print("Proceeding with deployment despite validation warnings...\n")
 
+            # Live Azure OpenAI model access check (advisory)
+            if azure_openai_endpoint and azure_openai_key:
+                import logging
+                from scripts.common.test_azure_openai_credentials import test_azure_openai_chat, test_azure_openai_embeddings
+                _log = logging.getLogger("deploy.azure_openai")
+                _log.setLevel(logging.CRITICAL)
+                print("\nChecking Azure OpenAI model access...")
+                chat_ok, chat_err = test_azure_openai_chat(azure_openai_endpoint, azure_openai_key, logger=_log, max_retries=1)
+                emb_ok,  emb_err  = test_azure_openai_embeddings(azure_openai_endpoint, azure_openai_key, logger=_log, max_retries=1)
+                print(f"  {'✓' if chat_ok else '✗'} gpt-5-mini accessible")
+                print(f"  {'✓' if emb_ok  else '✗'} text-embedding-ada-002 accessible")
+                if not chat_ok or not emb_ok:
+                    print()
+                    if chat_err == "invalid_credentials" or emb_err == "invalid_credentials":
+                        print("⚠️  WARNING: Azure OpenAI credentials were rejected (401 Unauthorized).")
+                        print("   Generate fresh credentials with:  uv run api-keys create azure")
+                    else:
+                        print("⚠️  WARNING: One or more Azure OpenAI deployments could not be accessed.")
+                        print("   Ensure 'gpt-5-mini' and 'text-embedding-ada-002' deployments exist")
+                        print("   in your Azure OpenAI resource.")
+                    proceed = input("\nContinue anyway? (y/n): ").strip().lower()
+                    if proceed != 'y':
+                        print("Deployment cancelled.")
+                        sys.exit(1)
+
         # Lab-specific credentials
         if "lab1-tool-calling" in envs_to_deploy or "lab3-agentic-fleet-management" in envs_to_deploy:
             zapier_token = prompt_with_default("Zapier Token (Lab 1 and Lab 3)", creds.get("TF_VAR_zapier_token", ""))
@@ -234,61 +287,95 @@ def main():
         set_key(creds_file, "TF_VAR_cloud_provider", cloud)
 
         # Step 5.5: Validate configurations (advisory only, never blocks deployment)
-        needs_zapier = "lab1-tool-calling" in envs_to_deploy or "lab3-agentic-fleet-management" in envs_to_deploy
-        needs_mongodb = False  # MongoDB uses terraform defaults
+        needs_zapier  = "lab1-tool-calling" in envs_to_deploy or "lab3-agentic-fleet-management" in envs_to_deploy
+        needs_mongodb = "lab2-vector-search" in envs_to_deploy or "lab3-agentic-fleet-management" in envs_to_deploy
+        needs_lab4    = "lab4-pubsec-fraud-agents" in envs_to_deploy
 
+        print("\n--- Configuration Validation (Advisory Only) ---")
+
+        # Load credentials into environment for validation
+        temp_creds = dotenv_values(creds_file)
+        for key, value in temp_creds.items():
+            if value:
+                os.environ[key] = value
+
+        # Validate Zapier
         if needs_zapier:
-            print("\n--- Configuration Validation (Advisory Only) ---")
+            try:
+                result = subprocess.run(
+                    ["uv", "run", "validate", "zapier"],
+                    cwd=root,
+                    capture_output=True,
+                    text=True,
+                    timeout=30
+                )
+                if "ALL VALIDATION CHECKS PASSED" in result.stdout:
+                    print("✓ Zapier configuration validated")
+                else:
+                    print(result.stdout)
+                    response = input("\nZapier validation warnings detected. Continue anyway? (y/n): ")
+                    if response.lower() != 'y':
+                        sys.exit(1)
+            except Exception as e:
+                print(f"⚠ Could not validate Zapier configuration: {e}")
+                print("  (This is advisory only - deployment will continue)")
 
-            # Load credentials into environment for validation
-            temp_creds = dotenv_values(creds_file)
-            for key, value in temp_creds.items():
-                if value:
-                    os.environ[key] = value
+        # Validate workshop MongoDB (lab2 / lab3 use pre-populated workshop data by default)
+        if needs_mongodb:
+            import logging
+            from scripts.common.test_mongodb_credentials import test_workshop_mongodb
+            _log = logging.getLogger("deploy.mongodb")
+            _log.setLevel(logging.CRITICAL)
+            print("\nChecking workshop MongoDB demo data...")
+            lab_map = {"lab2-vector-search": "lab2", "lab3-agentic-fleet-management": "lab3"}
+            mongo_all_ok = True
+            for env_name, lab_key in lab_map.items():
+                if env_name not in envs_to_deploy:
+                    continue
+                ok, err = test_workshop_mongodb(lab_key, cloud, logger=_log)
+                print(f"  {'✓' if ok else '✗'} Workshop MongoDB ({lab_key}/{cloud})")
+                if not ok:
+                    mongo_all_ok = False
+            if not mongo_all_ok:
+                print()
+                print("⚠️  WARNING: The workshop MongoDB demo data could not be reached.")
+                print("   This is a Confluent-managed resource. Contact the workshop team")
+                print("   or check your network connection.")
+                response = input("\nContinue anyway? (y/n): ").strip().lower()
+                if response != 'y':
+                    sys.exit(1)
 
-            # Validate Zapier
-            if needs_zapier:
-                try:
-                    result = subprocess.run(
-                        ["uv", "run", "validate", "zapier"],
-                        cwd=root,
-                        capture_output=True,
-                        text=True,
-                        timeout=30
-                    )
-                    if "ALL VALIDATION CHECKS PASSED" in result.stdout:
-                        print("✓ Zapier configuration validated")
-                    else:
-                        print(result.stdout)
-                        response = input("\nZapier validation warnings detected. Continue anyway? (y/n): ")
-                        if response.lower() != 'y':
-                            sys.exit(1)
-                except Exception as e:
-                    print(f"⚠ Could not validate Zapier configuration: {e}")
-                    print("  (This is advisory only - deployment will continue)")
+        # Validate Lab4 data source
+        if needs_lab4:
+            import logging
+            _log = logging.getLogger("deploy.lab4")
+            _log.setLevel(logging.CRITICAL)
+            if cloud == "azure":
+                from scripts.common.test_cosmosdb_credentials import test_cosmosdb_access
+                print("\nChecking Lab4 CosmosDB demo data...")
+                ok, err = test_cosmosdb_access(logger=_log)
+                print(f"  {'✓' if ok else '✗'} CosmosDB workshop demo data reachable")
+                if not ok and err != "no_requests":
+                    print()
+                    print("⚠️  WARNING: The Lab4 CosmosDB demo database could not be reached.")
+                    print("   Contact the workshop team or check your network connection.")
+                    response = input("\nContinue anyway? (y/n): ").strip().lower()
+                    if response != 'y':
+                        sys.exit(1)
+            else:
+                from scripts.common.test_mongodb_credentials import test_workshop_mongodb
+                print("\nChecking Lab4 MongoDB demo data...")
+                ok, err = test_workshop_mongodb("lab4", "aws", logger=_log)
+                print(f"  {'✓' if ok else '✗'} Workshop MongoDB demo data (lab4/aws) reachable")
+                if not ok and err not in ("no_pymongo", "no_config"):
+                    print()
+                    print("⚠️  WARNING: The Lab4 workshop MongoDB demo database could not be reached.")
+                    print("   Contact the workshop team or check your network connection.")
+                    response = input("\nContinue anyway? (y/n): ").strip().lower()
+                    if response != 'y':
+                        sys.exit(1)
 
-            # Validate MongoDB
-            if needs_mongodb:
-                try:
-                    result = subprocess.run(
-                        ["uv", "run", "validate", "mongodb"],
-                        cwd=root,
-                        capture_output=True,
-                        text=True,
-                        timeout=30
-                    )
-                    if "ALL VALIDATION CHECKS PASSED" in result.stdout:
-                        print("✓ MongoDB configuration validated")
-                    else:
-                        print(result.stdout)
-                        response = input("\nMongoDB validation warnings detected. Continue anyway? (y/n): ")
-                        if response.lower() != 'y':
-                            sys.exit(1)
-                except Exception as e:
-                    print(f"⚠ Could not validate MongoDB configuration: {e}")
-                    print("  (This is advisory only - deployment will continue)")
-
-            print()
+        print()
 
         # Step 6: Show all credentials and confirm
         print("\n--- Configuration Summary ---")

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Deploy script v2 — implements the UX design from deploy-cli-ux-design_1.md.
+"""Deploy script v2 — single source of truth in credentials.env.
 
 Usage:
     uv run deploy2                   # Auto-detect: full flow or quick-deploy
@@ -29,14 +29,12 @@ except ImportError:
 try:
     import questionary
     HAS_QUESTIONARY = True
-    # Patch checkbox indicators to [ ]/[x] instead of ○/●
     try:
         import questionary.prompts.common as _qpc
         _qpc.INDICATOR_SELECTED   = "[x]"
         _qpc.INDICATOR_UNSELECTED = "[ ]"
     except (ImportError, AttributeError):
         pass
-    # Highlighted row = bold white text on blue background; pointer = blue arrow
     QSTYLE = questionary.Style([
         ("qmark",       "fg:#5f87ff bold"),
         ("question",    "bold"),
@@ -45,7 +43,7 @@ try:
         ("highlighted", "fg:#ffffff bg:#005faf bold"),
         ("selected",    "fg:#5f87ff bold"),
         ("instruction", "fg:#858585"),
-        ("text",        "bold"),           # choices stand out from surrounding text
+        ("text",        "bold"),
         ("disabled",    "fg:#858585 italic"),
     ])
 except ImportError:
@@ -53,8 +51,7 @@ except ImportError:
     QSTYLE = None
 
 # ── Constants ─────────────────────────────────────────────────────────────────
-VERSION = "2.0.0"
-CONFIG_FILENAME = ".deploy-config.json"
+VERSION = "2.1.0"
 
 # (config_key, display_name, terraform_dir)
 LABS = [
@@ -73,9 +70,18 @@ EDIT_KEYS = {
     "email":          "Email (for tagging)",
 }
 
-_REQUIRED_FIELDS = [
-    "cloud_provider", "labs", "confluent_api_key_mode", "cloud_creds_mode", "zapier_token",
+# Keys that must be present in credentials.env for quick-deploy
+_REQUIRED_KEYS = [
+    "TF_VAR_confluent_cloud_api_key",
+    "TF_VAR_confluent_cloud_api_secret",
+    "TF_VAR_cloud_provider",
+    "TF_VAR_zapier_token",
 ]
+
+# Cloud-specific credential keys
+_AWS_KEYS   = ["TF_VAR_aws_bedrock_access_key", "TF_VAR_aws_bedrock_secret_key"]
+_AZURE_KEYS = ["TF_VAR_azure_openai_endpoint_raw", "TF_VAR_azure_openai_api_key"]
+
 
 # ── Project root ──────────────────────────────────────────────────────────────
 def _project_root() -> Path:
@@ -84,6 +90,57 @@ def _project_root() -> Path:
         if (p / "pyproject.toml").exists():
             return p
     return here
+
+
+# ── credentials.env helpers ──────────────────────────────────────────────────
+def _env_path() -> Path:
+    return _project_root() / "credentials.env"
+
+
+def _load_env() -> dict:
+    """Load all values from credentials.env."""
+    p = _env_path()
+    if not p.exists():
+        return {}
+    from dotenv import dotenv_values
+    return {k: v for k, v in dotenv_values(p).items() if v}
+
+
+def _save_env(key: str, value: str) -> None:
+    """Write a single key to credentials.env."""
+    p = _env_path()
+    if not p.exists():
+        p.touch()
+    from dotenv import set_key
+    set_key(str(p), key, value)
+
+
+def _save_env_many(pairs: dict) -> None:
+    """Write multiple keys to credentials.env."""
+    p = _env_path()
+    if not p.exists():
+        p.touch()
+    from dotenv import set_key
+    for k, v in pairs.items():
+        if v is not None:
+            set_key(str(p), k, v)
+
+
+def _is_ready(env: dict) -> bool:
+    """Check if all required keys exist for quick-deploy."""
+    for k in _REQUIRED_KEYS:
+        if not env.get(k):
+            return False
+    # Must have labs selected
+    if not env.get("DEPLOY_LABS"):
+        return False
+    # Must have cloud-specific credentials
+    cloud = env.get("TF_VAR_cloud_provider", "aws")
+    cloud_keys = _AWS_KEYS if cloud == "aws" else _AZURE_KEYS
+    for k in cloud_keys:
+        if not env.get(k):
+            return False
+    return True
 
 
 # ── Terminal hyperlinks ───────────────────────────────────────────────────────
@@ -95,16 +152,12 @@ def _smart_link(url: str, text: str) -> str:
 
 # ── Credential display helpers ────────────────────────────────────────────────
 def _trunc(value: str, n: int = 12) -> str:
-    """Show first n chars of a value, with ellipsis if truncated."""
     if not value:
         return "not set"
-    if len(value) <= n:
-        return value
-    return value[:n] + "..."
+    return value[:n] + "..." if len(value) > n else value
 
 
 def _mask(value: str) -> str:
-    """Show last 4 chars with bullet prefix, or 'not set'."""
     if not value:
         return "not set"
     if len(value) <= 4:
@@ -112,120 +165,60 @@ def _mask(value: str) -> str:
     return "••••••••" + value[-4:]
 
 
-# ── credentials.env helpers ───────────────────────────────────────────────────
-def _load_env_confluent_keys() -> tuple:
-    """Return (api_key, api_secret) from credentials.env, or (None, None)."""
-    env_file = _project_root() / "credentials.env"
-    if not env_file.exists():
-        return None, None
-    from dotenv import dotenv_values
-    creds = dotenv_values(env_file)
-    key    = creds.get("TF_VAR_confluent_cloud_api_key")
-    secret = creds.get("TF_VAR_confluent_cloud_api_secret")
-    return (key, secret) if key and secret else (None, None)
-
-
-def _load_env_zapier_token() -> str | None:
-    """Return Zapier token from credentials.env, or None."""
-    env_file = _project_root() / "credentials.env"
-    if not env_file.exists():
-        return None
-    from dotenv import dotenv_values
-    return dotenv_values(env_file).get("TF_VAR_zapier_token") or None
-
-
-def _write_env_key(tf_var: str, value: str) -> None:
-    """Write a single TF_VAR key to credentials.env, creating the file if needed."""
-    env_file = _project_root() / "credentials.env"
-    if not env_file.exists():
-        env_file.touch()
-    from dotenv import set_key
-    set_key(str(env_file), tf_var, value)
-
-
-def _load_env_cloud_creds(cloud: str) -> dict:
-    """Return existing cloud credentials from credentials.env, or empty dict."""
-    env_file = _project_root() / "credentials.env"
-    if not env_file.exists():
-        return {}
-    from dotenv import dotenv_values
-    creds = dotenv_values(env_file)
+def _get_cloud_cred_info(env: dict) -> tuple[str, str]:
+    """Get the cloud credential label and masked value based on provider."""
+    cloud = env.get("TF_VAR_cloud_provider", "aws")
     if cloud == "aws":
-        key    = creds.get("TF_VAR_aws_bedrock_access_key")
-        secret = creds.get("TF_VAR_aws_bedrock_secret_key")
-        if key and secret:
-            return {"aws_access_key_id": key, "aws_secret_access_key": secret}
-    elif cloud == "azure":
-        endpoint = creds.get("TF_VAR_azure_openai_endpoint_raw")
-        api_key  = creds.get("TF_VAR_azure_openai_api_key")
-        if endpoint and api_key:
-            return {"azure_openai_endpoint": endpoint, "azure_openai_api_key": api_key}
-    return {}
-
-
-# ── Config persistence ────────────────────────────────────────────────────────
-def _config_path() -> Path:
-    return _project_root() / CONFIG_FILENAME
-
-
-def load_config() -> dict:
-    p = _config_path()
-    if p.exists():
-        try:
-            with open(p) as f:
-                return json.load(f)
-        except (json.JSONDecodeError, OSError):
-            return {}
-    return {}
-
-
-def save_config(config: dict) -> None:
-    config = dict(config)
-    config["last_run"] = datetime.now(timezone.utc).isoformat()
-    with open(_config_path(), "w") as f:
-        json.dump(config, f, indent=2)
-
-
-def _config_complete(config: dict) -> bool:
-    """Return True only when quick-deploy can succeed without further input."""
-    for f in _REQUIRED_FIELDS:
-        # zapier_token may live in credentials.env rather than the saved config
-        if f == "zapier_token" and not config.get(f):
-            if not _load_env_zapier_token():
-                return False
-            continue
-        if not config.get(f):
-            return False
-
-    # Confluent Cloud API keys — must exist unless auto-generate will create them
-    if config.get("confluent_api_key_mode") == "auto":
-        pass  # will be generated during deployment
+        label = "AWS Bedrock"
+        value = env.get("TF_VAR_aws_bedrock_access_key")
     else:
-        env_key, env_secret = _load_env_confluent_keys()
-        if not ((config.get("confluent_api_key") and config.get("confluent_api_secret"))
-                or (env_key and env_secret)):
-            return False
+        label = "Azure OpenAI"
+        value = env.get("TF_VAR_azure_openai_api_key")
+    return label, _mask(value)
 
-    # Cloud (LLM) credentials — must exist in config or credentials.env
-    cloud = config.get("cloud_provider", "aws")
-    cloud_mode = config.get("cloud_creds_mode", "")
-    saved_cloud = _load_env_cloud_creds(cloud)
-    if cloud_mode == "auto":
-        # Auto generates during prompt flow and writes to credentials.env;
-        # if values aren't there yet, config is incomplete
-        if not saved_cloud:
-            return False
-    else:
-        if cloud == "aws":
-            has = (config.get("aws_access_key_id") and config.get("aws_secret_access_key")) or bool(saved_cloud)
-        elif cloud == "azure":
-            has = (config.get("azure_openai_endpoint") and config.get("azure_openai_api_key")) or bool(saved_cloud)
-        else:
-            has = False
-        if not has:
-            return False
 
-    return True
+# ── Migration from .deploy-config.json ────────────────────────────────────────
+def _migrate_json_config() -> None:
+    """One-time migration: copy values from .deploy-config.json to credentials.env."""
+    json_path = _project_root() / ".deploy-config.json"
+    if not json_path.exists():
+        return
+
+    try:
+        with open(json_path) as f:
+            config = json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return
+
+    env = _load_env()
+    pairs = {}
+
+    # Map JSON config keys → credentials.env TF_VAR keys
+    mapping = {
+        "confluent_api_key":      "TF_VAR_confluent_cloud_api_key",
+        "confluent_api_secret":   "TF_VAR_confluent_cloud_api_secret",
+        "cloud_provider":         "TF_VAR_cloud_provider",
+        "email":                  "TF_VAR_owner_email",
+        "zapier_token":           "TF_VAR_zapier_token",
+        "aws_access_key_id":      "TF_VAR_aws_bedrock_access_key",
+        "aws_secret_access_key":  "TF_VAR_aws_bedrock_secret_key",
+        "azure_openai_endpoint":  "TF_VAR_azure_openai_endpoint_raw",
+        "azure_openai_api_key":   "TF_VAR_azure_openai_api_key",
+    }
+
+    for json_key, env_key in mapping.items():
+        val = config.get(json_key)
+        if val and not env.get(env_key):
+            pairs[env_key] = val
+
+    # Migrate labs
+    labs = config.get("labs")
+    if labs and not env.get("DEPLOY_LABS"):
+        pairs["DEPLOY_LABS"] = ",".join(labs)
+
+    if pairs:
+        _save_env_many(pairs)
+        print(f"  Migrated {len(pairs)} value(s) from .deploy-config.json → credentials.env")
 
 
 # ── Display ───────────────────────────────────────────────────────────────────
@@ -244,41 +237,37 @@ def _banner() -> None:
 
 
 def _section(title: str) -> None:
-    print(f"\n  ─── {title} " + "─" * max(0, 47 - len(title)))
+    width = 54
+    inner = f" {title} "
+    remaining = max(0, width - len(inner))
+    left = remaining // 2
+    right = remaining - left
+    print(f"\n  {'═' * left}{inner}{'═' * right}")
 
 
-def _fmt_labs(config: dict) -> str:
-    ids = config.get("labs") or []
+def _fmt_labs(env: dict) -> str:
+    ids = (env.get("DEPLOY_LABS") or "").split(",")
+    ids = [i.strip() for i in ids if i.strip()]
     names = [name.split(" — ")[0] for lid, name, _ in LABS if lid in ids]
     return ", ".join(names) if names else "none selected"
 
 
-def _fmt_cloud_creds(config: dict) -> str:
-    mode = config.get("cloud_creds_mode", "")
-    if mode == "auto":
-        email = config.get("email", "")
-        return f"Auto-generate  ({email})" if email else "Auto-generate"
-    if mode == "manual":
-        return "Manual"
-    if mode == "reuse":
-        return "Reuse saved"
-    return "not set"
+def _show_summary(env: dict) -> None:
+    cloud = (env.get("TF_VAR_cloud_provider") or "not set").upper()
+    labs = _fmt_labs(env)
+    ck = _mask(env.get("TF_VAR_confluent_cloud_api_key"))
+    cl_label, cl_value = _get_cloud_cred_info(env)
+    zap = _mask(env.get("TF_VAR_zapier_token"))
+    email = env.get("TF_VAR_owner_email") or "not set"
 
-
-def _show_summary(config: dict) -> None:
-    cloud  = (config.get("cloud_provider") or "not set").upper()
-    labs   = _fmt_labs(config)
-    cm     = config.get("confluent_api_key_mode", "")
-    c_disp = "Auto-generate" if cm == "auto" else "Manual" if cm == "manual" else "Reuse saved" if cm == "reuse" else "not set"
-    cl     = "AWS Bedrock" if config.get("cloud_provider") == "aws" else "Azure OpenAI"
-    cc     = _fmt_cloud_creds(config)
-    zap    = _mask(config.get("zapier_token", ""))
     print(f"  Cloud:          {cloud}")
     print(f"  Labs:           {labs}")
-    print(f"  Confluent Keys: {c_disp}")
-    print(f"  {cl}:    {cc}")
+    print(f"  Confluent Key:  {ck}")
+    print(f"  {cl_label}:    {cl_value}")
     print(f"  Zapier Token:   {zap}")
-    lr = config.get("last_run", "")
+    print(f"  Email:          {email}")
+
+    lr = env.get("DEPLOY_LAST_RUN", "")
     if lr:
         try:
             dt = datetime.fromisoformat(lr)
@@ -289,7 +278,7 @@ def _show_summary(config: dict) -> None:
 
 
 # ── Phase 0: Pre-flight ───────────────────────────────────────────────────────
-def _preflight() -> bool:
+def _preflight(env: dict) -> bool:
     from scripts.common.login_checks import check_confluent_login
 
     print("  Checking prerequisites...")
@@ -321,43 +310,341 @@ def _preflight() -> bool:
     if failures:
         print()
         for msg in failures:
-            print(f"  Please run:  {msg}")
+            print(f"  ✗  {msg}")
+        return False
+
+    # ── Advisory credential checks (all soft — user can override) ─────────────
+    cloud = env.get("TF_VAR_cloud_provider", "aws")
+    selected_labs = [s.strip() for s in (env.get("DEPLOY_LABS") or "").split(",") if s.strip()]
+
+    # LLM access (cloud-specific)
+    if cloud == "aws":
+        access_key = env.get("TF_VAR_aws_bedrock_access_key")
+        secret_key = env.get("TF_VAR_aws_bedrock_secret_key")
+        if access_key and secret_key:
+            if not _check_bedrock_creds(env, access_key, secret_key):
+                return False
+    elif cloud == "azure":
+        endpoint = env.get("TF_VAR_azure_openai_endpoint_raw")
+        api_key  = env.get("TF_VAR_azure_openai_api_key")
+        if endpoint and api_key:
+            if not _check_azure_openai_creds(endpoint, api_key):
+                return False
+
+    # MongoDB (lab2, lab3 — user-provided or workshop defaults)
+    if any(lab in selected_labs for lab in ("lab2", "lab3")):
+        if not _check_mongodb_for_labs(env, selected_labs, cloud):
+            return False
+
+    # Lab4 data source (hardcoded workshop data — CosmosDB for Azure, MongoDB for AWS)
+    if "lab4" in selected_labs:
+        if not _check_lab4_data(cloud):
+            return False
+
+    return True
+
+
+def _check_bedrock_creds(env: dict, access_key: str, secret_key: str) -> bool:
+    """
+    Advisory check for AWS Bedrock credentials.
+    Returns True to continue, False to abort (user cancelled).
+    """
+    import logging
+    from scripts.common.test_bedrock_credentials import test_bedrock_credentials, test_titan_embeddings
+
+    region = env.get("TF_VAR_cloud_region", "us-east-1")
+    _logger = logging.getLogger("preflight.bedrock")
+    _logger.setLevel(logging.CRITICAL)  # suppress library noise
+
+    print()
+    print("  Checking AWS Bedrock model access...")
+
+    sonnet_ok, sonnet_err = test_bedrock_credentials(
+        access_key, secret_key, region, logger=_logger, max_retries=1
+    )
+    titan_ok, titan_err = test_titan_embeddings(
+        access_key, secret_key, region, logger=_logger, max_retries=1
+    )
+
+    sonnet_label = f"Claude Sonnet 4.5 accessible ({region})"
+    titan_label  = f"Titan Embeddings accessible ({region})"
+    print(f"  {'✓' if sonnet_ok else '✗'} {sonnet_label}")
+    print(f"  {'✓' if titan_ok  else '✗'} {titan_label}")
+
+    if sonnet_ok and titan_ok:
+        return True
+
+    # Collect warnings per failure type
+    warnings = []
+    model_enable_needed = False
+
+    for ok, err, model_name in [
+        (sonnet_ok, sonnet_err, "Claude Sonnet 4.5"),
+        (titan_ok,  titan_err,  "Titan Embed Text v1"),
+    ]:
+        if ok:
+            continue
+        if err == "invalid_keys":
+            warnings.append(
+                "The AWS credentials were not recognized. They may be expired or incorrect.\n"
+                "Generate fresh credentials with:  uv run api-keys create aws"
+            )
+            break  # both will fail with same root cause — only show once
+        elif err == "model_not_enabled":
+            model_enable_needed = True
+            warnings.append(f"{model_name} is not enabled in your AWS account for region {region}.")
+        elif err == "no_boto3":
+            warnings.append("boto3 is not installed — skipping live Bedrock check.")
+            return True  # not a blocker, skip advisory
+
+    if model_enable_needed:
+        warnings.append(
+            "To enable Claude models, visit the AWS Bedrock Model Catalog:\n"
+            "  https://console.aws.amazon.com/bedrock/home#/model-catalog\n"
+            "Select Claude Sonnet 4.5 → open in Playground → send a message.\n"
+            "The access request form will appear automatically."
+        )
+
+    print()
+    print("  ┌─────────────────────────────────────────────────────┐")
+    print("  │  ⚠  WARNING: AWS Bedrock model access issue         │")
+    print("  └─────────────────────────────────────────────────────┘")
+    for w in warnings:
+        for line in w.splitlines():
+            print(f"  {line}")
+    print()
+    print("  If you deploy without resolving this, the demo may fail")
+    print("  when Flink attempts to call the LLM models.")
+    print()
+
+    OPT_CONTINUE = "I understand — deploy anyway"
+    OPT_ABORT    = "Abort — I'll fix my credentials first"
+    choice = _select("How would you like to proceed?", [OPT_CONTINUE, OPT_ABORT])
+
+    if choice == OPT_ABORT:
+        print("\n  Deployment aborted.")
         return False
     return True
 
 
-# ── Phase 1: Saved state notice ───────────────────────────────────────────────
-def _saved_notice(config: dict) -> None:
-    lr = config.get("last_run", "")
-    date_str = ""
-    if lr:
-        try:
-            dt = datetime.fromisoformat(lr)
-            date_str = f" from {dt.strftime('%b %d, %Y')}"
-        except (ValueError, AttributeError):
-            pass
+# ── Advisory check: Azure OpenAI ─────────────────────────────────────────────
+def _check_azure_openai_creds(endpoint: str, api_key: str) -> bool:
+    """
+    Advisory check for Azure OpenAI credentials.
+    Returns True to continue, False if user chose to abort.
+    """
+    import logging
+    from scripts.common.test_azure_openai_credentials import (
+        test_azure_openai_chat,
+        test_azure_openai_embeddings,
+    )
+
+    _logger = logging.getLogger("preflight.azure_openai")
+    _logger.setLevel(logging.CRITICAL)
+
     print()
-    print("  " + "─" * 51)
-    print(f"  Saved session found{date_str}.")
-    print("  Your previous answers are shown as defaults.")
-    print("  Press ENTER to accept any default, or type to change.")
-    print("  " + "─" * 51)
+    print("  Checking Azure OpenAI model access...")
+
+    chat_ok, chat_err = test_azure_openai_chat(endpoint, api_key, logger=_logger, max_retries=1)
+    emb_ok,  emb_err  = test_azure_openai_embeddings(endpoint, api_key, logger=_logger, max_retries=1)
+
+    print(f"  {'✓' if chat_ok else '✗'} gpt-5-mini accessible")
+    print(f"  {'✓' if emb_ok  else '✗'} text-embedding-ada-002 accessible")
+
+    if chat_ok and emb_ok:
+        return True
+
+    warnings = []
+    for ok, err, model in [
+        (chat_ok, chat_err, "gpt-5-mini"),
+        (emb_ok,  emb_err,  "text-embedding-ada-002"),
+    ]:
+        if ok:
+            continue
+        if err == "invalid_credentials":
+            warnings.append(
+                "Azure OpenAI credentials were rejected (401 Unauthorized).\n"
+                "Generate fresh credentials with:  uv run api-keys create azure"
+            )
+            break
+        elif err == "deployment_not_found":
+            warnings.append(
+                f"The '{model}' deployment was not found in your Azure OpenAI resource.\n"
+                "Ensure both 'gpt-5-mini' and 'text-embedding-ada-002' deployments exist."
+            )
+        elif err == "no_requests":
+            return True  # can't check; skip silently
+
+    return _advisory_prompt(
+        "Azure OpenAI model access issue",
+        warnings,
+        "If you deploy without resolving this, the demo may fail\n"
+        "  when Flink attempts to call the LLM models.",
+    )
+
+
+# ── Advisory check: MongoDB (lab2, lab3) ─────────────────────────────────────
+def _check_mongodb_for_labs(env: dict, selected_labs: list, cloud: str) -> bool:
+    """
+    Advisory check for MongoDB connectivity.
+    Tests user-provided credentials if present, otherwise tests the workshop defaults.
+    Returns True to continue, False if user chose to abort.
+    """
+    import logging
+    from scripts.common.test_mongodb_credentials import test_mongodb_connection, test_workshop_mongodb
+
+    _logger = logging.getLogger("preflight.mongodb")
+    _logger.setLevel(logging.CRITICAL)
+
+    user_conn = env.get("TF_VAR_mongodb_connection_string")
+    user_name = env.get("TF_VAR_mongodb_username")
+    user_pass = env.get("TF_VAR_mongodb_password")
+
+    print()
+    print("  Checking MongoDB connectivity...")
+
+    if user_conn and user_name and user_pass:
+        # User has provided their own MongoDB — test those credentials
+        ok, err = test_mongodb_connection(user_conn, user_name, user_pass, logger=_logger)
+        print(f"  {'✓' if ok else '✗'} User-provided MongoDB reachable")
+        if ok:
+            return True
+        warnings = _mongodb_warnings(err, user_provided=True)
+    else:
+        # No user credentials — test the pre-populated workshop defaults
+        results = {}
+        for lab in ("lab2", "lab3"):
+            if lab not in selected_labs:
+                continue
+            ok, err = test_workshop_mongodb(lab, cloud, logger=_logger)
+            label = f"Workshop MongoDB ({lab}/{cloud})"
+            print(f"  {'✓' if ok else '✗'} {label}")
+            results[lab] = (ok, err)
+
+        if all(v[0] for v in results.values()):
+            return True
+
+        # At least one failed
+        first_err = next((err for _, (ok, err) in results.items() if not ok), "error")
+        warnings = _mongodb_warnings(first_err, user_provided=False)
+
+    return _advisory_prompt(
+        "MongoDB connectivity issue",
+        warnings,
+        "If you deploy without resolving this, Lab2/Lab3 vector search\n"
+        "  may fail at runtime.",
+    )
+
+
+def _mongodb_warnings(err: str, user_provided: bool) -> list:
+    if err == "no_pymongo":
+        return []  # can't check; caller should return True silently
+    if user_provided:
+        if err == "invalid_credentials":
+            return ["Your MongoDB credentials were rejected.\n"
+                    "Check your username and password, then update with:\n"
+                    "  uv run deploy2 --edit cloud-creds"]
+        return ["Could not connect to your MongoDB instance.\n"
+                "Check that the connection string is correct and that\n"
+                "0.0.0.0/0 is allowed in your MongoDB Atlas Network Access settings."]
+    else:
+        return ["The workshop MongoDB demo data could not be reached.\n"
+                "This is a Confluent-managed resource. Contact the workshop team\n"
+                "or check your network connection."]
+
+
+# ── Advisory check: Lab4 data source ─────────────────────────────────────────
+def _check_lab4_data(cloud: str) -> bool:
+    """
+    Advisory check for Lab4's hardcoded data source:
+      - Azure: CosmosDB workshop demo endpoint
+      - AWS:   Workshop MongoDB lab4 instance
+    Returns True to continue, False if user chose to abort.
+    """
+    import logging
+
+    _logger = logging.getLogger("preflight.lab4")
+    _logger.setLevel(logging.CRITICAL)
+
+    print()
+
+    if cloud == "azure":
+        from scripts.common.test_cosmosdb_credentials import test_cosmosdb_access
+        print("  Checking Lab4 CosmosDB demo data...")
+        ok, err = test_cosmosdb_access(logger=_logger)
+        print(f"  {'✓' if ok else '✗'} CosmosDB workshop demo data reachable")
+        if ok:
+            return True
+        if err == "no_requests":
+            return True
+        warnings = [
+            "The Lab4 CosmosDB demo database could not be reached.\n"
+            "This is a Confluent-managed resource used for the FEMA fraud detection demo.\n"
+            "Contact the workshop team or check your network connection."
+        ]
+        blurb = "Lab4 may fail to load FEMA claims data at runtime."
+
+    else:  # aws
+        from scripts.common.test_mongodb_credentials import test_workshop_mongodb
+        print("  Checking Lab4 MongoDB demo data...")
+        ok, err = test_workshop_mongodb("lab4", "aws", logger=_logger)
+        print(f"  {'✓' if ok else '✗'} MongoDB workshop demo data (lab4/aws) reachable")
+        if ok:
+            return True
+        if err in ("no_pymongo", "no_config"):
+            return True
+        warnings = [
+            "The Lab4 workshop MongoDB demo database could not be reached.\n"
+            "This is a Confluent-managed resource used for the FEMA fraud detection demo.\n"
+            "Contact the workshop team or check your network connection."
+        ]
+        blurb = "Lab4 may fail to load FEMA claims data at runtime."
+
+    return _advisory_prompt("Lab4 demo data connectivity issue", warnings, blurb)
+
+
+# ── Shared advisory prompt helper ─────────────────────────────────────────────
+def _advisory_prompt(title: str, warnings: list, blurb: str) -> bool:
+    """
+    Display a warning box with the given messages and ask the user to
+    continue or abort.  Returns True to continue, False to abort.
+    If warnings is empty, returns True silently.
+    """
+    if not warnings:
+        return True
+
+    box_width = 53
+    padded = f"  ⚠  WARNING: {title}"
+    print()
+    print(f"  ┌{'─' * box_width}┐")
+    print(f"  │{padded:<{box_width}}│")
+    print(f"  └{'─' * box_width}┘")
+    for w in warnings:
+        for line in w.splitlines():
+            print(f"  {line}")
+    print()
+    for line in blurb.splitlines():
+        print(f"  {line}")
+    print()
+
+    OPT_CONTINUE = "I understand — deploy anyway"
+    OPT_ABORT    = "Abort — I'll fix this first"
+    choice = _select("How would you like to proceed?", [OPT_CONTINUE, OPT_ABORT])
+
+    if choice == OPT_ABORT:
+        print("\n  Deployment aborted.")
+        return False
+    return True
 
 
 # ── Interactive prompt helpers ────────────────────────────────────────────────
 def _select(question: str, choices: list, default: str = None) -> str:
-    """Arrow-key selector; falls back to numbered list for non-TTY.
-
-    If default is None, the cursor lands on the first choice (no extra highlight).
-    If default is set, the cursor lands on that choice.
-    """
     if HAS_QUESTIONARY and sys.stdout.isatty():
         result = questionary.select(question, choices=choices, default=default, style=QSTYLE).ask()
         if result is None:
             print("\n  Aborted.")
             sys.exit(0)
         return result
-    # Non-TTY fallback
     effective_default = default if default is not None else choices[0]
     print(f"\n  {question}\n")
     for i, c in enumerate(choices, 1):
@@ -378,13 +665,7 @@ def _select(question: str, choices: list, default: str = None) -> str:
 
 
 def _checkbox(question: str, choices: list, defaults: list = None) -> list:
-    """Multi-select with [x]/[ ] indicators.
-
-    In TTY mode: ↑↓ to navigate, SPACE to toggle, ENTER to confirm.
-    choices: list of (value, label). defaults: list of pre-selected values.
-    """
     defaults = defaults or []
-
     if HAS_QUESTIONARY and sys.stdout.isatty():
         q = [
             questionary.Choice(title=label, value=val, checked=(val in defaults))
@@ -399,8 +680,6 @@ def _checkbox(question: str, choices: list, defaults: list = None) -> list:
             print("\n  Aborted.")
             sys.exit(0)
         return result
-
-    # ── Non-TTY fallback ──────────────────────────────────────────────────────
     print(f"\n  {question}")
     print("  (Enter numbers separated by commas, e.g. 1,3)\n")
     for i, (val, label) in enumerate(choices, 1):
@@ -427,7 +706,6 @@ def _checkbox(question: str, choices: list, defaults: list = None) -> list:
 
 
 def _text(prompt: str, default: str = None, secret: bool = False) -> str:
-    """Text input. If default provided, ENTER accepts it. Required if no default."""
     if default is not None:
         preview = _mask(default) if secret else _trunc(default)
         disp = f"  {prompt} [previously: {preview}]: "
@@ -442,76 +720,80 @@ def _text(prompt: str, default: str = None, secret: bool = False) -> str:
 
 
 # ── Phase 2: Cloud Provider ───────────────────────────────────────────────────
-def prompt_cloud_provider(config: dict) -> str:
+def prompt_cloud_provider(env: dict) -> str:
     _section("Cloud Provider")
-    prev = config.get("cloud_provider", "aws")
-    # Previous choice is placed first so the cursor lands on it naturally
+    prev = env.get("TF_VAR_cloud_provider", "aws")
     choices = ["AWS", "Azure"] if prev == "aws" else ["Azure", "AWS"]
     choice = _select("Which cloud provider are you deploying to?", choices=choices)
-    return choice.lower()
+    result = choice.lower()
+    _save_env("TF_VAR_cloud_provider", result)
+    return result
 
 
 # ── Phase 3: Lab Selection ────────────────────────────────────────────────────
-def prompt_lab_selection(config: dict) -> list:
+def prompt_lab_selection(env: dict) -> list:
     _section("Lab Selection")
-    saved = config.get("labs") or []
+    saved = [s.strip() for s in (env.get("DEPLOY_LABS") or "").split(",") if s.strip()]
     choices = [(lid, name) for lid, name, _ in LABS] + [("all", "All Labs")]
     selected = _checkbox("Which labs do you want to deploy?", choices=choices, defaults=saved)
     if "all" in selected:
-        return [lid for lid, _, _ in LABS]
-    return [s for s in selected if s != "all"]
+        selected = [lid for lid, _, _ in LABS]
+    else:
+        selected = [s for s in selected if s != "all"]
+    _save_env("DEPLOY_LABS", ",".join(selected))
+    return selected
 
 
 # ── Phase 4: Confluent API Keys ───────────────────────────────────────────────
-def prompt_confluent_keys(config: dict) -> dict:
+def prompt_confluent_keys(env: dict) -> None:
     _section("Confluent Cloud API Keys")
     print()
     print("  We strongly recommend letting us generate these")
     print("  automatically to avoid configuration errors.")
     print()
 
-    env_key, env_secret = _load_env_confluent_keys()
-    prev_mode = config.get("confluent_api_key_mode", "auto")
+    saved_key    = env.get("TF_VAR_confluent_cloud_api_key")
+    saved_secret = env.get("TF_VAR_confluent_cloud_api_secret")
 
-    # Build ordered choices — previous/best option goes first
     OPT_REUSE  = "Reuse my saved keys"
     OPT_AUTO   = "Generate automatically"
     OPT_MANUAL = "Enter manually"
 
-    choices = []
-    if prev_mode == "reuse" and env_key:
+    if saved_key and saved_secret:
         choices = [OPT_REUSE, OPT_AUTO, OPT_MANUAL]
-    elif prev_mode == "auto":
+    else:
         choices = [OPT_AUTO, OPT_MANUAL]
-        if env_key:
-            choices.insert(0, OPT_REUSE)  # surfaced but not default
-    else:  # manual
-        choices = [OPT_MANUAL, OPT_AUTO]
-        if env_key:
-            choices.insert(0, OPT_REUSE)
-    # If no saved keys, remove the reuse option
-    if not env_key and OPT_REUSE in choices:
-        choices.remove(OPT_REUSE)
 
     choice = _select("Confluent Cloud API Keys:", choices=choices)
 
     if choice == OPT_REUSE:
-        return {
-            "confluent_api_key_mode": "reuse",
-            "confluent_api_key":    env_key,
-            "confluent_api_secret": env_secret,
-        }
-    if choice == OPT_AUTO:
-        return {"confluent_api_key_mode": "auto", "confluent_api_key": None, "confluent_api_secret": None}
+        return
 
-    result = {"confluent_api_key_mode": "manual"}
-    result["confluent_api_key"]    = _text("API Key",    default=config.get("confluent_api_key"))
-    result["confluent_api_secret"] = _text("API Secret", default=config.get("confluent_api_secret"), secret=True)
-    return result
+    if choice == OPT_AUTO:
+        from scripts.common.credentials import generate_confluent_api_keys
+        print("\n  Generating Confluent Cloud API keys...")
+        api_key, api_secret = generate_confluent_api_keys()
+        if not api_key or not api_secret:
+            print("  ✗ Failed to generate Confluent API keys. Aborting.")
+            sys.exit(1)
+        _save_env_many({
+            "TF_VAR_confluent_cloud_api_key":    api_key,
+            "TF_VAR_confluent_cloud_api_secret": api_secret,
+        })
+        print(f"  ✓ Generated key: {_trunc(api_key)}")
+        return
+
+    # Manual entry
+    key    = _text("API Key",    default=saved_key)
+    secret = _text("API Secret", default=saved_secret, secret=True)
+    _save_env_many({
+        "TF_VAR_confluent_cloud_api_key":    key,
+        "TF_VAR_confluent_cloud_api_secret": secret,
+    })
 
 
 # ── Phase 5: Cloud Credentials ────────────────────────────────────────────────
-def prompt_cloud_creds(config: dict, cloud: str) -> dict:
+def prompt_cloud_creds(env: dict, cloud: str) -> None:
     label = "AWS Bedrock" if cloud == "aws" else "Azure OpenAI"
     _section(f"{label} Credentials")
     print()
@@ -519,76 +801,61 @@ def prompt_cloud_creds(config: dict, cloud: str) -> dict:
     print("  generate them, or provide your own.")
     print()
 
-    prev_mode  = config.get("cloud_creds_mode", "auto")
-    saved_creds = _load_env_cloud_creds(cloud)
+    if cloud == "aws":
+        has_saved = bool(env.get("TF_VAR_aws_bedrock_access_key") and env.get("TF_VAR_aws_bedrock_secret_key"))
+    else:
+        has_saved = bool(env.get("TF_VAR_azure_openai_endpoint_raw") and env.get("TF_VAR_azure_openai_api_key"))
 
     OPT_REUSE  = "Reuse my saved keys"
     OPT_AUTO   = "Generate automatically"
     OPT_MANUAL = "Enter manually"
 
-    if prev_mode == "reuse" and saved_creds:
+    if has_saved:
         choices = [OPT_REUSE, OPT_AUTO, OPT_MANUAL]
-    elif prev_mode == "auto":
+    else:
         choices = [OPT_AUTO, OPT_MANUAL]
-        if saved_creds:
-            choices.insert(0, OPT_REUSE)
-    else:  # manual
-        choices = [OPT_MANUAL, OPT_AUTO]
-        if saved_creds:
-            choices.insert(0, OPT_REUSE)
 
     choice = _select(f"{label} Credentials:", choices=choices)
 
     if choice == OPT_REUSE:
-        return {"cloud_creds_mode": "reuse", **saved_creds}
-
-    result = {"cloud_creds_mode": "auto" if choice == OPT_AUTO else "manual"}
+        return
 
     if choice == OPT_AUTO:
-        result["email"] = _prompt_email(config)
+        email = _prompt_email(env)
+        _save_env("TF_VAR_owner_email", email)
 
-        # Write email to credentials.env so the key manager can read it
-        root     = _project_root()
-        env_file = root / "credentials.env"
-        if env_file.exists():
-            from dotenv import set_key as _set_key
-            _set_key(str(env_file), "TF_VAR_owner_email", result["email"])
-
-        # Generate credentials immediately — user gets feedback right now
         print(f"\n  Generating {label} credentials...")
+        root = _project_root()
         subprocess.run(["uv", "run", "api-keys", "create", cloud], cwd=root)
+        return
 
-        # Read the generated values back from credentials.env
-        if env_file.exists():
-            from dotenv import dotenv_values as _dv
-            env_creds = _dv(env_file)
-            if cloud == "aws":
-                result["aws_access_key_id"]     = env_creds.get("TF_VAR_aws_bedrock_access_key")
-                result["aws_secret_access_key"] = env_creds.get("TF_VAR_aws_bedrock_secret_key")
-            elif cloud == "azure":
-                result["azure_openai_endpoint"] = env_creds.get("TF_VAR_azure_openai_endpoint_raw")
-                result["azure_openai_api_key"]  = env_creds.get("TF_VAR_azure_openai_api_key")
-        return result
-
+    # Manual entry
     if cloud == "aws":
-        result["aws_access_key_id"]     = _text("AWS Access Key ID",     default=config.get("aws_access_key_id"))
-        result["aws_secret_access_key"] = _text("AWS Secret Access Key", default=config.get("aws_secret_access_key"), secret=True)
+        key    = _text("AWS Access Key ID",     default=env.get("TF_VAR_aws_bedrock_access_key"))
+        secret = _text("AWS Secret Access Key", default=env.get("TF_VAR_aws_bedrock_secret_key"), secret=True)
+        _save_env_many({
+            "TF_VAR_aws_bedrock_access_key": key,
+            "TF_VAR_aws_bedrock_secret_key": secret,
+        })
     elif cloud == "azure":
-        result["azure_openai_endpoint"] = _text("Azure OpenAI Endpoint", default=config.get("azure_openai_endpoint"))
-        result["azure_openai_api_key"]  = _text("Azure OpenAI API Key",  default=config.get("azure_openai_api_key"), secret=True)
-    return result
+        endpoint = _text("Azure OpenAI Endpoint", default=env.get("TF_VAR_azure_openai_endpoint_raw"))
+        api_key  = _text("Azure OpenAI API Key",  default=env.get("TF_VAR_azure_openai_api_key"), secret=True)
+        _save_env_many({
+            "TF_VAR_azure_openai_endpoint_raw": endpoint,
+            "TF_VAR_azure_openai_api_key":      api_key,
+        })
 
 
-def _prompt_email(config: dict) -> str:
+def _prompt_email(env: dict) -> str:
     print()
     print("  To tag your cloud resources correctly, we need")
     print("  your email address.")
     print()
-    return _text("Email", default=config.get("email"))
+    return _text("Email", default=env.get("TF_VAR_owner_email"))
 
 
 # ── Phase 6: Zapier Token ─────────────────────────────────────────────────────
-def prompt_zapier_token(config: dict) -> str:
+def prompt_zapier_token(env: dict) -> None:
     _section("Zapier Integration")
     print()
     print("  A Zapier API token is required. You must provide")
@@ -599,46 +866,34 @@ def prompt_zapier_token(config: dict) -> str:
     print(f"  Don't have one? See: {link}")
     print()
 
-    # Check credentials.env first, fall back to saved config
-    env_token  = _load_env_zapier_token()
-    saved_token = env_token or config.get("zapier_token")
+    saved = env.get("TF_VAR_zapier_token")
 
-    OPT_REUSE = "Reuse my saved token"
-    OPT_ENTER = "Enter token"
-
-    if saved_token:
-        prev_mode = config.get("zapier_mode", "reuse")
-        choices   = [OPT_REUSE, OPT_ENTER] if prev_mode != "enter" else [OPT_ENTER, OPT_REUSE]
-        choice    = _select("Zapier Token:", choices=choices)
+    if saved:
+        OPT_REUSE = "Reuse my saved token"
+        OPT_ENTER = "Enter new token"
+        choice = _select("Zapier Token:", choices=[OPT_REUSE, OPT_ENTER])
         if choice == OPT_REUSE:
-            config["zapier_mode"] = "reuse"
-            return saved_token
-        config["zapier_mode"] = "enter"
+            return
 
     token = _text("Zapier Token", secret=True)
-    _write_env_key("TF_VAR_zapier_token", token)
-    return token
+    _save_env("TF_VAR_zapier_token", token)
 
 
 # ── Phase 7: Review & Confirm ─────────────────────────────────────────────────
-def show_review_and_confirm(config: dict) -> bool:
+def show_review_and_confirm(env: dict) -> bool:
     _section("Deployment Summary")
     print()
-    cloud  = (config.get("cloud_provider") or "not set").upper()
-    labs   = _fmt_labs(config)
-    cm     = config.get("confluent_api_key_mode", "")
-    c_disp = "Auto-generate" if cm == "auto" else "Manual"
-    cl     = "AWS Bedrock Keys" if config.get("cloud_provider") == "aws" else "Azure OpenAI Keys"
-    cc     = _fmt_cloud_creds(config)
-    zap    = _mask(config.get("zapier_token", ""))
+    cloud = (env.get("TF_VAR_cloud_provider") or "not set").upper()
+    labs = _fmt_labs(env)
+    ck = _mask(env.get("TF_VAR_confluent_cloud_api_key"))
+    cl_label, cl_value = _get_cloud_cred_info(env)
+    zap = _mask(env.get("TF_VAR_zapier_token"))
+
     print(f"  Cloud Provider:        {cloud}")
     print(f"  Labs to Deploy:        {labs}")
-    print(f"  Confluent API Keys:    {c_disp}")
-    print(f"  {cl}:      {cc}")
+    print(f"  Confluent API Key:     {ck}")
+    print(f"  {cl_label + ' Keys:':23}{cl_value}")
     print(f"  Zapier Token:          {zap}")
-    print()
-    print("  ⚠  This will provision real cloud resources")
-    print("     and may incur costs.")
     print()
     choice = _select("Proceed with deployment?", ["Yes, deploy", "No, cancel"])
     if choice == "Yes, deploy":
@@ -648,35 +903,40 @@ def show_review_and_confirm(config: dict) -> bool:
 
 
 # ── Mode 1: Full Flow ─────────────────────────────────────────────────────────
-def run_full_flow(config: dict) -> dict:
-    if config:
-        _saved_notice(config)
+def run_full_flow(env: dict) -> dict:
+    if any(env.get(k) for k in _REQUIRED_KEYS):
+        print()
+        print("  " + "─" * 51)
+        print("  Saved credentials found in credentials.env.")
+        print("  Your previous answers are shown as defaults.")
+        print("  Press ENTER to accept any default, or type to change.")
+        print("  " + "─" * 51)
 
-    config["cloud_provider"] = prompt_cloud_provider(config)
-    save_config(config)
+    prompt_cloud_provider(env)
+    env = _load_env()
 
-    config["labs"] = prompt_lab_selection(config)
-    save_config(config)
+    prompt_lab_selection(env)
+    env = _load_env()
 
-    config.update(prompt_confluent_keys(config))
-    save_config(config)
+    prompt_confluent_keys(env)
+    env = _load_env()
 
-    config.update(prompt_cloud_creds(config, config["cloud_provider"]))
-    save_config(config)
+    prompt_cloud_creds(env, env.get("TF_VAR_cloud_provider", "aws"))
+    env = _load_env()
 
-    config["zapier_token"] = prompt_zapier_token(config)
-    save_config(config)
+    prompt_zapier_token(env)
+    env = _load_env()
 
-    if not show_review_and_confirm(config):
+    if not show_review_and_confirm(env):
         sys.exit(0)
-    return config
+    return env
 
 
 # ── Mode 2: Quick-Deploy ──────────────────────────────────────────────────────
-def run_quick_deploy(config: dict) -> dict:
+def run_quick_deploy(env: dict) -> dict:
     _section("Saved Configuration Found")
     print()
-    _show_summary(config)
+    _show_summary(env)
     print()
 
     OPT_DEPLOY = "Deploy with saved settings"
@@ -690,58 +950,55 @@ def run_quick_deploy(config: dict) -> dict:
     )
 
     if choice == OPT_DEPLOY:
-        if not show_review_and_confirm(config):
+        if not show_review_and_confirm(env):
             sys.exit(0)
-        return config
+        return env
     elif choice == OPT_EDIT:
-        config = run_edit_menu(config)
-        return run_quick_deploy(config)
+        run_edit_menu(env)
+        return run_quick_deploy(_load_env())
     elif choice == OPT_FULL:
-        return run_full_flow(config)
-    else:  # Quit
+        return run_full_flow(env)
+    else:
         print("\n  Goodbye.")
         sys.exit(0)
 
 
 # ── Mode 3: Edit ──────────────────────────────────────────────────────────────
-def _edit_key(key: str, config: dict) -> dict:
-    cloud = config.get("cloud_provider", "aws")
+def _edit_key(key: str, env: dict) -> None:
+    cloud = env.get("TF_VAR_cloud_provider", "aws")
     if key == "cloud":
-        config["cloud_provider"] = prompt_cloud_provider(config)
+        prompt_cloud_provider(env)
     elif key == "labs":
-        config["labs"] = prompt_lab_selection(config)
+        prompt_lab_selection(env)
     elif key == "confluent-keys":
-        config.update(prompt_confluent_keys(config))
+        prompt_confluent_keys(env)
     elif key == "cloud-creds":
-        config.update(prompt_cloud_creds(config, cloud))
+        prompt_cloud_creds(env, cloud)
     elif key == "zapier":
-        config["zapier_token"] = prompt_zapier_token(config)
+        prompt_zapier_token(env)
     elif key == "email":
-        config["email"] = _prompt_email(config)
-    save_config(config)
-    return config
+        email = _prompt_email(env)
+        _save_env("TF_VAR_owner_email", email)
 
 
-def run_edit_menu(config: dict) -> dict:
+def run_edit_menu(env: dict) -> None:
     while True:
+        env = _load_env()
         _section("Edit Configuration")
         print()
 
-        # Build display values for each editable field
-        cloud  = (config.get("cloud_provider") or "not set").upper()
-        labs   = _fmt_labs(config)
-        cm     = config.get("confluent_api_key_mode", "not set")
-        c_disp = "auto-generate" if cm == "auto" else "reuse saved" if cm == "reuse" else "manual" if cm == "manual" else "not set"
-        cl     = "AWS Bedrock" if config.get("cloud_provider") == "aws" else "Azure OpenAI"
-        cc     = _fmt_cloud_creds(config)
-        zap    = _mask(config.get("zapier_token", ""))
-        email  = config.get("email") or "not set"
+        cloud = (env.get("TF_VAR_cloud_provider") or "not set").upper()
+        labs = _fmt_labs(env)
+        ck = _mask(env.get("TF_VAR_confluent_cloud_api_key"))
+        cl_label, cl_value = _get_cloud_cred_info(env)
+        zap = _mask(env.get("TF_VAR_zapier_token"))
+        email = env.get("TF_VAR_owner_email") or "not set"
 
         FIELD_ITEMS = [
             ("cloud",          f"Cloud Provider       {cloud}"),
             ("labs",           f"Labs                 {labs}"),
-            ("confluent-keys", f"Confluent API Keys   {c_disp}"),
-            ("cloud-creds",    f"{cl} Keys       {cc}"),
+            ("confluent-keys", f"Confluent API Keys   {ck}"),
+            ("cloud-creds",    f"{cl_label} Keys       {cl_value}"),
             ("zapier",         f"Zapier Token         {zap}"),
             ("email",          f"Email (for tagging)  {email}"),
             ("__back__",       "← Done editing"),
@@ -760,7 +1017,6 @@ def run_edit_menu(config: dict) -> dict:
             if key is None:
                 break
         else:
-            # Non-TTY fallback
             print("  Select a field to change:\n")
             for i, (k, label) in enumerate(FIELD_ITEMS[:-1], 1):
                 print(f"    {i}) {label}")
@@ -782,7 +1038,7 @@ def run_edit_menu(config: dict) -> dict:
         if key == "__back__":
             break
 
-        config = _edit_key(key, config)
+        _edit_key(key, env)
         print()
         print(f"  ✓ {EDIT_KEYS[key]} updated.")
         print()
@@ -792,87 +1048,54 @@ def run_edit_menu(config: dict) -> dict:
             choices=["Edit another setting", "Deploy now", "Quit"],
         )
         if next_action == "Deploy now":
-            if not show_review_and_confirm(config):
+            env = _load_env()
+            if not show_review_and_confirm(env):
                 sys.exit(0)
-            return config
+            return
         elif next_action == "Quit":
             sys.exit(0)
-        # else: Edit another setting → loop
-
-    return config
 
 
 # ── Deployment execution ──────────────────────────────────────────────────────
-def _build_creds(config: dict) -> dict:
-    """Build a flat {key: value} dict for write_tfvars_for_deployment."""
-    c = {}
-    cloud = config.get("cloud_provider", "aws")
-
-    if config.get("confluent_api_key"):
-        c["confluent_cloud_api_key"] = config["confluent_api_key"]
-    if config.get("confluent_api_secret"):
-        c["confluent_cloud_api_secret"] = config["confluent_api_secret"]
-    if config.get("email"):
-        c["owner_email"] = config["email"]
-
-    if cloud == "aws":
-        if config.get("aws_access_key_id"):
-            c["aws_bedrock_access_key"] = config["aws_access_key_id"]
-        if config.get("aws_secret_access_key"):
-            c["aws_bedrock_secret_key"] = config["aws_secret_access_key"]
-    elif cloud == "azure":
-        if config.get("azure_openai_endpoint"):
-            c["azure_openai_endpoint"] = config["azure_openai_endpoint"]
-        if config.get("azure_openai_api_key"):
-            c["azure_openai_api_key"] = config["azure_openai_api_key"]
-
-    if config.get("zapier_token"):
-        c["zapier_token"] = config["zapier_token"]
-    return c
-
-
-def run_deployment(config: dict) -> None:
-    from scripts.common.credentials import generate_confluent_api_keys
+def run_deployment(env: dict) -> None:
     from scripts.common.terraform_runner import run_terraform
     from scripts.common.tfvars import write_tfvars_for_deployment
 
     root   = _project_root()
-    cloud  = config.get("cloud_provider", "aws")
-    region = "us-east-1" if cloud == "aws" else "eastus2"
+    cloud  = env.get("TF_VAR_cloud_provider", "aws")
+    region = env.get("TF_VAR_cloud_region", "us-east-1" if cloud == "aws" else "eastus2")
 
-    # Auto-generate Confluent keys
-    if config.get("confluent_api_key_mode") == "auto":
-        print("\n  Generating Confluent Cloud API keys...")
-        api_key, api_secret = generate_confluent_api_keys()
-        if not api_key or not api_secret:
-            print("  ✗ Failed to generate Confluent API keys. Aborting.")
-            sys.exit(1)
-        config["confluent_api_key"]    = api_key
-        config["confluent_api_secret"] = api_secret
-        save_config(config)
+    # Load all TF_VAR_* into os.environ for Terraform
+    for k, v in env.items():
+        if k.startswith("TF_VAR_") and v:
+            os.environ[k] = v
 
-    # Build creds dict and load TF_VAR_* into environment
-    creds = _build_creds(config)
-    for k, v in creds.items():
-        if v:
-            os.environ[f"TF_VAR_{k}"] = v
+    # Also set cloud_region if not already present
+    if "TF_VAR_cloud_region" not in os.environ:
+        os.environ["TF_VAR_cloud_region"] = region
+
+    # Build creds dict (strip TF_VAR_ prefix for write_tfvars_for_deployment)
+    creds = {k: v for k, v in env.items() if k.startswith("TF_VAR_") and v}
 
     # Determine terraform environments
     lab_to_tf = {lid: tf for lid, _, tf in LABS}
-    selected  = config.get("labs") or []
+    selected  = [s.strip() for s in (env.get("DEPLOY_LABS") or "").split(",") if s.strip()]
     envs      = ["core"] + [lab_to_tf[lab] for lab in selected if lab in lab_to_tf]
 
     # Write terraform.tfvars files
     write_tfvars_for_deployment(root, cloud, region, creds, envs)
 
+    # Record last run
+    _save_env("DEPLOY_LAST_RUN", datetime.now(timezone.utc).isoformat())
+
     print("\n=== Starting Deployment ===")
-    for env in envs:
-        env_path = root / "terraform" / env
+    for e in envs:
+        env_path = root / "terraform" / e
         if not env_path.exists():
             print(f"  Warning: {env_path} does not exist, skipping.")
             continue
         if not run_terraform(env_path):
-            print(f"\n  ✗ Deployment failed at {env}. Stopping.")
+            print(f"\n  ✗ Deployment failed at {e}. Stopping.")
             sys.exit(1)
 
     print("\n  ✓ All deployments completed successfully!")
@@ -887,22 +1110,26 @@ def main() -> None:
     )
     parser.add_argument(
         "--full", action="store_true",
-        help="Force full setup flow even if a saved config exists",
+        help="Force full setup flow even if saved credentials exist",
     )
     args = parser.parse_args()
 
     _banner()
-    config = load_config()
+
+    # One-time migration from old JSON config
+    _migrate_json_config()
+
+    env = _load_env()
 
     # Edit mode (skips pre-flight)
     if args.edit is not None:
-        if not config:
+        if not env:
             print("  No saved configuration found. Run the full setup first.")
             sys.exit(1)
         if args.edit == "__menu__":
-            run_edit_menu(config)
+            run_edit_menu(env)
         elif args.edit in EDIT_KEYS:
-            _edit_key(args.edit, config)
+            _edit_key(args.edit, env)
             print(f"\n  ✓ {EDIT_KEYS[args.edit]} updated.")
         else:
             print(f"  Unknown key: {args.edit!r}")
@@ -911,17 +1138,17 @@ def main() -> None:
         sys.exit(0)
 
     # Pre-flight
-    if not _preflight():
+    if not _preflight(env):
         print()
         sys.exit(1)
 
     # Mode selection
-    if not args.full and _config_complete(config):
-        config = run_quick_deploy(config)
+    if not args.full and _is_ready(env):
+        env = run_quick_deploy(env)
     else:
-        config = run_full_flow(config)
+        env = run_full_flow(env)
 
-    run_deployment(config)
+    run_deployment(env)
 
 
 if __name__ == "__main__":
