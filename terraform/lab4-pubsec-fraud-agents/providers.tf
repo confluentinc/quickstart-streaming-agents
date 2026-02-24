@@ -5,6 +5,10 @@ terraform {
       source  = "confluentinc/confluent"
       version = "~> 2.38"
     }
+    null = {
+      source  = "hashicorp/null"
+      version = "~> 3.0"
+    }
   }
 }
 

@@ -75,7 +75,7 @@ mongodb = [
 
 [project.scripts]
 deploy = "deploy:main"
-deploy2 = "deploy2:main"
+deploy2 = "scripts.common.deploy2:main"
 destroy = "scripts.common.destroy:main"
 destroy2 = "scripts.common.destroy2:main"
 #

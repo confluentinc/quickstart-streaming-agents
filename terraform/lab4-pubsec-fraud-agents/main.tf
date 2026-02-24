@@ -302,3 +302,20 @@ resource "confluent_flink_statement" "fema_policies_vectordb_aws" {
     confluent_flink_statement.mongodb_connection_statement_lab4
   ]
 }
+
+# Run datagen as the final provisioning step so the claims topic is
+# pre-populated before the workshop begins.
+resource "null_resource" "run_datagen" {
+  provisioner "local-exec" {
+    command     = "uv run lab4_datagen"
+    working_dir = "${path.module}/../.."
+  }
+
+  depends_on = [
+    confluent_flink_statement.claims_table,
+    confluent_flink_statement.cosmosdb_connection_statement_lab4,
+    confluent_flink_statement.fema_policies_vectordb_azure,
+    confluent_flink_statement.mongodb_connection_statement_lab4,
+    confluent_flink_statement.fema_policies_vectordb_aws,
+  ]
+}

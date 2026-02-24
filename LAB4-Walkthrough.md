@@ -1,4 +1,4 @@
-# Lab4: FEMA Fraud Detection Using Confluent Intelligence
+# Lab4: Public Sector Insurance Claims Fraud Detection Using Confluent Intelligence
 
 ![FEMA Fraud Detection](./assets/lab4/lab4-architecture.png)
 
@@ -77,6 +77,50 @@ The data includes:
 **Data Pattern:**
 - **7 cities** show normal exponential decay (claims decrease over time)
 - **1 city (Naples)** shows an anomalous spike on Day 3, containing specifically designed claims with fraud indicators, policy violations, and legitimate claims for testing
+
+---
+
+### Visualize the Anomaly
+
+Before running anomaly detection, you can visualize the raw claim patterns to see the spike with your own eyes. Run these two queries in the [Flink UI](https://confluent.cloud/go/flink):
+
+**All other regions (normal decay):**
+```sql
+SELECT
+    window_start,
+    window_end,
+    city,
+    SUM(CAST(claim_amount AS DOUBLE)) AS total_claims_amount,
+    COUNT(*) AS claim_count
+FROM TABLE(
+    TUMBLE(TABLE claims, DESCRIPTOR(claim_timestamp), INTERVAL '1' HOUR)
+)
+WHERE city <> 'Naples'
+GROUP BY window_start, window_end, city;
+```
+
+**Anomaly region — Naples only (claims actually *increasing* on days 8-9):**
+```sql
+SELECT
+    window_start,
+    window_end,
+    SUM(CAST(claim_amount AS DOUBLE)) AS total_claims_amount,
+    COUNT(*) AS claim_count
+FROM TABLE(
+    TUMBLE(TABLE claims, DESCRIPTOR(claim_timestamp), INTERVAL '1' HOUR)
+)
+WHERE city = 'Naples'
+GROUP BY window_start, window_end
+ORDER BY window_start;
+```
+
+After running each query, switch to the **Time Series** chart view to visualize the results:
+
+<img src="./assets/lab4/switch_to_time_series.png" width="40%" alt="Switch to Time Series view" />
+
+All other regions show a steady downward slope as claims taper off post-disaster. Naples follows the same pattern initially, then spikes sharply upward — the fraud anomaly:
+
+![All regions vs anomaly region](./assets/lab4/all_regions_vs_anomaly_region.png)
 
 ---
 
@@ -163,21 +207,13 @@ WHERE anomaly_result.is_anomaly = true
 SELECT * FROM claims_anomalies_by_city;
 ```
 
-**Expected Results:**
-
-```
-city   | window_time         | claim_count | total_claim_amount | expected_claim_amount | is_anomaly
--------|---------------------|-------------|--------------------|-----------------------|----------------
-Naples | 2025-03-03 08:59:59 | 47          | 5863000           | 2826604               | true
-```
-
-You should see **1 anomaly** detected in Naples on Day 3, containing all claims from that 3-hour window.
+![claims_anomalies_by_city](./assets/lab4/claims_anomalies_by_city.png)
 
 ---
 
 ### 2. Investigate Fraudulent Claims
 
-Once anomalies are detected, use this query to create a table with all claims from the anomaly window for investigation:
+Once anomalies are detected, use this query to create a table with claims from the anomaly window for investigation:
 
 ```sql
 SET 'sql.state-ttl' = '14 d';
@@ -187,12 +223,12 @@ SELECT
     c.claim_id,
     c.applicant_name,
     c.city,
+    c.claim_narrative,
     c.claim_amount,
     c.damage_assessed,
     c.has_insurance,
     c.insurance_amount,
     c.is_primary_residence,
-    c.claim_narrative,
     c.assessment_date,
     c.disaster_date,
     c.assessment_source,
@@ -218,6 +254,8 @@ This creates a table with all claims from the Naples anomaly window. Now query i
 ```sql
 SELECT * FROM claims_to_investigate;
 ```
+
+![claims_to_investigate](./assets/lab4/claims_to_investigate.png)
 
 ```sql
  SET 'sql.state-ttl' = '14 d';
@@ -288,7 +326,7 @@ Then view the results:
 SELECT * FROM `claims_to_investigate_with_policies`;
 ```
 
-
+![claims_to_investigate_with_policies](./assets/lab4/claims_to_investigate_with_policies.png)
 
 ---
 
@@ -422,17 +460,17 @@ LATERAL TABLE(AI_RUN_AGENT(
 SELECT * FROM `claims_reviewed`;
 ```
 
-
+![claims_reviewed](./assets/lab4/claims_reviewed.png)
 
 ## Conclusion
 
 By chaining these streaming components together, we've built an always-on, real-time fraud detection pipeline that:
 
-1. **Detects** anomalous claim spikes in 3-hour windows across cities using `ML_DETECT_ANOMALIES`
+1. **Detects** anomalous claim spikes in 6-hour windows across cities using `ML_DETECT_ANOMALIES`
 2. **Isolates** the suspicious window and enriches every claim with relevant FEMA IAPPG policy sections using vector search
-3. **Investigates** each claim autonomously using an AI agent that checks arithmetic, cross-references narrative against structured fields, and cites specific policy violations
+3. **Investigates** each claim autonomously using an AI agent that checks claim credibility, cross-references the claim narrative against structured fields, and cites specific policy violations
 
-The result is a streaming verdict for every flagged claim — approve, request documentation, deny for policy violation, or deny for fraud — delivered in real time as claims arrive, with specific FEMA policy citations to support each decision.
+The result is a deep, autonomous investigation of every flagged claim resulting in a proposed verdict — approve, request documentation, deny for policy violation, or deny for fraud — delivered in real time as claims arrive, with specific FEMA policy citations to support each decision.
 
 ---
 

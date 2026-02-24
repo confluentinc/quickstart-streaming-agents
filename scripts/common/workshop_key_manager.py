@@ -106,12 +106,12 @@ AZURE_DEPLOYMENTS = {
     "gpt-5-mini": {
         "model": "gpt-5-mini",
         "version": "2025-08-07",
-        "capacity": 500
+        "capacity": 150
     },
     "text-embedding-ada-002": {
         "model": "text-embedding-ada-002",
         "version": "2",
-        "capacity": 250
+        "capacity": 120
     }
 }
 
@@ -683,13 +683,7 @@ def get_azure_region(project_root: Path) -> str:
     IMPORTANT: Azure workshop mode MUST use eastus2 because the hardcoded
     MongoDB clusters for Lab2 and Lab3 are located in eastus2.
     """
-    print("\n" + "=" * 70)
-    print("IMPORTANT: Azure workshop mode requires eastus2 region")
-    print("=" * 70)
-    print("\nThe hardcoded MongoDB clusters for Lab2 and Lab3 are in eastus2.")
-    print("Using any other region will cause connection failures.")
-    print("Region will be set to: eastus2")
-    print("=" * 70 + "\n")
+    print("\nCreating keys in eastus2 region.")
 
     return "eastus2"
 

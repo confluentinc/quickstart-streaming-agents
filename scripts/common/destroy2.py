@@ -41,8 +41,9 @@ def _cleanup(env_path: Path) -> None:
 
 def main() -> None:
     w = 54
+    title = "  Confluent Labs  ·  Teardown Script"
     print("╔" + "═" * w + "╗")
-    print("║  Confluent Labs  ·  Teardown Script                 ║")
+    print(f"║{title:<{w}}║")
     print("╚" + "═" * w + "╝")
     print()
     print("  This will remove all provisioned lab resources.")
@@ -53,19 +54,33 @@ def main() -> None:
     creds = _load_credentials(root)
     saved = creds.get("TF_VAR_cloud_provider", "")
 
-    # Cloud provider — the only prompt asked
+    # Cloud provider — numbered menu
+    _CLOUD_OPTS = [("aws", "AWS"), ("azure", "Azure")]
     if saved:
-        print(f"  Cloud Provider [previously: {saved.upper()}]: ", end="", flush=True)
-        raw = input().strip().lower()
-        cloud = raw if raw in ("aws", "azure") else saved
+        ordered = sorted(_CLOUD_OPTS, key=lambda x: x[0] != saved)
     else:
-        while True:
-            print("  Cloud Provider (aws/azure): ", end="", flush=True)
-            raw = input().strip().lower()
-            if raw in ("aws", "azure"):
-                cloud = raw
+        ordered = _CLOUD_OPTS
+
+    label = f"  Cloud Provider [previously: {saved.upper()}]:" if saved else "  Cloud Provider:"
+    print(label)
+    print()
+    for i, (val, disp) in enumerate(ordered, 1):
+        print(f"    {i}) {disp}")
+    print()
+    while True:
+        print(f"  Choice [default: {ordered[0][1]}]: ", end="", flush=True)
+        raw = input().strip()
+        if not raw:
+            cloud = ordered[0][0]
+            break
+        try:
+            idx = int(raw) - 1
+            if 0 <= idx < len(ordered):
+                cloud = ordered[idx][0]
                 break
-            print("  Invalid. Enter 'aws' or 'azure'.")
+        except ValueError:
+            pass
+        print("  Invalid. Enter 1 or 2.")
 
     region = "us-east-1" if cloud == "aws" else "eastus2"
 
