@@ -4,7 +4,7 @@
 
 This demo showcases an intelligent, real-time fraud detection system that autonomously identifies suspicious claim patterns in FEMA disaster assistance applications. Built on [Confluent Intelligence](https://www.confluent.io/product/confluent-intelligence/), the system combines stream processing, anomaly detection, and AI-powered analysis to detect organized fraud rings and policy violations in real-time.
 
-## What This System Does
+## What This Streaming Data Pipeline Does
 
 The system continuously monitors FEMA disaster assistance claims in real time and performs automated fraud detection:
 
@@ -63,26 +63,20 @@ Select **"Lab 4: FEMA Fraud Detection"** from the menu.
 
 ### Data Generation
 
-Generate synthetic FEMA claims data:
-
-```bash
-uv run lab4_datagen
-```
-
-This publishes ~36,000 synthetic claims across 8 Florida cities over a 14-day period following Hurricane Helene (March 1, 2025).
+The Lab4 Terraform automatically publishes ~36,000 synthetic claims across 8 Florida cities over a 14-day period following Hurricane Helene (March 1, 2025).
 
 The data includes:
-- **`claims`** table – FEMA disaster assistance claims with applicant info, damage assessments, claim amounts, and detailed narratives
+- **`claims`** table – synthetic disaster assistance claims with applicant info, damage assessments, claim amounts, and detailed narratives
 
 **Data Pattern:**
 - **7 cities** show normal exponential decay (claims decrease over time)
-- **1 city (Naples)** shows an anomalous spike on Day 3, containing specifically designed claims with fraud indicators, policy violations, and legitimate claims for testing
+- **1 city (Naples)** shows an anomalous spike on Days 8-9, containing specifically designed claims with fraud indicators, policy violations, and legitimate claims for testing
 
 ---
 
 ### Visualize the Anomaly
 
-Before running anomaly detection, you can visualize the raw claim patterns to see the spike with your own eyes. Run these two queries in the [Flink UI](https://confluent.cloud/go/flink):
+Before running anomaly detection, you can view the raw claim patterns for yourself by running these two queries in the [Flink UI](https://confluent.cloud/go/flink):
 
 **All other regions (normal decay):**
 ```sql
@@ -93,13 +87,13 @@ SELECT
     SUM(CAST(claim_amount AS DOUBLE)) AS total_claims_amount,
     COUNT(*) AS claim_count
 FROM TABLE(
-    TUMBLE(TABLE claims, DESCRIPTOR(claim_timestamp), INTERVAL '1' HOUR)
-)
+    TUMBLE(TABLE claims, DESCRIPTOR(claim_timestamp), INTERVAL '1' HOUR))
 WHERE city <> 'Naples'
 GROUP BY window_start, window_end, city;
 ```
 
 **Anomaly region — Naples only (claims actually *increasing* on days 8-9):**
+
 ```sql
 SELECT
     window_start,
@@ -107,18 +101,16 @@ SELECT
     SUM(CAST(claim_amount AS DOUBLE)) AS total_claims_amount,
     COUNT(*) AS claim_count
 FROM TABLE(
-    TUMBLE(TABLE claims, DESCRIPTOR(claim_timestamp), INTERVAL '1' HOUR)
-)
+    TUMBLE(TABLE claims, DESCRIPTOR(claim_timestamp), INTERVAL '1' HOUR))
 WHERE city = 'Naples'
-GROUP BY window_start, window_end
-ORDER BY window_start;
+GROUP BY window_start, window_end;
 ```
 
-After running each query, switch to the **Time Series** chart view to visualize the results:
+After running each query, click the **Switch to Time Series** chart in the UI to visualize the results:
 
 <img src="./assets/lab4/switch_to_time_series.png" width="40%" alt="Switch to Time Series view" />
 
-All other regions show a steady downward slope as claims taper off post-disaster. Naples follows the same pattern initially, then spikes sharply upward — the fraud anomaly:
+All other regions show a steady downward slope as claims taper off post-disaster. Naples follows the same pattern initially, then spikes sharply upward — the anomaly:
 
 ![All regions vs anomaly region](./assets/lab4/all_regions_vs_anomaly_region.png)
 
