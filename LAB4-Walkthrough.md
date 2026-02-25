@@ -4,18 +4,6 @@
 
 This demo showcases an intelligent, real-time fraud detection system that autonomously identifies suspicious claim patterns in FEMA disaster assistance applications. Built on [Confluent Intelligence](https://www.confluent.io/product/confluent-intelligence/), the system combines stream processing, anomaly detection, and AI-powered analysis to detect organized fraud rings and policy violations in real-time.
 
-## What This Streaming Data Pipeline Does
-
-The system continuously monitors FEMA disaster assistance claims in real time and performs automated fraud detection:
-
-1. **Anomaly Detection** – Detects unusual spikes in claim amounts across different cities using Flink's [ML_DETECT_ANOMALIES function](https://docs.confluent.io/cloud/current/ai/builtin-functions/detect-anomalies.html).
-2. **Pattern Recognition** – Identifies organized fraud rings through shared accounts, phone numbers, and timeline violations.
-3. **Contextual Understanding** – Analyzes claim narratives using LLMs to detect vague descriptions, exaggerated amounts, and suspicious patterns.
-
-All of this runs in real time on **Confluent Cloud for Apache Flink**, with no external orchestration required.
-
----
-
 ## Prerequisites
 
 **Installation instructions:**
@@ -30,7 +18,7 @@ winget install astral-sh.uv Git.Git Hashicorp.Terraform ConfluentInc.Confluent-C
 ```
 
 Once software is installed, you'll need:
-- **LLM Access:** AWS Bedrock API keys **OR** Azure OpenAI endpoint + API key
+- **LLM API keys:** AWS Bedrock API keys **OR** Azure OpenAI endpoint + API key
   - **Easy key creation:** Run `uv run api-keys create` to quickly auto-generate credentials
 
 ---
@@ -63,22 +51,23 @@ Select **"Lab 4: FEMA Fraud Detection"** from the menu.
 
 ### Data Generation
 
-The Lab4 Terraform automatically publishes ~36,000 synthetic claims across 8 Florida cities over a 14-day period following Hurricane Helene.
+The Lab4 Terraform automatically publishes ~36,000 synthetic claims across 8 Florida cities. The hurricane claims begin 14 days before the current date (the day of the hurricane), and continue through today.
 
 The data includes:
 - **`claims`** table – synthetic disaster assistance claims with applicant info, damage assessments, claim amounts, and detailed narratives
 
 **Data Pattern:**
 - **7 cities** show normal exponential decay (claims decrease over time)
-- **1 city (Naples)** shows an anomalous spike in the final 2 days (Days 13-14), containing specifically designed claims with fraud indicators, policy violations, and legitimate claims for testing
+- **1 city (Naples)** shows an anomalous spike in the final 2 days (Days 13-14), containing a mix of claims: some with fraud indicators, others with policy violations, and others still with fully legitimate claims.
 
 ---
 
-### Visualize the Anomaly
+### 0. Visualize the Anomaly
 
 Before running anomaly detection, you can view the raw claim patterns for yourself by running these two queries in the [Flink UI](https://confluent.cloud/go/flink):
 
 **All other regions (normal decay):**
+
 ```sql
 SELECT
     window_start,
@@ -475,7 +464,7 @@ The result is a deep, autonomous investigation of every flagged claim resulting 
 ### No anomalies detected?
 
 **Check:**
-1. Data publishing completed: `uv run lab4_datagen`
+1. Re-publish : `uv run lab4_datagen`
 2. Claims published to topic: `SELECT COUNT(*) FROM claims;` (should be ~36,000)
 3. Wait for baseline: ARIMA needs 16 windows (2 days with 3-hour windows) before detecting
 
@@ -500,7 +489,7 @@ The ARIMA parameters are tuned to detect exactly 1 anomaly (Naples, Day 3).
 
 If you see different results:
 - **0 anomalies:** Decrease `confidencePercentage` to 90.0
-- **>1 anomalies:** Increase `confidencePercentage` to 99.0
+- **>3 anomalies:** Increase `confidencePercentage` to 99.0
 - **Wrong timing:** Re-publish data: `uv run lab4_datagen`
 
 </details>
