@@ -1353,9 +1353,6 @@ dev = [
     { name = "pytest-order" },
     { name = "pytest-timeout" },
 ]
-mongodb = [
-    { name = "pymongo" },
-]
 
 [package.metadata]
 requires-dist = [
@@ -1372,7 +1369,6 @@ requires-dist = [
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.0.0" },
     { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=3.5.0" },
     { name = "pymongo", specifier = ">=4.10.1" },
-    { name = "pymongo", marker = "extra == 'mongodb'", specifier = ">=4.0.0,<5.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.0.0" },
     { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.0.0" },
     { name = "pytest-order", marker = "extra == 'dev'", specifier = ">=1.2.0" },
@@ -1384,7 +1380,7 @@ requires-dist = [
     { name = "rich", specifier = ">=13.0.0" },
     { name = "urllib3", specifier = ">=1.26.18,<2.0" },
 ]
-provides-extras = ["dev", "mongodb"]
+provides-extras = ["dev"]
 
 [[package]]
 name = "requests"
