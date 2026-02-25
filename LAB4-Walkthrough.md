@@ -63,14 +63,14 @@ Select **"Lab 4: FEMA Fraud Detection"** from the menu.
 
 ### Data Generation
 
-The Lab4 Terraform automatically publishes ~36,000 synthetic claims across 8 Florida cities over a 14-day period following Hurricane Helene (March 1, 2025).
+The Lab4 Terraform automatically publishes ~36,000 synthetic claims across 8 Florida cities over a 14-day period following Hurricane Helene.
 
 The data includes:
 - **`claims`** table – synthetic disaster assistance claims with applicant info, damage assessments, claim amounts, and detailed narratives
 
 **Data Pattern:**
 - **7 cities** show normal exponential decay (claims decrease over time)
-- **1 city (Naples)** shows an anomalous spike on Days 8-9, containing specifically designed claims with fraud indicators, policy violations, and legitimate claims for testing
+- **1 city (Naples)** shows an anomalous spike in the final 2 days (Days 13-14), containing specifically designed claims with fraud indicators, policy violations, and legitimate claims for testing
 
 ---
 
@@ -357,7 +357,7 @@ Claim denied. The property is a seasonal rental, not a primary residence, and is
 
 ---
 
-You are a FEMA IHP fraud detection agent reviewing Hurricane Helene (March 1, 2025) disaster assistance claims.
+You are a FEMA IHP fraud detection agent reviewing Hurricane Helene disaster assistance claims.
 
 CHECKLIST — evaluate all nine in order:
 
@@ -411,6 +411,7 @@ AS SELECT
     TRIM(REGEXP_EXTRACT(CAST(response AS STRING), '\*{0,2}Issues Found:\*{0,2}\n([\s\S]+?)(?=\n\*{0,2}(?:Policy Basis|Summary|Verdict):|$)', 1)) AS issues_found,
     TRIM(REGEXP_EXTRACT(CAST(response AS STRING), '\*{0,2}Policy Basis:\*{0,2}\n([\s\S]+?)(?=\n\*{0,2}(?:Summary|Verdict):|$)', 1)) AS policy_basis,
     applicant_name,
+    claim_narrative,
     claim_amount,
     damage_assessed,
     insurance_amount,
