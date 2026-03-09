@@ -65,6 +65,7 @@ def generate_core_tfvars_content(
     owner_email: Optional[str] = None,
     aws_bedrock_access_key: Optional[str] = None,
     aws_bedrock_secret_key: Optional[str] = None,
+    aws_session_token: Optional[str] = None,
     azure_openai_endpoint: Optional[str] = None,
     azure_openai_api_key: Optional[str] = None
 ) -> str:
@@ -102,6 +103,8 @@ cloud_provider = "{provider}"
     if cloud == "aws" and aws_bedrock_access_key and aws_bedrock_secret_key:
         content += f'aws_bedrock_access_key = "{aws_bedrock_access_key}"\n'
         content += f'aws_bedrock_secret_key = "{aws_bedrock_secret_key}"\n'
+        if aws_session_token:
+            content += f'aws_session_token = "{aws_session_token}"\n'
 
     # Azure OpenAI credentials
     if cloud == "azure" and azure_openai_endpoint and azure_openai_api_key:
@@ -215,6 +218,7 @@ def write_tfvars_for_deployment(
 
         aws_bedrock_access_key = get_credential_value(creds, "aws_bedrock_access_key") if cloud == "aws" else None
         aws_bedrock_secret_key = get_credential_value(creds, "aws_bedrock_secret_key") if cloud == "aws" else None
+        aws_session_token = get_credential_value(creds, "aws_session_token") if cloud == "aws" else None
         azure_openai_endpoint = get_credential_value(creds, "azure_openai_endpoint") if cloud == "azure" else None
         azure_openai_api_key = get_credential_value(creds, "azure_openai_api_key") if cloud == "azure" else None
 
@@ -225,6 +229,7 @@ def write_tfvars_for_deployment(
                 cloud_provider=cloud, owner_email=owner_email,
                 aws_bedrock_access_key=aws_bedrock_access_key,
                 aws_bedrock_secret_key=aws_bedrock_secret_key,
+                aws_session_token=aws_session_token,
                 azure_openai_endpoint=azure_openai_endpoint,
                 azure_openai_api_key=azure_openai_api_key
             )

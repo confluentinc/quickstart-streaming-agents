@@ -47,6 +47,13 @@ variable "aws_bedrock_secret_key" {
   default     = ""
 }
 
+variable "aws_session_token" {
+  description = "AWS Session Token for temporary credentials (required when access key starts with ASIA)"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
 # Azure OpenAI credentials (used when cloud_provider == "azure")
 variable "azure_openai_api_key" {
   description = "Azure OpenAI API Key"

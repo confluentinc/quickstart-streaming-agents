@@ -281,17 +281,19 @@ def validate_mongodb(
     return all_passed, messages
 
 
-def validate_aws_bedrock_credentials(access_key: str, secret_key: str) -> Tuple[bool, List[str]]:
+def validate_aws_bedrock_credentials(access_key: str, secret_key: str, session_token: str = "") -> Tuple[bool, List[str]]:
     """
     Validate AWS Bedrock credential format (advisory only).
 
     Checks:
-    - Access key format (should start with AKIA and be 20 chars)
+    - Access key format (AKIA for permanent, ASIA for temporary/session credentials)
     - Secret key format (should be ~40 chars base64-like)
+    - Session token is provided when using temporary credentials (ASIA)
 
     Args:
         access_key: AWS access key ID
         secret_key: AWS secret access key
+        session_token: AWS session token (required for temporary credentials)
 
     Returns:
         Tuple of (all_checks_passed, list_of_messages)
@@ -303,16 +305,21 @@ def validate_aws_bedrock_credentials(access_key: str, secret_key: str) -> Tuple[
     if not access_key:
         messages.append(colorize("⚠️  Warning: AWS access key is empty", 'yellow'))
         all_passed = False
-    elif not access_key.startswith("AKIA"):
-        messages.append(colorize("⚠️  Warning: AWS access key should start with 'AKIA'", 'yellow'))
+    elif not (access_key.startswith("AKIA") or access_key.startswith("ASIA")):
+        messages.append(colorize("⚠️  Warning: AWS access key should start with 'AKIA' (permanent) or 'ASIA' (temporary)", 'yellow'))
         messages.append("   → Verify this is a valid IAM access key")
         all_passed = False
     elif len(access_key) != 20:
         messages.append(colorize(f"⚠️  Warning: AWS access key should be 20 characters (found {len(access_key)})", 'yellow'))
         messages.append("   → Verify this is a valid IAM access key")
         all_passed = False
+    elif access_key.startswith("ASIA") and not session_token:
+        messages.append(colorize("⚠️  Warning: Temporary credentials (ASIA) require a session token", 'yellow'))
+        messages.append("   → Provide AWS_SESSION_TOKEN along with access key and secret key")
+        all_passed = False
     else:
-        messages.append(colorize("✓ AWS access key format looks valid", 'green'))
+        key_type = "temporary" if access_key.startswith("ASIA") else "permanent"
+        messages.append(colorize(f"✓ AWS access key format looks valid ({key_type} credentials)", 'green'))
 
     # Check secret key format
     if not secret_key:
