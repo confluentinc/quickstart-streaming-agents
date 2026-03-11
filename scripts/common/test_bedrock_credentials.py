@@ -93,11 +93,11 @@ def _invoke_model(
             elif error_code == 'AccessDeniedException':
                 return False, "model_not_enabled"
             else:
-                return False, "error"
+                return False, f"error: {error_code} — {e.response['Error']['Message']}"
 
         except Exception as e:
             logger.debug(f"Unexpected error invoking {model_id}: {e}")
-            return False, "error"
+            return False, f"error: {e}"
 
     return False, "invalid_keys"
 
@@ -109,6 +109,7 @@ def test_bedrock_credentials(
     logger: Optional[logging.Logger] = None,
     max_retries: int = 3,
     retry_delay: int = 5,
+    session_token: Optional[str] = None,
 ) -> Tuple[bool, Optional[str]]:
     """
     Test if credentials can invoke Claude Sonnet 4.5 on Bedrock.
@@ -128,12 +129,15 @@ def test_bedrock_credentials(
     model_id = get_sonnet_model_id(region)
     logger.info(f"Testing Claude Sonnet 4.5 ({model_id}) in {region}")
 
-    client = boto3.client(
-        'bedrock-runtime',
+    client_kwargs = dict(
         aws_access_key_id=access_key_id,
         aws_secret_access_key=secret_access_key,
         region_name=region,
     )
+    if session_token:
+        client_kwargs['aws_session_token'] = session_token
+
+    client = boto3.client('bedrock-runtime', **client_kwargs)
 
     body = {
         "anthropic_version": "bedrock-2023-05-31",
@@ -154,6 +158,7 @@ def test_titan_embeddings(
     logger: Optional[logging.Logger] = None,
     max_retries: int = 1,
     retry_delay: int = 5,
+    session_token: Optional[str] = None,
 ) -> Tuple[bool, Optional[str]]:
     """
     Test if credentials can invoke the Titan Embed Text v1 model on Bedrock.
@@ -170,12 +175,15 @@ def test_titan_embeddings(
 
     logger.info(f"Testing Titan Embeddings ({TITAN_EMBED_MODEL_ID}) in {region}")
 
-    client = boto3.client(
-        'bedrock-runtime',
+    client_kwargs = dict(
         aws_access_key_id=access_key_id,
         aws_secret_access_key=secret_access_key,
         region_name=region,
     )
+    if session_token:
+        client_kwargs['aws_session_token'] = session_token
+
+    client = boto3.client('bedrock-runtime', **client_kwargs)
 
     body = {"inputText": "test"}
 
@@ -198,6 +206,7 @@ Examples:
     )
     parser.add_argument('--access-key', required=True, help='AWS access key ID')
     parser.add_argument('--secret-key', required=True, help='AWS secret access key')
+    parser.add_argument('--session-token', default=None, help='AWS session token (required for temporary credentials starting with ASIA)')
     parser.add_argument('--region', default='us-east-1', help='AWS region (default: us-east-1)')
     parser.add_argument('--verbose', action='store_true', help='Enable verbose output')
     args = parser.parse_args()
@@ -207,10 +216,10 @@ Examples:
     logger = logging.getLogger(__name__)
 
     sonnet_ok, sonnet_err = test_bedrock_credentials(
-        args.access_key, args.secret_key, args.region, logger
+        args.access_key, args.secret_key, args.region, logger, session_token=args.session_token
     )
     titan_ok, titan_err = test_titan_embeddings(
-        args.access_key, args.secret_key, args.region, logger
+        args.access_key, args.secret_key, args.region, logger, session_token=args.session_token
     )
 
     if sonnet_ok and titan_ok:

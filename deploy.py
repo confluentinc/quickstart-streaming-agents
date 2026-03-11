@@ -96,6 +96,8 @@ def main():
                 env_vars["TF_VAR_aws_bedrock_access_key"] = creds["aws_bedrock_access_key"]
             if "aws_bedrock_secret_key" in creds and creds["aws_bedrock_secret_key"]:
                 env_vars["TF_VAR_aws_bedrock_secret_key"] = creds["aws_bedrock_secret_key"]
+            if "aws_session_token" in creds and creds["aws_session_token"]:
+                env_vars["TF_VAR_aws_session_token"] = creds["aws_session_token"]
         if cloud == "azure":
             if "azure_openai_endpoint" in creds and creds["azure_openai_endpoint"]:
                 env_vars["TF_VAR_azure_openai_endpoint_raw"] = creds["azure_openai_endpoint"]
@@ -189,9 +191,16 @@ def main():
             set_key(creds_file, "TF_VAR_aws_bedrock_access_key", aws_bedrock_key)
             set_key(creds_file, "TF_VAR_aws_bedrock_secret_key", aws_bedrock_secret)
 
+            # Prompt for session token if using temporary credentials (ASIA*)
+            aws_session_token = ""
+            if aws_bedrock_key.startswith("ASIA"):
+                aws_session_token = prompt_with_default("AWS Session Token (required for temporary credentials)", creds.get("TF_VAR_aws_session_token", ""))
+                if aws_session_token:
+                    set_key(creds_file, "TF_VAR_aws_session_token", aws_session_token)
+
             # Validate AWS credentials format (advisory only)
             print("\nValidating AWS Bedrock credentials format...")
-            passed, messages = validate_aws_bedrock_credentials(aws_bedrock_key, aws_bedrock_secret)
+            passed, messages = validate_aws_bedrock_credentials(aws_bedrock_key, aws_bedrock_secret, aws_session_token)
             for msg in messages:
                 print(msg)
 
@@ -211,10 +220,10 @@ def main():
                 _log.setLevel(logging.CRITICAL)
                 print("\nChecking AWS Bedrock model access...")
                 _region = "us-east-1"
-                sonnet_ok, sonnet_err = test_bedrock_credentials(aws_bedrock_key, aws_bedrock_secret, _region, logger=_log, max_retries=1)
-                titan_ok,  titan_err  = test_titan_embeddings(aws_bedrock_key, aws_bedrock_secret, _region, logger=_log, max_retries=1)
-                print(f"  {'✓' if sonnet_ok else '✗'} Claude Sonnet 4.5 accessible ({_region})")
-                print(f"  {'✓' if titan_ok  else '✗'} Titan Embeddings accessible ({_region})")
+                sonnet_ok, sonnet_err = test_bedrock_credentials(aws_bedrock_key, aws_bedrock_secret, _region, logger=_log, max_retries=1, session_token=aws_session_token or None)
+                titan_ok,  titan_err  = test_titan_embeddings(aws_bedrock_key, aws_bedrock_secret, _region, logger=_log, max_retries=1, session_token=aws_session_token or None)
+                print(f"  {'✓' if sonnet_ok else '✗'} Claude Sonnet 4.5 accessible ({_region}){'' if sonnet_ok else f' [{sonnet_err}]'}")
+                print(f"  {'✓' if titan_ok  else '✗'} Titan Embeddings accessible ({_region}){'' if titan_ok else f' [{titan_err}]'}")
                 if not sonnet_ok or not titan_ok:
                     print()
                     if (sonnet_err == "invalid_keys" or titan_err == "invalid_keys"):
