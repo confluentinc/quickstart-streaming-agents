@@ -105,7 +105,7 @@ SELECT
         CAST(request_count AS DOUBLE),
         window_time,
         JSON_OBJECT(
-            'minTrainingSize' VALUE 287,
+            'minTrainingSize' VALUE 286,
             'maxTrainingSize' VALUE 7000,
             'confidencePercentage' VALUE 99.999,
             'enableStl' VALUE FALSE
@@ -155,7 +155,7 @@ anomaly_detection AS (
             CAST(request_count AS DOUBLE),
             window_time,
             JSON_OBJECT(
-                'minTrainingSize' VALUE 287,
+                'minTrainingSize' VALUE 286,
                 'maxTrainingSize' VALUE 7000,
                 'confidencePercentage' VALUE 99.999,
                 'enableStl' VALUE FALSE
