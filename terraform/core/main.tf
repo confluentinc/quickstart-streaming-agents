@@ -274,11 +274,12 @@ resource "confluent_flink_connection" "bedrock_connection" {
     secret = confluent_api_key.app-manager-flink-api-key.secret
   }
 
-  display_name   = "llm-textgen-connection"
-  type           = "BEDROCK"
-  endpoint       = "https://bedrock-runtime.${var.cloud_region}.amazonaws.com/model/${local.model_prefix}.anthropic.claude-sonnet-4-5-20250929-v1:0/invoke"
-  aws_access_key = var.aws_bedrock_access_key
-  aws_secret_key = var.aws_bedrock_secret_key
+  display_name      = "llm-textgen-connection"
+  type              = "BEDROCK"
+  endpoint          = "https://bedrock-runtime.${var.cloud_region}.amazonaws.com/model/${local.model_prefix}.anthropic.claude-sonnet-4-5-20250929-v1:0/invoke"
+  aws_access_key    = var.aws_bedrock_access_key
+  aws_secret_key    = var.aws_bedrock_secret_key
+  aws_session_token = var.aws_session_token != "" ? var.aws_session_token : null
 
   depends_on = [
     confluent_api_key.app-manager-flink-api-key,
@@ -311,11 +312,12 @@ resource "confluent_flink_connection" "bedrock_embedding_connection" {
     secret = confluent_api_key.app-manager-flink-api-key.secret
   }
 
-  display_name   = "llm-embedding-connection"
-  type           = "BEDROCK"
-  endpoint       = "https://bedrock-runtime.${var.cloud_region}.amazonaws.com/model/amazon.titan-embed-text-v1/invoke"
-  aws_access_key = var.aws_bedrock_access_key
-  aws_secret_key = var.aws_bedrock_secret_key
+  display_name      = "llm-embedding-connection"
+  type              = "BEDROCK"
+  endpoint          = "https://bedrock-runtime.${var.cloud_region}.amazonaws.com/model/amazon.titan-embed-text-v1/invoke"
+  aws_access_key    = var.aws_bedrock_access_key
+  aws_secret_key    = var.aws_bedrock_secret_key
+  aws_session_token = var.aws_session_token != "" ? var.aws_session_token : null
 
   depends_on = [
     confluent_api_key.app-manager-flink-api-key,

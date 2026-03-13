@@ -65,7 +65,7 @@ Make sure **Docker Desktop** is running, then begin generating data with the fol
 uv run lab3_datagen
 
 # or, lightweight instant deployment that skips Docker & ShadowTraffic download requirements
-uv un lab3_datagen --local
+uv run lab3_datagen --local
 ```
 
 The data generator produces the following data stream:
@@ -76,9 +76,9 @@ The data generator produces the following data stream:
 
 This step identifies unexpected surges in ride requests for each pickup zone in real time using Flink's built-in anomaly detection function. We analyze ride request counts over 5-minute windows and compare them against expected baselines derived from historical trends.
 
-Read the [blog post](https://docs.confluent.io/cloud/current/ai/builtin-functions/detect-anomalies.html) and view the [documentation](https://docs.confluent.io/cloud/current/flink/reference/functions/model-inference-functions.html#flink-sql-ml-anomaly-detect-function) on Flink anomaly detection for more details about how it works.
+Read the [documentation](https://docs.confluent.io/cloud/current/ai/builtin-functions/detect-anomalies.html) and view the [documentation](https://docs.confluent.io/cloud/current/flink/reference/functions/model-inference-functions.html#flink-sql-ml-anomaly-detect-function) on Flink anomaly detection for more details about how it works.
 
-In the [Flink UI](https://confluen.cloud/go/flink), select your new environment and open a SQL workspace. Then, visualize the anomaly detection in action by running this query:
+In the [Flink UI](https://confluent.cloud/go/flink), select your new environment and open a SQL workspace. Then, visualize the anomaly detection in action by running this query:
 
 ```sql
 WITH windowed_traffic AS (
@@ -105,7 +105,7 @@ SELECT
         CAST(request_count AS DOUBLE),
         window_time,
         JSON_OBJECT(
-            'minTrainingSize' VALUE 287,
+            'minTrainingSize' VALUE 286,
             'maxTrainingSize' VALUE 7000,
             'confidencePercentage' VALUE 99.999,
             'enableStl' VALUE FALSE
@@ -155,9 +155,9 @@ anomaly_detection AS (
             CAST(request_count AS DOUBLE),
             window_time,
             JSON_OBJECT(
-                'minTrainingSize' VALUE 287,
+                'minTrainingSize' VALUE 286,
                 'maxTrainingSize' VALUE 7000,
-                'confidencePercentage' VALUE 99.999,
+                'confidencePercentage' VALUE 99.9,
                 'enableStl' VALUE FALSE
             )
         ) OVER (
