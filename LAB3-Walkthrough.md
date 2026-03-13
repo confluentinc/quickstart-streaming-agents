@@ -157,7 +157,7 @@ anomaly_detection AS (
             JSON_OBJECT(
                 'minTrainingSize' VALUE 286,
                 'maxTrainingSize' VALUE 7000,
-                'confidencePercentage' VALUE 99.999,
+                'confidencePercentage' VALUE 99.9,
                 'enableStl' VALUE FALSE
             )
         ) OVER (
