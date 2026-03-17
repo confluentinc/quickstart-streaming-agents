@@ -196,6 +196,45 @@ class Lab3DataPublisher:
         if not dry_run:
             self.producer = Producer(self.producer_config)
 
+    def purge_topic(self, topic: str) -> None:
+        """Delete all existing records from the topic before publishing fresh data."""
+        from confluent_kafka.admin import AdminClient, OffsetSpec
+        from confluent_kafka import TopicPartition as AdminTopicPartition
+
+        self.logger.info(f"Purging existing records from topic '{topic}'...")
+        admin = AdminClient({
+            "bootstrap.servers": self.producer_config["bootstrap.servers"],
+            "sasl.mechanisms": self.producer_config["sasl.mechanisms"],
+            "security.protocol": self.producer_config["security.protocol"],
+            "sasl.username": self.producer_config["sasl.username"],
+            "sasl.password": self.producer_config["sasl.password"],
+        })
+
+        try:
+            metadata = admin.list_topics(topic=topic, timeout=10)
+            if topic not in metadata.topics:
+                self.logger.info(f"Topic '{topic}' not found — skipping purge")
+                return
+            partition_ids = list(metadata.topics[topic].partitions.keys())
+            tps = [AdminTopicPartition(topic, p) for p in partition_ids]
+
+            futures = admin.list_offsets({tp: OffsetSpec.latest() for tp in tps})
+            delete_offsets = {}
+            for tp, future in futures.items():
+                result = future.result()
+                if result.offset > 0:
+                    delete_offsets[tp] = AdminTopicPartition(tp.topic, tp.partition, result.offset)
+
+            if delete_offsets:
+                del_futures = admin.delete_records(delete_offsets)
+                for tp, future in del_futures.items():
+                    future.result()
+                self.logger.info(f"Purged {len(delete_offsets)} partition(s) in '{topic}'")
+            else:
+                self.logger.info(f"Topic '{topic}' already empty")
+        except Exception as e:
+            self.logger.warning(f"Could not purge topic '{topic}': {e} — continuing without purge")
+
     def publish_message(
         self, record: Dict[str, Any], topic: str,
         ts_offset_ms: int = 0, start_ms: int = 0,
@@ -262,6 +301,9 @@ class Lab3DataPublisher:
 
         results["total"] = len(lines)
         self.logger.info(f"Found {len(lines)} messages to publish")
+
+        if not self.dry_run:
+            self.purge_topic(topic)
 
         # Compute timestamp offset so data ends at "now" aligned to 5-min boundary
         self.logger.info("Scanning timestamps to rebase data to current time...")
