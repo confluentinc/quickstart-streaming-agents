@@ -128,8 +128,8 @@ def compute_timestamp_offset(lines: List[str]) -> tuple:
     Scan all JSONL lines to find the max request_ts, then compute an offset
     that rebases the data so the last few messages land 10s past aligned_end.
     This advances the Flink watermark past aligned_end, closing all 288
-    windows. With minTrainingSize=287, only the last closed window (288th)
-    is eligible for anomaly detection. Returns (offset_ms, aligned_start_ms).
+    windows. With minTrainingSize=286, windows 287 and 288 are both eligible
+    for anomaly detection. Returns (offset_ms, aligned_start_ms).
     """
     schema = avro.schema.parse(VALUE_SCHEMA_STR)
     max_ts = 0
@@ -272,6 +272,17 @@ class Lab3DataPublisher:
         end_dt = datetime.datetime.fromtimestamp(end_ms / 1000, tz=datetime.timezone.utc)
         self.logger.info(f"Rebasing timestamps by {offset_hours:+.1f} hours")
         self.logger.info(f"Time window: {start_dt.strftime('%Y-%m-%d %H:%M')} to {end_dt.strftime('%Y-%m-%d %H:%M')} UTC (288 x 5-min windows)")
+
+        # Sort events by rebased timestamp before publishing.
+        # The JSONL was captured partition-by-partition (not in timestamp order),
+        # so publishing in file order causes ~24-hour backward jumps at partition
+        # boundaries that push most events below the Flink watermark and drop them.
+        self.logger.info("Sorting events by rebased timestamp for chronological publishing...")
+        sort_schema = avro.schema.parse(VALUE_SCHEMA_STR)
+        lines_with_ts = [(ts_offset_ms + _extract_ts(line, sort_schema), line) for line in lines]
+        lines_with_ts.sort(key=lambda x: x[0])
+        lines = [line for _, line in lines_with_ts]
+        self.logger.info("Events sorted — publishing in chronological order")
 
         for idx, line in enumerate(lines, 1):
             try:
