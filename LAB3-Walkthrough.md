@@ -19,11 +19,12 @@ All of this runs in real time on **Confluent Cloud for Apache Flink**, with no e
 **Installation instructions:**
 
 ```bash
-brew install uv git python && brew tap hashicorp/tap && brew install hashicorp/tap/terraform && brew install --cask confluent-cli docker-desktop
+brew install uv git python && brew tap hashicorp/tap && brew install hashicorp/tap/terraform && brew install --cask confluent-cli
 ```
 **Windows:**
+
 ```powershell
-winget install astral-sh.uv Git.Git Docker.DockerDesktop Hashicorp.Terraform ConfluentInc.Confluent-CLI Python.Python
+winget install astral-sh.uv Git.Git Hashicorp.Terraform ConfluentInc.Confluent-CLI Python.Python
 ```
 Once software is installed, you'll need:
 - **Zapier:** Free account and remote MCP server ([Setup guide](./assets/pre-setup/Zapier-Setup.md))
@@ -58,13 +59,9 @@ The deployment script will prompt you for your:
 
 ### Data Generation
 
-Make sure **Docker Desktop** is running, then begin generating data with the following command:
+Begin generating data with the following command:
 
 ```bash
-# live streaming
-uv run lab3_datagen
-
-# or, lightweight instant deployment that skips Docker & ShadowTraffic download requirements
 uv run lab3_datagen --local
 ```
 
@@ -338,7 +335,7 @@ FROM (
         ML_PREDICT(
             'llm_textgen_model',
             CONCAT(
-                'Analyze the retrieved HIGH demand event documents and identify which events are actively occurring during the surge time. Only consider events whose time ranges overlap with the query time. Provide a one-two sentence explanation including specific event names, attendance numbers, and time ranges.\n\n',
+                'Analyze the retrieved event documents and identify the most likely cause of this transportation demand surge. If a retrieved document describes an event with time ranges that overlap the surge time, cite it by name, attendance, and time. If no document is a strong match, describe the surge itself: the zone, the time of day, and the magnitude. Always provide a concise 1-2 sentence answer that gives the dispatch agent enough context to act. Do not say "no events found" — always produce a reason.\n\n',
                 'USER QUERY: ', rad_with_rag.query, '\n\n',
                 'RETRIEVED DOCUMENTS:\n',
                 'Document 1 (Score: ', CAST(rad_with_rag.top_score_1 AS STRING), '):\n',
@@ -383,7 +380,7 @@ USING MODEL `zapier_mcp_model`
 USING PROMPT 'You are an intelligent boat dispatch coordinator for a riverboat ride-sharing service.
 
 Your workflow:
-1. ANALYZE the surge information provided (zone, time, request count, anomaly reason)
+1. ANALYZE the surge information provided (zone, time, request count). Use the anomaly reason as background context if available, but do not rely on it to proceed.
 2. REVIEW the available vessels list by sending a basic GET request using the webhooks_by_zapier_get tool to "https://p8jrtzaj78.execute-api.us-east-1.amazonaws.com/prod/api/vessel_catalog"
 3. SELECT appropriate boats to dispatch based on:
    - Proximity to the target zone
@@ -425,7 +422,9 @@ CRITICAL INSTRUCTIONS:
 - Your response MUST contain the three labeled sections
 - The dispatch JSON must be valid and contain only the structure shown above
 - Always execute the POST request and include the API response
-- Do NOT include any other explanatory text outside these three sections'
+- Do NOT include any other explanatory text outside these three sections
+- The anomaly reason describes the likely cause of the surge but may be uncertain or generic — it is context only, NOT a required input. If it is vague or unclear, proceed with dispatching using the zone and request count alone.
+- NEVER ask for clarification. You always have enough information to dispatch: the zone name and surge magnitude are always present. Act immediately.'
 USING TOOLS `zapier`
 WITH (
   'max_iterations' = '10'
@@ -444,9 +443,10 @@ AS SELECT
     window_time,
     request_count,
     anomaly_reason,
-    TRIM(REGEXP_EXTRACT(CAST(response AS STRING), 'Dispatch Summary:\s*\n(.+?)(?=\n\nDispatch JSON:)', 1)) AS dispatch_summary,
-    TRIM(REGEXP_EXTRACT(CAST(response AS STRING), 'Dispatch JSON:\s*\n(?:```json\s*)?([\s\S]+?)(?:```)?(?=\n\nAPI Response:)', 1)) AS dispatch_json,
-    TRIM(REGEXP_EXTRACT(CAST(response AS STRING), 'API Response:\s*\n(?:```json\s*)?([\s\S]+?)(?:```)?$', 1)) AS api_response
+    TRIM(REGEXP_EXTRACT(CAST(response AS STRING), '\*{0,2}Dispatch Summary:\*{0,2}\s*\n([\s\S]+?)(?=\n\*{0,2}Dispatch JSON:\*{0,2})', 1)) AS dispatch_summary,
+    TRIM(REGEXP_EXTRACT(CAST(response AS STRING), '\*{0,2}Dispatch JSON:\*{0,2}\s*\n(?:```json\s*)?([\s\S]+?)(?:```)?(?=\n\*{0,2}API Response:\*{0,2})', 1)) AS dispatch_json,
+    TRIM(REGEXP_EXTRACT(CAST(response AS STRING), '\*{0,2}API Response:\*{0,2}\s*\n(?:```json\s*)?([\s\S]+?)(?:```)?$', 1)) AS api_response,
+    CAST(response AS STRING) AS raw_response
 FROM anomalies_enriched,
 LATERAL TABLE(AI_RUN_AGENT(
     `boat_dispatch_agent`,
