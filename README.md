@@ -39,9 +39,7 @@ Build real-time AI agents with [Confluent Cloud Streaming Agents](https://docs.c
 
 - [![Sign up for Confluent Cloud](https://img.shields.io/badge/Sign%20up%20for%20Confluent%20Cloud-007BFF?style=for-the-badge&logo=apachekafka&logoColor=white)](https://www.confluent.io/get-started/?utm_campaign=tm.pmm_cd.q4fy25-quickstart-streaming-agents&utm_source=github&utm_medium=demo)
 - **LLM Provider:** AWS Bedrock API keys **OR** Azure OpenAI keys - or BYOK
-- **Lab1 & Lab3:** Zapier remote MCP server ([Setup guide](./assets/pre-setup/Zapier-Setup.md))
-
-> **Note:** SSE endpoints are now deprecated by Zapier. If you previously created an SSE endpoint, you'll need to create a new Streamable HTTP endpoint and copy the Zapier token instead. See the [Zapier Setup guide](./assets/pre-setup/Zapier-Setup.md) for updated instructions.
+- **Lab1 & Lab3:** Free Zapier remote MCP server ([Setup guide](./assets/pre-setup/Zapier-Setup.md))
 
 **Required tools:**
 
@@ -102,14 +100,10 @@ quickstart-streaming-agents/
 │   ├── lab1-tool-calling/              # Lab1-specific infra
 │   ├── lab2-vector-search/             # Lab2-specific infra
 │   └── lab3-agentic-fleet-management/  # Lab3-specific infra
+│   └── lab4-pubsec-fraud-agents        # Lab4-specific infra
 ├── deploy.py                           # Start here with uv run deploy
 └── scripts/                            # Python utilities invoked with uv
 ```
-
-**[NEW!] Streamlined architecture:**
-
-- No heavyweight AWS/Azure Terraform providers needed - just LLM API keys generated with one command
-- **MongoDB is now pre-configured:** No need to set up your own MongoDB Atlas cluster anymore - we provide MongoDB endpoints with read-only credentials, pre-populated with vectorized documents so you can get started faster
 
 ## Cleanup
 

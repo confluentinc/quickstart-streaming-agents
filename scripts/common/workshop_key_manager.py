@@ -117,6 +117,15 @@ AZURE_DEPLOYMENTS = {
 
 
 # ============================================================================
+# EXCEPTIONS
+# ============================================================================
+
+class MaxKeysReached(Exception):
+    """Raised when an IAM user already has 2 access keys (AWS limit)."""
+    pass
+
+
+# ============================================================================
 # COMMON UTILITIES
 # ============================================================================
 
@@ -199,36 +208,36 @@ def get_aws_region(project_root: Path) -> str:
     return "us-east-1"
 
 
-def create_or_get_iam_user(iam_client, tags: Dict[str, str], logger: logging.Logger) -> bool:
+def create_or_get_iam_user(iam_client, tags: Dict[str, str], logger: logging.Logger, username: str = AWS_IAM_USERNAME) -> bool:
     """Create IAM user if it doesn't exist, or get existing user."""
     try:
         # Check if user exists
-        iam_client.get_user(UserName=AWS_IAM_USERNAME)
-        logger.info(f"IAM user '{AWS_IAM_USERNAME}' already exists")
+        iam_client.get_user(UserName=username)
+        logger.info(f"IAM user '{username}' already exists")
         return False
     except ClientError as e:
         if e.response['Error']['Code'] == 'NoSuchEntity':
             # User doesn't exist, create it
-            logger.info(f"Creating IAM user '{AWS_IAM_USERNAME}'...")
+            logger.info(f"Creating IAM user '{username}'...")
             tag_list = [{"Key": k, "Value": v} for k, v in tags.items()]
             iam_client.create_user(
-                UserName=AWS_IAM_USERNAME,
+                UserName=username,
                 Tags=tag_list
             )
-            logger.info(f"✓ Created IAM user '{AWS_IAM_USERNAME}'")
+            logger.info(f"✓ Created IAM user '{username}'")
             return True
         else:
             raise
 
 
-def attach_bedrock_policy(iam_client, logger: logging.Logger) -> None:
+def attach_bedrock_policy(iam_client, logger: logging.Logger, username: str = AWS_IAM_USERNAME) -> None:
     """Attach inline Bedrock policy to IAM user."""
     logger.info(f"Attaching Bedrock policy '{AWS_POLICY_NAME}'...")
 
     policy_doc = get_bedrock_policy()
 
     iam_client.put_user_policy(
-        UserName=AWS_IAM_USERNAME,
+        UserName=username,
         PolicyName=AWS_POLICY_NAME,
         PolicyDocument=json.dumps(policy_doc)
     )
@@ -236,21 +245,20 @@ def attach_bedrock_policy(iam_client, logger: logging.Logger) -> None:
     logger.info(f"✓ Attached inline policy '{AWS_POLICY_NAME}'")
 
 
-def create_access_key(iam_client, logger: logging.Logger) -> Tuple[str, str]:
+def create_access_key(iam_client, logger: logging.Logger, username: str = AWS_IAM_USERNAME) -> Tuple[str, str]:
     """Create new access key for IAM user."""
     # Check existing keys
-    response = iam_client.list_access_keys(UserName=AWS_IAM_USERNAME)
+    response = iam_client.list_access_keys(UserName=username)
     existing_keys = response.get('AccessKeyMetadata', [])
 
     if len(existing_keys) >= 2:
-        raise Exception(
-            f"User '{AWS_IAM_USERNAME}' already has 2 access keys (AWS limit). "
-            f"Please delete an old key before creating a new one."
+        raise MaxKeysReached(
+            f"User '{username}' already has 2 access keys (AWS limit of 2 per user)."
         )
 
     logger.info("Generating new access key...")
 
-    response = iam_client.create_access_key(UserName=AWS_IAM_USERNAME)
+    response = iam_client.create_access_key(UserName=username)
     access_key = response['AccessKey']
 
     access_key_id = access_key['AccessKeyId']
@@ -288,7 +296,8 @@ def save_aws_credentials_file(
     secret_access_key: str,
     region: str,
     tags: Dict[str, str],
-    logger: logging.Logger
+    logger: logging.Logger,
+    username: str = AWS_IAM_USERNAME
 ) -> None:
     """Save AWS credentials to markdown file with usage instructions."""
     creds_file = project_root / AWS_CREDENTIALS_FILE
@@ -345,9 +354,9 @@ Or delete the IAM user directly with AWS CLI:
 
 ```bash
 # Delete IAM user directly in AWS (must remove all dependencies first)
-aws iam delete-access-key --user-name {AWS_IAM_USERNAME} --access-key-id {access_key_id}
-aws iam delete-user-policy --user-name {AWS_IAM_USERNAME} --policy-name {AWS_POLICY_NAME}
-aws iam delete-user --user-name {AWS_IAM_USERNAME}
+aws iam delete-access-key --user-name {username} --access-key-id {access_key_id}
+aws iam delete-user-policy --user-name {username} --policy-name {AWS_POLICY_NAME}
+aws iam delete-user --user-name {username}
 ```
 
 The api-keys destroy command will:
@@ -359,7 +368,7 @@ The api-keys destroy command will:
 
 ## Resource Details
 
-**IAM User:** `{AWS_IAM_USERNAME}`
+**IAM User:** `{username}`
 **Region:** `{region}`
 **Policy:** `{AWS_POLICY_NAME}` (inline policy)
 **Permissions:** `bedrock:InvokeModel`, `bedrock:InvokeModelWithResponseStream`
@@ -380,6 +389,7 @@ The api-keys destroy command will:
     if env_file.exists():
         set_key(str(env_file), "TF_VAR_aws_bedrock_access_key", access_key_id)
         set_key(str(env_file), "TF_VAR_aws_bedrock_secret_key", secret_access_key)
+        set_key(str(env_file), "TF_VAR_aws_iam_username", username)
         logger.info(f"✓ Updated credentials.env with new AWS Bedrock credentials")
 
 
@@ -1023,6 +1033,12 @@ def create_aws_command(args: argparse.Namespace, logger: logging.Logger) -> int:
         # Build tags
         tags = get_tags(project_root, owner_email)
 
+        # Prompt for IAM username (allows custom name, defaults to standard)
+        iam_username = prompt_with_default(
+            "IAM username for workshop user",
+            default=AWS_IAM_USERNAME
+        )
+
         # Create IAM client (uses default AWS credentials from environment/config)
         iam_client = boto3.client('iam')
 
@@ -1030,14 +1046,37 @@ def create_aws_command(args: argparse.Namespace, logger: logging.Logger) -> int:
         print("CREATING AWS WORKSHOP CREDENTIALS")
         print("=" * 70)
 
-        # Create or get IAM user
-        user_created = create_or_get_iam_user(iam_client, tags, logger)
+        while True:
+            # Create or get IAM user
+            create_or_get_iam_user(iam_client, tags, logger, username=iam_username)
 
-        # Attach policy
-        attach_bedrock_policy(iam_client, logger)
+            # Attach policy
+            attach_bedrock_policy(iam_client, logger, username=iam_username)
 
-        # Create access key
-        access_key_id, secret_access_key = create_access_key(iam_client, logger)
+            # Create access key (may raise MaxKeysReached)
+            try:
+                access_key_id, secret_access_key = create_access_key(iam_client, logger, username=iam_username)
+                break  # success — exit loop
+            except MaxKeysReached as e:
+                print(f"\n{e}")
+                print("AWS allows a maximum of 2 access keys per IAM user.")
+                choice = prompt_choice(
+                    "How would you like to proceed?",
+                    [
+                        "Cancel — I'll delete an existing key manually then retry",
+                        "Create a new IAM user with a different name",
+                    ]
+                )
+                if "Cancel" in choice:
+                    return 1
+                # Prompt for a new username and loop back
+                iam_username = prompt_with_default(
+                    "New IAM username",
+                    default=f"{iam_username}-2"
+                )
+                print("\n" + "=" * 70)
+                print("CREATING AWS WORKSHOP CREDENTIALS (new user)")
+                print("=" * 70)
 
         # Test Bedrock access
         test_success = test_bedrock_credentials(
@@ -1067,7 +1106,8 @@ def create_aws_command(args: argparse.Namespace, logger: logging.Logger) -> int:
 
         # Save credentials
         save_aws_credentials_file(
-            project_root, access_key_id, secret_access_key, region, tags, logger
+            project_root, access_key_id, secret_access_key, region, tags, logger,
+            username=iam_username
         )
 
         print("=" * 70)
@@ -1107,10 +1147,11 @@ def destroy_aws_command(args: argparse.Namespace, logger: logging.Logger) -> int
         # Get project root
         project_root = get_project_root()
 
-        # Load access key from credentials.env
+        # Load access key and IAM username from credentials.env
         env_file = project_root / "credentials.env"
         env_creds = dotenv_values(str(env_file)) if env_file.exists() else {}
         access_key_id = env_creds.get("TF_VAR_aws_bedrock_access_key")
+        iam_username = env_creds.get("TF_VAR_aws_iam_username", AWS_IAM_USERNAME)
 
         if not access_key_id:
             print("\n" + "=" * 70)
@@ -1120,7 +1161,7 @@ def destroy_aws_command(args: argparse.Namespace, logger: logging.Logger) -> int
             print("This usually means no credentials were created with this tool,")
             print("or they were already destroyed.")
             print("\nIf you want to manually delete workshop credentials:")
-            print(f"1. AWS Console → IAM → Users → {AWS_IAM_USERNAME}")
+            print(f"1. AWS Console → IAM → Users → {iam_username}")
             print("2. Delete access keys")
             print("3. Optionally delete the user")
             print("=" * 70 + "\n")
@@ -1136,7 +1177,7 @@ def destroy_aws_command(args: argparse.Namespace, logger: logging.Logger) -> int
 
         try:
             iam_client.delete_access_key(
-                UserName=AWS_IAM_USERNAME,
+                UserName=iam_username,
                 AccessKeyId=access_key_id
             )
             logger.info(f"✓ Deleted access key {access_key_id}")
@@ -1150,7 +1191,7 @@ def destroy_aws_command(args: argparse.Namespace, logger: logging.Logger) -> int
         user_deleted = False
         if not args.keep_user:
             print("\nDelete IAM user entirely?")
-            print(f"  User: {AWS_IAM_USERNAME}")
+            print(f"  User: {iam_username}")
             print("  (Saying 'No' allows you to reuse this user for future workshops)")
 
             delete_user = prompt_choice(
@@ -1162,7 +1203,7 @@ def destroy_aws_command(args: argparse.Namespace, logger: logging.Logger) -> int
                 # Comprehensive cleanup of all user dependencies
                 logger.info("Cleaning up all IAM user dependencies...")
                 success, error_details = cleanup_user_dependencies(
-                    iam_client, AWS_IAM_USERNAME, logger
+                    iam_client, iam_username, logger
                 )
                 if not success:
                     print("\n" + "=" * 70)
@@ -1170,40 +1211,41 @@ def destroy_aws_command(args: argparse.Namespace, logger: logging.Logger) -> int
                     print("=" * 70)
                     print(f"\n{error_details}")
                     print("\nTo manually delete the user:")
-                    print(f"1. AWS Console → IAM → Users → {AWS_IAM_USERNAME}")
+                    print(f"1. AWS Console → IAM → Users → {iam_username}")
                     print("2. Review and remove remaining dependencies")
                     print("3. Delete the user")
                     print("=" * 70 + "\n")
-                    logger.warning(f"User {AWS_IAM_USERNAME} could not be deleted automatically")
+                    logger.warning(f"User {iam_username} could not be deleted automatically")
                 else:
                     # All dependencies cleaned up, now delete user
-                    logger.info(f"Deleting IAM user {AWS_IAM_USERNAME}...")
+                    logger.info(f"Deleting IAM user {iam_username}...")
                     try:
-                        iam_client.delete_user(UserName=AWS_IAM_USERNAME)
-                        logger.info(f"✓ Deleted IAM user {AWS_IAM_USERNAME}")
+                        iam_client.delete_user(UserName=iam_username)
+                        logger.info(f"✓ Deleted IAM user {iam_username}")
                         user_deleted = True
                     except ClientError as e:
                         if e.response['Error']['Code'] == 'NoSuchEntity':
-                            logger.warning(f"User {AWS_IAM_USERNAME} not found (may already be deleted)")
+                            logger.warning(f"User {iam_username} not found (may already be deleted)")
                             user_deleted = True
                         else:
                             print("\n" + "=" * 70)
                             print("⚠ WARNING: User cleanup succeeded but deletion failed")
                             print("=" * 70)
                             print(f"\nError: {e}")
-                            print(f"User: {AWS_IAM_USERNAME}")
+                            print(f"User: {iam_username}")
                             print("\nThe user dependencies were cleaned up, but deletion failed.")
                             print("Try running the command again, or delete manually via AWS Console.")
                             print("=" * 70 + "\n")
                             logger.error(f"Failed to delete user after cleanup: {e}")
         else:
-            logger.info(f"Keeping IAM user {AWS_IAM_USERNAME} (--keep-user flag)")
+            logger.info(f"Keeping IAM user {iam_username} (--keep-user flag)")
 
         # Clear credentials from credentials.env; delete legacy state file if present
         if env_file.exists():
             from dotenv import unset_key
             unset_key(str(env_file), "TF_VAR_aws_bedrock_access_key")
             unset_key(str(env_file), "TF_VAR_aws_bedrock_secret_key")
+            unset_key(str(env_file), "TF_VAR_aws_iam_username")
         legacy_state = project_root / ".workshop-keys-state-aws.json"
         if legacy_state.exists():
             legacy_state.unlink()
@@ -1219,9 +1261,9 @@ def destroy_aws_command(args: argparse.Namespace, logger: logging.Logger) -> int
         print("\nDestroyed:")
         print(f"  - Access key: {access_key_id}")
         if user_deleted:
-            print(f"  - IAM user: {AWS_IAM_USERNAME}")
+            print(f"  - IAM user: {iam_username}")
         elif not args.keep_user:
-            print(f"  - IAM user: {AWS_IAM_USERNAME} (cleanup attempted, may require manual deletion)")
+            print(f"  - IAM user: {iam_username} (cleanup attempted, may require manual deletion)")
         print(f"  - Credentials cleared from credentials.env")
         print("=" * 70 + "\n")
 

@@ -22,6 +22,7 @@ claude-*
 # Development tools
 tools/
 handoffs/
+.worktrees/
 
 # detect-secrets
 .secrets.baseline
@@ -63,8 +64,6 @@ updated-queries.md
 **/DEPLOYED_RESOURCES.md
 **/FLINK_SQL_COMMANDS.md
 FLINK_SQL_COMMANDS_EXTRACTED.md
-AGENT_DEFINITION_SYNTAX.md
-EMAIL_REPLACEMENT_IMPLEMENTATION.md
 API-KEYS-AWS.md
 .workshop-keys-state-aws.json
 API-KEYS-AZURE.md
