@@ -22,6 +22,7 @@ claude-*
 # Development tools
 tools/
 handoffs/
+.worktrees/
 
 # detect-secrets
 .secrets.baseline
