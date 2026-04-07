@@ -15,6 +15,7 @@ import argparse
 import os
 import subprocess
 import sys
+import time
 
 from dotenv import dotenv_values, set_key
 
@@ -43,6 +44,79 @@ AZURE_REGIONS = [
     "eastus2", "westus", "canadacentral",
     "northeurope", "westeurope", "eastasia", "centralindia"
 ]
+
+# Module-level buffer for Plan B fallback when set_key() fails on Windows
+_pending_writes: dict = {}
+_write_failed: bool = False
+
+
+def _save_env_safe(creds_file, key: str, value: str) -> None:
+    """Write a key to credentials.env with retry + in-memory fallback.
+
+    Plan A: call set_key() up to 3 times with back-off (handles transient locks
+    from Defender scans, OneDrive, etc. on Windows).
+    Plan B: if all retries fail, buffer in memory and flush at end of flow via
+    _flush_pending_writes(). This preserves auto-generated keys that only exist
+    in memory.
+    """
+    global _write_failed
+
+    if _write_failed:
+        # Already in Plan B — buffer for bulk write at the end
+        _pending_writes[key] = value
+        return
+
+    for attempt in range(3):
+        result = set_key(str(creds_file), key, value)
+        # set_key returns (key, value, encoding) on success, (None, ...) on failure
+        if result[0] is not None:
+            check = dotenv_values(str(creds_file))
+            if check.get(key) == value:
+                return  # verified success
+        if attempt < 2:
+            time.sleep(0.3 * (attempt + 1))  # 0.3s then 0.6s back-off
+
+    # Plan A exhausted — switch to Plan B
+    _write_failed = True
+    _pending_writes[key] = value
+
+
+def _flush_pending_writes(creds_file) -> None:
+    """Bulk-write any buffered credentials at the end of the flow (Plan B).
+
+    Called unconditionally at the end of main(); exits with an actionable error
+    message if the write cannot be completed.
+    """
+    if not _pending_writes:
+        return
+
+    try:
+        existing = dotenv_values(str(creds_file)) if creds_file.exists() else {}
+        existing.update(_pending_writes)
+        with open(creds_file, "w", encoding="utf-8", newline="\n") as f:
+            for k, v in existing.items():
+                f.write(f"{k}='{v}'\n")
+        # Verify
+        check = dotenv_values(str(creds_file))
+        for k, v in _pending_writes.items():
+            if check.get(k) != v:
+                raise ValueError(f"Read-back verification failed for {k}")
+    except Exception as e:
+        _print_write_error(e)
+        sys.exit(1)
+
+
+def _print_write_error(exc) -> None:
+    print(
+        f"\n✗ Could not write credentials.env: {exc}\n\n"
+        "Common causes on Windows:\n"
+        "  • OneDrive/Dropbox is syncing the project folder — pause sync and retry\n"
+        "  • Windows Defender or antivirus is scanning the file — add an exclusion\n"
+        "  • VS Code or another editor has the file open — close and retry\n"
+        "  • Project is in a protected folder (e.g. C:\\Program Files\\) — move it\n"
+        "  • Running from a network drive — run from a local drive instead\n",
+        file=sys.stderr,
+    )
 
 
 def main():
@@ -142,8 +216,8 @@ def main():
         if generate == "y":
             api_key, api_secret = generate_confluent_api_keys()
             if api_key and api_secret:
-                set_key(creds_file, "TF_VAR_confluent_cloud_api_key", api_key)
-                set_key(creds_file, "TF_VAR_confluent_cloud_api_secret", api_secret)
+                _save_env_safe(creds_file, "TF_VAR_confluent_cloud_api_key", api_key)
+                _save_env_safe(creds_file, "TF_VAR_confluent_cloud_api_secret", api_secret)
                 creds["TF_VAR_confluent_cloud_api_key"] = api_key
                 creds["TF_VAR_confluent_cloud_api_secret"] = api_secret
 
@@ -176,27 +250,27 @@ def main():
         # Confluent credentials (always required)
         api_key = prompt_with_default("Confluent Cloud API Key", creds.get("TF_VAR_confluent_cloud_api_key", ""))
         api_secret = prompt_with_default("Confluent Cloud API Secret", creds.get("TF_VAR_confluent_cloud_api_secret", ""))
-        set_key(creds_file, "TF_VAR_confluent_cloud_api_key", api_key)
-        set_key(creds_file, "TF_VAR_confluent_cloud_api_secret", api_secret)
+        _save_env_safe(creds_file, "TF_VAR_confluent_cloud_api_key", api_key)
+        _save_env_safe(creds_file, "TF_VAR_confluent_cloud_api_secret", api_secret)
 
         # Owner email (optional, for resource tagging)
         owner_email = prompt_with_default("Owner Email (for AWS/Azure resource tagging)", creds.get("TF_VAR_owner_email", ""))
         if owner_email:
-            set_key(creds_file, "TF_VAR_owner_email", owner_email)
+            _save_env_safe(creds_file, "TF_VAR_owner_email", owner_email)
 
         # AWS Bedrock credentials
         if cloud == "aws":
             aws_bedrock_key = prompt_with_default("AWS Bedrock Access Key", creds.get("TF_VAR_aws_bedrock_access_key", ""))
             aws_bedrock_secret = prompt_with_default("AWS Bedrock Secret Key", creds.get("TF_VAR_aws_bedrock_secret_key", ""))
-            set_key(creds_file, "TF_VAR_aws_bedrock_access_key", aws_bedrock_key)
-            set_key(creds_file, "TF_VAR_aws_bedrock_secret_key", aws_bedrock_secret)
+            _save_env_safe(creds_file, "TF_VAR_aws_bedrock_access_key", aws_bedrock_key)
+            _save_env_safe(creds_file, "TF_VAR_aws_bedrock_secret_key", aws_bedrock_secret)
 
             # Prompt for session token if using temporary credentials (ASIA*)
             aws_session_token = ""
             if aws_bedrock_key.startswith("ASIA"):
                 aws_session_token = prompt_with_default("AWS Session Token (required for temporary credentials)", creds.get("TF_VAR_aws_session_token", ""))
                 if aws_session_token:
-                    set_key(creds_file, "TF_VAR_aws_session_token", aws_session_token)
+                    _save_env_safe(creds_file, "TF_VAR_aws_session_token", aws_session_token)
 
             # Validate AWS credentials format (advisory only)
             print("\nValidating AWS Bedrock credentials format...")
@@ -244,8 +318,8 @@ def main():
         if cloud == "azure":
             azure_openai_endpoint = prompt_with_default("Azure OpenAI Endpoint", creds.get("TF_VAR_azure_openai_endpoint_raw", ""))
             azure_openai_key = prompt_with_default("Azure OpenAI API Key", creds.get("TF_VAR_azure_openai_api_key", ""))
-            set_key(creds_file, "TF_VAR_azure_openai_endpoint_raw", azure_openai_endpoint)
-            set_key(creds_file, "TF_VAR_azure_openai_api_key", azure_openai_key)
+            _save_env_safe(creds_file, "TF_VAR_azure_openai_endpoint_raw", azure_openai_endpoint)
+            _save_env_safe(creds_file, "TF_VAR_azure_openai_api_key", azure_openai_key)
 
             # Validate Azure credentials format (advisory only)
             print("\nValidating Azure OpenAI credentials format...")
@@ -289,11 +363,11 @@ def main():
         # Lab-specific credentials
         if "lab1-tool-calling" in envs_to_deploy or "lab3-agentic-fleet-management" in envs_to_deploy:
             zapier_token = prompt_with_default("Zapier Token (Lab 1 and Lab 3)", creds.get("TF_VAR_zapier_token", ""))
-            set_key(creds_file, "TF_VAR_zapier_token", zapier_token)
+            _save_env_safe(creds_file, "TF_VAR_zapier_token", zapier_token)
 
         # Set cloud region and cloud provider
-        set_key(creds_file, "TF_VAR_cloud_region", region)
-        set_key(creds_file, "TF_VAR_cloud_provider", cloud)
+        _save_env_safe(creds_file, "TF_VAR_cloud_region", region)
+        _save_env_safe(creds_file, "TF_VAR_cloud_provider", cloud)
 
         # Step 5.5: Validate configurations (advisory only, never blocks deployment)
         needs_zapier  = "lab1-tool-calling" in envs_to_deploy or "lab3-agentic-fleet-management" in envs_to_deploy
@@ -385,6 +459,9 @@ def main():
                         sys.exit(1)
 
         print()
+
+        # Flush any buffered credentials (Plan B fallback for Windows write failures)
+        _flush_pending_writes(creds_file)
 
         # Step 6: Show all credentials and confirm
         print("\n--- Configuration Summary ---")
