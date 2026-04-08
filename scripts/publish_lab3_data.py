@@ -281,6 +281,7 @@ class Lab3DataPublisher:
                 topic,
                 key=serialized_key,
                 value=serialized_value,
+                partition=0,
             )
             return "ok"
 

@@ -39,9 +39,14 @@ Once software is installed, you'll need:
 
 First, clone the repo:
 
-```sql
+```bash
 git clone https://github.com/confluentinc/quickstart-streaming-agents.git
 cd quickstart-streaming-agents
+```
+
+Be sure to pull in the latest changes:
+```bash
+git pull
 ```
 
 Once you have your credentials ready, run the deployment script and choose **Lab3**:
