@@ -168,7 +168,8 @@ class Lab4DataPublisher:
                 topic=topic,
                 key=claim_id,
                 value=claim,
-                on_delivery=self.delivery_callback
+                on_delivery=self.delivery_callback,
+                partition=0,
             )
 
             return True
@@ -214,9 +215,11 @@ class Lab4DataPublisher:
         results["total"] = len(claims)
         self.logger.info(f"Found {len(claims)} claims to publish")
 
-        # Sort by timestamp if simulating streaming
+        # Always sort by timestamp to ensure chronological ordering in Kafka.
+        # Without this, Flink's watermark drops out-of-order events as "late".
+        claims.sort(key=lambda c: c['claim_timestamp'])
+
         if simulate_streaming:
-            claims.sort(key=lambda c: c['claim_timestamp'])
             self.logger.info(f"Simulating streaming at {speed_multiplier}x speed")
             start_time = datetime.fromisoformat(claims[0]['claim_timestamp'])
 
