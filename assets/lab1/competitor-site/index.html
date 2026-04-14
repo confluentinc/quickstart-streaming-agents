@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BargainBin - Unbeatable Prices Every Day</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; background: #f5f5f5; color: #333; }
+    header {
+      background: #e63946;
+      color: white;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    header h1 { font-size: 28px; font-weight: 900; letter-spacing: -1px; }
+    header p { font-size: 13px; opacity: 0.9; }
+    .search-bar {
+      background: #c1121f;
+      padding: 10px 24px;
+      display: flex;
+      gap: 8px;
+    }
+    .search-bar input {
+      flex: 1;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .search-bar button {
+      background: #ffd60a;
+      color: #333;
+      border: none;
+      padding: 8px 20px;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .main { max-width: 1200px; margin: 0 auto; padding: 20px; }
+    .results-header {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 16px;
+    }
+    .results-header strong { color: #333; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+    }
+    .product-card {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .product-card .badge {
+      font-size: 11px;
+      font-weight: bold;
+      color: white;
+      background: #e63946;
+      padding: 2px 8px;
+      border-radius: 3px;
+      align-self: flex-start;
+      text-transform: uppercase;
+    }
+    .product-card .product-name {
+      font-size: 14px;
+      line-height: 1.4;
+      color: #111;
+      font-weight: 500;
+    }
+    .product-card .department {
+      font-size: 12px;
+      color: #999;
+    }
+    .product-card .price-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 4px;
+    }
+    .product-card .price {
+      font-size: 22px;
+      font-weight: bold;
+      color: #e63946;
+    }
+    .product-card .was-price {
+      font-size: 13px;
+      color: #999;
+      text-decoration: line-through;
+    }
+    .product-card .savings {
+      font-size: 12px;
+      color: #2d9d5a;
+      font-weight: bold;
+    }
+    .product-card .rating {
+      font-size: 12px;
+      color: #f4a261;
+    }
+    .product-card button {
+      margin-top: auto;
+      background: #ffd60a;
+      color: #333;
+      border: none;
+      padding: 10px;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
+    }
+    footer {
+      background: #333;
+      color: #aaa;
+      text-align: center;
+      padding: 20px;
+      font-size: 12px;
+      margin-top: 40px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>BargainBin</h1>
+    <p>Unbeatable prices. No membership required.</p>
+  </div>
+</header>
+
+<div class="search-bar">
+  <input type="text" placeholder="Search for products, brands, and more..." value="All products">
+  <button>Search</button>
+</div>
+
+<div class="main">
+  <div class="results-header">
+    Showing <strong>17 results</strong> &mdash; All Departments &mdash; Sorted by: Best Match
+  </div>
+
+  <div class="grid">
+
+    <div class="product-card" data-product-id="3001">
+      <span class="badge">Hot Deal</span>
+      <div class="product-name">Apple AirPods Pro 2, Wireless Earbuds, Active Noise Cancellation, Hearing Aid Feature</div>
+      <div class="department">Electronics &amp; Technology</div>
+      <div class="price-row">
+        <span class="price">$209.99</span>
+        <span class="was-price">$245.00</span>
+      </div>
+      <div class="savings">Save $35.01 (14%)</div>
+      <div class="rating">&#9733;&#9733;&#9733;&#9733;&#9733; (4,821 reviews)</div>
+      <button>Add to Cart</button>
+    </div>
+
+    <div class="product-card" data-product-id="3002">
+      <span class="badge">Hot Deal</span>
+      <div class="product-name">Apple AirTag - 1 Pack, Item Tracker with Apple Find My</div>
+      <div class="department">Electronics &amp; Technology</div>
+      <div class="price-row">
+        <span class="price">$24.88</span>
+        <span class="was-price">$30.00</span>
+      </div>
+      <div class="savings">Save $5.12 (17%)</div>
+      <div class="rating">&#9733;&#9733;&#9733;&#9733;&#9733; (12,034 reviews)</div>
+      <button>Add to Cart</button>
+    </div>
+
+    <div class="product-card" data-product-id="3003">
+      <span class="badge">Hot Deal</span>
+      <div class="product-name">Bose QuietComfort Headphones, Bluetooth Over Ear Noise Cancelling Headphones, Black</div>
+      <div class="department">Electronics &amp; Technology</div>
+      <div class="price-row">
+        <span class="price">$309.99</span>
+        <span class="was-price">$365.00</span>
+      </div>
+      <div class="savings">Save $55.01 (15%)</div>
+      <div class="rating">&#9733;&#9733;&#9733;&#9733;&#9733; (8,219 reviews)</div>
+      <button>Add to Cart</button>
+    </div>
+
+    <div class="product-card" data-product-id="3004">
+      <span class="badge">Hot Deal</span>
+      <div class="product-name">Official Hasbro Games Jenga Game with Digital Die, Wood Block Party Game, Family Games, 6+</div>
+      <div class="department">Toys &amp; Games</div>
+      <div class="price-row">
+        <span class="price">$22.97</span>
+        <span class="was-price">$28.00</span>
+      </div>
+      <div class="savings">Save $5.03 (18%)</div>
+      <div class="rating">&#9733;&#9733;&#9733;&#9733;&#9734; (6,445 reviews)</div>
+      <button>Add to Cart</button>
+    </div>
+
+    <div class="product-card" data-product-id="3005">
+      <span class="badge">Hot Deal</span>
+      <div class="product-name">Coca-Cola Classic Soda Pop, 12 fl oz Cans, 24 Pack</div>
+      <div class="department">Food &amp; Beverages</div>
+      <div class="price-row">
+        <span class="price">$12.48</span>
+        <span class="was-price">$15.00</span>
+      </div>
+      <div class="savings">Save $2.52 (17%)</div>
+      <div class="rating">&#9733;&#9733;&#9733;&#9733;&#9733; (31,502 reviews)</div>
+      <button>Add to Cart</button>
+    </div>
+
+    <div class="product-card" data-product-id="3006">
+      <span class="badge">Hot Deal</span>
+      <div class="product-name">Dawn EZ-Squeeze Ultra Dish Soap Dishwashing Liquid, Original Scent, 22.0 fl oz</div>
+      <div class="department">Household Cleaning &amp; Home Goods</div>
+      <div class="price-row">
+        <span class="price">$3.97</span>
+        <span class="was-price">$5.00</span>
+      </div>
+      <div class="savings">Save $1.03 (21%)</div>
+      <div class="rating">&#9733;&#9733;&#9733;&#9733;&#9733; (22,810 reviews)</div>
+      <button>Add to Cart</button>
+    </div>
+
+    <div class="product-card" data-product-id="3007">
+      <span class="badge">Hot Deal</span>
+      <div class="product-name">JBL Flip 7 - Portable waterproof and drop-proof speaker, Bold JBL Pro Sound with AI Sound Boost, 16Hrs of Playtime, and PushLock system with interchangeable accessories (Black)</div>
+      <div class="department">Electronics &amp; Technology</div>
+      <div class="price-row">
+        <span class="price">$139.99</span>
+        <span class="was-price">$165.00</span>
+      </div>
+      <div class="savings">Save $25.01 (15%)</div>
+      <div class="rating">&#9733;&#9733;&#9733;&#9733;&#9733; (3,902 reviews)</div>
+      <button>Add to Cart</button>
+    </div>
+
+    <div class="product-card" data-product-id="3008">
+      <span class="badge">Hot Deal</span>
+      <div class="product-name">Monopoly Board Game, Classic Game with Storage Tray and Larger Tokens, Family Games, 8+</div>
+      <div class="department">Toys &amp; Games</div>
+      <div class="price-row">
+        <span class="price">$16.88</span>
+        <span class="was-price">$20.00</span>
+      </div>
+      <div class="savings">Save $3.12 (16%)</div>
+      <div class="rating">&#9733;&#9733;&#9733;&#9733;&#9734; (18,774 reviews)</div>
+      <button>Add to Cart</button>
+    </div>
+
+    <div class="product-card" data-product-id="3009">
+      <span class="badge">Hot Deal</span>
+      <div class="product-name">Panasonic Eneloop BK-4MCCA4BA Pre-Charged Nickel Metal Hydride AAA Rechargeable Batteries, 4-Battery Pack</div>
+      <div class="department">Electronics &amp; Technology</div>
+      <div class="price-row">
+        <span class="price">$13.97</span>
+        <span class="was-price">$17.00</span>
+      </div>
+      <div class="savings">Save $3.03 (18%)</div>
+      <div class="rating">&#9733;&#9733;&#9733;&#9733;&#9733; (9,341 reviews)</div>
+      <button>Add to Cart</button>
+    </div>
+
+    <div class="product-card" data-product-id="3010">
+      <span class="badge">Hot Deal</span>
+      <div class="product-name">Scrabble Classic Crossword Board Game for Kids and Family Ages 8 and Up, 2-4 Players</div>
+      <div class="department">Toys &amp; Games</div>
+      <div class="price-row">
+        <span class="price">$24.88</span>
+        <span class="was-price">$30.00</span>
+      </div>
+      <div class="savings">Save $5.12 (17%)</div>
+      <div class="rating">&#9733;&#9733;&#9733;&#9733;&#9734; (7,665 reviews)</div>
+      <button>Add to Cart</button>
+    </div>
+
+    <div class="product-card" data-product-id="3011">
+      <span class="badge">Hot Deal</span>
+      <div class="product-name">UNO Card Game for Kids, Adults &amp; Family Game Night, Original UNO Game of Matching Colors &amp; Numbers</div>
+      <div class="department">Toys &amp; Games</div>
+      <div class="price-row">
+        <span class="price">$7.97</span>
+        <span class="was-price">$10.00</span>
+      </div>
+      <div class="savings">Save $2.03 (20%)</div>
+      <div class="rating">&#9733;&#9733;&#9733;&#9733;&#9733; (41,208 reviews)</div>
+      <button>Add to Cart</button>
+    </div>
+
+    <div class="product-card" data-product-id="3012">
+      <span class="badge">Hot Deal</span>
+      <div class="product-name">Wilson Evolution Official Game Basketball - 29.5"</div>
+      <div class="department">Sports &amp; Recreation</div>
+      <div class="price-row">
+        <span class="price">$84.99</span>
+        <span class="was-price">$100.00</span>
+      </div>
+      <div class="savings">Save $15.01 (15%)</div>
+      <div class="rating">&#9733;&#9733;&#9733;&#9733;&#9733; (5,129 reviews)</div>
+      <button>Add to Cart</button>
+    </div>
+
+    <div class="product-card" data-product-id="3013">
+      <span class="badge">Hot Deal</span>
+      <div class="product-name">Magic 8 Ball Kids Toy, Novelty Fortune Teller Gag Gift, Ask a Question &amp; Turn Over for Answer</div>
+      <div class="department">Toys &amp; Games</div>
+      <div class="price-row">
+        <span class="price">$11.97</span>
+        <span class="was-price">$15.00</span>
+      </div>
+      <div class="savings">Save $3.03 (20%)</div>
+      <div class="rating">&#9733;&#9733;&#9733;&#9733;&#9734; (14,502 reviews)</div>
+      <button>Add to Cart</button>
+    </div>
+
+    <div class="product-card" data-product-id="3014">
+      <span class="badge">Hot Deal</span>
+      <div class="product-name">Pyrex 1-cup Measuring Cup</div>
+      <div class="department">Household Cleaning &amp; Home Goods</div>
+      <div class="price-row">
+        <span class="price">$12.47</span>
+        <span class="was-price">$15.00</span>
+      </div>
+      <div class="savings">Save $2.53 (17%)</div>
+      <div class="rating">&#9733;&#9733;&#9733;&#9733;&#9733; (8,834 reviews)</div>
+      <button>Add to Cart</button>
+    </div>
+
+    <div class="product-card" data-product-id="3015">
+      <span class="badge">Hot Deal</span>
+      <div class="product-name">Penn Championship Extra Duty Tennis Balls (1 Can, 3 balls)</div>
+      <div class="department">Sports &amp; Recreation</div>
+      <div class="price-row">
+        <span class="price">$6.97</span>
+        <span class="was-price">$8.99</span>
+      </div>
+      <div class="savings">Save $2.02 (22%)</div>
+      <div class="rating">&#9733;&#9733;&#9733;&#9733;&#9733; (19,211 reviews)</div>
+      <button>Add to Cart</button>
+    </div>
+
+    <div class="product-card" data-product-id="3016">
+      <span class="badge">Hot Deal</span>
+      <div class="product-name">The Grand Budapest Hotel (Blu-ray), 20th Century Fox, Comedy</div>
+      <div class="department">Movies &amp; Entertainment</div>
+      <div class="price-row">
+        <span class="price">$12.96</span>
+        <span class="was-price">$16.00</span>
+      </div>
+      <div class="savings">Save $3.04 (19%)</div>
+      <div class="rating">&#9733;&#9733;&#9733;&#9733;&#9733; (2,887 reviews)</div>
+      <button>Add to Cart</button>
+    </div>
+
+    <div class="product-card" data-product-id="3017">
+      <span class="badge">Hot Deal</span>
+      <div class="product-name">The Wild Robot (Blu-ray + Digital Copy), Family, DreamWorks</div>
+      <div class="department">Movies &amp; Entertainment</div>
+      <div class="price-row">
+        <span class="price">$19.96</span>
+        <span class="was-price">$23.99</span>
+      </div>
+      <div class="savings">Save $4.03 (17%)</div>
+      <div class="rating">&#9733;&#9733;&#9733;&#9733;&#9733; (1,543 reviews)</div>
+      <button>Add to Cart</button>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  &copy; 2025 BargainBin, Inc. All rights reserved. Prices subject to change without notice. Not affiliated with any manufacturer.
+</footer>
+
+</body>
+</html>

@@ -121,7 +121,7 @@ CREATE AGENT price_match_agent
 USING MODEL llm_textgen_model
 USING PROMPT 'You are a price matching assistant that performs the following steps:
 
-1. SCRAPE COMPETITOR PRICE: Use the webhooks_by_zapier_get tool to extract page contents from the competitor URL provided in the prompt. The URL will be in the format: https://www.walmart.com/search?q="PRODUCT_NAME"
+1. SCRAPE COMPETITOR PRICE: Use the webhooks_by_zapier_get tool to extract page contents from the competitor URL provided in the prompt.
 
 2. EXTRACT PRICE: Analyze the scraped page content to find the product that most closely matches the product name. Extract only the price in format: XX.XX (for example: 29.95). If you cannot find a valid price, stop here.
 
@@ -161,7 +161,7 @@ LATERAL TABLE(
     AI_RUN_AGENT(
         'price_match_agent',
          CONCAT(
-          'COMPETITOR URL: https://www.walmart.com/search?q="', pmi.product_name, '"',
+          'COMPETITOR URL: http://river-retail-resellers.s3-website-us-east-1.amazonaws.com/',
           '
           PRODUCT NAME: ', pmi.product_name, '
           
@@ -210,7 +210,12 @@ LATERAL TABLE(
 
 Our real-time price matching pipeline is complete—orders stream in, competitor prices are fetched and analyzed, and customers are instantly notified when they get the best deal.
 
-Check out your email for price matched orders:
+View the final table:
+```sql
+SELECT * FROM `price_match_results`
+```
+
+Then check out your email for price matched orders:
 
 <details open>
 <summary>Click to collapse</summary>
