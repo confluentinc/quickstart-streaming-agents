@@ -393,6 +393,23 @@ The api-keys destroy command will:
         logger.info(f"✓ Updated credentials.env with new AWS Bedrock credentials")
 
 
+def parse_iam_username_from_md(project_root: Path) -> Optional[str]:
+    """Read IAM username from API-KEYS-AWS.md Resource Details section.
+
+    Looks for the line:  **IAM User:** `<username>`
+    Returns the username string, or None if not found.
+    """
+    creds_file = project_root / AWS_CREDENTIALS_FILE
+    if not creds_file.exists():
+        return None
+    try:
+        content = creds_file.read_text()
+        match = re.search(r'^\*\*IAM User:\*\*\s+`([^`]+)`', content, re.MULTILINE)
+        if match:
+            return match.group(1)
+    except OSError:
+        pass
+    return None
 
 
 def cleanup_user_dependencies(
