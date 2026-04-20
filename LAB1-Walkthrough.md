@@ -127,7 +127,16 @@ USING PROMPT 'You are a price matching assistant that performs the following ste
 
 3. COMPARE AND NOTIFY: Compare the extracted competitor price with our order price. If the competitor price is lower than our price, use the gmail_send_email tool to send a price match notification email. Use the exact format provided in the prompt for the email subject and body.
 
-Return a summary of actions taken and results.'
+Return your results in this exact format:
+
+Competitor Price:
+[price as XX.XX, or "Not found"]
+
+Decision:
+[PRICE_MATCH or NO_MATCH]
+
+Summary:
+[One sentence describing what you found and what action you took]'
 USING TOOLS zapier
 COMMENT 'Consolidated agent for scraping competitor prices and sending price match notifications'
 WITH (
@@ -155,7 +164,10 @@ SELECT
     pmi.customer_email,
     CAST(CAST(pmi.order_price AS DECIMAL(10, 2)) AS STRING) as order_price,
     agent_result.status as agent_status,
-    agent_result.response as agent_response
+    TRIM(REGEXP_EXTRACT(CAST(agent_result.response AS STRING), '\*{0,2}Competitor Price:\*{0,2}\s*\n?([\s\S]+?)(?=\n\*{0,2}(?:Decision|Summary):|$)', 1)) AS competitor_price,
+    TRIM(REGEXP_EXTRACT(CAST(agent_result.response AS STRING), '\*{0,2}Decision:\*{0,2}\s*\n?([A-Z_]+)', 1)) AS decision,
+    TRIM(REGEXP_EXTRACT(CAST(agent_result.response AS STRING), '\*{0,2}Summary:\*{0,2}\s*\n?([\s\S]+?)$', 1)) AS summary,
+    CAST(agent_result.response AS STRING) AS raw_response
 FROM enriched_orders pmi,
 LATERAL TABLE(
     AI_RUN_AGENT(

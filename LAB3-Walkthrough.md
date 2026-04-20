@@ -448,8 +448,8 @@ AS SELECT
     window_time,
     request_count,
     anomaly_reason,
-    TRIM(REGEXP_EXTRACT(CAST(response AS STRING), '\*{0,2}Dispatch Summary:\*{0,2}\s*\n([\s\S]+?)(?=\n\*{0,2}Dispatch JSON:\*{0,2})', 1)) AS dispatch_summary,
-    TRIM(REGEXP_EXTRACT(CAST(response AS STRING), '\*{0,2}Dispatch JSON:\*{0,2}\s*\n(?:```json\s*)?([\s\S]+?)(?:```)?(?=\n\*{0,2}API Response:\*{0,2})', 1)) AS dispatch_json,
+    TRIM(REGEXP_EXTRACT(CAST(response AS STRING), '\*{0,2}Dispatch Summary:\*{0,2}\s*\n([\s\S]+?)(?=\n\n\*{0,2}Dispatch JSON:\*{0,2})', 1)) AS dispatch_summary,
+    TRIM(REGEXP_EXTRACT(CAST(response AS STRING), '\*{0,2}Dispatch JSON:\*{0,2}\s*\n(?:```json\s*)?([\s\S]+?)(?:```)?(?=\n\n\*{0,2}API Response:\*{0,2})', 1)) AS dispatch_json,
     TRIM(REGEXP_EXTRACT(CAST(response AS STRING), '\*{0,2}API Response:\*{0,2}\s*\n(?:```json\s*)?([\s\S]+?)(?:```)?$', 1)) AS api_response,
     CAST(response AS STRING) AS raw_response
 FROM anomalies_enriched,
@@ -460,7 +460,7 @@ LATERAL TABLE(AI_RUN_AGENT(
 ));
 ```
 
-Then view the `dispatch_summary`, `dispatch_json`, and `api_response` summary of the streaming agent's output.
+Then view the `dispatch_summary`, `dispatch_json`, `api_response`, and `raw_response` columns from the streaming agent's output.
 ```sql
 SELECT * FROM `completed_actions`;
 ```
