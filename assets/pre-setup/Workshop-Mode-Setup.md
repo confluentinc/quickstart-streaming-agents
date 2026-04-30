@@ -201,14 +201,11 @@ This creates:
 - For proper scoping and security setup, consult with your security team (e.g., David Marsh has created properly scoped credentials for previous demos)
 - Generate credentials the day before the workshop
 
-**Zapier Setup (For Small Groups)**
-- For groups of 10-15 people or fewer, create a free Zapier account 1-2 days beforehand
-- Share your Streamable HTTP token directly with attendees rather than having them sign up individually
-- This saves significant workshop time and reduces friction
-- Attendees can still enter their own email in the query to receive notifications
-- Free trial offers ~500 tool calls in first 2 weeks; each order uses 2 tool calls
-- ⚠️ Don't use this approach for groups larger than 10-15 until confirming Zapier rate limits
-- Note: SSE endpoints are now deprecated by Zapier - use Streamable HTTP connections instead
+**MCP Server Setup**
+- Deploy the workshop MCP server (`mcp-email-for-workshops` repo) before the event
+- Share the server URL and token with all attendees — no individual accounts needed
+- Attendees enter the URL and token when prompted by `uv run deploy`
+- Rotate the token immediately after each workshop session to prevent abuse
 
 ### During the Workshop
 

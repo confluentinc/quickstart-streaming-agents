@@ -130,8 +130,8 @@ resource "confluent_flink_statement" "documents_vectordb_lab3" {
   ]
 }
 
-# Zapier MCP connection for Lab3
-resource "confluent_flink_statement" "zapier_mcp_connection_lab3" {
+# Email MCP connection for Lab3
+resource "confluent_flink_statement" "email_mcp_connection_lab3" {
   organization {
     id = data.confluent_organization.main.id
   }
@@ -150,15 +150,15 @@ resource "confluent_flink_statement" "zapier_mcp_connection_lab3" {
     secret = data.terraform_remote_state.core.outputs.app_manager_flink_api_secret
   }
 
-  statement_name = "zapier-mcp-connection-create-lab3"
+  statement_name = "email-mcp-connection-create-lab3"
 
   statement = <<-EOT
-    CREATE CONNECTION IF NOT EXISTS `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`zapier-mcp-connection`
+    CREATE CONNECTION IF NOT EXISTS `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`email-mcp-connection`
     WITH (
       'type' = 'MCP_SERVER',
-      'endpoint' = 'https://mcp.zapier.com/api/v1/connect',
-      'token' = '${var.zapier_token}',
-      'transport-type' = 'STREAMABLE_HTTP'
+      'endpoint' = '${var.mcp_endpoint}',
+      'token' = '${var.mcp_token}',
+      'transport-type' = 'SSE'
     );
   EOT
 
@@ -176,8 +176,8 @@ resource "confluent_flink_statement" "zapier_mcp_connection_lab3" {
   ]
 }
 
-# Zapier MCP model for Lab3 (AWS/Bedrock)
-resource "confluent_flink_statement" "zapier_mcp_model_lab3_aws" {
+# Email MCP model for Lab3 (AWS/Bedrock)
+resource "confluent_flink_statement" "email_mcp_model_lab3_aws" {
   count = local.cloud_provider == "aws" ? 1 : 0
 
   organization {
@@ -198,10 +198,10 @@ resource "confluent_flink_statement" "zapier_mcp_model_lab3_aws" {
     secret = data.terraform_remote_state.core.outputs.app_manager_flink_api_secret
   }
 
-  statement_name = "zapier-mcp-model-create-lab3"
+  statement_name = "email-mcp-model-create-lab3"
 
   statement = <<-EOT
-    CREATE MODEL IF NOT EXISTS `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`zapier_mcp_model`
+    CREATE MODEL IF NOT EXISTS `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`email_mcp_model`
     INPUT (prompt STRING)
     OUTPUT (response STRING)
     WITH (
@@ -209,7 +209,7 @@ resource "confluent_flink_statement" "zapier_mcp_model_lab3_aws" {
       'task' = 'text_generation',
       'bedrock.connection' = '${data.terraform_remote_state.core.outputs.llm_connection_name}',
       'bedrock.params.max_tokens' = '50000',
-      'mcp.connection' = 'zapier-mcp-connection'
+      'mcp.connection' = 'email-mcp-connection'
     );
   EOT
 
@@ -219,12 +219,12 @@ resource "confluent_flink_statement" "zapier_mcp_model_lab3_aws" {
   }
 
   depends_on = [
-    confluent_flink_statement.zapier_mcp_connection_lab3
+    confluent_flink_statement.email_mcp_connection_lab3
   ]
 }
 
-# Zapier MCP model for Lab3 (Azure/OpenAI)
-resource "confluent_flink_statement" "zapier_mcp_model_lab3_azure" {
+# Email MCP model for Lab3 (Azure/OpenAI)
+resource "confluent_flink_statement" "email_mcp_model_lab3_azure" {
   count = local.cloud_provider == "azure" ? 1 : 0
 
   organization {
@@ -245,17 +245,17 @@ resource "confluent_flink_statement" "zapier_mcp_model_lab3_azure" {
     secret = data.terraform_remote_state.core.outputs.app_manager_flink_api_secret
   }
 
-  statement_name = "zapier-mcp-model-create-lab3"
+  statement_name = "email-mcp-model-create-lab3"
 
   statement = <<-EOT
-    CREATE MODEL IF NOT EXISTS `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`zapier_mcp_model`
+    CREATE MODEL IF NOT EXISTS `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`email_mcp_model`
     INPUT (prompt STRING)
     OUTPUT (response STRING)
     WITH (
       'provider' = 'azureopenai',
       'task' = 'text_generation',
       'azureopenai.connection' = '${data.terraform_remote_state.core.outputs.llm_connection_name}',
-      'mcp.connection' = 'zapier-mcp-connection'
+      'mcp.connection' = 'email-mcp-connection'
     );
   EOT
 
@@ -265,7 +265,7 @@ resource "confluent_flink_statement" "zapier_mcp_model_lab3_azure" {
   }
 
   depends_on = [
-    confluent_flink_statement.zapier_mcp_connection_lab3
+    confluent_flink_statement.email_mcp_connection_lab3
   ]
 }
 
@@ -322,9 +322,9 @@ resource "confluent_flink_statement" "ride_requests_table" {
 resource "null_resource" "generate_flink_sql_summary" {
   # Trigger regeneration when key resources change
   triggers = {
-    zapier_mcp_connection = confluent_flink_statement.zapier_mcp_connection_lab3.id
-    zapier_mcp_model_aws  = local.cloud_provider == "aws" ? confluent_flink_statement.zapier_mcp_model_lab3_aws[0].id : ""
-    zapier_mcp_model_azure = local.cloud_provider == "azure" ? confluent_flink_statement.zapier_mcp_model_lab3_azure[0].id : ""
+    email_mcp_connection = confluent_flink_statement.email_mcp_connection_lab3.id
+    email_mcp_model_aws  = local.cloud_provider == "aws" ? confluent_flink_statement.email_mcp_model_lab3_aws[0].id : ""
+    email_mcp_model_azure = local.cloud_provider == "azure" ? confluent_flink_statement.email_mcp_model_lab3_azure[0].id : ""
     ride_requests_table   = confluent_flink_statement.ride_requests_table.id
   }
 
@@ -334,9 +334,9 @@ resource "null_resource" "generate_flink_sql_summary" {
   }
 
   depends_on = [
-    confluent_flink_statement.zapier_mcp_connection_lab3,
-    confluent_flink_statement.zapier_mcp_model_lab3_aws,
-    confluent_flink_statement.zapier_mcp_model_lab3_azure,
+    confluent_flink_statement.email_mcp_connection_lab3,
+    confluent_flink_statement.email_mcp_model_lab3_aws,
+    confluent_flink_statement.email_mcp_model_lab3_azure,
     confluent_flink_statement.ride_requests_table
   ]
 }

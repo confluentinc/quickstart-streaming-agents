@@ -155,8 +155,10 @@ def main():
         # Optional fields
         if "owner_email" in creds and creds["owner_email"]:
             env_vars["TF_VAR_owner_email"] = creds["owner_email"]
-        if "zapier_token" in creds and creds["zapier_token"]:
-            env_vars["TF_VAR_zapier_token"] = creds["zapier_token"]
+        if "mcp_token" in creds and creds["mcp_token"]:
+            env_vars["TF_VAR_mcp_token"] = creds["mcp_token"]
+        if "mcp_endpoint" in creds and creds["mcp_endpoint"]:
+            env_vars["TF_VAR_mcp_endpoint"] = creds["mcp_endpoint"]
         if "mongodb_connection_string" in creds and creds["mongodb_connection_string"]:
             env_vars["TF_VAR_mongodb_connection_string"] = creds["mongodb_connection_string"]
         if "mongodb_username" in creds and creds["mongodb_username"]:
@@ -362,15 +364,17 @@ def main():
 
         # Lab-specific credentials
         if "lab1-tool-calling" in envs_to_deploy or "lab3-agentic-fleet-management" in envs_to_deploy:
-            zapier_token = prompt_with_default("Zapier Token (Lab 1 and Lab 3)", creds.get("TF_VAR_zapier_token", ""))
-            _save_env_safe(creds_file, "TF_VAR_zapier_token", zapier_token)
+            mcp_endpoint = prompt_with_default("MCP Server URL (Lab 1 and Lab 3)", creds.get("TF_VAR_mcp_endpoint", ""))
+            _save_env_safe(creds_file, "TF_VAR_mcp_endpoint", mcp_endpoint)
+            mcp_token = prompt_with_default("MCP Token (Lab 1 and Lab 3)", creds.get("TF_VAR_mcp_token", ""))
+            _save_env_safe(creds_file, "TF_VAR_mcp_token", mcp_token)
 
         # Set cloud region and cloud provider
         _save_env_safe(creds_file, "TF_VAR_cloud_region", region)
         _save_env_safe(creds_file, "TF_VAR_cloud_provider", cloud)
 
         # Step 5.5: Validate configurations (advisory only, never blocks deployment)
-        needs_zapier  = "lab1-tool-calling" in envs_to_deploy or "lab3-agentic-fleet-management" in envs_to_deploy
+        needs_mcp  = "lab1-tool-calling" in envs_to_deploy or "lab3-agentic-fleet-management" in envs_to_deploy
         needs_mongodb = "lab2-vector-search" in envs_to_deploy or "lab3-agentic-fleet-management" in envs_to_deploy
         needs_lab4    = "lab4-pubsec-fraud-agents" in envs_to_deploy
 
@@ -382,25 +386,25 @@ def main():
             if value:
                 os.environ[key] = value
 
-        # Validate Zapier
-        if needs_zapier:
+        # Validate MCP server
+        if needs_mcp:
             try:
                 result = subprocess.run(
-                    ["uv", "run", "validate", "zapier"],
+                    ["uv", "run", "validate", "mcp"],
                     cwd=root,
                     capture_output=True,
                     text=True,
                     timeout=30
                 )
                 if "ALL VALIDATION CHECKS PASSED" in result.stdout:
-                    print("✓ Zapier configuration validated")
+                    print("✓ MCP server configuration validated")
                 else:
                     print(result.stdout)
-                    response = input("\nZapier validation warnings detected. Continue anyway? (y/n): ")
+                    response = input("\nMCP server validation warnings detected. Continue anyway? (y/n): ")
                     if response.lower() != 'y':
                         sys.exit(1)
             except Exception as e:
-                print(f"⚠ Could not validate Zapier configuration: {e}")
+                print(f"⚠ Could not validate MCP server configuration: {e}")
                 print("  (This is advisory only - deployment will continue)")
 
         # Validate workshop MongoDB (lab2 / lab3 use pre-populated workshop data by default)

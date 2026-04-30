@@ -39,7 +39,7 @@ Build real-time AI agents with [Confluent Cloud Streaming Agents](https://docs.c
 
 - [![Sign up for Confluent Cloud](https://img.shields.io/badge/Sign%20up%20for%20Confluent%20Cloud-007BFF?style=for-the-badge&logo=apachekafka&logoColor=white)](https://www.confluent.io/get-started/?utm_campaign=tm.pmm_cd.q4fy25-quickstart-streaming-agents&utm_source=github&utm_medium=demo)
 - **LLM Provider:** AWS Bedrock API keys **OR** Azure OpenAI keys - or BYOK
-- **Lab1 & Lab3:** Free Zapier remote MCP server ([Setup guide](./assets/pre-setup/Zapier-Setup.md))
+- **Lab1 & Lab3:** Workshop MCP server — URL and token provided by instructor ([Setup guide](./assets/pre-setup/MCP-Server-Setup.md))
 
 **Required tools:**
 

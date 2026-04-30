@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """
-Unified data generation tool for quickstart-streaming-agents.
+Lab 1 data generation tool for quickstart-streaming-agents.
 
-Cross-platform tool for generating streaming data with ShadowTraffic and Docker.
-Supports AWS, Azure, and terraform deployments with automatic credential extraction
-and connection file generation.
+Generates streaming ecommerce data (customers, products, orders) and publishes
+to Confluent Cloud Kafka topics using Avro serialization.
 
 Usage:
     uv run lab1_datagen                      # Auto-detect cloud provider
@@ -22,303 +21,399 @@ Traditional Python:
 import argparse
 import json
 import logging
-import os
-import shutil
-import subprocess
+import random
 import sys
-import tempfile
-import urllib.request
-from datetime import datetime
-from pathlib import Path
-from typing import Dict, Optional
+import time
+from typing import Dict, List, Optional
+
+from confluent_kafka import SerializingProducer
+from confluent_kafka.schema_registry import SchemaRegistryClient
+from confluent_kafka.schema_registry.avro import AvroSerializer
+from confluent_kafka.serialization import StringSerializer
+from faker import Faker
 
 from .common.cloud_detection import auto_detect_cloud_provider, validate_cloud_provider, suggest_cloud_provider
 from .common.terraform import extract_kafka_credentials, validate_terraform_state, get_project_root
-from .common.datagen_helpers import (
-    generate_all_connections,
-    check_dependencies,
-    validate_dependencies,
-    check_shadowtraffic_config,
-    check_docker_env_file,
-    download_shadowtraffic_license,
-    get_license_expiration,
-    is_license_expired
-)
 from .common.logging_utils import setup_logging
 
 
-def find_datagen_directories(cloud_provider: str, project_root: Path) -> Dict[str, Path]:
-    """
-    Find the relevant directories for data generation.
+# ---------------------------------------------------------------------------
+# Avro schemas — must match the ShadowTraffic avroSchemaHint definitions so
+# Flink's schema registry expectations are met exactly.
+# ---------------------------------------------------------------------------
 
-    Args:
-        cloud_provider: Target cloud provider (aws/azure/terraform)
-        project_root: Project root directory
+CUSTOMERS_SCHEMA = json.dumps({
+    "type": "record",
+    "name": "customers_value",
+    "namespace": "org.apache.flink.avro.generated.record",
+    "fields": [
+        {"name": "customer_id", "type": "string"},
+        {"name": "customer_email", "type": "string"},
+        {"name": "customer_name", "type": "string"},
+        {"name": "state", "type": "string"},
+        {"name": "updated_at", "type": {"type": "long", "logicalType": "timestamp-millis"}},
+    ],
+})
 
-    Returns:
-        Dictionary with relevant paths
+PRODUCTS_SCHEMA = json.dumps({
+    "type": "record",
+    "name": "products_value",
+    "namespace": "org.apache.flink.avro.generated.record",
+    "fields": [
+        {"name": "product_id", "type": "string"},
+        {"name": "product_name", "type": "string"},
+        {"name": "price", "type": "double"},
+        {"name": "department", "type": "string"},
+        {"name": "updated_at", "type": {"type": "long", "logicalType": "timestamp-millis"}},
+    ],
+})
 
-    Raises:
-        FileNotFoundError: If required directories are not found
-    """
-    paths = {}
+ORDERS_SCHEMA = json.dumps({
+    "type": "record",
+    "name": "orders_value",
+    "namespace": "org.apache.flink.avro.generated.record",
+    "fields": [
+        {"name": "order_id", "type": "string"},
+        {"name": "customer_id", "type": "string"},
+        {"name": "product_id", "type": "string"},
+        {"name": "price", "type": "double"},
+        {"name": "order_ts", "type": {"type": "long", "logicalType": "timestamp-millis"}},
+    ],
+})
 
-    if cloud_provider in ["aws", "azure", "terraform"]:
-        terraform_dir = project_root / "terraform"
-        core_dir = terraform_dir / "core"
-        lab1_dir = terraform_dir / "lab1-tool-calling"
-        datagen_dir = lab1_dir / "data-gen"
+# ---------------------------------------------------------------------------
+# Fixed product catalog (verbatim from generators/products.json)
+# ---------------------------------------------------------------------------
 
-        if not core_dir.exists():
-            raise FileNotFoundError(f"Core directory not found: {core_dir}")
-        if not datagen_dir.exists():
-            raise FileNotFoundError(f"Data generation directory not found: {datagen_dir}")
+PRODUCTS = [
+    {"product_id": "3001", "product_name": "Apple AirPods Pro 2, Wireless Earbuds, Active Noise Cancellation, Hearing Aid Feature", "price": 245.00, "department": "electronics & technology"},
+    {"product_id": "3002", "product_name": "Apple AirTag - 1 Pack, Item Tracker with Apple Find My", "price": 30.00, "department": "electronics & technology"},
+    {"product_id": "3003", "product_name": "Bose QuietComfort Headphones, Bluetooth Over Ear Noise Cancelling Headphones, Black", "price": 365.00, "department": "electronics & technology"},
+    {"product_id": "3004", "product_name": "Official Hasbro Games Jenga Game with Digital Die, Wood Block Party Game, Family Games, 6+", "price": 28.00, "department": "toys & games"},
+    {"product_id": "3005", "product_name": "Coca-Cola Classic Soda Pop, 12 fl oz Cans, 24 Pack", "price": 15.00, "department": "food & beverages"},
+    {"product_id": "3006", "product_name": "Dawn EZ-Squeeze Ultra Dish Soap Dishwashing Liquid, Original Scent, 22.0 fl oz", "price": 5.00, "department": "household cleaning & home goods"},
+    {"product_id": "3007", "product_name": "JBL Flip 7 - Portable waterproof and drop-proof speaker, Bold JBL Pro Sound with AI Sound Boost, 16Hrs of Playtime, and PushLock system with interchangeable accessories (Black)", "price": 165.00, "department": "electronics & technology"},
+    {"product_id": "3008", "product_name": "Monopoly Board Game, Classic Game with Storage Tray and Larger Tokens, Family Games, 8+", "price": 20.00, "department": "toys & games"},
+    {"product_id": "3009", "product_name": "Panasonic Eneloop BK-4MCCA4BA Pre-Charged Nickel Metal Hydride AAA Rechargeable Batteries, 4-Battery Pack", "price": 17.00, "department": "electronics & technology"},
+    {"product_id": "3010", "product_name": "Scrabble Classic Crossword Board Game for Kids and Family Ages 8 and Up, 2-4 Players", "price": 30.00, "department": "toys & games"},
+    {"product_id": "3011", "product_name": "UNO Card Game for Kids, Adults & Family Game Night, Original UNO Game of Matching Colors & Numbers", "price": 10.00, "department": "toys & games"},
+    {"product_id": "3012", "product_name": 'Wilson Evolution Official Game Basketball - 29.5"', "price": 100.00, "department": "sports & recreation"},
+    {"product_id": "3013", "product_name": "Magic 8 Ball Kids Toy, Novelty Fortune Teller Gag Gift, Ask a Question & Turn Over for Answer", "price": 15.00, "department": "toys & games"},
+    {"product_id": "3014", "product_name": "Pyrex 1-cup Measuring Cup", "price": 15.00, "department": "household cleaning & home goods"},
+    {"product_id": "3015", "product_name": "Penn Championship Extra Duty Tennis Balls (1 Can, 3 balls)", "price": 8.99, "department": "sports & recreation"},
+    {"product_id": "3016", "product_name": "The Grand Budapest Hotel (Blu-ray), 20th Century Fox, Comedy", "price": 16.00, "department": "movies & entertainment"},
+    {"product_id": "3017", "product_name": "The Wild Robot (Blu-ray + Digital Copy), Family, DreamWorks", "price": 23.99, "department": "movies & entertainment"},
+]
 
-        paths.update({
-            "core_dir": core_dir,
-            "lab1_dir": lab1_dir,
-            "datagen_dir": datagen_dir,
-            "connections_dir": datagen_dir / "connections",
-            "generators_dir": datagen_dir / "generators",
-            "root_config": datagen_dir / "root.json",
-        })
+# Weighted state pool mirrors ShadowTraffic weightedOneOf: random(3) + CA(3) + NY(2) + TX(2) + FL(1)
+_US_STATES = [
+    "Alabama", "Alaska", "Arizona", "Arkansas", "Colorado", "Connecticut",
+    "Delaware", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa",
+    "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts",
+    "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska",
+    "Nevada", "New Hampshire", "New Jersey", "New Mexico", "North Carolina",
+    "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island",
+    "South Carolina", "South Dakota", "Tennessee", "Utah", "Vermont", "Virginia",
+    "Washington", "West Virginia", "Wisconsin", "Wyoming",
+]
+_STATE_WEIGHTS = (
+    [(s, 3 / len(_US_STATES)) for s in _US_STATES]
+    + [("California", 3), ("New York", 2), ("Texas", 2), ("Florida", 1)]
+)
+_STATE_POOL = [s for s, w in _STATE_WEIGHTS for _ in range(int(w * 10))] + ["California"] * 30 + ["New York"] * 20 + ["Texas"] * 20 + ["Florida"] * 10
 
+
+def _random_state() -> str:
+    """Return a state matching ShadowTraffic's weightedOneOf distribution."""
+    # Build a weighted pool: 30 random-state slots vs 30 CA / 20 NY / 20 TX / 10 FL
+    slot = random.randint(0, 109)
+    if slot < 30:
+        return random.choice(_US_STATES)
+    elif slot < 60:
+        return "California"
+    elif slot < 80:
+        return "New York"
+    elif slot < 100:
+        return "Texas"
     else:
-        raise ValueError(f"Unsupported cloud provider: {cloud_provider}")
-
-    return paths
+        return "Florida"
 
 
-def run_shadowtraffic(
-    paths: Dict[str, Path],
-    duration: Optional[int] = None,
-    messages_per_minute: Optional[int] = None,
-    dry_run: bool = False
-) -> int:
-    """
-    Run ShadowTraffic data generation with Docker.
+def _now_ms() -> int:
+    return int(time.time() * 1000)
 
-    Args:
-        paths: Dictionary with relevant paths
-        duration: Duration to run in seconds (optional)
-        messages_per_minute: Orders per minute to generate (optional)
-        dry_run: If True, validate setup but don't run
 
-    Returns:
-        Exit code (0 for success)
-    """
-    logger = logging.getLogger(__name__)
+def _make_order_id() -> str:
+    """Replicate ShadowTraffic formula: O-{floor(now/10000) % 1000000}"""
+    suffix = (_now_ms() // 10000) % 1_000_000
+    return f"O-{suffix}"
 
-    datagen_dir = paths["datagen_dir"]
-    connections_dir = paths["connections_dir"]
-    generators_dir = paths["generators_dir"]
-    root_config = paths["root_config"]
 
-    # If messages_per_minute is specified, create modified root.json
-    if messages_per_minute:
-        throttle_ms = int(60000 / messages_per_minute)
-        logger.info(f"📊 Setting order rate to {messages_per_minute} messages/minute (throttle: {throttle_ms}ms)")
+# ---------------------------------------------------------------------------
+# Publisher
+# ---------------------------------------------------------------------------
 
-        # Load original root.json
-        with open(root_config, 'r') as f:
-            root_json = json.load(f)
+class Lab1DataPublisher:
+    """Publishes Lab 1 ecommerce data to Confluent Cloud Kafka topics."""
 
-        # Update the throttleMs in schedule overrides
-        if "schedule" in root_json and "stages" in root_json["schedule"]:
-            for stage in root_json["schedule"]["stages"]:
-                if "generators" in stage and "orders" in stage["generators"]:
-                    if "overrides" not in stage:
-                        stage["overrides"] = {}
-                    if "orders" not in stage["overrides"]:
-                        stage["overrides"]["orders"] = {}
-                    if "localConfigs" not in stage["overrides"]["orders"]:
-                        stage["overrides"]["orders"]["localConfigs"] = {}
+    def __init__(
+        self,
+        bootstrap_servers: str,
+        kafka_api_key: str,
+        kafka_api_secret: str,
+        schema_registry_url: str,
+        schema_registry_api_key: str,
+        schema_registry_api_secret: str,
+        dry_run: bool = False,
+    ):
+        self.dry_run = dry_run
+        self.logger = logging.getLogger(__name__)
+        self.fake = Faker()
 
-                    # Set fixed throttle (remove randomization for predictability)
-                    stage["overrides"]["orders"]["localConfigs"]["throttleMs"] = throttle_ms
+        sr_conf = {
+            "url": schema_registry_url,
+            "basic.auth.user.info": f"{schema_registry_api_key}:{schema_registry_api_secret}",
+        }
+        kafka_conf_base = {
+            "bootstrap.servers": bootstrap_servers,
+            "sasl.mechanisms": "PLAIN",
+            "security.protocol": "SASL_SSL",
+            "sasl.username": kafka_api_key,
+            "sasl.password": kafka_api_secret,
+            "linger.ms": 10,
+            "batch.size": 16384,
+        }
 
-        # Create temp directory for modified config
-        temp_dir = tempfile.mkdtemp(prefix="shadowtraffic_")
-        temp_root_config = Path(temp_dir) / "root.json"
+        self._string_serializer = StringSerializer("utf_8")
 
-        # Write modified root.json
-        with open(temp_root_config, 'w') as f:
-            json.dump(root_json, f, indent=2)
+        if not dry_run:
+            sr_client = SchemaRegistryClient(sr_conf)
 
-        logger.debug(f"Created temporary root.json at: {temp_root_config}")
-        root_config = temp_root_config
+            self._customers_producer = SerializingProducer({
+                **kafka_conf_base,
+                "key.serializer": self._string_serializer,
+                "value.serializer": AvroSerializer(sr_client, CUSTOMERS_SCHEMA),
+            })
+            self._products_producer = SerializingProducer({
+                **kafka_conf_base,
+                "key.serializer": self._string_serializer,
+                "value.serializer": AvroSerializer(sr_client, PRODUCTS_SCHEMA),
+            })
+            self._orders_producer = SerializingProducer({
+                **kafka_conf_base,
+                "key.serializer": self._string_serializer,
+                "value.serializer": AvroSerializer(sr_client, ORDERS_SCHEMA),
+            })
 
-    # Check for environment file, download if missing or expired
-    env_file = check_docker_env_file(datagen_dir)
+    def _delivery_callback(self, err, msg):
+        if err:
+            self.logger.error(f"Delivery failed: {err}")
+        else:
+            self.logger.debug(f"Delivered to {msg.topic()} [{msg.partition()}] @ {msg.offset()}")
 
-    if env_file:
-        # Check if existing license is expired
-        if is_license_expired(env_file):
-            expiration = get_license_expiration(env_file)
-            expiration_str = expiration.strftime('%Y-%m-%d') if expiration else "unknown"
-
-            logger.warning(f"⚠️  ShadowTraffic license expired on {expiration_str}")
-            logger.info("📥 Deleting expired license and downloading fresh one...")
-
-            # Delete the expired license file first to avoid permission issues
-            try:
-                env_file.unlink()
-                logger.debug(f"Deleted expired license file: {env_file}")
-            except Exception as e:
-                logger.warning(f"Could not delete expired license file: {e}")
-                # Continue anyway - download will attempt to overwrite
-
-            # Try to download a new license
-            new_license = download_shadowtraffic_license(datagen_dir)
-            if new_license:
-                env_file = new_license
-                logger.info("✓ Updated to fresh license file")
+    def publish_customers(self, count: int = 10) -> List[Dict]:
+        """Stage 1: generate and publish customer records."""
+        self.logger.info(f"Publishing {count} customers...")
+        customers = []
+        for i in range(count):
+            record = {
+                "customer_id": f"C-{100000 + i}",
+                "customer_email": self.fake.email(),
+                "customer_name": self.fake.name(),
+                "state": _random_state(),
+                "updated_at": _now_ms(),
+            }
+            customers.append(record)
+            if self.dry_run:
+                self.logger.info(f"  [DRY RUN] customer: {record['customer_id']} / {record['customer_name']} / {record['state']}")
             else:
-                logger.error("✗ Failed to download a new license file")
-                logger.error("")
-                logger.error("Please download a fresh license manually:")
-                logger.error("  1. Visit: https://github.com/ShadowTraffic/shadowtraffic-examples")
-                logger.error("  2. Download: free-trial-license-docker.env")
-                logger.error(f"  3. Save to: {datagen_dir}/free-trial-license-docker.env")
-                logger.error("")
-                logger.error("Alternatively, get a full license at: https://shadowtraffic.io")
-                return 1
-    else:
-        logger.info("📄 No ShadowTraffic license file found, attempting to download...")
-        env_file = download_shadowtraffic_license(datagen_dir)
-        if not env_file:
-            logger.warning("⚠️  No ShadowTraffic environment file available")
-            logger.warning("   ShadowTraffic will use trial limits")
+                self._customers_producer.produce(
+                    topic="customers",
+                    key=record["customer_id"],
+                    value=record,
+                    on_delivery=self._delivery_callback,
+                )
+        if not self.dry_run:
+            self._customers_producer.flush()
+        self.logger.info(f"✓ Published {count} customers")
+        return customers
 
-    # Build Docker command
-    docker_cmd = [
-        "docker", "run",
-        "--rm",
-        "--net=host",
-        "-v", f"{root_config}:/home/root.json",
-        "-v", f"{generators_dir}:/home/generators",
-        "-v", f"{connections_dir}:/home/connections",
-    ]
+    def publish_products(self) -> List[Dict]:
+        """Stage 2: publish fixed product catalog."""
+        self.logger.info(f"Publishing {len(PRODUCTS)} products...")
+        products = []
+        for p in PRODUCTS:
+            record = {**p, "updated_at": _now_ms()}
+            products.append(record)
+            if self.dry_run:
+                self.logger.info(f"  [DRY RUN] product: {record['product_id']} / {record['product_name']} / ${record['price']}")
+            else:
+                self._products_producer.produce(
+                    topic="products",
+                    key=record["product_id"],
+                    value=record,
+                    on_delivery=self._delivery_callback,
+                )
+        if not self.dry_run:
+            self._products_producer.flush()
+        self.logger.info(f"✓ Published {len(PRODUCTS)} products")
+        return products
 
-    # Add environment file if found
-    if env_file:
-        docker_cmd.extend(["--env-file", str(env_file)])
+    def publish_orders(
+        self,
+        customers: List[Dict],
+        products: List[Dict],
+        max_orders: int = 17,
+        throttle_ms: Optional[int] = None,
+        duration: Optional[int] = None,
+    ) -> int:
+        """Stage 3: publish orders, throttled between each one."""
+        if throttle_ms is None:
+            # Default: uniform distribution 90–95 seconds (matching ShadowTraffic root.json)
+            use_random_throttle = True
+        else:
+            use_random_throttle = False
 
-    # Add duration if specified
-    shadowtraffic_args = ["--config", "/home/root.json"]
-    if duration:
-        shadowtraffic_args.extend(["--duration", str(duration)])
-
-    docker_cmd.extend([
-        "shadowtraffic/shadowtraffic:1.14.1"
-    ] + shadowtraffic_args)
-
-    logger.info(f"🚀 Starting ShadowTraffic data generation...")
-    logger.info(f"   Config: {root_config}")
-    logger.info(f"   Connections: {connections_dir}")
-    logger.info(f"   Generators: {generators_dir}")
-
-    if env_file:
-        logger.info(f"   Environment: {env_file}")
-
-    if duration:
-        logger.info(f"   Duration: {duration} seconds")
-
-    if dry_run:
-        logger.info("✓ Dry run - Docker command would be:")
-        logger.info(f"   {' '.join(docker_cmd)}")
-        return 0
-
-    try:
-        # Change to datagen directory for relative path resolution
-        result = subprocess.run(
-            docker_cmd,
-            cwd=datagen_dir,
-            check=True
+        self.logger.info(
+            f"Publishing up to {max_orders} orders"
+            + (f" over {duration}s" if duration else "")
+            + (f" at {60000 // throttle_ms}/min" if throttle_ms else " (~1 per 90–95s)")
         )
 
-        logger.info("✓ ShadowTraffic data generation completed successfully")
-        return result.returncode
+        start_time = time.time()
+        count = 0
 
-    except subprocess.CalledProcessError as e:
-        logger.error(f"✗ ShadowTraffic failed with exit code {e.returncode}")
+        for i in range(max_orders):
+            if duration and (time.time() - start_time) >= duration:
+                self.logger.info(f"Duration limit reached after {count} orders")
+                break
 
-        # Provide helpful error messages
-        if e.returncode == 125:  # Docker daemon not running
-            logger.error("Docker daemon may not be running. Try:")
-            logger.error("  - Start Docker Desktop")
-            logger.error("  - Or run: sudo systemctl start docker")
-        elif e.returncode == 127:  # Docker not found
-            logger.error("Docker command not found. Please install Docker:")
-            logger.error("  - https://docs.docker.com/get-docker/")
+            customer = random.choice(customers)
+            product = random.choice(products)
 
-        return e.returncode
+            record = {
+                "order_id": _make_order_id(),
+                "customer_id": customer["customer_id"],
+                "product_id": product["product_id"],
+                "price": product["price"],
+                "order_ts": _now_ms(),
+            }
 
-    except KeyboardInterrupt:
-        logger.info("⏹️  Data generation interrupted by user")
-        return 130
+            if self.dry_run:
+                self.logger.info(
+                    f"  [DRY RUN] order {i + 1}: {record['order_id']} "
+                    f"customer={record['customer_id']} product={record['product_id']} price=${record['price']}"
+                )
+            else:
+                self._orders_producer.produce(
+                    topic="orders",
+                    key=record["order_id"],
+                    value=record,
+                    on_delivery=self._delivery_callback,
+                )
+                self._orders_producer.flush()
+                self.logger.info(
+                    f"✓ Order {i + 1}/{max_orders}: {record['order_id']} "
+                    f"({record['customer_id']} → {record['product_id']} @ ${record['price']})"
+                )
 
+            count += 1
+
+            if i < max_orders - 1:
+                if use_random_throttle:
+                    sleep_s = random.uniform(90, 95)
+                else:
+                    sleep_s = throttle_ms / 1000.0
+
+                if not self.dry_run:
+                    self.logger.info(f"  Waiting {sleep_s:.1f}s before next order...")
+                    remaining = duration - (time.time() - start_time) if duration else None
+                    if remaining is not None and remaining < sleep_s:
+                        self.logger.info(f"  Duration will expire during wait — stopping early")
+                        break
+                    time.sleep(sleep_s)
+
+        self.logger.info(f"✓ Published {count} orders")
+        return count
+
+    def close(self):
+        if not self.dry_run:
+            for producer in [self._customers_producer, self._products_producer, self._orders_producer]:
+                producer.flush()
+
+
+# ---------------------------------------------------------------------------
+# Orchestration
+# ---------------------------------------------------------------------------
 
 def run_datagen(
     cloud_provider: str,
     duration: Optional[int] = None,
     messages_per_minute: Optional[int] = None,
     dry_run: bool = False,
-    verbose: bool = False
+    verbose: bool = False,
 ) -> int:
-    """
-    Run the complete data generation workflow.
-
-    Args:
-        cloud_provider: Target cloud provider (aws/azure/terraform)
-        duration: Duration to run in seconds
-        messages_per_minute: Orders per minute to generate
-        dry_run: If True, validate setup but don't run
-        verbose: If True, show detailed output
-
-    Returns:
-        Exit code (0 for success)
-    """
     logger = logging.getLogger(__name__)
 
     try:
-        # Get project root and find directories
         project_root = get_project_root()
-        paths = find_datagen_directories(cloud_provider, project_root)
 
-        # Check dependencies
-        logger.info("🔧 Checking dependencies...")
-        deps = check_dependencies()
-        if not validate_dependencies(deps):
-            return 1
+        if cloud_provider in ["aws", "azure"]:
+            if not validate_terraform_state(cloud_provider, project_root):
+                logger.error(f"Terraform state validation failed for {cloud_provider}")
+                logger.error("Please run 'terraform apply' in terraform/core/ and terraform/lab1-tool-calling/")
+                return 1
 
-        # Extract credentials from terraform
-        logger.info(f"📡 Extracting {cloud_provider.upper()} credentials...")
+        logger.info(f"Extracting {cloud_provider.upper()} credentials...")
         credentials = extract_kafka_credentials(cloud_provider, project_root)
 
-        # Generate connection files with manual topic policy
-        generate_all_connections(credentials, paths["connections_dir"], ["orders", "customers", "products"])
+        throttle_ms = None
+        if messages_per_minute:
+            throttle_ms = int(60_000 / messages_per_minute)
+            logger.info(f"Order rate: {messages_per_minute}/min (throttle: {throttle_ms}ms)")
 
-        # Check ShadowTraffic configuration
-        if not check_shadowtraffic_config(paths["generators_dir"], ["orders.json", "customers.json", "products.json"]):
-            return 1
+        publisher = Lab1DataPublisher(
+            bootstrap_servers=credentials["bootstrap_servers"],
+            kafka_api_key=credentials["kafka_api_key"],
+            kafka_api_secret=credentials["kafka_api_secret"],
+            schema_registry_url=credentials["schema_registry_url"],
+            schema_registry_api_key=credentials["schema_registry_api_key"],
+            schema_registry_api_secret=credentials["schema_registry_api_secret"],
+            dry_run=dry_run,
+        )
 
-        # Run ShadowTraffic
-        return run_shadowtraffic(paths, duration, messages_per_minute, dry_run)
+        try:
+            customers = publisher.publish_customers(count=10)
+            products = publisher.publish_products()
+            publisher.publish_orders(
+                customers=customers,
+                products=products,
+                max_orders=17,
+                throttle_ms=throttle_ms,
+                duration=duration,
+            )
+        finally:
+            publisher.close()
+
+        logger.info("Data generation complete")
+        return 0
 
     except Exception as e:
         logger.error(f"Data generation failed: {e}")
         if verbose:
             import traceback
-            logger.error(f"Stack trace: {traceback.format_exc()}")
+            logger.error(traceback.format_exc())
         return 1
 
 
+# ---------------------------------------------------------------------------
+# CLI
+# ---------------------------------------------------------------------------
+
 def create_argument_parser() -> argparse.ArgumentParser:
-    """Create and configure argument parser."""
     parser = argparse.ArgumentParser(
-        prog="datagen",
-        description="Generate streaming data with ShadowTraffic and Docker",
+        prog="lab1_datagen",
+        description="Generate Lab 1 ecommerce streaming data (customers, products, orders)",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -329,113 +424,80 @@ Examples:
   uv run lab1_datagen -m 10                # Generate 10 orders per minute
   uv run lab1_datagen -m 30 --duration 120 # Generate 30 orders/min for 2 minutes
   uv run lab1_datagen --dry-run            # Validate setup only
-
-Traditional Python:
-  python scripts/lab1_datagen.py
-
-Dependencies:
-  - Docker: https://docs.docker.com/get-docker/
-  - Terraform: https://developer.hashicorp.com/terraform/install
-        """.strip()
+        """.strip(),
     )
 
     parser.add_argument(
         "cloud_provider",
         nargs="?",
         choices=["aws", "azure", "terraform"],
-        help="Target cloud provider (auto-detected if not specified)"
+        help="Target cloud provider (auto-detected if not specified)",
     )
-
     parser.add_argument(
         "--duration",
         type=int,
-        help="Duration to run data generation in seconds"
+        help="Maximum time to run order generation in seconds",
     )
-
     parser.add_argument(
         "--messages-per-minute", "-m",
         type=int,
-        help="Orders per minute to generate (default: ~0.65/min, roughly 1 per 90 seconds)"
+        help="Orders per minute (default: ~0.65/min, one per 90–95 seconds)",
     )
-
     parser.add_argument(
         "--dry-run",
         action="store_true",
-        help="Validate setup and generate connection files without running ShadowTraffic"
+        help="Validate setup and show what would be published without connecting to Kafka",
     )
-
     parser.add_argument(
         "--verbose", "-v",
         action="store_true",
-        help="Show detailed output and debug information"
+        help="Show detailed debug output",
     )
-
     return parser
 
 
 def main() -> None:
-    """Main entry point."""
     parser = create_argument_parser()
     args = parser.parse_args()
 
     logger = setup_logging(args.verbose)
-    logger.info("Quickstart Streaming Agents - Data Generation")
+    logger.info("Quickstart Streaming Agents — Lab 1 Data Generation")
 
     try:
-        # Get project root
         project_root = get_project_root()
-        logger.debug(f"Project root: {project_root}")
 
-        # Determine cloud provider
         cloud_provider = args.cloud_provider
         if not cloud_provider:
             cloud_provider = auto_detect_cloud_provider()
             if not cloud_provider:
                 logger.error("Could not auto-detect cloud provider")
                 suggest_cloud_provider(project_root)
-                # For datagen, also suggest terraform option
-                logger.info("  ✓ terraform (if using terraform/data-gen directory)")
                 sys.exit(1)
         else:
-            # For datagen, validate includes terraform option
-            if cloud_provider not in ["aws", "azure", "terraform"]:
+            if not validate_cloud_provider(cloud_provider):
                 logger.error(f"Unsupported cloud provider: {cloud_provider}")
-                logger.error("Supported providers: aws, azure, terraform")
                 sys.exit(1)
 
         logger.info(f"Target cloud provider: {cloud_provider.upper()}")
 
-        # For aws/azure, validate terraform state
-        if cloud_provider in ["aws", "azure"]:
-            if not validate_terraform_state(cloud_provider, project_root):
-                logger.error(f"Terraform state validation failed for {cloud_provider}")
-                logger.error(f"Please run 'terraform apply' in terraform/core/ and terraform/lab1-tool-calling/")
-                sys.exit(1)
-
-        # Run data generation
         exit_code = run_datagen(
             cloud_provider=cloud_provider,
             duration=args.duration,
             messages_per_minute=args.messages_per_minute,
             dry_run=args.dry_run,
-            verbose=args.verbose
+            verbose=args.verbose,
         )
-
-        if args.dry_run:
-            logger.info("Dry run completed")
-        else:
-            logger.info(f"Data generation completed with exit code {exit_code}")
 
         sys.exit(exit_code)
 
     except KeyboardInterrupt:
-        logger.info("Operation cancelled by user")
+        logger.info("Data generation interrupted by user")
         sys.exit(130)
     except Exception as e:
         logger.error(f"Data generation failed: {e}")
         if args.verbose:
             import traceback
-            logger.error(f"Stack trace: {traceback.format_exc()}")
+            logger.error(traceback.format_exc())
         sys.exit(1)
 
 

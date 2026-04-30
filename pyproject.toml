@@ -50,6 +50,7 @@ dependencies = [
     "azure-ai-inference>=1.0.0b1",
     "requests>=2.31.0",
     "confluent-kafka[avro,schema-registry]>=2.3.0",
+    "faker>=18.0.0",
     "questionary>=2.0.0",
     "rich>=13.0.0",
 ]

@@ -1,22 +1,30 @@
 #!/usr/bin/env python3
 """
-Validate MongoDB and Zapier configurations before deployment.
+Validate MongoDB and MCP server configurations before deployment.
 
-Performs soft validation checks to ensure MongoDB Atlas and Zapier MCP Server
+Performs soft validation checks to ensure MongoDB Atlas and the workshop MCP server
 are configured correctly. Never fails deployment - only warns users of potential issues.
 
 Usage:
     uv run validate              # Auto-detect which services to validate
     uv run validate mongodb      # Validate MongoDB only
-    uv run validate zapier       # Validate Zapier only
+    uv run validate mcp          # Validate MCP server only
     uv run validate --verbose    # Show detailed logging
 """
 
 import argparse
 import logging
+import ssl
 import sys
 import urllib.request
 import urllib.error
+
+try:
+    import certifi
+    _SSL_CONTEXT = ssl.create_default_context(cafile=certifi.where())
+except ImportError:
+    _SSL_CONTEXT = None
+
 from pathlib import Path
 from typing import Dict, List, Tuple, Optional
 
@@ -404,17 +412,18 @@ def validate_azure_openai_credentials(endpoint: str, api_key: str) -> Tuple[bool
     return all_passed, messages
 
 
-def validate_zapier(token: str) -> Tuple[bool, List[str]]:
+def validate_mcp_server(token: str, endpoint: str) -> Tuple[bool, List[str]]:
     """
-    Validate Zapier MCP Server configuration with Streamable HTTP.
+    Validate MCP server configuration (SSE transport).
 
     Checks:
     - Token format is valid (non-empty, reasonable length)
     - Endpoint is reachable with token authentication
-    - Connection uses Streamable HTTP transport
+    - Response content-type is not text/plain (which indicates a misconfigured token)
 
     Args:
-        token: Zapier MCP authentication token
+        token: MCP server bearer token
+        endpoint: MCP server SSE endpoint URL
 
     Returns:
         Tuple of (all_checks_passed, list_of_messages)
@@ -423,59 +432,71 @@ def validate_zapier(token: str) -> Tuple[bool, List[str]]:
     all_passed = True
 
     # Check token format
-    if not token or len(token) < 50:
+    if not token or len(token) < 10:
         messages.append(colorize("⚠️  Warning: Token appears to be invalid or too short", 'yellow'))
-        messages.append("   → Check token (step 4): assets/pre-setup/Zapier-Setup.md#step-4")
+        messages.append("   → Check token: assets/pre-setup/MCP-Server-Setup.md")
         all_passed = False
     else:
         messages.append(colorize("✓ Token format looks valid", 'green'))
 
+    # Check endpoint format
+    if not endpoint or not endpoint.startswith("http"):
+        messages.append(colorize("⚠️  Warning: MCP endpoint URL appears invalid", 'yellow'))
+        messages.append("   → Check endpoint URL: assets/pre-setup/MCP-Server-Setup.md")
+        all_passed = False
+    else:
+        messages.append(colorize(f"✓ Endpoint URL format looks valid", 'green'))
+
     # Check endpoint reachability with token authentication
-    endpoint = "https://mcp.zapier.com/api/v1/connect"
     try:
         req = urllib.request.Request(endpoint)
         req.add_header('Authorization', f'Bearer {token}')
         req.add_header('Accept', 'text/event-stream')
 
-        with urllib.request.urlopen(req, timeout=10) as response:
-            # Check if the connection is successful
+        with urllib.request.urlopen(req, timeout=10, context=_SSL_CONTEXT) as response:
             status_code = response.getcode()
+            content_type = response.headers.get('content-type', '')
 
             if status_code == 200:
-                messages.append(colorize("✓ Streamable HTTP endpoint is reachable with token", 'green'))
-                messages.append("   ℹ️  Please verify these tools are enabled in your MCP server:")
-                messages.append("      - webhooks_by_zapier_get")
-                messages.append("      - webhooks_by_zapier_custom_request")
-                messages.append("      - gmail_send_email")
-                messages.append("   → Verify tools (step 3): assets/pre-setup/Zapier-Setup.md#step-3")
+                if 'text/plain' in content_type:
+                    messages.append(colorize("✗ Endpoint returned text/plain — token may be invalid or server misconfigured", 'red'))
+                    messages.append("   → Check token and endpoint: assets/pre-setup/MCP-Server-Setup.md")
+                    all_passed = False
+                else:
+                    messages.append(colorize("✓ MCP server endpoint is reachable with token", 'green'))
+                    messages.append("   ℹ️  Please verify these tools are enabled in your MCP server:")
+                    messages.append("      - http_get")
+                    messages.append("      - http_request")
+                    messages.append("      - send_email")
+                    messages.append("   → Verify tools: assets/pre-setup/MCP-Server-Setup.md")
             else:
                 messages.append(colorize(f"⚠️  Warning: Unexpected status code: {status_code}", 'yellow'))
                 messages.append("   Endpoint is reachable but may not be configured correctly")
-                messages.append("   → Check MCP server setup (step 2): assets/pre-setup/Zapier-Setup.md#step-2")
+                messages.append("   → Check MCP server setup: assets/pre-setup/MCP-Server-Setup.md")
                 all_passed = False
 
     except urllib.error.HTTPError as e:
         if e.code == 401:
             messages.append(colorize("✗ Authentication failed (401 Unauthorized)", 'red'))
-            messages.append("   → Check token (step 4): assets/pre-setup/Zapier-Setup.md#step-4")
+            messages.append("   → Check token: assets/pre-setup/MCP-Server-Setup.md")
         elif e.code == 404:
             messages.append(colorize("✗ Endpoint not found (404)", 'red'))
-            messages.append("   → Verify MCP server is created (step 2): assets/pre-setup/Zapier-Setup.md#step-2")
+            messages.append("   → Verify MCP server endpoint URL: assets/pre-setup/MCP-Server-Setup.md")
         else:
             messages.append(colorize(f"✗ HTTP error accessing endpoint: {e.code} {e.reason}", 'red'))
-            messages.append("   → Check MCP server setup (step 2): assets/pre-setup/Zapier-Setup.md#step-2")
+            messages.append("   → Check MCP server setup: assets/pre-setup/MCP-Server-Setup.md")
         all_passed = False
     except urllib.error.URLError as e:
         messages.append(colorize(f"✗ Cannot reach endpoint: {e.reason}", 'red'))
-        messages.append("   → Check network connectivity")
-        messages.append("   → Verify MCP server is created (step 2): assets/pre-setup/Zapier-Setup.md#step-2")
+        messages.append("   → Check network connectivity and endpoint URL")
+        messages.append("   → Check MCP server setup: assets/pre-setup/MCP-Server-Setup.md")
         all_passed = False
     except TimeoutError:
         messages.append(colorize("✗ Timeout connecting to endpoint", 'red'))
-        messages.append("   → Check network connectivity")
+        messages.append("   → Check network connectivity and that the MCP server is running")
         all_passed = False
     except Exception as e:
-        messages.append(colorize(f"✗ Unexpected error validating Zapier token: {e}", 'red'))
+        messages.append(colorize(f"✗ Unexpected error validating MCP server: {e}", 'red'))
         all_passed = False
 
     return all_passed, messages
@@ -484,13 +505,13 @@ def validate_zapier(token: str) -> Tuple[bool, List[str]]:
 def main():
     """Main entry point for validation script."""
     parser = argparse.ArgumentParser(
-        description="Validate MongoDB and Zapier configurations",
+        description="Validate MongoDB and MCP server configurations",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
   %(prog)s                 # Auto-detect which services to validate
   %(prog)s mongodb         # Validate MongoDB only
-  %(prog)s zapier          # Validate Zapier only
+  %(prog)s mcp             # Validate MCP server only
   %(prog)s --verbose       # Show detailed logging
         """
     )
@@ -498,8 +519,8 @@ Examples:
     parser.add_argument(
         "service",
         nargs="?",
-        choices=["mongodb", "zapier"],
-        help="Service to validate (mongodb or zapier). If not specified, will auto-detect based on credentials."
+        choices=["mongodb", "mcp"],
+        help="Service to validate (mongodb or mcp). If not specified, will auto-detect based on credentials."
     )
     parser.add_argument(
         "--verbose",
@@ -535,12 +556,12 @@ Examples:
 
     # Determine which services to validate
     validate_mongo = False
-    validate_zap = False
+    validate_mcp = False
 
     if args.service == "mongodb":
         validate_mongo = True
-    elif args.service == "zapier":
-        validate_zap = True
+    elif args.service == "mcp":
+        validate_mcp = True
     else:
         # Auto-detect based on credentials
         has_mongo = all([
@@ -548,18 +569,18 @@ Examples:
             creds.get("TF_VAR_mongodb_username"),
             creds.get("TF_VAR_mongodb_password")
         ])
-        has_zapier = bool(creds.get("TF_VAR_zapier_token"))
+        has_mcp = bool(creds.get("TF_VAR_mcp_token") and creds.get("TF_VAR_mcp_endpoint"))
 
         if has_mongo:
             validate_mongo = True
-        if has_zapier:
-            validate_zap = True
+        if has_mcp:
+            validate_mcp = True
 
-        if not validate_mongo and not validate_zap:
+        if not validate_mongo and not validate_mcp:
             print("\n" + "=" * 70)
             print("NO SERVICES TO VALIDATE")
             print("=" * 70)
-            print("\nNo MongoDB or Zapier credentials found in credentials.env")
+            print("\nNo MongoDB or MCP server credentials found in credentials.env")
             print("Please configure these services first.")
             print("=" * 70)
             return 0  # Soft check - don't fail
@@ -606,21 +627,27 @@ Examples:
 
         print()
 
-    # Validate Zapier
-    if validate_zap:
+    # Validate MCP server
+    if validate_mcp:
         print("-" * 70)
-        print("ZAPIER MCP SERVER VALIDATION")
+        print("MCP SERVER VALIDATION")
         print("-" * 70)
 
-        zapier_token = creds.get("TF_VAR_zapier_token", "")
+        mcp_token = creds.get("TF_VAR_mcp_token", "")
+        mcp_endpoint = creds.get("TF_VAR_mcp_endpoint", "")
 
-        if not zapier_token:
-            print(colorize("✗ Zapier token not found in credentials.env", 'red'))
-            print("  Missing: TF_VAR_zapier_token")
-            print("\n→ See Zapier setup guide: assets/pre-setup/Zapier-Setup.md")
+        if not mcp_token or not mcp_endpoint:
+            print(colorize("✗ MCP server credentials not found in credentials.env", 'red'))
+            missing = []
+            if not mcp_token:
+                missing.append("TF_VAR_mcp_token")
+            if not mcp_endpoint:
+                missing.append("TF_VAR_mcp_endpoint")
+            print(f"  Missing: {', '.join(missing)}")
+            print("\n→ See MCP server setup guide: assets/pre-setup/MCP-Server-Setup.md")
             all_services_passed = False
         else:
-            passed, messages = validate_zapier(zapier_token)
+            passed, messages = validate_mcp_server(mcp_token, mcp_endpoint)
             for msg in messages:
                 print(msg)
 
@@ -643,8 +670,8 @@ Examples:
         print("You can still proceed with deployment if you believe the")
         print("configuration is correct, but you may encounter issues later.")
         print("\nSetup guides:")
-        print("  • MongoDB: assets/pre-setup/MongoDB-Setup.md")
-        print("  • Zapier:  assets/pre-setup/Zapier-Setup.md")
+        print("  • MongoDB:     assets/pre-setup/MongoDB-Setup.md")
+        print("  • MCP Server:  assets/pre-setup/MCP-Server-Setup.md")
     print("=" * 70)
 
     return 0  # Always return 0 (soft check - never fail deployment)

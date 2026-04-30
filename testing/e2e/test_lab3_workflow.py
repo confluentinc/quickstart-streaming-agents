@@ -93,9 +93,9 @@ def parse_sql_statements(extracted_markdown: str) -> Dict[str, str]:
     if match:
         statements['anomalies_enriched'] = match.group(1).strip()
 
-    # Extract CREATE TOOL zapier
+    # Extract CREATE TOOL email_mcp
     match = re.search(
-        r'```sql\s*(CREATE TOOL zapier.*?)```',
+        r'```sql\s*(CREATE TOOL email_mcp.*?)```',
         extracted_markdown,
         re.DOTALL | re.IGNORECASE
     )

@@ -6,7 +6,7 @@ In this lab, we'll use Apache Flink for Confluent Cloud's MCP tool calling featu
 
 ## Prerequisites
 
-- **Zapier:** Free account and remote MCP server ([Setup guide](./assets/pre-setup/Zapier-Setup.md))
+- **MCP Server:** URL and token provided by your instructor ([Setup guide](./assets/pre-setup/MCP-Server-Setup.md))
 - **LLM Access:** AWS Bedrock API keys **OR** Azure OpenAI endpoint + API key
   - No AWS/Azure account required - just the LLM API credentials!
   - **Easy key creation:** Run `uv run api-keys create` to quickly generate ready-to-use credentials
@@ -48,14 +48,14 @@ LATERAL TABLE(ML_PREDICT('llm_textgen_model', question, MAP['debug', 'true'])) a
 ```sql
  SELECT
       AI_TOOL_INVOKE(
-          'zapier_mcp_model',
-          'Use the gmail_send_email tool to send an email. 
+          'email_mcp_model',
+          'Use the send_email tool to send an email. 
            The "to" parameter must be a single string value: <<YOUR-EMAIL-ADDRESS-HERE>>
            The "subject" parameter is: Direct Query Test
            The "body" parameter is: This email was sent directly from Confluent Cloud!
            Important: pass the to address as a string, not an array.',
           MAP[],
-          MAP['gmail_send_email', 'Create and send a new email message'],
+          MAP['send_email', 'Create and send a new email message'],
           MAP['debug', 'true']
       ) as response;
 ```
@@ -100,14 +100,14 @@ JOIN products p ON o.product_id = p.product_id;
 ### 4. Run  `CREATE TOOL` and `CREATE AGENT`
 
 The agent will use the [Tool Calling](https://docs.confluent.io/cloud/current/ai/builtin-functions/invoke-tool-ai-workflow.html) feature to scrape competitors’ websites, extract the price of the same product, and send an email when a price match is found.
-Create a new tool that leverages your Zapier connection:
+Create a new tool that leverages your MCP connection:
 
 ```sql
-CREATE TOOL zapier
-USING CONNECTION `zapier-mcp-connection`
+CREATE TOOL email_mcp
+USING CONNECTION `email-mcp-connection`
 WITH (
   'type' = 'mcp',
-  'allowed_tools' = 'webhooks_by_zapier_get, gmail_send_email',
+  'allowed_tools' = 'http_get, send_email',
   'request_timeout' = '30'
 );
 ```
@@ -121,11 +121,11 @@ CREATE AGENT price_match_agent
 USING MODEL llm_textgen_model
 USING PROMPT 'You are a price matching assistant that performs the following steps:
 
-1. SCRAPE COMPETITOR PRICE: Use the webhooks_by_zapier_get tool to extract page contents from the competitor URL provided in the prompt.
+1. SCRAPE COMPETITOR PRICE: Use the http_get tool to extract page contents from the competitor URL provided in the prompt.
 
 2. EXTRACT PRICE: Analyze the scraped page content to find the product that most closely matches the product name. Extract only the price in format: XX.XX (for example: 29.95). If you cannot find a valid price, stop here.
 
-3. COMPARE AND NOTIFY: Compare the extracted competitor price with our order price. If the competitor price is lower than our price, use the gmail_send_email tool to send a price match notification email. Use the exact format provided in the prompt for the email subject and body.
+3. COMPARE AND NOTIFY: Compare the extracted competitor price with our order price. If the competitor price is lower than our price, use the send_email tool to send a price match notification email. Use the exact format provided in the prompt for the email subject and body.
 
 Return your results in this exact format:
 
@@ -137,7 +137,7 @@ Decision:
 
 Summary:
 [One sentence describing what you found and what action you took]'
-USING TOOLS zapier
+USING TOOLS email_mcp
 COMMENT 'Consolidated agent for scraping competitor prices and sending price match notifications'
 WITH (
   'max_consecutive_failures' = '2',
@@ -241,8 +241,8 @@ Then check out your email for price matched orders:
 
 - **Not getting emails?**
   - Ensure you replaced `<<YOUR-EMAIL-ADDRESS-HERE>>` in both the test query and the `CREATE TABLE price_match_input` query with the email address where you want to receive the emails. Be sure to use single quotes around your email address ('your@email.com').
-  - **Run the MCP test query** to confirm your Zapier remote MCP server connection is working and able to send emails.
-  - **Check the Zapier Zap history** at [mcp.zapier.com](https://mcp.zapier.com/) to see whether calls to send emails are going through at all, and if so, why they are failing.
+  - **Run the MCP test query** to confirm your MCP server connection is working and able to send emails.
+  - **Check with your instructor** to confirm the MCP server is running and reachable.
   - **Make sure to run `uv run lab1_datagen`** to begin producing orders data.
 - **Getting duplicate orders / duplicate price matching emails?**
   - Drop `orders`, `customers`, and `products` tables to start with a clean slate before re-running `uv run lab1_datagen`. The data generator randomly generates new customer information beginning with the same customer ID each time it is run, causing collisions if you do not clear the tables before restarting.
@@ -251,9 +251,8 @@ Then check out your email for price matched orders:
   - **AWS?** Ensure you've activated Claude Sonnet 4.5 in your AWS account. See: [Prerequisites](#prerequisites)
   - **Azure?** Increase the tokens per minute quota for your GPT-4 model. Quota is low by default.
 
-- `MCP error -32602: Invalid arguments for tool gmail_send_email` error?
+- `MCP error -32602: Invalid arguments for tool send_email` error?
   - Be sure to use single quotes around your email address ('your@email.com').
-  - Configure the Gmail send email tool to specify the email address you want to send to directly.
   - Modify the model prompt to be more prescriptive about what format you need the email in (string, not array).
   </details>
 
