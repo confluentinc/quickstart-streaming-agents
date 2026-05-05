@@ -49,9 +49,12 @@ dependencies = [
     "azure-mgmt-resource>=23.0.0",
     "azure-ai-inference>=1.0.0b1",
     "requests>=2.31.0",
+    "flask>=3.0.0",
+    "PyJWT>=2.8.0",
     "confluent-kafka[avro,schema-registry]>=2.3.0",
     "questionary>=2.0.0",
     "rich>=13.0.0",
+    "pillow>=12.1.1",
 ]
 
 # Optional dependencies for enhanced functionality
@@ -73,6 +76,9 @@ dev = [
 [project.scripts]
 deploy = "deploy:main"
 destroy = "scripts.common.destroy:main"
+destroy2 = "scripts.common.destroy2:main"
+destroy5 = "scripts.common.destroy5:main"
+destroy-lab5 = "scripts.common.destroy5:main"
 #
 lab1_datagen = "scripts.lab1_datagen:main"
 lab1-datagen = "scripts.lab1_datagen:main"
@@ -82,6 +88,15 @@ lab3-datagen = "scripts.lab3_datagen:main"
 #
 lab4_datagen = "scripts.lab4_datagen:main"
 lab4-datagen = "scripts.lab4_datagen:main"
+#
+lab4_datagen_alternate = "scripts.lab4_datagen_alternate:main"
+lab4-datagen-alternate = "scripts.lab4_datagen_alternate:main"
+#
+lab5_datagen = "scripts.lab4_datagen_alternate:main"
+lab5-datagen = "scripts.lab4_datagen_alternate:main"
+#
+generate_claims_reviewed = "scripts.generate_claims_reviewed:main"
+generate-claims-reviewed = "scripts.generate_claims_reviewed:main"
 #
 publish_lab3_data = "scripts.publish_lab3_data:main"
 publish-lab3-data = "scripts.publish_lab3_data:main"

@@ -34,7 +34,7 @@ locals {
 }
 
 resource "confluent_environment" "staging" {
-  display_name = "${local.prefix}-env-${random_id.resource_suffix.hex}"
+  display_name = "${local.prefix}-env-abeb1876"
 
   stream_governance {
     package = "ADVANCED"

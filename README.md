@@ -31,6 +31,10 @@ Build real-time AI agents with [Confluent Cloud Streaming Agents](https://docs.c
 <td><a href="./LAB4-Walkthrough.md"><strong>Lab4 - Public Sector Insurance Claims Fraud Detection Using Confluent Intelligence</strong></a></td>
 <td>Real-time fraud detection system that autonomously identifies suspicious claim patterns in disaster insurance claims applications using anomaly detection, pattern recognition, and LLM-powered analysis.<br><br><img src="./assets/lab4/lab4-architecture.png" alt="Lab4 architecture diagram"></td>
 </tr>
+<tr>
+<td><a href="./LAB5-Walkthrough.md"><strong>Lab5 - Insurance Fraud Detection with IBM Watson X</strong></a></td>
+<td>End-to-end fraud detection pipeline integrating IBM MQ and Watson X. Claims stream in from IBM MQ, Confluent Flink detects anomaly surges with ML_DETECT_ANOMALIES, and a Streaming Agent investigates flagged claims via MCP tool calls — producing APPROVE/DENY verdicts handed off to Watson X Orchestrate.<br><br><img src="./assets/lab5/lab5-architecture.png" alt="Lab5 architecture diagram"></td>
+</tr>
 </table>
 
 ## Prerequisites

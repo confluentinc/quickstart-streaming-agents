@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "Real-Time-Context-Engine": {
+      "command": "/Users/brenner/Demos/ibm-ai-demo/terraform/lab5-insurance-fraud-watson/run-mcp-server.sh",
+      "args": []
+    },
+    "confluent-mcp-cdc": {
+      "command": "node",
+      "args": [
+        "/Users/brenner/PycharmProjects/mcp-confluent/dist/index.js",
+        "-e",
+        "/Users/brenner/PycharmProjects/mcp-confluent/.env.cdc"
+      ],
+      "env": {
+        "LIBRDKAFKA_PATH": "/opt/homebrew/lib",
+        "LD_LIBRARY_PATH": "/opt/homebrew/lib"
+      }
+    }
+  }
+}

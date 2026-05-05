@@ -276,3 +276,20 @@ def write_tfvars_for_deployment(
             )
             if write_tfvars_file(lab3_tfvars_path, content):
                 print(f"✓ Wrote {lab3_tfvars_path}")
+
+    # Lab5 terraform.tfvars
+    if "lab5-insurance-fraud-watson" in envs_to_deploy:
+        zapier_token = get_credential_value(creds, "zapier_token")
+        ibmmq_password = get_credential_value(creds, "ibmmq_password")
+        activemq_password = get_credential_value(creds, "activemq_password") or ""
+        schema_registry_auth = get_credential_value(creds, "schema_registry_auth") or ""
+
+        if zapier_token and ibmmq_password:
+            lab5_tfvars_path = root / "terraform" / "lab5-insurance-fraud-watson" / "terraform.tfvars"
+            content = f'# Lab5 Configuration\nzapier_token = "{zapier_token}"\nibmmq_password = "{ibmmq_password}"\n'
+            if activemq_password:
+                content += f'activemq_password = "{activemq_password}"\n'
+            if schema_registry_auth:
+                content += f'schema_registry_auth = "{schema_registry_auth}"\n'
+            if write_tfvars_file(lab5_tfvars_path, content):
+                print(f"✓ Wrote {lab5_tfvars_path}")

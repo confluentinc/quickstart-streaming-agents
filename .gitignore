@@ -21,8 +21,14 @@ claude-*
 
 # Development tools
 tools/
+!orchestrate/tools/
 handoffs/
 .worktrees/
+connector/
+docker-compose.yml
+docker-compose(1).yml
+ai_gateway_proxy.py
+webhook_proxy.py
 
 # detect-secrets
 .secrets.baseline
@@ -68,6 +74,9 @@ API-KEYS-AWS.md
 .workshop-keys-state-aws.json
 API-KEYS-AZURE.md
 .workshop-keys-state-azure.json
+docs/
+terraform/lab5-insurance-fraud-watson/experimental-mcp-server 4/
+scripts/replay_claims_anomalies.py
 
 
 # Python (if scripts are added)

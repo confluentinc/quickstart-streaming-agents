@@ -141,7 +141,7 @@ def main():
         # Extract values from JSON (ensure cloud provider is lowercase)
         cloud = creds["cloud"].lower()
         region = creds["region"]
-        envs_to_deploy = ["core", "lab1-tool-calling", "lab2-vector-search", "lab3-agentic-fleet-management", "lab4-pubsec-fraud-agents"]
+        envs_to_deploy = ["core", "lab1-tool-calling", "lab2-vector-search", "lab3-agentic-fleet-management", "lab4-pubsec-fraud-agents", "lab5-insurance-fraud-watson"]
 
         # Build environment variables for Terraform
         env_vars = {
@@ -157,6 +157,12 @@ def main():
             env_vars["TF_VAR_owner_email"] = creds["owner_email"]
         if "zapier_token" in creds and creds["zapier_token"]:
             env_vars["TF_VAR_zapier_token"] = creds["zapier_token"]
+        if "ibmmq_password" in creds and creds["ibmmq_password"]:
+            env_vars["TF_VAR_ibmmq_password"] = creds["ibmmq_password"]
+        if "activemq_password" in creds and creds["activemq_password"]:
+            env_vars["TF_VAR_activemq_password"] = creds["activemq_password"]
+        if "schema_registry_auth" in creds and creds["schema_registry_auth"]:
+            env_vars["TF_VAR_schema_registry_auth"] = creds["schema_registry_auth"]
         if "mongodb_connection_string" in creds and creds["mongodb_connection_string"]:
             env_vars["TF_VAR_mongodb_connection_string"] = creds["mongodb_connection_string"]
         if "mongodb_username" in creds and creds["mongodb_username"]:
@@ -228,7 +234,8 @@ def main():
             "Lab 2: Vector Search / RAG",
             "Lab 3: Agentic Fleet Management",
             "Lab 4: FEMA Fraud Detection",
-            "All Labs (Labs 1, 2, 3, and 4)"
+            "Lab 5: Insurance Fraud Detection with IBM Watson X",
+            "All Labs (Labs 1, 2, 3, 4, and 5)"
         ]
         env_choice = prompt_choice("What would you like to deploy?", deploy_options)
 
@@ -241,8 +248,10 @@ def main():
             envs_to_deploy = ["core", "lab3-agentic-fleet-management"]
         elif env_choice == "Lab 4: FEMA Fraud Detection":
             envs_to_deploy = ["core", "lab4-pubsec-fraud-agents"]
-        elif env_choice == "All Labs (Labs 1, 2, 3, and 4)":
-            envs_to_deploy = ["core", "lab1-tool-calling", "lab2-vector-search", "lab3-agentic-fleet-management", "lab4-pubsec-fraud-agents"]
+        elif env_choice == "Lab 5: Insurance Fraud Detection with IBM Watson X":
+            envs_to_deploy = ["core", "lab5-insurance-fraud-watson"]
+        elif env_choice == "All Labs (Labs 1, 2, 3, 4, and 5)":
+            envs_to_deploy = ["core", "lab1-tool-calling", "lab2-vector-search", "lab3-agentic-fleet-management", "lab4-pubsec-fraud-agents", "lab5-insurance-fraud-watson"]
 
         # Step 5: Prompt for required credentials
         print("\n--- Credential Configuration ---")
@@ -361,16 +370,26 @@ def main():
                         sys.exit(1)
 
         # Lab-specific credentials
-        if "lab1-tool-calling" in envs_to_deploy or "lab3-agentic-fleet-management" in envs_to_deploy:
-            zapier_token = prompt_with_default("Zapier Token (Lab 1 and Lab 3)", creds.get("TF_VAR_zapier_token", ""))
+        if "lab1-tool-calling" in envs_to_deploy or "lab3-agentic-fleet-management" in envs_to_deploy or "lab5-insurance-fraud-watson" in envs_to_deploy:
+            zapier_token = prompt_with_default("Zapier Token (Lab 1, Lab 3, and Lab 5)", creds.get("TF_VAR_zapier_token", ""))
             _save_env_safe(creds_file, "TF_VAR_zapier_token", zapier_token)
+
+        if "lab5-insurance-fraud-watson" in envs_to_deploy:
+            ibmmq_password = prompt_with_default("IBM MQ Password (Lab 5 — IBM Cloud US South, CLAIMSQM)", creds.get("TF_VAR_ibmmq_password", ""))
+            set_key(creds_file, "TF_VAR_ibmmq_password", ibmmq_password)
+            activemq_password = prompt_with_default("ActiveMQ Password (Lab 5 — optional, leave blank if unused)", creds.get("TF_VAR_activemq_password", ""))
+            if activemq_password:
+                set_key(creds_file, "TF_VAR_activemq_password", activemq_password)
+            schema_registry_auth = prompt_with_default("Schema Registry Auth (Lab 5 — KEY:SECRET format)", creds.get("TF_VAR_schema_registry_auth", ""))
+            if schema_registry_auth:
+                set_key(creds_file, "TF_VAR_schema_registry_auth", schema_registry_auth)
 
         # Set cloud region and cloud provider
         _save_env_safe(creds_file, "TF_VAR_cloud_region", region)
         _save_env_safe(creds_file, "TF_VAR_cloud_provider", cloud)
 
         # Step 5.5: Validate configurations (advisory only, never blocks deployment)
-        needs_zapier  = "lab1-tool-calling" in envs_to_deploy or "lab3-agentic-fleet-management" in envs_to_deploy
+        needs_zapier  = "lab1-tool-calling" in envs_to_deploy or "lab3-agentic-fleet-management" in envs_to_deploy or "lab5-insurance-fraud-watson" in envs_to_deploy
         needs_mongodb = "lab2-vector-search" in envs_to_deploy or "lab3-agentic-fleet-management" in envs_to_deploy
         needs_lab4    = "lab4-pubsec-fraud-agents" in envs_to_deploy
 
