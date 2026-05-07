@@ -30,6 +30,7 @@ from scripts.common.terraform_runner import run_terraform
 from scripts.common.tfvars import write_tfvars_for_deployment
 from scripts.common.ui import prompt_choice, prompt_with_default
 from scripts.common.validate import validate_aws_bedrock_credentials, validate_azure_openai_credentials
+from scripts.mcp_setup import main as setup_mcp, write_mcp_env
 
 # Valid cloud regions (MongoDB M0 free tier compatible)
 # NOTE: These are kept for reference and testing mode, but interactive mode
@@ -125,6 +126,8 @@ def main():
     parser = argparse.ArgumentParser(description="Simple deployment tool for Confluent streaming agents")
     parser.add_argument("--testing", action="store_true",
                        help="Non-interactive mode using credentials.json (for automated testing)")
+    parser.add_argument("--automated", action="store_true",
+                       help="Non-interactive mode: load credentials from credentials.env, skip all prompts, and run MCP setup automatically after deploy")
     args = parser.parse_args()
 
     print("=== Simple Deployment Tool ===\n")
@@ -135,7 +138,55 @@ def main():
     print(f"Project root: {root}")
 
     # TESTING MODE: Load credentials from JSON and skip all prompts
-    if args.testing:
+    if args.automated and not args.testing:
+        # Non-interactive mode: load from credentials.env, validate, bail out if incomplete.
+        creds_file = root / "credentials.env"
+        if not creds_file.exists():
+            print("Error: credentials.env not found.")
+            print("Run `uv run deploy` (without --automated) to be prompted for credentials.")
+            sys.exit(1)
+
+        creds = dotenv_values(str(creds_file))
+        cloud = creds.get("TF_VAR_cloud_provider", "").lower()
+        region = creds.get("TF_VAR_cloud_region", "")
+
+        # Validate all required fields are present and non-empty.
+        required = {
+            "TF_VAR_confluent_cloud_api_key": "Confluent Cloud API Key",
+            "TF_VAR_confluent_cloud_api_secret": "Confluent Cloud API Secret",
+            "TF_VAR_cloud_provider": "Cloud Provider (aws or azure)",
+            "TF_VAR_cloud_region": "Cloud Region",
+        }
+        if cloud == "aws":
+            required["TF_VAR_aws_bedrock_access_key"] = "AWS Bedrock Access Key"
+            required["TF_VAR_aws_bedrock_secret_key"] = "AWS Bedrock Secret Key"
+        elif cloud == "azure":
+            required["TF_VAR_azure_openai_endpoint_raw"] = "Azure OpenAI Endpoint"
+            required["TF_VAR_azure_openai_api_key"] = "Azure OpenAI API Key"
+
+        missing = [label for key, label in required.items() if not creds.get(key, "").strip()]
+        if missing:
+            print("Error: credentials.env is incomplete. Missing or empty:")
+            for label in missing:
+                print(f"  - {label}")
+            print("\nRun `uv run deploy` (without --automated) to be prompted for missing values.")
+            sys.exit(1)
+
+        envs_to_deploy = ["core", "lab1-tool-calling", "lab2-vector-search", "lab3-agentic-fleet-management", "lab4-pubsec-fraud-agents"]
+
+        print(f"✓ Credentials loaded from credentials.env")
+        print(f"  Cloud: {cloud}")
+        print(f"  Region: {region}")
+        print(f"  Deploying: {', '.join(envs_to_deploy)}")
+        print()
+
+        write_tfvars_for_deployment(root, cloud, region, creds, envs_to_deploy)
+
+        for key, value in creds.items():
+            if value:
+                os.environ[key] = value
+
+    elif args.testing:
         creds = load_credentials_json(root)
 
         # Extract values from JSON (ensure cloud provider is lowercase)
@@ -155,8 +206,8 @@ def main():
         # Optional fields
         if "owner_email" in creds and creds["owner_email"]:
             env_vars["TF_VAR_owner_email"] = creds["owner_email"]
-        if "zapier_token" in creds and creds["zapier_token"]:
-            env_vars["TF_VAR_zapier_token"] = creds["zapier_token"]
+        if "mcp_token" in creds and creds["mcp_token"]:
+            env_vars["TF_VAR_mcp_token"] = creds["mcp_token"]
         if "mongodb_connection_string" in creds and creds["mongodb_connection_string"]:
             env_vars["TF_VAR_mongodb_connection_string"] = creds["mongodb_connection_string"]
         if "mongodb_username" in creds and creds["mongodb_username"]:
@@ -362,15 +413,15 @@ def main():
 
         # Lab-specific credentials
         if "lab1-tool-calling" in envs_to_deploy or "lab3-agentic-fleet-management" in envs_to_deploy:
-            zapier_token = prompt_with_default("Zapier Token (Lab 1 and Lab 3)", creds.get("TF_VAR_zapier_token", ""))
-            _save_env_safe(creds_file, "TF_VAR_zapier_token", zapier_token)
+            mcp_token = prompt_with_default("Remote MCP Server Token (Lab 1 and Lab 3)", creds.get("TF_VAR_mcp_token", ""))
+            _save_env_safe(creds_file, "TF_VAR_mcp_token", mcp_token)
 
         # Set cloud region and cloud provider
         _save_env_safe(creds_file, "TF_VAR_cloud_region", region)
         _save_env_safe(creds_file, "TF_VAR_cloud_provider", cloud)
 
         # Step 5.5: Validate configurations (advisory only, never blocks deployment)
-        needs_zapier  = "lab1-tool-calling" in envs_to_deploy or "lab3-agentic-fleet-management" in envs_to_deploy
+        needs_mcp     = "lab1-tool-calling" in envs_to_deploy or "lab3-agentic-fleet-management" in envs_to_deploy
         needs_mongodb = "lab2-vector-search" in envs_to_deploy or "lab3-agentic-fleet-management" in envs_to_deploy
         needs_lab4    = "lab4-pubsec-fraud-agents" in envs_to_deploy
 
@@ -382,25 +433,25 @@ def main():
             if value:
                 os.environ[key] = value
 
-        # Validate Zapier
-        if needs_zapier:
+        # Validate Remote MCP
+        if needs_mcp:
             try:
                 result = subprocess.run(
-                    ["uv", "run", "validate", "zapier"],
+                    ["uv", "run", "validate", "mcp"],
                     cwd=root,
                     capture_output=True,
                     text=True,
                     timeout=30
                 )
                 if "ALL VALIDATION CHECKS PASSED" in result.stdout:
-                    print("✓ Zapier configuration validated")
+                    print("✓ Remote MCP configuration validated")
                 else:
                     print(result.stdout)
-                    response = input("\nZapier validation warnings detected. Continue anyway? (y/n): ")
+                    response = input("\nRemote MCP validation warnings detected. Continue anyway? (y/n): ")
                     if response.lower() != 'y':
                         sys.exit(1)
             except Exception as e:
-                print(f"⚠ Could not validate Zapier configuration: {e}")
+                print(f"⚠ Could not validate Remote MCP configuration: {e}")
                 print("  (This is advisory only - deployment will continue)")
 
         # Validate workshop MongoDB (lab2 / lab3 use pre-populated workshop data by default)
@@ -501,17 +552,20 @@ def main():
 
     print("\n✓ All deployments completed successfully!")
 
-    # Display the environment name
-    try:
-        core_state_path = root / "terraform" / "core" / "terraform.tfstate"
-        if core_state_path.exists():
-            core_outputs = run_terraform_output(core_state_path)
-            if "confluent_environment_display_name" in core_outputs:
-                env_name = core_outputs["confluent_environment_display_name"]
-                print(f"\nEnvironment name: {env_name}")
-    except Exception as e:
-        # Don't fail deployment if we can't read the environment name
-        print(f"\n⚠ Could not read environment name: {e}")
+    # Display the environment name and generate MCP config
+    core_state_path = root / "terraform" / "core" / "terraform.tfstate"
+    if core_state_path.exists():
+        if args.automated:
+            setup_mcp()
+        else:
+            try:
+                core_outputs = run_terraform_output(core_state_path)
+                if "confluent_environment_display_name" in core_outputs:
+                    print(f"\nEnvironment name: {core_outputs['confluent_environment_display_name']}")
+                write_mcp_env(core_outputs, root)
+                print("\nRun `uv run setup-mcp` to connect Claude Code to this environment.")
+            except Exception as e:
+                print(f"\n⚠ Could not write MCP config: {e}")
 
 
 if __name__ == "__main__":

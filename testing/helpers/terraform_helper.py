@@ -41,6 +41,16 @@ class TerraformHelper:
         core_state_path = self.project_root / "terraform" / "core" / "terraform.tfstate"
         return run_terraform_output(core_state_path)
 
+    def get_lab1_outputs(self) -> Dict[str, Any]:
+        """Get all terraform outputs from lab1 environment."""
+        path = self.project_root / "terraform" / "lab1-tool-calling" / "terraform.tfstate"
+        return run_terraform_output(path)
+
+    def get_lab2_outputs(self) -> Dict[str, Any]:
+        """Get all terraform outputs from lab2 environment."""
+        path = self.project_root / "terraform" / "lab2-vector-search" / "terraform.tfstate"
+        return run_terraform_output(path)
+
     def get_lab3_outputs(self) -> Dict[str, Any]:
         """Get all terraform outputs from lab3 environment.
 
@@ -54,6 +64,11 @@ class TerraformHelper:
             self.project_root / "terraform" / "lab3-agentic-fleet-management" / "terraform.tfstate"
         )
         return run_terraform_output(lab3_state_path)
+
+    def get_lab4_outputs(self) -> Dict[str, Any]:
+        """Get all terraform outputs from lab4 environment."""
+        path = self.project_root / "terraform" / "lab4-pubsec-fraud-agents" / "terraform.tfstate"
+        return run_terraform_output(path)
 
     def get_flink_params(self) -> Dict[str, str]:
         """Extract Flink SQL execution parameters from terraform state.

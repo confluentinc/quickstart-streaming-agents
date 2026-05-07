@@ -30,7 +30,6 @@ You'll need the following credentials for testing:
 
 **For All Tests:**
 - Confluent Cloud API key with OrganizationAdmin role
-- Zapier token (see [Zapier Setup Guide](../assets/pre-setup/Zapier-Setup.md))
 
 **For AWS Tests:**
 - AWS Bedrock access key and secret with Claude Sonnet 4.5 model access
@@ -70,7 +69,6 @@ Edit `testing/credentials.json` and fill in your credentials:
     "aws_bedrock_secret_key": "YOUR_AWS_SECRET",
     "azure_openai_endpoint": "YOUR_AZURE_ENDPOINT",
     "azure_openai_api_key": "YOUR_AZURE_KEY",
-    "zapier_token": "YOUR_ZAPIER_TOKEN",
     "owner_email": "test@example.com"
 }
 ```

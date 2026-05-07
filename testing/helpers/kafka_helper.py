@@ -1,10 +1,18 @@
 """Kafka topic validation utilities for tests."""
 
 import sys
+import json
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 from confluent_kafka import Consumer, KafkaError, KafkaException
-import json
+
+try:
+    from confluent_kafka.schema_registry import SchemaRegistryClient
+    from confluent_kafka.schema_registry.avro import AvroDeserializer
+    from confluent_kafka.serialization import SerializationContext, MessageField
+    _AVRO_AVAILABLE = True
+except ImportError:
+    _AVRO_AVAILABLE = False
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).parent.parent.parent
@@ -41,6 +49,36 @@ class KafkaHelper:
             'auto.offset.reset': 'earliest',
             'enable.auto.commit': False,
         }
+
+        # Initialize Schema Registry client for Avro deserialization
+        self._sr_client = None
+        if _AVRO_AVAILABLE:
+            try:
+                self._sr_client = SchemaRegistryClient({
+                    "url": self.kafka_creds["schema_registry_url"],
+                    "basic.auth.user.info": (
+                        f"{self.kafka_creds['schema_registry_api_key']}"
+                        f":{self.kafka_creds['schema_registry_api_secret']}"
+                    ),
+                })
+            except Exception:
+                pass  # Fall back to JSON-only deserialization
+
+    def _deserialize(self, msg_bytes: bytes, topic: str) -> Any:
+        """Deserialize a message value; try Avro first, fall back to JSON."""
+        if msg_bytes is None:
+            return None
+        # Confluent Avro wire format starts with magic byte 0x00
+        if self._sr_client and msg_bytes[0] == 0:
+            try:
+                deserializer = AvroDeserializer(self._sr_client)
+                return deserializer(msg_bytes, SerializationContext(topic, MessageField.VALUE))
+            except Exception:
+                pass
+        try:
+            return json.loads(msg_bytes.decode("utf-8"))
+        except Exception:
+            return {"raw": msg_bytes.decode("utf-8", errors="replace")}
 
     def get_topic_message_count(
         self, topic: str, timeout: int = 30, max_messages: int = 100000
@@ -134,13 +172,9 @@ class KafkaHelper:
                     else:
                         raise KafkaException(msg.error())
 
-                # Try to decode as JSON
-                try:
-                    value = json.loads(msg.value().decode('utf-8'))
+                value = self._deserialize(msg.value(), topic)
+                if value is not None:
                     messages.append(value)
-                except Exception:
-                    # If not JSON, store as raw string
-                    messages.append({'raw': msg.value().decode('utf-8')})
 
             return messages
 

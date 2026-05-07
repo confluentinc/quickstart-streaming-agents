@@ -19,7 +19,10 @@ def test_fixture_setup():
     print("✅ Confluent CLI is installed")
 
     # Step 2: Load test credentials
-    credentials = load_test_credentials(cloud)
+    try:
+        credentials = load_test_credentials(cloud)
+    except FileNotFoundError as e:
+        pytest.skip(str(e))
     print(f"✅ Loaded credentials for {cloud}")
 
     # Step 3: Ensure Confluent CLI is logged in

@@ -7,6 +7,7 @@ Uses credentials from credentials.env or credentials.json for destruction via Te
 import argparse
 import os
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -67,12 +68,46 @@ def cleanup_terraform_artifacts(env_path: Path) -> None:
         pass
 
 
+def _cleanup_mcp(root: Path) -> None:
+    """Remove MCP server config and registration if MCP was installed."""
+    mcp_env = root / "terraform" / "core" / "confluent-mcp.env"
+    node_modules = root / "node_modules" / "@confluentinc" / "mcp-confluent"
+
+    if not mcp_env.exists() and not node_modules.exists():
+        return
+
+    try:
+        if mcp_env.exists():
+            mcp_env.unlink()
+
+        subprocess.run(
+            ["claude", "mcp", "remove", "confluent-cloud-mcp-server", "-s", "local"],
+            capture_output=True,
+        )
+
+        # Removes the entire node_modules/ tree — assumes @confluentinc/mcp-confluent
+        # is the only npm package installed in this project root.
+        node_modules_root = root / "node_modules"
+        if node_modules_root.exists():
+            shutil.rmtree(node_modules_root)
+
+        package_lock = root / "package-lock.json"
+        if package_lock.exists():
+            package_lock.unlink()
+
+        print("✓ Removed MCP server config and registration")
+    except Exception as e:
+        print(f"⚠ MCP cleanup failed: {e}")
+
+
 def main():
     """Main entry point for destroy."""
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description="Destroy deployed Confluent streaming agents resources")
     parser.add_argument("--testing", action="store_true",
                        help="Non-interactive mode using credentials.json (for automated testing)")
+    parser.add_argument("--force", action="store_true",
+                       help="Force-clean local state files even if terraform destroy fails (use when resources are already gone)")
     args = parser.parse_args()
 
     print("=== Simple Destroy Tool ===\n")
@@ -97,8 +132,8 @@ def main():
         }
 
         # Load optional fields
-        if "zapier_token" in creds and creds["zapier_token"]:
-            env_vars["TF_VAR_zapier_token"] = creds["zapier_token"]
+        if "mcp_token" in creds and creds["mcp_token"]:
+            env_vars["TF_VAR_mcp_token"] = creds["mcp_token"]
         if "mongodb_connection_string" in creds and creds["mongodb_connection_string"]:
             env_vars["TF_VAR_mongodb_connection_string"] = creds["mongodb_connection_string"]
         if "mongodb_username" in creds and creds["mongodb_username"]:
@@ -171,10 +206,14 @@ def main():
 
         print(f"\n→ Destroying {env}...")
         if run_terraform_destroy(env_path):
-            # Cleanup terraform artifacts after successful destroy
+            cleanup_terraform_artifacts(env_path)
+        elif args.force:
+            print(f"  ⚠ Destroy failed but --force set: cleaning local state for {env}")
             cleanup_terraform_artifacts(env_path)
         else:
-            print(f"\n✗ Destroy failed at {env}. Continuing with remaining environments...")
+            print(f"\n✗ Destroy failed at {env}. Use --force to clean local state anyway. Continuing...")
+
+    _cleanup_mcp(root)
 
     print("\n✓ Destroy process completed!")
 

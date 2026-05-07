@@ -130,6 +130,9 @@ test_mongodb_creds = "scripts.common.test_mongodb_credentials:main"
 test-mongodb-creds = "scripts.common.test_mongodb_credentials:main"
 #
 tests = "scripts.run_tests:main"
+#
+setup_mcp = "scripts.mcp_setup:main"
+setup-mcp = "scripts.mcp_setup:main"
 
 
 [project.urls]
