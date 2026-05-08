@@ -102,7 +102,7 @@ The agent will use the [Tool Calling](https://docs.confluent.io/cloud/current/ai
 Create a new tool that leverages the remote MCP connection:
 
 ```sql
-CREATE TOOL remote_mcp
+CREATE TOOL lab1_remote_mcp
 USING CONNECTION `remote-mcp-connection`
 WITH (
   'type' = 'mcp',
@@ -136,7 +136,7 @@ Decision:
 
 Summary:
 [One sentence describing what you found and what action you took]'
-USING TOOLS remote_mcp
+USING TOOLS lab1_remote_mcp
 COMMENT 'Consolidated agent for scraping competitor prices and sending price match notifications'
 WITH (
   'max_consecutive_failures' = '2',

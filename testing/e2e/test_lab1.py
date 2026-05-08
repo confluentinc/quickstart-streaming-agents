@@ -53,9 +53,9 @@ def _parse_lab1_sql(walkthrough_path: Path) -> Dict[str, str]:
     if match:
         statements["enriched_orders"] = match.group(1).strip()
 
-    # CREATE TOOL remote_mcp
+    # CREATE TOOL lab1_remote_mcp
     match = re.search(
-        r"```sql\s*(CREATE TOOL remote_mcp\b.*?)```",
+        r"```sql\s*(CREATE TOOL lab1_remote_mcp\b.*?)```",
         text,
         re.DOTALL | re.IGNORECASE,
     )

@@ -38,7 +38,7 @@ class FlinkSQLHelper:
         self.created_statements = []  # Track for cleanup
 
     def execute_statement(
-        self, name: str, sql: str, wait: bool = True
+        self, name: str, sql: str, wait: bool = True, properties: dict | None = None
     ) -> str:
         """Execute a Flink SQL statement via confluent CLI.
 
@@ -77,6 +77,9 @@ class FlinkSQLHelper:
 
         if wait:
             cmd.append("--wait")
+
+        for k, v in (properties or {}).items():
+            cmd.extend(["--property", f"{k}={v}"])
 
         result = subprocess.run(
             cmd, capture_output=True, text=True, check=True

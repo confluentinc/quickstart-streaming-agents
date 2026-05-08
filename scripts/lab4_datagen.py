@@ -16,7 +16,7 @@ import json
 import logging
 import sys
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict
 
@@ -32,6 +32,17 @@ except ImportError:
 from .common.cloud_detection import auto_detect_cloud_provider, validate_cloud_provider, suggest_cloud_provider
 from .common.terraform import extract_kafka_credentials, validate_terraform_state, get_project_root
 from .common.logging_utils import setup_logging
+
+_WINDOW_SIZE_MS = 6 * 60 * 60 * 1000  # 6-hour tumbling windows (matches LAB4-Walkthrough.md)
+
+
+def compute_timestamp_offset(claims: list) -> int:
+    """Return ms to add to every claim_timestamp so the data ends just past a 6-hour boundary near now."""
+    max_ts_str = max(c['claim_timestamp'] for c in claims)
+    max_ts_ms = int(datetime.fromisoformat(max_ts_str).replace(tzinfo=timezone.utc).timestamp() * 1000)
+    now_ms = int(time.time() * 1000)
+    aligned_end = (now_ms // _WINDOW_SIZE_MS) * _WINDOW_SIZE_MS
+    return (aligned_end + 10_000) - max_ts_ms
 
 
 class Lab4DataPublisher:
@@ -138,6 +149,42 @@ class Lab4DataPublisher:
         if not dry_run:
             self.producer = SerializingProducer(self.producer_config)
 
+    def purge_topic(self, topic: str) -> None:
+        """Delete all existing records from the topic (mirrors publish_lab3_data.purge_topic)."""
+        from confluent_kafka.admin import AdminClient, OffsetSpec
+        from confluent_kafka import TopicPartition as AdminTopicPartition
+
+        self.logger.info(f"Purging existing records from topic '{topic}'...")
+        admin = AdminClient({
+            "bootstrap.servers": self.producer_config["bootstrap.servers"],
+            "sasl.mechanisms": self.producer_config["sasl.mechanisms"],
+            "security.protocol": self.producer_config["security.protocol"],
+            "sasl.username": self.producer_config["sasl.username"],
+            "sasl.password": self.producer_config["sasl.password"],
+        })
+        try:
+            metadata = admin.list_topics(topic=topic, timeout=10)
+            if topic not in metadata.topics:
+                self.logger.info(f"Topic '{topic}' not found — skipping purge")
+                return
+            partition_ids = list(metadata.topics[topic].partitions.keys())
+            tps = [AdminTopicPartition(topic, p) for p in partition_ids]
+            futures = admin.list_offsets({tp: OffsetSpec.latest() for tp in tps})
+            delete_offsets = {}
+            for tp, future in futures.items():
+                result = future.result()
+                if result.offset > 0:
+                    delete_offsets[tp] = AdminTopicPartition(tp.topic, tp.partition, result.offset)
+            if delete_offsets:
+                del_futures = admin.delete_records(list(delete_offsets.values()))
+                for tp, future in del_futures.items():
+                    future.result()
+                self.logger.info(f"Purged {len(delete_offsets)} partition(s) in '{topic}'")
+            else:
+                self.logger.info(f"Topic '{topic}' already empty")
+        except Exception as e:
+            self.logger.warning(f"Could not purge topic '{topic}': {e} — continuing without purge")
+
     def delivery_callback(self, err, msg):
         """Callback for message delivery reports."""
         if err:
@@ -214,6 +261,29 @@ class Lab4DataPublisher:
 
         results["total"] = len(claims)
         self.logger.info(f"Found {len(claims)} claims to publish")
+
+        # Purge the input topic and all downstream pipeline topics so Flink
+        # processes only the freshly-rebased data and doesn't mix in stale state.
+        if not self.dry_run:
+            for t in [
+                "claims",
+                "claims_anomalies_by_city",
+                "claims_to_investigate",
+                "claims_to_investigate_with_policies",
+                "claims_reviewed",
+            ]:
+                self.purge_topic(t)
+
+        # Rebase timestamps to end ~now (aligned to 6-hour window boundary).
+        # Without this, the CSV's hardcoded Feb 2026 dates cause Flink anomaly
+        # windows to close immediately after backfill, expiring downstream join
+        # state before claims_to_investigate matches land.
+        ts_offset_ms = compute_timestamp_offset(claims)
+        self.logger.info(f"Rebasing timestamps by {ts_offset_ms / (1000 * 60 * 60):+.1f} hours")
+        for c in claims:
+            dt = datetime.fromisoformat(c['claim_timestamp']).replace(tzinfo=timezone.utc)
+            new_ms = int(dt.timestamp() * 1000) + ts_offset_ms
+            c['claim_timestamp'] = datetime.fromtimestamp(new_ms / 1000, tz=timezone.utc).isoformat()
 
         # Always sort by timestamp to ensure chronological ordering in Kafka.
         # Without this, Flink's watermark drops out-of-order events as "late".

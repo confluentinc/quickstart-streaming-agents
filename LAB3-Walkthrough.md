@@ -367,7 +367,7 @@ These agents leverage tool calling to interact directly with external systems or
 
 See [CREATE TOOL documentation](https://docs.confluent.io/cloud/current/flink/reference/statements/create-tool.html).
 ```sql
-CREATE TOOL remote_mcp
+CREATE TOOL lab3_remote_mcp
 USING CONNECTION `remote-mcp-connection`
 WITH (
   'type' = 'mcp',
@@ -426,7 +426,7 @@ CRITICAL INSTRUCTIONS:
 - Do NOT include any other explanatory text outside these three sections
 - The anomaly reason describes the likely cause of the surge but may be uncertain or generic — it is context only, NOT a required input. If it is vague or unclear, proceed with dispatching using the zone and request count alone.
 - NEVER ask for clarification. You always have enough information to dispatch: the zone name and surge magnitude are always present. Act immediately.'
-USING TOOLS `remote_mcp`
+USING TOOLS `lab3_remote_mcp`
 WITH (
   'max_iterations' = '10'
 );

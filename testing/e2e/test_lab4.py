@@ -32,69 +32,87 @@ from testing.helpers.polling_helper import poll_until
 
 
 _PREFIX = "test-lab4"
+_SET_RE = re.compile(r"SET\s+'([^']+)'\s*=\s*'([^']+)'\s*;\s*", re.IGNORECASE)
 
 _VALID_VERDICTS = {
     "APPROVE", "APPROVE_PARTIAL", "REQUEST_DOCS", "DENY_INELIGIBLE", "DENY_FRAUD"
 }
 
 
-def _parse_lab4_sql(walkthrough_path: Path) -> Dict[str, str]:
-    """Extract user-run SQL statements from LAB4-Walkthrough.md."""
+def _parse_lab4_sql(walkthrough_path: Path) -> Dict[str, tuple]:
+    """Extract user-run SQL statements from LAB4-Walkthrough.md.
+
+    Returns a dict mapping statement key to (sql, properties) where properties
+    is a dict extracted from any leading SET clauses in the code block.
+    """
     text = walkthrough_path.read_text()
     statements = {}
 
-    # claims_anomalies_by_city (strip any leading SET clause before CREATE TABLE)
+    # claims_anomalies_by_city — capture SET clauses then CREATE TABLE
     match = re.search(
-        r"```sql\s*(?:SET\s+'[^']+'\s*=\s*'[^']+'\s*;\s*)?(CREATE TABLE claims_anomalies_by_city AS\s+WITH\b.*?)```",
+        r"```sql\s*((?:SET\s+'[^']+'\s*=\s*'[^']+'\s*;\s*)*)(CREATE TABLE claims_anomalies_by_city AS\s+WITH\b.*?)```",
         text,
         re.DOTALL | re.IGNORECASE,
     )
     if match:
-        statements["claims_anomalies_by_city"] = match.group(1).strip()
+        statements["claims_anomalies_by_city"] = (
+            match.group(2).strip(),
+            dict(_SET_RE.findall(match.group(1))),
+        )
 
-    # claims_to_investigate (strip any leading SET clause)
+    # claims_to_investigate — capture SET clauses then CREATE TABLE
     match = re.search(
-        r"```sql\s*(?:SET\s+'[^']+'\s*=\s*'[^']+'\s*;\s*)?(CREATE TABLE claims_to_investigate AS\s+SELECT.*?)```",
+        r"```sql\s*((?:SET\s+'[^']+'\s*=\s*'[^']+'\s*;\s*)*)(CREATE TABLE claims_to_investigate AS\s+SELECT.*?)```",
         text,
         re.DOTALL | re.IGNORECASE,
     )
     if match:
-        statements["claims_to_investigate"] = match.group(1).strip()
+        statements["claims_to_investigate"] = (
+            match.group(2).strip(),
+            dict(_SET_RE.findall(match.group(1))),
+        )
 
-    # claims_to_investigate_with_policies (strip leading SET clause)
+    # claims_to_investigate_with_policies — capture SET clauses then CREATE TABLE
     match = re.search(
-        r"```sql\s*(?:SET\s+'[^']+'\s*=\s*'[^']+'\s*;\s*)?(CREATE TABLE claims_to_investigate_with_policies AS\s+WITH\b.*?)```",
+        r"```sql\s*((?:SET\s+'[^']+'\s*=\s*'[^']+'\s*;\s*)*)(CREATE TABLE claims_to_investigate_with_policies AS\s+WITH\b.*?)```",
         text,
         re.DOTALL | re.IGNORECASE,
     )
     if match:
-        statements["claims_to_investigate_with_policies"] = match.group(1).strip()
+        statements["claims_to_investigate_with_policies"] = (
+            match.group(2).strip(),
+            dict(_SET_RE.findall(match.group(1))),
+        )
 
-    # CREATE AGENT claims_fraud_investigation_agent
+    # CREATE AGENT claims_fraud_investigation_agent (no SET)
     match = re.search(
         r"```sql\s*(CREATE AGENT [`']?claims_fraud_investigation_agent[`']?\b.*?)```",
         text,
         re.DOTALL | re.IGNORECASE,
     )
     if match:
-        statements["create_agent"] = match.group(1).strip()
+        statements["create_agent"] = (match.group(1).strip(), {})
 
-    # claims_reviewed (strip leading SET clause)
+    # claims_reviewed — capture SET clauses then CREATE TABLE
     match = re.search(
-        r"```sql\s*(?:SET\s+'[^']+'\s*=\s*'[^']+'\s*;\s*)?(CREATE TABLE claims_reviewed\b.*?)```",
+        r"```sql\s*((?:SET\s+'[^']+'\s*=\s*'[^']+'\s*;\s*)*)(CREATE TABLE claims_reviewed\b.*?)```",
         text,
         re.DOTALL | re.IGNORECASE,
     )
     if match:
-        statements["claims_reviewed"] = match.group(1).strip()
+        statements["claims_reviewed"] = (
+            match.group(2).strip(),
+            dict(_SET_RE.findall(match.group(1))),
+        )
 
     return statements
 
 
 def _ensure_statement(
-    flink: FlinkSQLHelper, name: str, sql: str, timeout: int = 300
+    flink: FlinkSQLHelper, name: str, sql_and_props: tuple, timeout: int = 300
 ) -> None:
     """Create statement; skip if already RUNNING or COMPLETED (e.g. DDL/TOOL)."""
+    sql, props = sql_and_props
     try:
         status = flink.get_statement_status(name)
         if status in ("RUNNING", "COMPLETED"):
@@ -105,7 +123,7 @@ def _ensure_statement(
         pass  # Statement doesn't exist yet
 
     try:
-        flink.execute_statement(name, sql, wait=False)
+        flink.execute_statement(name, sql, wait=False, properties=props)
         flink.wait_for_status(name, ["RUNNING", "COMPLETED"], timeout=timeout)
     except (subprocess.CalledProcessError, RuntimeError, TimeoutError):
         # CalledProcessError: CLI rejected (table/tool already exists).

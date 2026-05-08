@@ -56,9 +56,9 @@ def _parse_lab3_sql(walkthrough_path: Path) -> Dict[str, str]:
     if match:
         statements["anomalies_enriched"] = match.group(1).strip()
 
-    # CREATE TOOL remote_mcp
+    # CREATE TOOL lab3_remote_mcp
     match = re.search(
-        r"```sql\s*(CREATE TOOL remote_mcp\b.*?)```",
+        r"```sql\s*(CREATE TOOL lab3_remote_mcp\b.*?)```",
         text,
         re.DOTALL | re.IGNORECASE,
     )
