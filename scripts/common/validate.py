@@ -404,7 +404,7 @@ def validate_azure_openai_credentials(endpoint: str, api_key: str) -> Tuple[bool
     return all_passed, messages
 
 
-def validate_remote_mcp(token: str) -> Tuple[bool, List[str]]:
+def validate_mcp_lambda(token: str) -> Tuple[bool, List[str]]:
     """
     Validate Remote MCP Server (Lambda) configuration with Streamable HTTP.
 
@@ -480,6 +480,83 @@ def validate_remote_mcp(token: str) -> Tuple[bool, List[str]]:
     return all_passed, messages
 
 
+def validate_zapier(token: str) -> Tuple[bool, List[str]]:
+    """
+    Validate Zapier MCP Server configuration with Streamable HTTP.
+
+    Checks:
+    - Token format is valid (non-empty, reasonable length)
+    - Endpoint is reachable with token authentication
+    - Connection uses Streamable HTTP transport
+
+    Args:
+        token: Zapier MCP authentication token
+
+    Returns:
+        Tuple of (all_checks_passed, list_of_messages)
+    """
+    messages = []
+    all_passed = True
+
+    # Check token format
+    if not token or len(token) < 50:
+        messages.append(colorize("⚠️  Warning: Token appears to be invalid or too short", 'yellow'))
+        messages.append("   → Check token (step 4): assets/pre-setup/Zapier-Setup.md#step-4")
+        all_passed = False
+    else:
+        messages.append(colorize("✓ Token format looks valid", 'green'))
+
+    # Check endpoint reachability with token authentication
+    endpoint = "https://mcp.zapier.com/api/v1/connect"
+    try:
+        req = urllib.request.Request(endpoint)
+        req.add_header('Authorization', f'Bearer {token}')
+        req.add_header('Accept', 'text/event-stream')
+
+        with urllib.request.urlopen(req, timeout=10) as response:
+            # Check if the connection is successful
+            status_code = response.getcode()
+
+            if status_code == 200:
+                messages.append(colorize("✓ Streamable HTTP endpoint is reachable with token", 'green'))
+                messages.append("   ℹ️  Please verify these tools are enabled in your MCP server:")
+                messages.append("      - webhooks_by_zapier_get")
+                messages.append("      - webhooks_by_zapier_custom_request")
+                messages.append("      - gmail_send_email")
+                messages.append("   → Verify tools (step 3): assets/pre-setup/Zapier-Setup.md#step-3")
+            else:
+                messages.append(colorize(f"⚠️  Warning: Unexpected status code: {status_code}", 'yellow'))
+                messages.append("   Endpoint is reachable but may not be configured correctly")
+                messages.append("   → Check MCP server setup (step 2): assets/pre-setup/Zapier-Setup.md#step-2")
+                all_passed = False
+
+    except urllib.error.HTTPError as e:
+        if e.code == 401:
+            messages.append(colorize("✗ Authentication failed (401 Unauthorized)", 'red'))
+            messages.append("   → Check token (step 4): assets/pre-setup/Zapier-Setup.md#step-4")
+        elif e.code == 404:
+            messages.append(colorize("✗ Endpoint not found (404)", 'red'))
+            messages.append("   → Verify MCP server is created (step 2): assets/pre-setup/Zapier-Setup.md#step-2")
+        else:
+            messages.append(colorize(f"✗ HTTP error accessing endpoint: {e.code} {e.reason}", 'red'))
+            messages.append("   → Check MCP server setup (step 2): assets/pre-setup/Zapier-Setup.md#step-2")
+        all_passed = False
+    except urllib.error.URLError as e:
+        messages.append(colorize(f"✗ Cannot reach endpoint: {e.reason}", 'red'))
+        messages.append("   → Check network connectivity")
+        messages.append("   → Verify MCP server is created (step 2): assets/pre-setup/Zapier-Setup.md#step-2")
+        all_passed = False
+    except TimeoutError:
+        messages.append(colorize("✗ Timeout connecting to endpoint", 'red'))
+        messages.append("   → Check network connectivity")
+        all_passed = False
+    except Exception as e:
+        messages.append(colorize(f"✗ Unexpected error validating Zapier token: {e}", 'red'))
+        all_passed = False
+
+    return all_passed, messages
+
+
 def main():
     """Main entry point for validation script."""
     parser = argparse.ArgumentParser(
@@ -547,7 +624,8 @@ Examples:
             creds.get("TF_VAR_mongodb_username"),
             creds.get("TF_VAR_mongodb_password")
         ])
-        has_mcp = bool(creds.get("TF_VAR_mcp_token"))
+        mcp_backend = (creds.get("TF_VAR_mcp_backend") or "lambda").lower()
+        has_mcp = bool(creds.get("TF_VAR_zapier_token") if mcp_backend == "zapier" else creds.get("TF_VAR_mcp_token"))
 
         if has_mongo:
             validate_mongo = True
@@ -607,23 +685,35 @@ Examples:
 
     # Validate Remote MCP
     if validate_mcp:
+        backend = (creds.get("TF_VAR_mcp_backend") or "lambda").lower()
         print("-" * 70)
-        print("REMOTE MCP SERVER VALIDATION")
+        print(f"REMOTE MCP SERVER VALIDATION (backend: {backend})")
         print("-" * 70)
 
-        mcp_token = creds.get("TF_VAR_mcp_token", "")
-
-        if not mcp_token:
-            print(colorize("✗ Remote MCP token not found in credentials.env", 'red'))
-            print("  Missing: TF_VAR_mcp_token")
-            all_services_passed = False
-        else:
-            passed, messages = validate_remote_mcp(mcp_token)
-            for msg in messages:
-                print(msg)
-
-            if not passed:
+        if backend == "zapier":
+            zapier_token = creds.get("TF_VAR_zapier_token", "")
+            if not zapier_token:
+                print(colorize("✗ Zapier MCP token not found in credentials.env", 'red'))
+                print("  Missing: TF_VAR_zapier_token")
                 all_services_passed = False
+            else:
+                passed, messages = validate_zapier(zapier_token)
+                for msg in messages:
+                    print(msg)
+                if not passed:
+                    all_services_passed = False
+        else:
+            mcp_token = creds.get("TF_VAR_mcp_token", "")
+            if not mcp_token:
+                print(colorize("✗ Remote MCP Lambda token not found in credentials.env", 'red'))
+                print("  Missing: TF_VAR_mcp_token")
+                all_services_passed = False
+            else:
+                passed, messages = validate_mcp_lambda(mcp_token)
+                for msg in messages:
+                    print(msg)
+                if not passed:
+                    all_services_passed = False
 
         print()
 

@@ -33,7 +33,7 @@ from testing.helpers.polling_helper import poll_until
 
 
 # Email address for price match notifications in tests
-_TEST_EMAIL = os.environ.get("TEST_EMAIL", "test@example.com")
+_TEST_EMAIL = os.environ.get("TEST_EMAIL", "bheintz@confluent.io")
 
 # Statement name prefix to avoid collisions with Terraform-managed resources
 _PREFIX = "test-lab1"

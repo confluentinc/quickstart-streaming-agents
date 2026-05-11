@@ -149,6 +149,10 @@ def main():
         creds = dotenv_values(str(creds_file))
         cloud = creds.get("TF_VAR_cloud_provider", "").lower()
         region = creds.get("TF_VAR_cloud_region", "")
+        mcp_backend = (creds.get("TF_VAR_mcp_backend") or "lambda").lower()
+        if mcp_backend not in ("lambda", "zapier"):
+            print(f"Error: TF_VAR_mcp_backend must be 'lambda' or 'zapier' (got '{mcp_backend}').")
+            sys.exit(1)
 
         # Validate all required fields are present and non-empty.
         required = {
@@ -163,6 +167,11 @@ def main():
         elif cloud == "azure":
             required["TF_VAR_azure_openai_endpoint_raw"] = "Azure OpenAI Endpoint"
             required["TF_VAR_azure_openai_api_key"] = "Azure OpenAI API Key"
+
+        if mcp_backend == "lambda":
+            required["TF_VAR_mcp_token"] = "Remote MCP Lambda Token (TF_VAR_mcp_token)"
+        else:
+            required["TF_VAR_zapier_token"] = "Remote MCP Zapier Token (TF_VAR_zapier_token)"
 
         missing = [label for key, label in required.items() if not creds.get(key, "").strip()]
         if missing:
@@ -301,6 +310,15 @@ def main():
         elif env_choice == "All Labs (Labs 1, 2, 3, and 4)":
             envs_to_deploy = ["core", "lab1-tool-calling", "lab2-vector-search", "lab3-agentic-fleet-management", "lab4-pubsec-fraud-agents"]
 
+        # Step 4.5: Remote MCP backend selection (Lab 1 / Lab 3 only)
+        mcp_backend = ""
+        if "lab1-tool-calling" in envs_to_deploy or "lab3-agentic-fleet-management" in envs_to_deploy:
+            backend_choice = prompt_choice(
+                "Remote MCP server backend:",
+                ["AWS Lambda (Recommended) — Confluent-hosted", "Zapier"]
+            )
+            mcp_backend = "zapier" if backend_choice == "Zapier" else "lambda"
+
         # Step 5: Prompt for required credentials
         print("\n--- Credential Configuration ---")
 
@@ -419,8 +437,19 @@ def main():
 
         # Lab-specific credentials
         if "lab1-tool-calling" in envs_to_deploy or "lab3-agentic-fleet-management" in envs_to_deploy:
-            mcp_token = prompt_with_default("Remote MCP Server Token (Lab 1 and Lab 3)", creds.get("TF_VAR_mcp_token", ""))
-            _save_env_safe(creds_file, "TF_VAR_mcp_token", mcp_token)
+            _save_env_safe(creds_file, "TF_VAR_mcp_backend", mcp_backend)
+            if mcp_backend == "zapier":
+                zapier_token = prompt_with_default(
+                    "Zapier MCP Server Token (Lab 1 and Lab 3) — see assets/pre-setup/Zapier-Setup.md",
+                    creds.get("TF_VAR_zapier_token", "")
+                )
+                _save_env_safe(creds_file, "TF_VAR_zapier_token", zapier_token)
+            else:
+                mcp_token = prompt_with_default(
+                    "Remote MCP Lambda Token (Confluent employees: see go/lambda-keys or #help-tmm; workshop participants: ask your presenter)",
+                    creds.get("TF_VAR_mcp_token", "")
+                )
+                _save_env_safe(creds_file, "TF_VAR_mcp_token", mcp_token)
 
         # Set cloud region and cloud provider
         _save_env_safe(creds_file, "TF_VAR_cloud_region", region)

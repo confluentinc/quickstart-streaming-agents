@@ -34,6 +34,12 @@ Once software is installed, you'll need:
 >
 > **AWS Bedrock Users:** You must request access to Claude Sonnet 4.5 by filling out an Anthropic use case form. Visit the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog), select Claude Sonnet 4.5, open it in the Playground, and send a message - the form will appear automatically.
 
+- **Remote MCP server backend:** Lab 3 calls a remote MCP server for HTTP fetch and HTTP post (vessel catalog lookup + dispatch). `uv run deploy` will prompt you to choose:
+  - **AWS Lambda (Recommended)** — a Confluent-hosted remote MCP server endpoint. No setup on your end; obtain a token by asking your workshop presenter, or, if you're a Confluent employee, see `go/lambda-keys` or `#help-tmm`.
+  - **Zapier** — a third-party MCP server. See [Zapier-Setup.md](./assets/pre-setup/Zapier-Setup.md) for setup. As of 2026-05-11 this path is broken pending a Confluent Cloud Flink runtime patch; prefer Lambda.
+
+  To switch backends after deploying, run `uv run destroy` first, then re-deploy.
+
 ## Deploy the Demo
 
 First, clone the repo:

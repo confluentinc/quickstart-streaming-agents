@@ -10,6 +10,13 @@ data "terraform_remote_state" "core" {
 locals {
   cloud_provider = data.terraform_remote_state.core.outputs.cloud_provider
   cloud_region   = data.terraform_remote_state.core.outputs.cloud_region
+
+  # Remote MCP backend selection. Endpoints are hard-coded so users can't point
+  # Flink at an arbitrary MCP server via tfvars.
+  mcp_lambda_endpoint    = "https://z04yuqut2a.execute-api.us-east-1.amazonaws.com/mcp"
+  mcp_zapier_endpoint    = "https://mcp.zapier.com/api/v1/connect"
+  effective_mcp_endpoint = var.mcp_backend == "zapier" ? local.mcp_zapier_endpoint : local.mcp_lambda_endpoint
+  effective_mcp_token    = var.mcp_backend == "zapier" ? var.zapier_token : var.mcp_token
 }
 
 # Random ID for unique resource names for this lab
@@ -59,8 +66,8 @@ resource "confluent_flink_statement" "remote_mcp_connection" {
     CREATE CONNECTION IF NOT EXISTS `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`remote-mcp-connection`
     WITH (
       'type' = 'MCP_SERVER',
-      'endpoint' = '${var.mcp_endpoint}',
-      'token' = '${var.mcp_token}',
+      'endpoint' = '${local.effective_mcp_endpoint}',
+      'token' = '${local.effective_mcp_token}',
       'transport-type' = 'STREAMABLE_HTTP'
     );
   EOT
