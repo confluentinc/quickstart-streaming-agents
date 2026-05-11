@@ -24,7 +24,7 @@ from scripts.common.credentials import (
     load_credentials_json,
     generate_confluent_api_keys
 )
-from scripts.common.login_checks import check_confluent_login
+from scripts.common.login_checks import check_confluent_login, attempt_confluent_auto_login
 from scripts.common.terraform import get_project_root, run_terraform_output
 from scripts.common.terraform_runner import run_terraform
 from scripts.common.tfvars import write_tfvars_for_deployment
@@ -246,10 +246,16 @@ def main():
     else:
         # Step 0: Check Confluent CLI login
         if not check_confluent_login():
-            print("\nError: Not logged into Confluent Cloud.")
-            print("Please run: confluent login")
-            sys.exit(1)
-        print("✓ Confluent CLI logged in")
+            env_creds = dotenv_values(str(root / "credentials.env"))
+            if attempt_confluent_auto_login(env_creds):
+                print("✓ Auto-logged into Confluent Cloud")
+            else:
+                print("\nError: Not logged into Confluent Cloud.")
+                print("Please run: confluent login")
+                print("  (or add CONFLUENT_EMAIL and CONFLUENT_PASSWORD to credentials.env)")
+                sys.exit(1)
+        else:
+            print("✓ Confluent CLI logged in")
 
         # Step 1: Select cloud provider
         cloud = prompt_choice("Select cloud provider:", ["aws", "azure"])

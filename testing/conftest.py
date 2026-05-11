@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 from typing import Dict, Any, List
 import pytest
+from dotenv import dotenv_values
 
 
 # Project paths
@@ -116,10 +117,18 @@ def ensure_confluent_login(credentials: Dict[str, str]):
     email = credentials.get("confluent_cloud_email") or credentials.get("owner_email")
     password = credentials.get("confluent_cloud_password")
 
+    # Fall back to credentials.env if JSON creds don't have what we need
+    if not email or not password:
+        env_file = PROJECT_ROOT / "credentials.env"
+        if env_file.exists():
+            env_creds = dotenv_values(str(env_file))
+            email = email or env_creds.get("CONFLUENT_EMAIL") or env_creds.get("TF_VAR_owner_email")
+            password = password or env_creds.get("CONFLUENT_PASSWORD")
+
     if not email or not password:
         pytest.skip(
-            "Confluent CLI not logged in and no password in credentials.json — "
-            "run `confluent login --save` to authenticate"
+            "Confluent CLI not logged in and no credentials found — "
+            "run `confluent login --save` or add CONFLUENT_EMAIL and CONFLUENT_PASSWORD to credentials.env"
         )
 
     if password == "YOUR_PASSWORD_HERE":

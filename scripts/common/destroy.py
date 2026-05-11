@@ -11,7 +11,10 @@ import subprocess
 import sys
 from pathlib import Path
 
+from dotenv import dotenv_values
+
 from .credentials import load_or_create_credentials_file, load_credentials_json
+from .login_checks import check_confluent_login, attempt_confluent_auto_login
 from .terraform import get_project_root
 from .terraform_runner import run_terraform_destroy
 from .ui import prompt_choice
@@ -164,6 +167,19 @@ def main():
 
     # INTERACTIVE MODE: Original flow
     else:
+        # Step 0: Check Confluent CLI login
+        if not check_confluent_login():
+            env_creds = dotenv_values(str(root / "credentials.env"))
+            if attempt_confluent_auto_login(env_creds):
+                print("✓ Auto-logged into Confluent Cloud")
+            else:
+                print("\nError: Not logged into Confluent Cloud.")
+                print("Please run: confluent login")
+                print("  (or add CONFLUENT_EMAIL and CONFLUENT_PASSWORD to credentials.env)")
+                sys.exit(1)
+        else:
+            print("✓ Confluent CLI logged in")
+
         # Step 1: Select cloud provider
         cloud = prompt_choice("Select cloud provider to destroy:", ["aws", "azure"])
 
