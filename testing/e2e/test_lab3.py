@@ -158,7 +158,7 @@ class TestLab3FleetManagement:
         count = kafka.get_topic_message_count("ride_requests", timeout=60, max_messages=28001)
         if count < 28000:
             # Datagen is a long-running streaming process; launch non-blocking.
-            proc = subprocess.Popen(["uv", "run", "lab3_datagen"], cwd=PROJECT_ROOT)
+            proc = subprocess.Popen(["uv", "run", "lab3_datagen", "--local"], cwd=PROJECT_ROOT)
             count = poll_until(
                 getter=lambda: kafka.get_topic_message_count(
                     "ride_requests", timeout=60, max_messages=28001
@@ -172,18 +172,31 @@ class TestLab3FleetManagement:
 
     @pytest.mark.order(2)
     def test_anomalies_per_zone(self, env):
-        """Create anomalies_per_zone and verify it detects at least one surge."""
+        """Create anomalies_per_zone and verify only French Quarter surges (max 2 anomalies)."""
         flink, kafka, sql = env["flink"], env["kafka"], env["sql"]
         _ensure_statement(flink, f"{_PREFIX}-anomalies-per-zone", sql["anomalies_per_zone"], timeout=360)
 
-        has_messages = poll_until(
-            getter=lambda: kafka.check_topic_has_messages("anomalies_per_zone", min_count=1, timeout=15),
-            condition=lambda r: r is True,
+        def _get_anomalies():
+            return kafka.consume_messages("anomalies_per_zone", max_messages=3, timeout=15)
+
+        messages = poll_until(
+            getter=_get_anomalies,
+            condition=lambda msgs: len(msgs) >= 1,
             timeout=600,
             interval=30,
             description="anomalies_per_zone has >= 1 message",
         )
-        assert has_messages, "anomalies_per_zone topic is empty after 10 minutes"
+        assert messages, "anomalies_per_zone topic is empty after 10 minutes"
+        assert len(messages) <= 2, (
+            f"anomalies_per_zone has {len(messages)} anomalies (expected <= 2): "
+            f"{[m.get('pickup_zone') for m in messages]}"
+        )
+        for msg in messages:
+            zone = msg.get("pickup_zone") or msg.get("PICKUP_ZONE") or ""
+            assert zone == "French Quarter", (
+                f"Unexpected anomaly zone '{zone}' — only French Quarter should surge. "
+                f"Check anomaly detection threshold or datagen."
+            )
 
     @pytest.mark.order(3)
     def test_anomalies_enriched(self, env):

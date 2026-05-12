@@ -177,40 +177,55 @@ class TestLab4FraudDetection:
 
     @pytest.mark.order(1)
     def test_claims_datagen(self, env):
-        """claims topic has >= 1 message (Terraform datagen runs ~36,000 claims)."""
+        """claims topic has >= 35,000 messages (Terraform datagen runs ~36,000 claims)."""
         kafka = env["kafka"]
-        has_messages = kafka.check_topic_has_messages("claims", min_count=1, timeout=30)
-        if not has_messages:
+        count = kafka.get_topic_message_count("claims", timeout=120, max_messages=36000)
+        if count < 35000:
             # Terraform datagen should have run; attempt manual fallback
             subprocess.run(
                 ["uv", "run", "lab4_datagen"],
                 cwd=PROJECT_ROOT,
-                timeout=120,
+                timeout=300,
                 check=False,
             )
-            has_messages = poll_until(
-                getter=lambda: kafka.check_topic_has_messages("claims", min_count=1, timeout=10),
-                condition=lambda r: r is True,
-                timeout=180,
-                interval=15,
-                description="claims topic has >= 1 message",
+            count = poll_until(
+                getter=lambda: kafka.get_topic_message_count("claims", timeout=120, max_messages=36000),
+                condition=lambda c: c >= 35000,
+                timeout=600,
+                interval=30,
+                description="claims topic has >= 35,000 messages",
             )
-        assert has_messages, "claims topic is empty — was Lab 4 deployed?"
+        assert count >= 35000, f"claims topic has only {count} messages (expected >= 35,000) — was Lab 4 deployed?"
 
     @pytest.mark.order(2)
     def test_claims_anomalies_by_city(self, env):
-        """Create claims_anomalies_by_city and verify it detects Naples anomaly."""
+        """Create claims_anomalies_by_city and verify only Naples anomaly fires (max 2)."""
         flink, kafka, sql = env["flink"], env["kafka"], env["sql"]
         _ensure_statement(
             flink, f"{_PREFIX}-anomalies-by-city", sql["claims_anomalies_by_city"], timeout=360
         )
-        # The Naples anomaly typically takes 6-hour windows to appear.
-        # If the table already exists from a prior run the statement will be FAILED;
-        # that is OK — downstream tests assert actual data flow.
-        status = flink.get_statement_status(f"{_PREFIX}-anomalies-by-city")
-        assert status in ("RUNNING", "COMPLETED", "FAILED"), (
-            f"claims_anomalies_by_city statement is in unexpected state: {status}"
+
+        def _get_city_anomalies():
+            return kafka.consume_messages("claims_anomalies_by_city", max_messages=3, timeout=15)
+
+        anomalies = poll_until(
+            getter=_get_city_anomalies,
+            condition=lambda msgs: len(msgs) >= 1,
+            timeout=600,
+            interval=30,
+            description="claims_anomalies_by_city has >= 1 message",
         )
+        assert anomalies, "claims_anomalies_by_city is empty — Naples anomaly not detected"
+        assert len(anomalies) <= 2, (
+            f"claims_anomalies_by_city has {len(anomalies)} anomalies (expected <= 2): "
+            f"{[m.get('city') for m in anomalies]}"
+        )
+        for msg in anomalies:
+            city = msg.get("city") or msg.get("CITY") or ""
+            assert city == "Naples", (
+                f"Unexpected anomaly city '{city}' — only Naples should have a fraud spike. "
+                f"Check anomaly detection parameters."
+            )
 
     @pytest.mark.order(3)
     def test_claims_to_investigate(self, env):
