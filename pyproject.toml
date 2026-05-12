@@ -77,6 +77,12 @@ destroy = "scripts.common.destroy:main"
 lab1_datagen = "scripts.lab1_datagen:main"
 lab1-datagen = "scripts.lab1_datagen:main"
 #
+capture_lab1_data = "scripts.capture_lab1_data:main"
+capture-lab1-data = "scripts.capture_lab1_data:main"
+#
+publish_lab1_data = "scripts.publish_lab1_data:main"
+publish-lab1-data = "scripts.publish_lab1_data:main"
+#
 lab3_datagen = "scripts.lab3_datagen:main"
 lab3-datagen = "scripts.lab3_datagen:main"
 #

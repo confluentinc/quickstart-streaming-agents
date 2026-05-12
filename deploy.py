@@ -30,7 +30,7 @@ from scripts.common.terraform_runner import run_terraform
 from scripts.common.tfvars import write_tfvars_for_deployment
 from scripts.common.ui import prompt_choice, prompt_with_default
 from scripts.common.validate import validate_aws_bedrock_credentials, validate_azure_openai_credentials
-from scripts.mcp_setup import main as setup_mcp, write_mcp_env
+from scripts.mcp_setup import main as setup_mcp
 
 # Valid cloud regions (MongoDB M0 free tier compatible)
 # NOTE: These are kept for reference and testing mode, but interactive mode
@@ -597,7 +597,7 @@ def main():
                 core_outputs = run_terraform_output(core_state_path)
                 if "confluent_environment_display_name" in core_outputs:
                     print(f"\nEnvironment name: {core_outputs['confluent_environment_display_name']}")
-                write_mcp_env(core_outputs, root)
+
                 print("\nRun `uv run setup-mcp` to connect Claude Code to this environment.")
             except Exception as e:
                 print(f"\n⚠ Could not write MCP config: {e}")

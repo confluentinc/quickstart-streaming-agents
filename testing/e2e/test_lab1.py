@@ -157,7 +157,7 @@ class TestLab1PriceMatch:
         has_messages = kafka.check_topic_has_messages("orders", min_count=1, timeout=15)
         if not has_messages:
             # Datagen is a long-running streaming process; launch non-blocking.
-            proc = subprocess.Popen(["uv", "run", "lab1_datagen"], cwd=PROJECT_ROOT)
+            proc = subprocess.Popen(["uv", "run", "lab1_datagen", "--local"], cwd=PROJECT_ROOT)
             has_messages = poll_until(
                 getter=lambda: kafka.check_topic_has_messages("orders", min_count=1, timeout=10),
                 condition=lambda r: r is True,
