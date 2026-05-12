@@ -83,6 +83,9 @@ capture-lab1-data = "scripts.capture_lab1_data:main"
 publish_lab1_data = "scripts.publish_lab1_data:main"
 publish-lab1-data = "scripts.publish_lab1_data:main"
 #
+generate_lab1_data = "scripts.generate_lab1_data:main"
+generate-lab1-data = "scripts.generate_lab1_data:main"
+#
 lab3_datagen = "scripts.lab3_datagen:main"
 lab3-datagen = "scripts.lab3_datagen:main"
 #

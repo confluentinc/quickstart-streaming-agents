@@ -1,17 +1,13 @@
 #!/usr/bin/env python3
 """
-Publish pre-captured Lab 1 data (customers, products, orders) to Confluent Cloud.
+Publish pre-generated Lab 1 data (customers, products, orders) to Confluent Cloud.
 
-Replays captured JSONL files without requiring ShadowTraffic or Docker.
-Decodes raw Avro bytes and re-serializes with AvroSerializer so schemas are
-properly registered in the user's Schema Registry.
-
-Orders timestamps (order_ts) are rebased to end ~2 minutes before now so
-the enriched_orders Flink pipeline sees fresh data. customers and products
-are published as-is (no timestamp rebasing needed for lookup tables).
+Reads CSV files from assets/lab1/data/, rebases order_ts to end ~2 minutes before
+now, re-serializes each record with AvroSerializer, and publishes to the
+customers, products, and orders Kafka topics.
 
 Publish order: customers → products → orders
-(lookup tables first so joins succeed when orders arrive)
+(lookup tables first so Flink joins succeed when orders arrive)
 
 Usage:
     uv run publish_lab1_data
@@ -19,15 +15,14 @@ Usage:
 """
 
 import argparse
-import base64
-import datetime
-import io
+import csv
 import json
 import logging
 import sys
 import time
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Dict
 
 try:
     from confluent_kafka import Producer
@@ -37,13 +32,6 @@ try:
     CONFLUENT_KAFKA_AVAILABLE = True
 except ImportError:
     CONFLUENT_KAFKA_AVAILABLE = False
-
-try:
-    import avro.io
-    import avro.schema
-    AVRO_AVAILABLE = True
-except ImportError:
-    AVRO_AVAILABLE = False
 
 from .common.cloud_detection import auto_detect_cloud_provider, validate_cloud_provider, suggest_cloud_provider
 from .common.terraform import extract_kafka_credentials, validate_terraform_state, get_project_root
@@ -95,38 +83,30 @@ SCHEMAS = {
     "orders": ORDERS_VALUE_SCHEMA_STR,
 }
 
-# Field used for timestamp rebasing (orders only)
 TS_FIELD = {"orders": "order_ts"}
 
 
-def decode_avro_value(raw_bytes: bytes, schema_str: str) -> Any:
-    """Decode Confluent wire-format Avro (magic byte + 4-byte schema ID + payload)."""
-    if len(raw_bytes) < 5:
-        raise ValueError(f"Avro payload too short ({len(raw_bytes)} bytes)")
-    if raw_bytes[0] != 0:
-        raise ValueError(f"Invalid Avro magic byte: {raw_bytes[0]}")
-    schema = avro.schema.parse(schema_str)
-    reader = avro.io.DatumReader(schema)
-    result = reader.read(avro.io.BinaryDecoder(io.BytesIO(raw_bytes[5:])))
-    if isinstance(result, dict):
-        for k, v in result.items():
-            if isinstance(v, datetime.datetime):
-                result[k] = int(v.timestamp() * 1000)
-    return result
+def _parse_iso_ms(s: str) -> int:
+    return int(datetime.fromisoformat(s.replace("Z", "+00:00")).timestamp() * 1000)
 
 
-def compute_orders_ts_offset(lines: List[str]) -> int:
-    """Compute ms offset to rebase order_ts so the latest order is 2 minutes before now."""
-    schema = avro.schema.parse(ORDERS_VALUE_SCHEMA_STR)
+def _coerce_row(topic: str, row: dict) -> dict:
+    record = dict(row)
+    if "price" in record:
+        record["price"] = float(record["price"])
+    if "updated_at" in record:
+        record["updated_at"] = _parse_iso_ms(record["updated_at"])
+    if "order_ts" in record:
+        record["order_ts"] = _parse_iso_ms(record["order_ts"])
+    return record
+
+
+def compute_orders_ts_offset(csv_file: Path) -> int:
+    """Compute ms offset to rebase order_ts so the latest order lands 2 minutes before now."""
     max_ts = 0
-    for line in lines:
-        record = json.loads(line)
-        raw = base64.b64decode(record["value"]) if record.get("value") else None
-        if raw and len(raw) >= 5:
-            val = avro.io.DatumReader(schema).read(avro.io.BinaryDecoder(io.BytesIO(raw[5:])))
-            ts = val.get("order_ts", 0)
-            if isinstance(ts, datetime.datetime):
-                ts = int(ts.timestamp() * 1000)
+    with open(csv_file, newline="", encoding="utf-8") as f:
+        for row in csv.DictReader(f):
+            ts = _parse_iso_ms(row["order_ts"])
             if ts > max_ts:
                 max_ts = ts
     if max_ts == 0:
@@ -202,34 +182,28 @@ class Lab1DataPublisher:
             self.logger.warning(f"Could not purge '{topic}': {e} — continuing")
 
     def publish_topic(
-        self, topic: str, jsonl_file: Path, ts_offset_ms: int = 0
+        self, topic: str, csv_file: Path, ts_offset_ms: int = 0
     ) -> Dict[str, int]:
         results = {"success": 0, "failed": 0, "total": 0}
-        schema_str = SCHEMAS[topic]
         ts_field = TS_FIELD.get(topic)
         serializer = self.serializers[topic]
 
         try:
-            lines = [l.strip() for l in jsonl_file.read_text().splitlines() if l.strip()]
+            with open(csv_file, newline="", encoding="utf-8") as f:
+                rows = list(csv.DictReader(f))
         except Exception as e:
-            self.logger.error(f"Could not read {jsonl_file}: {e}")
+            self.logger.error(f"Could not read {csv_file}: {e}")
             return results
 
-        results["total"] = len(lines)
-        self.logger.info(f"Publishing {len(lines)} records to '{topic}'")
+        results["total"] = len(rows)
+        self.logger.info(f"Publishing {len(rows)} records to '{topic}'")
 
         if not self.dry_run:
             self.purge_topic(topic)
 
-        for idx, line in enumerate(lines, 1):
+        for idx, row in enumerate(rows, 1):
             try:
-                record = json.loads(line)
-                raw_value = base64.b64decode(record["value"]) if record.get("value") else None
-                if raw_value is None:
-                    results["failed"] += 1
-                    continue
-
-                value_dict = decode_avro_value(raw_value, schema_str)
+                value_dict = _coerce_row(topic, row)
 
                 if ts_field and ts_offset_ms and ts_field in value_dict:
                     value_dict[ts_field] += ts_offset_ms
@@ -246,12 +220,9 @@ class Lab1DataPublisher:
 
                 if idx % 100 == 0:
                     self.producer.poll(0)
-                if idx % 500 == 0:
-                    self.producer.flush()
-                    self.logger.info(f"  {idx}/{results['total']} published")
 
             except Exception as e:
-                self.logger.error(f"Error on line {idx} of {topic}: {e}")
+                self.logger.error(f"Error on row {idx} of {topic}: {e}")
                 results["failed"] += 1
 
         if not self.dry_run and self.producer:
@@ -266,13 +237,13 @@ class Lab1DataPublisher:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Publish pre-captured Lab 1 data to Confluent Cloud",
+        description="Publish pre-generated Lab 1 data to Confluent Cloud",
     )
     parser.add_argument(
         "--data-dir",
         type=Path,
         default=None,
-        help="Directory containing customers.jsonl, products.jsonl, orders.jsonl "
+        help="Directory containing customers.csv, products.csv, orders.csv "
              "(default: assets/lab1/data/)",
     )
     parser.add_argument("--dry-run", action="store_true")
@@ -283,9 +254,6 @@ def main():
 
     if not CONFLUENT_KAFKA_AVAILABLE:
         logger.error("confluent-kafka not available. Run: uv pip install confluent-kafka[avro,schema-registry]")
-        return 1
-    if not AVRO_AVAILABLE:
-        logger.error("avro-python3 not available. Run: uv pip install avro-python3")
         return 1
 
     cloud_provider = auto_detect_cloud_provider()
@@ -308,9 +276,9 @@ def main():
 
     data_dir = args.data_dir or (project_root / "assets" / "lab1" / "data")
     for topic in ("customers", "products", "orders"):
-        f = data_dir / f"{topic}.jsonl"
+        f = data_dir / f"{topic}.csv"
         if not f.exists():
-            logger.error(f"Data file not found: {f} — run 'uv run capture_lab1_data' first")
+            logger.error(f"Data file not found: {f} — run 'uv run generate_lab1_data' first")
             return 1
 
     publisher = Lab1DataPublisher(
@@ -327,19 +295,15 @@ def main():
         if args.dry_run:
             logger.info("[DRY RUN MODE]")
 
-        # Compute order_ts offset before publishing anything
-        orders_file = data_dir / "orders.jsonl"
-        orders_lines = [l.strip() for l in orders_file.read_text().splitlines() if l.strip()]
-        ts_offset_ms = compute_orders_ts_offset(orders_lines)
+        orders_file = data_dir / "orders.csv"
+        ts_offset_ms = compute_orders_ts_offset(orders_file)
         offset_minutes = ts_offset_ms / 60000
         logger.info(f"Rebasing order_ts by {offset_minutes:+.1f} minutes")
 
         all_results = {}
-
-        # Publish lookup tables first, then orders
         for topic in ("customers", "products", "orders"):
             offset = ts_offset_ms if topic == "orders" else 0
-            results = publisher.publish_topic(topic, data_dir / f"{topic}.jsonl", offset)
+            results = publisher.publish_topic(topic, data_dir / f"{topic}.csv", offset)
             all_results[topic] = results
 
         print(f"\n{'=' * 55}")
