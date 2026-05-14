@@ -96,6 +96,10 @@ Begin generating data with the following command:
 uv run lab1_datagen --local
 ```
 
+> [!NOTE]
+>
+> Keep this command running in your terminal — it produces one order every 2 minutes. Proceed with the lab while it runs.
+
 The data generator creates three typical ecommerce data streams:
 
 - **`customers`**: 100 customer records with realistic names, emails, addresses, and state information
