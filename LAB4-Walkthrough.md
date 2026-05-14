@@ -6,6 +6,8 @@ This demo showcases an intelligent, real-time fraud detection system that autono
 
 ## Prerequisites
 
+### Local dependencies
+
 **Installation instructions:**
 
 ```bash
@@ -17,7 +19,12 @@ brew install uv git python && brew tap hashicorp/tap && brew install hashicorp/t
 winget install astral-sh.uv Git.Git Hashicorp.Terraform ConfluentInc.Confluent-CLI Python.Python
 ```
 
-Once software is installed, you'll need:
+### API keys & access
+
+> [!NOTE]
+>
+> The credentials below are not required in instructor-led workshops — they will be provided for you.
+
 - **LLM API keys:** AWS Bedrock API keys **OR** Azure OpenAI endpoint + API key
   - **Easy key creation:** Run `uv run api-keys create` to quickly auto-generate credentials
 
@@ -31,6 +38,10 @@ First, clone the repo:
 git clone https://github.com/confluentinc/quickstart-streaming-agents.git
 cd quickstart-streaming-agents
 ```
+
+> [!CAUTION]
+>
+> You must be logged in to the Confluent CLI before running `uv run deploy`. Run `confluent login` first if you haven't already.
 
 Once you have your credentials ready, run the deployment script and choose **Lab4**:
 

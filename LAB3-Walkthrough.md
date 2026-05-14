@@ -16,6 +16,9 @@ All of this runs in real time on **Confluent Cloud for Apache Flink**, with no e
 ![Architecture Diagram](./assets/lab3/lab3-architecture.png)
 
 ## Prerequisites
+
+### Local dependencies
+
 **Installation instructions:**
 
 ```bash
@@ -26,7 +29,13 @@ brew install uv git python && brew tap hashicorp/tap && brew install hashicorp/t
 ```powershell
 winget install astral-sh.uv Git.Git Hashicorp.Terraform ConfluentInc.Confluent-CLI Python.Python
 ```
-Once software is installed, you'll need:
+
+### API keys & access
+
+> [!NOTE]
+>
+> The credentials below are not required in instructor-led workshops — they will be provided for you.
+
 - **LLM Access:** AWS Bedrock API keys **OR** Azure OpenAI endpoint + API key
   - **Easy key creation:** Run `uv run api-keys create` to quickly auto-generate credentials
 
@@ -53,6 +62,10 @@ Be sure to pull in the latest changes:
 ```bash
 git pull
 ```
+
+> [!CAUTION]
+>
+> You must be logged in to the Confluent CLI before running `uv run deploy`. Run `confluent login` first if you haven't already.
 
 Once you have your credentials ready, run the deployment script and choose **Lab3**:
 

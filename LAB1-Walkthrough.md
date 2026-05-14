@@ -6,6 +6,25 @@ In this lab, we'll use Apache Flink for Confluent Cloud's MCP tool calling featu
 
 ## Prerequisites
 
+### Local dependencies
+
+**Installation instructions:**
+
+```bash
+brew install uv git python && brew tap hashicorp/tap && brew install hashicorp/tap/terraform && brew install --cask confluent-cli
+```
+**Windows:**
+
+```powershell
+winget install astral-sh.uv Git.Git Hashicorp.Terraform ConfluentInc.Confluent-CLI Python.Python
+```
+
+### API keys & access
+
+> [!NOTE]
+>
+> The credentials below are not required in instructor-led workshops — they will be provided for you.
+
 - **LLM Access:** AWS Bedrock API keys **OR** Azure OpenAI endpoint + API key
   - No AWS/Azure account required - just the LLM API credentials!
   - **Easy key creation:** Run `uv run api-keys create` to quickly generate ready-to-use credentials
@@ -22,7 +41,11 @@ In this lab, we'll use Apache Flink for Confluent Cloud's MCP tool calling featu
 
 ## Deploy the Demo
 
-Once you have these credentials ready, run the following command and choose **Lab3** (see [main README](./README.md)):
+> [!CAUTION]
+>
+> You must be logged in to the Confluent CLI before running `uv run deploy`. Run `confluent login` first if you haven't already.
+
+Once you have these credentials ready, run the following command and choose **Lab1** (see [main README](./README.md)):
 
   ```bash
   uv run deploy
@@ -32,7 +55,7 @@ Once you have these credentials ready, run the following command and choose **La
 
 ## 1. Test the LLM models before continuing
 
-Once you've deployed Lab1, run the following queries in the SQL Workspace to make sure your models are working as expected:
+Once you've deployed Lab1, open the [SQL Workspace](https://confluent.cloud/go/flink), select your Confluent Cloud environment, and run the following queries to make sure your models are working as expected:
 
 #### Test Query 1: Base LLM model
 
@@ -67,11 +90,15 @@ LATERAL TABLE(ML_PREDICT('llm_textgen_model', question, MAP['debug', 'true'])) a
 
 ## 2. Generate Data
 
-Open **Docker Desktop**, then begin generating data with the following command:
+Begin generating data with the following command:
 
 ```bash
-uv run lab1_datagen
+uv run lab1_datagen --local
 ```
+
+> [!NOTE]
+>
+> Keep this command running in your terminal — it produces one order every 2 minutes. Proceed with the lab while it runs.
 
 The data generator creates three typical ecommerce data streams:
 
