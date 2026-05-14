@@ -2,6 +2,7 @@
 Generate Claude Code MCP registration for Confluent Cloud from Terraform core outputs.
 """
 
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -73,8 +74,26 @@ _TF_TO_MCP = {
 }
 
 
+def _clear_broken_npx_cache() -> None:
+    """Remove stale npx cache entries where the kafka-javascript native binary is missing."""
+    npx_cache = Path.home() / ".npm" / "_npx"
+    if not npx_cache.exists():
+        return
+    for entry in npx_cache.iterdir():
+        if not entry.is_dir():
+            continue
+        if not (entry / "node_modules" / "@confluentinc" / "mcp-confluent").exists():
+            continue
+        build_release = entry / "node_modules" / "@confluentinc" / "kafka-javascript" / "build" / "Release"
+        if not any(build_release.glob("*.node")) if build_release.exists() else True:
+            print(f"  Clearing broken npx cache (missing native binary): {entry.name}")
+            shutil.rmtree(entry)
+            print("  npx will re-download @confluentinc/mcp-confluent on next MCP server start.")
+
+
 def main():
     _check_node_version()
+    _clear_broken_npx_cache()
 
     project_root = get_project_root()
     state_path = project_root / "terraform" / "core" / "terraform.tfstate"
