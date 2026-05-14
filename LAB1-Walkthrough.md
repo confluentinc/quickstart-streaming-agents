@@ -6,6 +6,25 @@ In this lab, we'll use Apache Flink for Confluent Cloud's MCP tool calling featu
 
 ## Prerequisites
 
+### Local dependencies
+
+**Installation instructions:**
+
+```bash
+brew install uv git python && brew tap hashicorp/tap && brew install hashicorp/tap/terraform && brew install --cask confluent-cli
+```
+**Windows:**
+
+```powershell
+winget install astral-sh.uv Git.Git Hashicorp.Terraform ConfluentInc.Confluent-CLI Python.Python
+```
+
+### API keys & access
+
+> [!NOTE]
+>
+> The credentials below are not required in instructor-led workshops — they will be provided for you.
+
 - **LLM Access:** AWS Bedrock API keys **OR** Azure OpenAI endpoint + API key
   - No AWS/Azure account required - just the LLM API credentials!
   - **Easy key creation:** Run `uv run api-keys create` to quickly generate ready-to-use credentials
@@ -36,7 +55,7 @@ Once you have these credentials ready, run the following command and choose **La
 
 ## 1. Test the LLM models before continuing
 
-Once you've deployed Lab1, run the following queries in the SQL Workspace to make sure your models are working as expected:
+Once you've deployed Lab1, run the following queries in the [SQL Workspace](https://confluent.cloud/go/flink) to make sure your models are working as expected:
 
 #### Test Query 1: Base LLM model
 
