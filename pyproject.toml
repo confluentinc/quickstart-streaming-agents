@@ -142,6 +142,9 @@ tests = "scripts.run_tests:main"
 #
 setup_mcp = "scripts.mcp_setup:main"
 setup-mcp = "scripts.mcp_setup:main"
+#
+setup_rtce = "scripts.setup_rtce:main"
+setup-rtce = "scripts.setup_rtce:main"
 
 
 [project.urls]

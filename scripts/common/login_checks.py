@@ -22,7 +22,7 @@ def check_confluent_login() -> bool:
             ["confluent", "environment", "list"],
             capture_output=True, text=True, check=True
         )
-        return "ID" in result.stdout and "env-" in result.stdout
+        return result.returncode == 0
     except (subprocess.CalledProcessError, FileNotFoundError):
         return False
 
@@ -45,5 +45,10 @@ def attempt_confluent_auto_login(creds: dict) -> bool:
         text=True
     )
     if result.returncode != 0:
+        print(f"  Auto-login failed (exit {result.returncode}):")
+        if result.stderr.strip():
+            print(f"  {result.stderr.strip()}")
+        if result.stdout.strip():
+            print(f"  {result.stdout.strip()}")
         return False
     return check_confluent_login()
