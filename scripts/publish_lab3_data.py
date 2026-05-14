@@ -38,6 +38,7 @@ try:
         MessageField,
         StringSerializer,
     )
+
     CONFLUENT_KAFKA_AVAILABLE = True
 except ImportError:
     CONFLUENT_KAFKA_AVAILABLE = False
@@ -45,35 +46,51 @@ except ImportError:
 try:
     import avro.io
     import avro.schema
+
     AVRO_AVAILABLE = True
 except ImportError:
     AVRO_AVAILABLE = False
 
-from .common.cloud_detection import auto_detect_cloud_provider, validate_cloud_provider, suggest_cloud_provider
-from .common.terraform import extract_kafka_credentials, validate_terraform_state, get_project_root
+from .common.cloud_detection import (
+    auto_detect_cloud_provider,
+    validate_cloud_provider,
+    suggest_cloud_provider,
+)
+from .common.terraform import (
+    extract_kafka_credentials,
+    validate_terraform_state,
+    get_project_root,
+)
 from .common.logging_utils import setup_logging
 
 
 # Avro schema for ride_requests value (matches ShadowTraffic avroSchemaHint)
-VALUE_SCHEMA_STR = json.dumps({
-    "type": "record",
-    "name": "ride_requests_value",
-    "namespace": "org.apache.flink.avro.generated.record",
-    "fields": [
-        {"name": "request_id", "type": "string"},
-        {"name": "customer_email", "type": "string"},
-        {"name": "pickup_zone", "type": "string"},
-        {"name": "drop_off_zone", "type": "string"},
-        {"name": "price", "type": "double"},
-        {"name": "number_of_passengers", "type": "int"},
-        {"name": "request_ts", "type": {"type": "long", "logicalType": "timestamp-millis"}},
-    ],
-})
+VALUE_SCHEMA_STR = json.dumps(
+    {
+        "type": "record",
+        "name": "ride_requests_value",
+        "namespace": "org.apache.flink.avro.generated.record",
+        "fields": [
+            {"name": "request_id", "type": "string"},
+            {"name": "customer_email", "type": "string"},
+            {"name": "pickup_zone", "type": "string"},
+            {"name": "drop_off_zone", "type": "string"},
+            {"name": "price", "type": "double"},
+            {"name": "number_of_passengers", "type": "int"},
+            {
+                "name": "request_ts",
+                "type": {"type": "long", "logicalType": "timestamp-millis"},
+            },
+        ],
+    }
+)
 
 # Avro schema for ride_requests key (simple string)
-KEY_SCHEMA_STR = json.dumps({
-    "type": "string",
-})
+KEY_SCHEMA_STR = json.dumps(
+    {
+        "type": "string",
+    }
+)
 
 
 def decode_avro_bytes(raw_bytes: bytes, schema_str: str) -> Any:
@@ -202,13 +219,15 @@ class Lab3DataPublisher:
         from confluent_kafka import TopicPartition as AdminTopicPartition
 
         self.logger.info(f"Purging existing records from topic '{topic}'...")
-        admin = AdminClient({
-            "bootstrap.servers": self.producer_config["bootstrap.servers"],
-            "sasl.mechanisms": self.producer_config["sasl.mechanisms"],
-            "security.protocol": self.producer_config["security.protocol"],
-            "sasl.username": self.producer_config["sasl.username"],
-            "sasl.password": self.producer_config["sasl.password"],
-        })
+        admin = AdminClient(
+            {
+                "bootstrap.servers": self.producer_config["bootstrap.servers"],
+                "sasl.mechanisms": self.producer_config["sasl.mechanisms"],
+                "security.protocol": self.producer_config["security.protocol"],
+                "sasl.username": self.producer_config["sasl.username"],
+                "sasl.password": self.producer_config["sasl.password"],
+            }
+        )
 
         try:
             metadata = admin.list_topics(topic=topic, timeout=10)
@@ -223,21 +242,30 @@ class Lab3DataPublisher:
             for tp, future in futures.items():
                 result = future.result()
                 if result.offset > 0:
-                    delete_offsets[tp] = AdminTopicPartition(tp.topic, tp.partition, result.offset)
+                    delete_offsets[tp] = AdminTopicPartition(
+                        tp.topic, tp.partition, result.offset
+                    )
 
             if delete_offsets:
                 del_futures = admin.delete_records(delete_offsets)
                 for tp, future in del_futures.items():
                     future.result()
-                self.logger.info(f"Purged {len(delete_offsets)} partition(s) in '{topic}'")
+                self.logger.info(
+                    f"Purged {len(delete_offsets)} partition(s) in '{topic}'"
+                )
             else:
                 self.logger.info(f"Topic '{topic}' already empty")
         except Exception as e:
-            self.logger.warning(f"Could not purge topic '{topic}': {e} — continuing without purge")
+            self.logger.warning(
+                f"Could not purge topic '{topic}': {e} — continuing without purge"
+            )
 
     def publish_message(
-        self, record: Dict[str, Any], topic: str,
-        ts_offset_ms: int = 0, start_ms: int = 0,
+        self,
+        record: Dict[str, Any],
+        topic: str,
+        ts_offset_ms: int = 0,
+        start_ms: int = 0,
     ) -> str:
         """
         Decode a captured Avro message, rebase its timestamp, and re-publish.
@@ -246,7 +274,9 @@ class Lab3DataPublisher:
         """
         try:
             raw_key = base64.b64decode(record["key"]) if record.get("key") else None
-            raw_value = base64.b64decode(record["value"]) if record.get("value") else None
+            raw_value = (
+                base64.b64decode(record["value"]) if record.get("value") else None
+            )
 
             if raw_value is None:
                 self.logger.warning("Skipping message with null value")
@@ -265,7 +295,9 @@ class Lab3DataPublisher:
                 return "skipped"
 
             if self.dry_run:
-                self.logger.debug(f"[DRY RUN] Would publish: key={key_str}, value={value_dict}")
+                self.logger.debug(
+                    f"[DRY RUN] Would publish: key={key_str}, value={value_dict}"
+                )
                 return "ok"
 
             # Re-serialize with AvroSerializer (registers schema in user's SR)
@@ -311,18 +343,28 @@ class Lab3DataPublisher:
         ts_offset_ms, start_ms = compute_timestamp_offset(lines)
         offset_hours = ts_offset_ms / (1000 * 60 * 60)
         end_ms = start_ms + (288 * WINDOW_SIZE_MS)
-        start_dt = datetime.datetime.fromtimestamp(start_ms / 1000, tz=datetime.timezone.utc)
-        end_dt = datetime.datetime.fromtimestamp(end_ms / 1000, tz=datetime.timezone.utc)
+        start_dt = datetime.datetime.fromtimestamp(
+            start_ms / 1000, tz=datetime.timezone.utc
+        )
+        end_dt = datetime.datetime.fromtimestamp(
+            end_ms / 1000, tz=datetime.timezone.utc
+        )
         self.logger.info(f"Rebasing timestamps by {offset_hours:+.1f} hours")
-        self.logger.info(f"Time window: {start_dt.strftime('%Y-%m-%d %H:%M')} to {end_dt.strftime('%Y-%m-%d %H:%M')} UTC (288 x 5-min windows)")
+        self.logger.info(
+            f"Time window: {start_dt.strftime('%Y-%m-%d %H:%M')} to {end_dt.strftime('%Y-%m-%d %H:%M')} UTC (288 x 5-min windows)"
+        )
 
         # Sort events by rebased timestamp before publishing.
         # The JSONL was captured partition-by-partition (not in timestamp order),
         # so publishing in file order causes ~24-hour backward jumps at partition
         # boundaries that push most events below the Flink watermark and drop them.
-        self.logger.info("Sorting events by rebased timestamp for chronological publishing...")
+        self.logger.info(
+            "Sorting events by rebased timestamp for chronological publishing..."
+        )
         sort_schema = avro.schema.parse(VALUE_SCHEMA_STR)
-        lines_with_ts = [(ts_offset_ms + _extract_ts(line, sort_schema), line) for line in lines]
+        lines_with_ts = [
+            (ts_offset_ms + _extract_ts(line, sort_schema), line) for line in lines
+        ]
         lines_with_ts.sort(key=lambda x: x[0])
         lines = [line for _, line in lines_with_ts]
         self.logger.info("Events sorted — publishing in chronological order")
@@ -330,7 +372,9 @@ class Lab3DataPublisher:
         for idx, line in enumerate(lines, 1):
             try:
                 message_data = json.loads(line)
-                status = self.publish_message(message_data, topic, ts_offset_ms, start_ms)
+                status = self.publish_message(
+                    message_data, topic, ts_offset_ms, start_ms
+                )
                 if status == "ok":
                     results["success"] += 1
                 elif status == "skipped":
@@ -376,7 +420,7 @@ def main():
 Examples:
   %(prog)s --data-file assets/lab3/data/ride_requests.jsonl
   %(prog)s --data-file assets/lab3/data/ride_requests.jsonl --dry-run
-        """
+        """,
     )
 
     parser.add_argument(
@@ -390,7 +434,9 @@ Examples:
         default="ride_requests",
         help="Kafka topic name (default: ride_requests)",
     )
-    parser.add_argument("--dry-run", action="store_true", help="Test without actually publishing")
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Test without actually publishing"
+    )
     parser.add_argument("--verbose", action="store_true", help="Enable verbose logging")
 
     args = parser.parse_args()
@@ -425,7 +471,9 @@ Examples:
             logger.info(f"Auto-detected cloud provider: {suggestion}")
             cloud_provider = suggestion
         else:
-            logger.error("Could not auto-detect cloud provider. Please check your terraform deployment.")
+            logger.error(
+                "Could not auto-detect cloud provider. Please check your terraform deployment."
+            )
             return 1
 
     if not validate_cloud_provider(cloud_provider):

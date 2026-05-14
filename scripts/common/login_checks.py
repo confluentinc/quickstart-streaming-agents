@@ -25,7 +25,9 @@ def check_confluent_login() -> bool:
     try:
         result = subprocess.run(
             ["confluent", "environment", "list"],
-            capture_output=True, text=True, check=True
+            capture_output=True,
+            text=True,
+            check=True,
         )
         return result.returncode == 0
     except (subprocess.CalledProcessError, FileNotFoundError):
@@ -46,7 +48,7 @@ def attempt_confluent_auto_login(creds: dict) -> bool:
         ["confluent", "login", "--save"],
         input=f"{email}\n{password}\n",
         capture_output=True,
-        text=True
+        text=True,
     )
     if result.returncode != 0:
         print(f"  Auto-login failed (exit {result.returncode}):")
@@ -64,7 +66,7 @@ def _attempt_login_quiet(email: str, password: str) -> bool:
         ["confluent", "login", "--save"],
         input=f"{email}\n{password}\n",
         capture_output=True,
-        text=True
+        text=True,
     )
     if result.returncode != 0:
         return False
@@ -76,12 +78,16 @@ def ensure_confluent_login(creds: Optional[dict] = None) -> None:
     if check_confluent_login():
         return
     if creds is None:
-        creds = dotenv_values(str(Path(__file__).parent.parent.parent / "credentials.env"))
+        creds = dotenv_values(
+            str(Path(__file__).parent.parent.parent / "credentials.env")
+        )
     if attempt_confluent_auto_login(creds):
         return
     print("\nError: Not logged into Confluent Cloud.")
     print("Please run: confluent login")
     print("  (or rerun `uv run deploy` to save credentials for auto-login)")
     print("  (SSO accounts: run `confluent login --sso`)")
-    print("  (or delete CONFLUENT_EMAIL/CONFLUENT_PASSWORD from credentials.env to re-prompt)")
+    print(
+        "  (or delete CONFLUENT_EMAIL/CONFLUENT_PASSWORD from credentials.env to re-prompt)"
+    )
     sys.exit(1)

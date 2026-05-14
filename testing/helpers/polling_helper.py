@@ -3,7 +3,7 @@
 import time
 from typing import Callable, Any, Optional, TypeVar
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 def poll_until(
@@ -11,7 +11,7 @@ def poll_until(
     condition: Callable[[T], bool],
     timeout: int = 300,
     interval: int = 5,
-    description: str = "condition"
+    description: str = "condition",
 ) -> T:
     """Poll until condition is met or timeout.
 
@@ -81,7 +81,7 @@ def poll_with_exponential_backoff(
     condition: Callable[[T], bool],
     max_retries: int = 5,
     initial_delay: int = 5,
-    description: str = "condition"
+    description: str = "condition",
 ) -> T:
     """Poll with exponential backoff (similar to AWS credential propagation pattern).
 
@@ -116,7 +116,7 @@ def poll_with_exponential_backoff(
 
             # Condition not met, retry if not last attempt
             if attempt < max_retries - 1:
-                wait_time = initial_delay * (2 ** attempt)
+                wait_time = initial_delay * (2**attempt)
                 time.sleep(wait_time)
 
         except Exception as e:
@@ -127,7 +127,7 @@ def poll_with_exponential_backoff(
                 )
 
             # Wait before retry
-            wait_time = initial_delay * (2 ** attempt)
+            wait_time = initial_delay * (2**attempt)
             time.sleep(wait_time)
 
     # All retries exhausted

@@ -48,7 +48,9 @@ def test_workshop_keys_create_and_destroy():
             print("ℹ️  Tests will use keys from testing/credentials.json")
             return
         else:
-            print("⚠️  testing/credentials.json missing AWS keys, will create new ones...")
+            print(
+                "⚠️  testing/credentials.json missing AWS keys, will create new ones..."
+            )
 
     # No valid credentials found - create new keys
     print(f"\n=== No existing AWS keys found, creating new ones ===")
@@ -59,7 +61,7 @@ def test_workshop_keys_create_and_destroy():
         cwd=PROJECT_ROOT,
         capture_output=True,
         text=True,
-        timeout=300
+        timeout=300,
     )
 
     print(result.stdout)
@@ -89,7 +91,7 @@ def test_workshop_keys_create_and_destroy():
         cwd=PROJECT_ROOT,
         capture_output=True,
         text=True,
-        timeout=300
+        timeout=300,
     )
 
     if result.returncode != 0:

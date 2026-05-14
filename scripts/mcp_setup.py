@@ -19,36 +19,53 @@ def _check_node_version() -> None:
     try:
         abi_result = subprocess.run(
             ["node", "-e", "process.stdout.write(process.versions.modules)"],
-            capture_output=True, text=True, check=True, timeout=5,
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=5,
         )
         ver_result = subprocess.run(
             ["node", "--version"],
-            capture_output=True, text=True, check=True, timeout=5,
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=5,
         )
-    except (FileNotFoundError, subprocess.CalledProcessError, subprocess.TimeoutExpired):
+    except (
+        FileNotFoundError,
+        subprocess.CalledProcessError,
+        subprocess.TimeoutExpired,
+    ):
         print("Warning: 'node' not found on PATH.")
         print("  Install Node 24 LTS before running this command:")
         print("    With nvm:      nvm install 24 && nvm use 24")
         print("    With Homebrew: brew install node@24")
-        print("                   export PATH=\"/opt/homebrew/opt/node@24/bin:$PATH\"")
+        print('                   export PATH="/opt/homebrew/opt/node@24/bin:$PATH"')
         return
 
     version_str = ver_result.stdout.strip().lstrip("v")
     abi = int(abi_result.stdout.strip())
 
     if abi not in _KAFKA_JS_PREBUILT_ABIS:
-        print(f"Warning: Node {version_str} (ABI {abi}) has no prebuilt @confluentinc/kafka-javascript binary.")
-        print("  npx will compile it from source the first time the MCP server starts — this can take several minutes.")
+        print(
+            f"Warning: Node {version_str} (ABI {abi}) has no prebuilt @confluentinc/kafka-javascript binary."
+        )
+        print(
+            "  npx will compile it from source the first time the MCP server starts — this can take several minutes."
+        )
         print("  To avoid the wait, switch to Node 24 LTS first:")
         print("    With nvm:      nvm install 24 && nvm use 24")
         print("    With Homebrew: brew install node@24")
-        print("                   export PATH=\"/opt/homebrew/opt/node@24/bin:$PATH\"")
-        answer = input(f"  Continue anyway with Node {version_str}? [y/N] ").strip().lower()
+        print('                   export PATH="/opt/homebrew/opt/node@24/bin:$PATH"')
+        answer = (
+            input(f"  Continue anyway with Node {version_str}? [y/N] ").strip().lower()
+        )
         if answer != "y":
             sys.exit(0)
     else:
         label = " (Node 24 LTS)" if abi == _PREFERRED_ABI else ""
         print(f"Using Node {version_str}{label}")
+
 
 # Maps terraform output names to MCP env var names.
 # Values are lists to handle one-to-many mappings.
@@ -84,11 +101,20 @@ def _clear_broken_npx_cache() -> None:
             continue
         if not (entry / "node_modules" / "@confluentinc" / "mcp-confluent").exists():
             continue
-        build_release = entry / "node_modules" / "@confluentinc" / "kafka-javascript" / "build" / "Release"
+        build_release = (
+            entry
+            / "node_modules"
+            / "@confluentinc"
+            / "kafka-javascript"
+            / "build"
+            / "Release"
+        )
         if not any(build_release.glob("*.node")) if build_release.exists() else True:
             print(f"  Clearing broken npx cache (missing native binary): {entry.name}")
             shutil.rmtree(entry)
-            print("  npx will re-download @confluentinc/mcp-confluent on next MCP server start.")
+            print(
+                "  npx will re-download @confluentinc/mcp-confluent on next MCP server start."
+            )
 
 
 def main():
@@ -99,7 +125,9 @@ def main():
     state_path = project_root / "terraform" / "core" / "terraform.tfstate"
 
     if not state_path.exists():
-        print("Error: terraform/core/terraform.tfstate not found. Run `uv run deploy` first.")
+        print(
+            "Error: terraform/core/terraform.tfstate not found. Run `uv run deploy` first."
+        )
         sys.exit(1)
 
     core_outputs = run_terraform_output(state_path)
@@ -127,7 +155,9 @@ def main():
         print(result.stderr)
         sys.exit(1)
 
-    print("✓ Confluent MCP server registered as 'confluent-cloud-mcp-server' (local scope)")
+    print(
+        "✓ Confluent MCP server registered as 'confluent-cloud-mcp-server' (local scope)"
+    )
     print("  Restart Claude Code to activate.")
 
 

@@ -155,10 +155,14 @@ class TestLab3FleetManagement:
     def test_ride_requests_datagen(self, env):
         """ride_requests topic has >= 28,000 messages; run datagen if under threshold."""
         kafka = env["kafka"]
-        count = kafka.get_topic_message_count("ride_requests", timeout=60, max_messages=28001)
+        count = kafka.get_topic_message_count(
+            "ride_requests", timeout=60, max_messages=28001
+        )
         if count < 28000:
             # Datagen is a long-running streaming process; launch non-blocking.
-            proc = subprocess.Popen(["uv", "run", "lab3_datagen", "--local"], cwd=PROJECT_ROOT)
+            proc = subprocess.Popen(
+                ["uv", "run", "lab3_datagen", "--local"], cwd=PROJECT_ROOT
+            )
             count = poll_until(
                 getter=lambda: kafka.get_topic_message_count(
                     "ride_requests", timeout=60, max_messages=28001
@@ -168,16 +172,25 @@ class TestLab3FleetManagement:
                 interval=30,
                 description="ride_requests >= 28,000 messages",
             )
-        assert count >= 28000, f"ride_requests has only {count} messages (expected >= 28,000)"
+        assert count >= 28000, (
+            f"ride_requests has only {count} messages (expected >= 28,000)"
+        )
 
     @pytest.mark.order(2)
     def test_anomalies_per_zone(self, env):
         """Create anomalies_per_zone and verify only French Quarter surges (max 2 anomalies)."""
         flink, kafka, sql = env["flink"], env["kafka"], env["sql"]
-        _ensure_statement(flink, f"{_PREFIX}-anomalies-per-zone", sql["anomalies_per_zone"], timeout=360)
+        _ensure_statement(
+            flink,
+            f"{_PREFIX}-anomalies-per-zone",
+            sql["anomalies_per_zone"],
+            timeout=360,
+        )
 
         def _get_anomalies():
-            return kafka.consume_messages("anomalies_per_zone", max_messages=3, timeout=15)
+            return kafka.consume_messages(
+                "anomalies_per_zone", max_messages=3, timeout=15
+            )
 
         messages = poll_until(
             getter=_get_anomalies,
@@ -202,10 +215,17 @@ class TestLab3FleetManagement:
     def test_anomalies_enriched(self, env):
         """Create anomalies_enriched and verify top_chunk_content is populated."""
         flink, kafka, sql = env["flink"], env["kafka"], env["sql"]
-        _ensure_statement(flink, f"{_PREFIX}-anomalies-enriched", sql["anomalies_enriched"], timeout=360)
+        _ensure_statement(
+            flink,
+            f"{_PREFIX}-anomalies-enriched",
+            sql["anomalies_enriched"],
+            timeout=360,
+        )
 
         def _get_enriched():
-            return kafka.consume_messages("anomalies_enriched", max_messages=3, timeout=15)
+            return kafka.consume_messages(
+                "anomalies_enriched", max_messages=3, timeout=15
+            )
 
         messages = poll_until(
             getter=_get_enriched,
@@ -219,8 +239,11 @@ class TestLab3FleetManagement:
         first = messages[0]
         # Schema uses top_chunk_1/2/3, not top_chunk_content
         chunk = (
-            first.get("top_chunk_1") or first.get("top_chunk_2")
-            or first.get("TOP_CHUNK_1") or first.get("TOP_CHUNK_2") or ""
+            first.get("top_chunk_1")
+            or first.get("top_chunk_2")
+            or first.get("TOP_CHUNK_1")
+            or first.get("TOP_CHUNK_2")
+            or ""
         )
         assert chunk and chunk.strip(), (
             f"top_chunk_1/2 are null/empty in anomalies_enriched: {list(first.keys())}"
@@ -247,7 +270,9 @@ class TestLab3FleetManagement:
         )
 
         def _get_actions():
-            return kafka.consume_messages("completed_actions", max_messages=3, timeout=20)
+            return kafka.consume_messages(
+                "completed_actions", max_messages=3, timeout=20
+            )
 
         messages = poll_until(
             getter=_get_actions,

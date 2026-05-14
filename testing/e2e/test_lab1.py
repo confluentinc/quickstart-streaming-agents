@@ -135,10 +135,18 @@ class TestLab1PriceMatch:
 
         walkthrough = PROJECT_ROOT / "LAB1-Walkthrough.md"
         sql = _parse_lab1_sql(walkthrough)
-        assert sql.get("enriched_orders"), "Could not parse enriched_orders SQL from LAB1-Walkthrough.md"
-        assert sql.get("create_tool"), "Could not parse CREATE TOOL SQL from LAB1-Walkthrough.md"
-        assert sql.get("create_agent"), "Could not parse CREATE AGENT SQL from LAB1-Walkthrough.md"
-        assert sql.get("price_match_results"), "Could not parse price_match_results SQL from LAB1-Walkthrough.md"
+        assert sql.get("enriched_orders"), (
+            "Could not parse enriched_orders SQL from LAB1-Walkthrough.md"
+        )
+        assert sql.get("create_tool"), (
+            "Could not parse CREATE TOOL SQL from LAB1-Walkthrough.md"
+        )
+        assert sql.get("create_agent"), (
+            "Could not parse CREATE AGENT SQL from LAB1-Walkthrough.md"
+        )
+        assert sql.get("price_match_results"), (
+            "Could not parse price_match_results SQL from LAB1-Walkthrough.md"
+        )
 
         yield {
             "cloud": cloud,
@@ -157,9 +165,13 @@ class TestLab1PriceMatch:
         has_messages = kafka.check_topic_has_messages("orders", min_count=1, timeout=15)
         if not has_messages:
             # Datagen is a long-running streaming process; launch non-blocking.
-            proc = subprocess.Popen(["uv", "run", "lab1_datagen", "--local"], cwd=PROJECT_ROOT)
+            proc = subprocess.Popen(
+                ["uv", "run", "lab1_datagen", "--local"], cwd=PROJECT_ROOT
+            )
             has_messages = poll_until(
-                getter=lambda: kafka.check_topic_has_messages("orders", min_count=1, timeout=10),
+                getter=lambda: kafka.check_topic_has_messages(
+                    "orders", min_count=1, timeout=10
+                ),
                 condition=lambda r: r is True,
                 timeout=120,
                 interval=10,
@@ -174,7 +186,9 @@ class TestLab1PriceMatch:
         _ensure_statement(flink, f"{_PREFIX}-enriched-orders", sql["enriched_orders"])
 
         has_messages = poll_until(
-            getter=lambda: kafka.check_topic_has_messages("enriched_orders", min_count=1, timeout=10),
+            getter=lambda: kafka.check_topic_has_messages(
+                "enriched_orders", min_count=1, timeout=10
+            ),
             condition=lambda r: r is True,
             timeout=300,
             interval=15,
@@ -203,7 +217,10 @@ class TestLab1PriceMatch:
         """
         flink, kafka, sql = env["flink"], env["kafka"], env["sql"]
         _ensure_statement(
-            flink, f"{_PREFIX}-price-match-results", sql["price_match_results"], timeout=600
+            flink,
+            f"{_PREFIX}-price-match-results",
+            sql["price_match_results"],
+            timeout=600,
         )
 
         has_messages = poll_until(

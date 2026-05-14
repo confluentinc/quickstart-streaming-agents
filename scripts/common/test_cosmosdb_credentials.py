@@ -34,6 +34,7 @@ from typing import Optional, Tuple
 
 try:
     import requests
+
     REQUESTS_AVAILABLE = True
 except ImportError:
     REQUESTS_AVAILABLE = False
@@ -47,11 +48,17 @@ WORKSHOP_COSMOSDB_API_KEY = (
 )
 
 
-def _make_auth_header(master_key: str, verb: str, resource_type: str, resource_id: str, date: str) -> str:
+def _make_auth_header(
+    master_key: str, verb: str, resource_type: str, resource_id: str, date: str
+) -> str:
     """Generate a CosmosDB master-key authorization header value."""
     key_bytes = base64.b64decode(master_key)
-    string_to_sign = f"{verb.lower()}\n{resource_type.lower()}\n{resource_id}\n{date.lower()}\n\n"
-    digest = hmac.new(key_bytes, string_to_sign.encode("utf-8"), hashlib.sha256).digest()
+    string_to_sign = (
+        f"{verb.lower()}\n{resource_type.lower()}\n{resource_id}\n{date.lower()}\n\n"
+    )
+    digest = hmac.new(
+        key_bytes, string_to_sign.encode("utf-8"), hashlib.sha256
+    ).digest()
     signature = base64.b64encode(digest).decode("utf-8")
     return urllib.parse.quote(f"type=master&ver=1.0&sig={signature}")
 

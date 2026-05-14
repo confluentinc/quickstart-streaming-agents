@@ -106,11 +106,19 @@ def _cleanup_mcp(root: Path) -> None:
 def main():
     """Main entry point for destroy."""
     # Parse command-line arguments
-    parser = argparse.ArgumentParser(description="Destroy deployed Confluent streaming agents resources")
-    parser.add_argument("--testing", action="store_true",
-                       help="Non-interactive mode using credentials.json (for automated testing)")
-    parser.add_argument("--force", action="store_true",
-                       help="Force-clean local state files even if terraform destroy fails (use when resources are already gone)")
+    parser = argparse.ArgumentParser(
+        description="Destroy deployed Confluent streaming agents resources"
+    )
+    parser.add_argument(
+        "--testing",
+        action="store_true",
+        help="Non-interactive mode using credentials.json (for automated testing)",
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Force-clean local state files even if terraform destroy fails (use when resources are already gone)",
+    )
     args = parser.parse_args()
 
     print("=== Simple Destroy Tool ===\n")
@@ -124,7 +132,13 @@ def main():
     if args.testing:
         creds = load_credentials_json(root)
         cloud = creds["cloud"]
-        envs_to_destroy = ["lab4-pubsec-fraud-agents", "lab3-agentic-fleet-management", "lab2-vector-search", "lab1-tool-calling", "core"]  # Reverse order
+        envs_to_destroy = [
+            "lab4-pubsec-fraud-agents",
+            "lab3-agentic-fleet-management",
+            "lab2-vector-search",
+            "lab1-tool-calling",
+            "core",
+        ]  # Reverse order
 
         # Build environment variables
         env_vars = {
@@ -138,7 +152,9 @@ def main():
         if "mcp_token" in creds and creds["mcp_token"]:
             env_vars["TF_VAR_mcp_token"] = creds["mcp_token"]
         if "mongodb_connection_string" in creds and creds["mongodb_connection_string"]:
-            env_vars["TF_VAR_mongodb_connection_string"] = creds["mongodb_connection_string"]
+            env_vars["TF_VAR_mongodb_connection_string"] = creds[
+                "mongodb_connection_string"
+            ]
         if "mongodb_username" in creds and creds["mongodb_username"]:
             env_vars["TF_VAR_mongodb_username"] = creds["mongodb_username"]
         if "mongodb_password" in creds and creds["mongodb_password"]:
@@ -147,12 +163,18 @@ def main():
         # Cloud-specific LLM credentials
         if cloud == "aws":
             if "aws_bedrock_access_key" in creds and creds["aws_bedrock_access_key"]:
-                env_vars["TF_VAR_aws_bedrock_access_key"] = creds["aws_bedrock_access_key"]
+                env_vars["TF_VAR_aws_bedrock_access_key"] = creds[
+                    "aws_bedrock_access_key"
+                ]
             if "aws_bedrock_secret_key" in creds and creds["aws_bedrock_secret_key"]:
-                env_vars["TF_VAR_aws_bedrock_secret_key"] = creds["aws_bedrock_secret_key"]
+                env_vars["TF_VAR_aws_bedrock_secret_key"] = creds[
+                    "aws_bedrock_secret_key"
+                ]
         if cloud == "azure":
             if "azure_openai_endpoint" in creds and creds["azure_openai_endpoint"]:
-                env_vars["TF_VAR_azure_openai_endpoint_raw"] = creds["azure_openai_endpoint"]
+                env_vars["TF_VAR_azure_openai_endpoint_raw"] = creds[
+                    "azure_openai_endpoint"
+                ]
             if "azure_openai_api_key" in creds and creds["azure_openai_api_key"]:
                 env_vars["TF_VAR_azure_openai_api_key"] = creds["azure_openai_api_key"]
 
@@ -176,7 +198,13 @@ def main():
         cloud = prompt_choice("Select cloud provider to destroy:", ["aws", "azure"])
 
         # Step 2: Always destroy all environments
-        envs_to_destroy = ["lab4-pubsec-fraud-agents", "lab3-agentic-fleet-management", "lab2-vector-search", "lab1-tool-calling", "core"]
+        envs_to_destroy = [
+            "lab4-pubsec-fraud-agents",
+            "lab3-agentic-fleet-management",
+            "lab2-vector-search",
+            "lab1-tool-calling",
+            "core",
+        ]
         print(f"✓ Will destroy all environments: {', '.join(envs_to_destroy)}")
 
         # Load credentials file
@@ -191,7 +219,9 @@ def main():
         print("\n--- Destroy Summary ---")
         print(f"Cloud: {cloud}")
         print(f"Destroying: {', '.join(envs_to_destroy)}")
-        print("\n⚠️  WARNING: This will permanently destroy all resources in the selected environments!")
+        print(
+            "\n⚠️  WARNING: This will permanently destroy all resources in the selected environments!"
+        )
 
         confirm = input("\nAre you sure you want to proceed? (y/n): ").strip().lower()
         if confirm != "y":
@@ -219,7 +249,9 @@ def main():
             print(f"  ⚠ Destroy failed but --force set: cleaning local state for {env}")
             cleanup_terraform_artifacts(env_path)
         else:
-            print(f"\n✗ Destroy failed at {env}. Use --force to clean local state anyway. Continuing...")
+            print(
+                f"\n✗ Destroy failed at {env}. Use --force to clean local state anyway. Continuing..."
+            )
 
     _cleanup_mcp(root)
 

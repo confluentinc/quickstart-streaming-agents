@@ -25,21 +25,35 @@ try:
     from confluent_kafka.schema_registry import SchemaRegistryClient
     from confluent_kafka.schema_registry.avro import AvroSerializer
     from confluent_kafka.serialization import StringSerializer
+
     CONFLUENT_KAFKA_AVAILABLE = True
 except ImportError:
     CONFLUENT_KAFKA_AVAILABLE = False
 
-from .common.cloud_detection import auto_detect_cloud_provider, validate_cloud_provider, suggest_cloud_provider
-from .common.terraform import extract_kafka_credentials, validate_terraform_state, get_project_root
+from .common.cloud_detection import (
+    auto_detect_cloud_provider,
+    validate_cloud_provider,
+    suggest_cloud_provider,
+)
+from .common.terraform import (
+    extract_kafka_credentials,
+    validate_terraform_state,
+    get_project_root,
+)
 from .common.logging_utils import setup_logging
 
-_WINDOW_SIZE_MS = 6 * 60 * 60 * 1000  # 6-hour tumbling windows (matches LAB4-Walkthrough.md)
+_WINDOW_SIZE_MS = (
+    6 * 60 * 60 * 1000
+)  # 6-hour tumbling windows (matches LAB4-Walkthrough.md)
 
 
 def compute_timestamp_offset(claims: list) -> int:
     """Return ms to add to every claim_timestamp so the data ends just past a 6-hour boundary near now."""
-    max_ts_str = max(c['claim_timestamp'] for c in claims)
-    max_ts_ms = int(datetime.fromisoformat(max_ts_str).replace(tzinfo=timezone.utc).timestamp() * 1000)
+    max_ts_str = max(c["claim_timestamp"] for c in claims)
+    max_ts_ms = int(
+        datetime.fromisoformat(max_ts_str).replace(tzinfo=timezone.utc).timestamp()
+        * 1000
+    )
     now_ms = int(time.time() * 1000)
     aligned_end = (now_ms // _WINDOW_SIZE_MS) * _WINDOW_SIZE_MS
     return (aligned_end + 10_000) - max_ts_ms
@@ -56,7 +70,7 @@ class Lab4DataPublisher:
         schema_registry_url: str,
         schema_registry_api_key: str,
         schema_registry_api_secret: str,
-        dry_run: bool = False
+        dry_run: bool = False,
     ):
         """Initialize the publisher with Kafka and Schema Registry configuration."""
         self.bootstrap_servers = bootstrap_servers
@@ -68,14 +82,14 @@ class Lab4DataPublisher:
 
         # Create Schema Registry client config
         schema_registry_conf = {
-            'url': schema_registry_url,
-            'basic.auth.user.info': f'{schema_registry_api_key}:{schema_registry_api_secret}'
+            "url": schema_registry_url,
+            "basic.auth.user.info": f"{schema_registry_api_key}:{schema_registry_api_secret}",
         }
 
         # Initialize Schema Registry client
         self.schema_registry_client = None
         self.avro_serializer = None
-        self.string_serializer = StringSerializer('utf_8')
+        self.string_serializer = StringSerializer("utf_8")
 
         if not dry_run:
             self.schema_registry_client = SchemaRegistryClient(schema_registry_conf)
@@ -118,30 +132,32 @@ class Lab4DataPublisher:
                 # Convert timestamp to milliseconds since epoch.
                 # Timestamps in the CSV have no timezone info; treat as UTC
                 # so the result is consistent regardless of the local machine timezone.
-                if 'claim_timestamp' in claim_copy and isinstance(claim_copy['claim_timestamp'], str):
-                    dt = datetime.fromisoformat(claim_copy['claim_timestamp']).replace(tzinfo=timezone.utc)
-                    claim_copy['claim_timestamp'] = int(dt.timestamp() * 1000)
+                if "claim_timestamp" in claim_copy and isinstance(
+                    claim_copy["claim_timestamp"], str
+                ):
+                    dt = datetime.fromisoformat(claim_copy["claim_timestamp"]).replace(
+                        tzinfo=timezone.utc
+                    )
+                    claim_copy["claim_timestamp"] = int(dt.timestamp() * 1000)
 
                 return claim_copy
 
             self.avro_serializer = AvroSerializer(
-                self.schema_registry_client,
-                value_schema_str,
-                claim_to_avro
+                self.schema_registry_client, value_schema_str, claim_to_avro
             )
 
         # Create Kafka producer config with serializers
         self.producer_config = {
-            'bootstrap.servers': bootstrap_servers,
-            'sasl.mechanisms': 'PLAIN',
-            'security.protocol': 'SASL_SSL',
-            'sasl.username': kafka_api_key,
-            'sasl.password': kafka_api_secret,
-            'linger.ms': 10,
-            'batch.size': 16384,
-            'compression.type': 'snappy',
-            'key.serializer': self.string_serializer,
-            'value.serializer': self.avro_serializer
+            "bootstrap.servers": bootstrap_servers,
+            "sasl.mechanisms": "PLAIN",
+            "security.protocol": "SASL_SSL",
+            "sasl.username": kafka_api_key,
+            "sasl.password": kafka_api_secret,
+            "linger.ms": 10,
+            "batch.size": 16384,
+            "compression.type": "snappy",
+            "key.serializer": self.string_serializer,
+            "value.serializer": self.avro_serializer,
         }
 
         # Initialize SerializingProducer (if not dry run)
@@ -155,13 +171,15 @@ class Lab4DataPublisher:
         from confluent_kafka import TopicPartition as AdminTopicPartition
 
         self.logger.info(f"Purging existing records from topic '{topic}'...")
-        admin = AdminClient({
-            "bootstrap.servers": self.producer_config["bootstrap.servers"],
-            "sasl.mechanisms": self.producer_config["sasl.mechanisms"],
-            "security.protocol": self.producer_config["security.protocol"],
-            "sasl.username": self.producer_config["sasl.username"],
-            "sasl.password": self.producer_config["sasl.password"],
-        })
+        admin = AdminClient(
+            {
+                "bootstrap.servers": self.producer_config["bootstrap.servers"],
+                "sasl.mechanisms": self.producer_config["sasl.mechanisms"],
+                "security.protocol": self.producer_config["security.protocol"],
+                "sasl.username": self.producer_config["sasl.username"],
+                "sasl.password": self.producer_config["sasl.password"],
+            }
+        )
         try:
             metadata = admin.list_topics(topic=topic, timeout=10)
             if topic not in metadata.topics:
@@ -174,16 +192,22 @@ class Lab4DataPublisher:
             for tp, future in futures.items():
                 result = future.result()
                 if result.offset > 0:
-                    delete_offsets[tp] = AdminTopicPartition(tp.topic, tp.partition, result.offset)
+                    delete_offsets[tp] = AdminTopicPartition(
+                        tp.topic, tp.partition, result.offset
+                    )
             if delete_offsets:
                 del_futures = admin.delete_records(list(delete_offsets.values()))
                 for tp, future in del_futures.items():
                     future.result()
-                self.logger.info(f"Purged {len(delete_offsets)} partition(s) in '{topic}'")
+                self.logger.info(
+                    f"Purged {len(delete_offsets)} partition(s) in '{topic}'"
+                )
             else:
                 self.logger.info(f"Topic '{topic}' already empty")
         except Exception as e:
-            self.logger.warning(f"Could not purge topic '{topic}': {e} — continuing without purge")
+            self.logger.warning(
+                f"Could not purge topic '{topic}': {e} — continuing without purge"
+            )
 
     def delivery_callback(self, err, msg):
         """Callback for message delivery reports."""
@@ -204,10 +228,12 @@ class Lab4DataPublisher:
             True if successful, False otherwise
         """
         try:
-            claim_id = claim['claim_id']
+            claim_id = claim["claim_id"]
 
             if self.dry_run:
-                self.logger.debug(f"[DRY RUN] Would publish claim {claim_id} to {topic}")
+                self.logger.debug(
+                    f"[DRY RUN] Would publish claim {claim_id} to {topic}"
+                )
                 return True
 
             # SerializingProducer will automatically call the serializers
@@ -222,10 +248,13 @@ class Lab4DataPublisher:
             return True
 
         except Exception as e:
-            self.logger.error(f"Failed to publish claim {claim.get('claim_id', 'unknown')}: {e}")
+            self.logger.error(
+                f"Failed to publish claim {claim.get('claim_id', 'unknown')}: {e}"
+            )
             self.logger.error(f"Exception type: {type(e).__name__}")
             self.logger.error(f"Claim data: {claim}")
             import traceback
+
             self.logger.error(f"Full traceback:\n{traceback.format_exc()}")
             return False
 
@@ -234,7 +263,7 @@ class Lab4DataPublisher:
         csv_file: Path,
         topic: str,
         simulate_streaming: bool = False,
-        speed_multiplier: float = 1.0
+        speed_multiplier: float = 1.0,
     ) -> Dict[str, int]:
         """
         Publish all claims from a CSV file.
@@ -252,7 +281,7 @@ class Lab4DataPublisher:
 
         # Read CSV file
         try:
-            with open(csv_file, 'r', encoding='utf-8') as f:
+            with open(csv_file, "r", encoding="utf-8") as f:
                 reader = csv.DictReader(f)
                 claims = list(reader)
         except Exception as e:
@@ -279,27 +308,35 @@ class Lab4DataPublisher:
         # windows to close immediately after backfill, expiring downstream join
         # state before claims_to_investigate matches land.
         ts_offset_ms = compute_timestamp_offset(claims)
-        self.logger.info(f"Rebasing timestamps by {ts_offset_ms / (1000 * 60 * 60):+.1f} hours")
+        self.logger.info(
+            f"Rebasing timestamps by {ts_offset_ms / (1000 * 60 * 60):+.1f} hours"
+        )
         for c in claims:
-            dt = datetime.fromisoformat(c['claim_timestamp']).replace(tzinfo=timezone.utc)
+            dt = datetime.fromisoformat(c["claim_timestamp"]).replace(
+                tzinfo=timezone.utc
+            )
             new_ms = int(dt.timestamp() * 1000) + ts_offset_ms
-            c['claim_timestamp'] = datetime.fromtimestamp(new_ms / 1000, tz=timezone.utc).isoformat()
+            c["claim_timestamp"] = datetime.fromtimestamp(
+                new_ms / 1000, tz=timezone.utc
+            ).isoformat()
 
         # Always sort by timestamp to ensure chronological ordering in Kafka.
         # Without this, Flink's watermark drops out-of-order events as "late".
-        claims.sort(key=lambda c: c['claim_timestamp'])
+        claims.sort(key=lambda c: c["claim_timestamp"])
 
         if simulate_streaming:
             self.logger.info(f"Simulating streaming at {speed_multiplier}x speed")
-            start_time = datetime.fromisoformat(claims[0]['claim_timestamp'])
+            start_time = datetime.fromisoformat(claims[0]["claim_timestamp"])
 
         # Publish claims
         for idx, claim in enumerate(claims, 1):
             # Simulate streaming timing
             if simulate_streaming and idx > 1:
-                current_time = datetime.fromisoformat(claim['claim_timestamp'])
-                prev_time = datetime.fromisoformat(claims[idx - 2]['claim_timestamp'])
-                time_diff = (current_time - prev_time).total_seconds() / speed_multiplier
+                current_time = datetime.fromisoformat(claim["claim_timestamp"])
+                prev_time = datetime.fromisoformat(claims[idx - 2]["claim_timestamp"])
+                time_diff = (
+                    current_time - prev_time
+                ).total_seconds() / speed_multiplier
 
                 if time_diff > 0 and not self.dry_run:
                     time.sleep(time_diff)
@@ -345,45 +382,37 @@ Examples:
   %(prog)s --cloud-provider aws                 # Specify AWS
   %(prog)s --dry-run                            # Test without publishing
   %(prog)s --simulate-streaming --speed 10      # Stream at 10x speed
-        """
+        """,
     )
 
     parser.add_argument(
         "--cloud-provider",
         choices=["aws", "azure"],
-        help="Target cloud provider (auto-detected if not specified)"
+        help="Target cloud provider (auto-detected if not specified)",
     )
     parser.add_argument(
         "--data-file",
         type=Path,
-        help="Path to CSV data file (default: auto-detect in data-gen directory)"
+        help="Path to CSV data file (default: auto-detect in data-gen directory)",
     )
     parser.add_argument(
-        "--topic",
-        default="claims",
-        help="Kafka topic name (default: claims)"
+        "--topic", default="claims", help="Kafka topic name (default: claims)"
     )
     parser.add_argument(
         "--simulate-streaming",
         action="store_true",
-        help="Publish claims based on timestamps (simulates real-time streaming)"
+        help="Publish claims based on timestamps (simulates real-time streaming)",
     )
     parser.add_argument(
         "--speed",
         type=float,
         default=1.0,
-        help="Speed multiplier for streaming simulation (default: 1.0 = real-time)"
+        help="Speed multiplier for streaming simulation (default: 1.0 = real-time)",
     )
     parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="Test without actually publishing"
+        "--dry-run", action="store_true", help="Test without actually publishing"
     )
-    parser.add_argument(
-        "--verbose",
-        action="store_true",
-        help="Enable verbose logging"
-    )
+    parser.add_argument("--verbose", action="store_true", help="Enable verbose logging")
     args = parser.parse_args()
 
     # Set up logging
@@ -391,7 +420,9 @@ Examples:
 
     # Check confluent-kafka library is available
     if not CONFLUENT_KAFKA_AVAILABLE:
-        logger.error("confluent-kafka library not available. Please install it with: uv pip install confluent-kafka")
+        logger.error(
+            "confluent-kafka library not available. Please install it with: uv pip install confluent-kafka"
+        )
         return 1
 
     # Get project root
@@ -406,7 +437,9 @@ Examples:
         data_file = args.data_file
     else:
         # Auto-detect in assets directory
-        data_file = project_root / "assets" / "lab4" / "data" / "fema_claims_synthetic.csv"
+        data_file = (
+            project_root / "assets" / "lab4" / "data" / "fema_claims_synthetic.csv"
+        )
 
     if not data_file.exists():
         logger.error(f"Data file does not exist: {data_file}")
@@ -424,7 +457,9 @@ Examples:
                 logger.info(f"Auto-detected cloud provider: {suggestion}")
                 cloud_provider = suggestion
             else:
-                logger.error("Could not auto-detect cloud provider. Please check your terraform deployment.")
+                logger.error(
+                    "Could not auto-detect cloud provider. Please check your terraform deployment."
+                )
                 return 1
 
     logger.info(f"Target cloud provider: {cloud_provider.upper()}")
@@ -459,7 +494,7 @@ Examples:
             schema_registry_url=credentials["schema_registry_url"],
             schema_registry_api_key=credentials["schema_registry_api_key"],
             schema_registry_api_secret=credentials["schema_registry_api_secret"],
-            dry_run=args.dry_run
+            dry_run=args.dry_run,
         )
     except Exception as e:
         logger.error(f"Failed to initialize publisher: {e}")
@@ -475,7 +510,7 @@ Examples:
             data_file,
             args.topic,
             simulate_streaming=args.simulate_streaming,
-            speed_multiplier=args.speed
+            speed_multiplier=args.speed,
         )
 
         print(f"\n{'=' * 60}")
@@ -491,12 +526,16 @@ Examples:
         else:
             env_name = credentials.get("environment_name")
             if env_name:
-                print(f"\n✅ Published {results['success']} FEMA claims to '{args.topic}' topic in environment: {env_name}")
+                print(
+                    f"\n✅ Published {results['success']} FEMA claims to '{args.topic}' topic in environment: {env_name}"
+                )
             else:
-                print(f"\n✅ Published {results['success']} FEMA claims to '{args.topic}' topic")
+                print(
+                    f"\n✅ Published {results['success']} FEMA claims to '{args.topic}' topic"
+                )
             print(f"Ready for Flink anomaly detection!")
 
-        return 0 if results['failed'] == 0 else 1
+        return 0 if results["failed"] == 0 else 1
     finally:
         publisher.close()
 
