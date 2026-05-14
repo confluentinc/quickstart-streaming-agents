@@ -27,6 +27,7 @@ from pathlib import Path
 from typing import Any, Dict
 
 from .common.cloud_detection import auto_detect_cloud_provider, validate_cloud_provider, suggest_cloud_provider
+from .common.login_checks import ensure_confluent_login
 from .common.terraform import extract_kafka_credentials, validate_terraform_state, get_project_root
 from .common.logging_utils import setup_logging as _base_setup_logging
 
@@ -235,6 +236,9 @@ Examples:
     except Exception as e:
         print(f"❌ Could not find project root: {e}")
         return 1
+
+    # Ensure Confluent CLI is logged in (auto-login from saved creds if needed)
+    ensure_confluent_login()
 
     # Validate terraform state
     try:

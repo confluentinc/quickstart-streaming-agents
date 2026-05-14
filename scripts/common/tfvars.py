@@ -62,7 +62,6 @@ def generate_core_tfvars_content(
     api_key: str,
     api_secret: str,
     cloud_provider: Optional[str] = None,
-    owner_email: Optional[str] = None,
     aws_bedrock_access_key: Optional[str] = None,
     aws_bedrock_secret_key: Optional[str] = None,
     aws_session_token: Optional[str] = None,
@@ -78,7 +77,6 @@ def generate_core_tfvars_content(
         api_key: Confluent Cloud API key
         api_secret: Confluent Cloud API secret
         cloud_provider: Cloud provider value for terraform variable (defaults to cloud)
-        owner_email: Owner email for resource tagging (optional)
         aws_bedrock_access_key: AWS Bedrock access key
         aws_bedrock_secret_key: AWS Bedrock secret key
         azure_openai_endpoint: Azure OpenAI endpoint URL
@@ -95,9 +93,6 @@ confluent_cloud_api_key = "{api_key}"
 confluent_cloud_api_secret = "{api_secret}"
 cloud_provider = "{provider}"
 """
-
-    if owner_email:
-        content += f'owner_email = "{owner_email}"\n'
 
     # AWS Bedrock credentials
     if cloud == "aws" and aws_bedrock_access_key and aws_bedrock_secret_key:
@@ -228,7 +223,6 @@ def write_tfvars_for_deployment(
     if "core" in envs_to_deploy:
         api_key = get_credential_value(creds, "confluent_cloud_api_key")
         api_secret = get_credential_value(creds, "confluent_cloud_api_secret")
-        owner_email = get_credential_value(creds, "owner_email")
 
         aws_bedrock_access_key = get_credential_value(creds, "aws_bedrock_access_key") if cloud == "aws" else None
         aws_bedrock_secret_key = get_credential_value(creds, "aws_bedrock_secret_key") if cloud == "aws" else None
@@ -240,7 +234,7 @@ def write_tfvars_for_deployment(
             core_tfvars_path = root / "terraform" / "core" / "terraform.tfvars"
             content = generate_core_tfvars_content(
                 cloud, region, api_key, api_secret,
-                cloud_provider=cloud, owner_email=owner_email,
+                cloud_provider=cloud,
                 aws_bedrock_access_key=aws_bedrock_access_key,
                 aws_bedrock_secret_key=aws_bedrock_secret_key,
                 aws_session_token=aws_session_token,

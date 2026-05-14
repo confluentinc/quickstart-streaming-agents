@@ -113,7 +113,7 @@ def ensure_confluent_login(credentials: Dict[str, str]):
         return
 
     # Not logged in - attempt automatic login
-    email = credentials.get("confluent_cloud_email") or credentials.get("owner_email")
+    email = credentials.get("confluent_cloud_email")
     password = credentials.get("confluent_cloud_password")
 
     # Fall back to credentials.env if JSON creds don't have what we need
@@ -121,7 +121,7 @@ def ensure_confluent_login(credentials: Dict[str, str]):
         env_file = PROJECT_ROOT / "credentials.env"
         if env_file.exists():
             env_creds = dotenv_values(str(env_file))
-            email = email or env_creds.get("CONFLUENT_EMAIL") or env_creds.get("TF_VAR_owner_email")
+            email = email or env_creds.get("CONFLUENT_EMAIL")
             password = password or env_creds.get("CONFLUENT_PASSWORD")
 
     if not email or not password:

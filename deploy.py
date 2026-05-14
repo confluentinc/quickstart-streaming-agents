@@ -12,6 +12,7 @@ allowing developers to override the default regions if needed.
 """
 
 import argparse
+import getpass
 import os
 import subprocess
 import sys
@@ -24,7 +25,7 @@ from scripts.common.credentials import (
     load_credentials_json,
     generate_confluent_api_keys
 )
-from scripts.common.login_checks import check_confluent_login, attempt_confluent_auto_login
+from scripts.common.login_checks import ensure_confluent_login, _attempt_login_quiet
 from scripts.common.terraform import get_project_root, run_terraform_output
 from scripts.common.terraform_runner import run_terraform
 from scripts.common.tfvars import write_tfvars_for_deployment
@@ -181,6 +182,8 @@ def main():
             print("\nRun `uv run deploy` (without --automated) to be prompted for missing values.")
             sys.exit(1)
 
+        ensure_confluent_login(creds)
+
         envs_to_deploy = ["core", "lab1-tool-calling", "lab2-vector-search", "lab3-agentic-fleet-management", "lab4-pubsec-fraud-agents"]
 
         print(f"✓ Credentials loaded from credentials.env")
@@ -213,8 +216,6 @@ def main():
         }
 
         # Optional fields
-        if "owner_email" in creds and creds["owner_email"]:
-            env_vars["TF_VAR_owner_email"] = creds["owner_email"]
         if "mcp_token" in creds and creds["mcp_token"]:
             env_vars["TF_VAR_mcp_token"] = creds["mcp_token"]
         if "mongodb_connection_string" in creds and creds["mongodb_connection_string"]:
@@ -251,20 +252,48 @@ def main():
         for key, value in env_vars.items():
             os.environ[key] = value
 
+        # Ensure CLI is logged in (testing mode may have json creds with email/password)
+        login_creds = {
+            "CONFLUENT_EMAIL": creds.get("confluent_cloud_email", ""),
+            "CONFLUENT_PASSWORD": creds.get("confluent_cloud_password", ""),
+        }
+        # Pass None if no email/password in json creds so ensure_confluent_login loads from credentials.env
+        ensure_confluent_login(
+            login_creds if (login_creds["CONFLUENT_EMAIL"] and login_creds["CONFLUENT_PASSWORD"]) else None
+        )
+
     # INTERACTIVE MODE: Original flow
     else:
-        # Step 0: Check Confluent CLI login
-        if not check_confluent_login():
-            env_creds = dotenv_values(str(root / "credentials.env"))
-            if attempt_confluent_auto_login(env_creds):
-                print("✓ Auto-logged into Confluent Cloud")
-            else:
-                print("\nError: Not logged into Confluent Cloud.")
-                print("Please run: confluent login")
-                print("  (or add CONFLUENT_EMAIL and CONFLUENT_PASSWORD to credentials.env)")
-                sys.exit(1)
-        else:
-            print("✓ Confluent CLI logged in")
+        # Step 0: Ensure Confluent Cloud login
+        creds_file, env_creds = load_or_create_credentials_file(root)
+
+        # 0a. Prompt for credentials only if NOT already saved
+        if not (env_creds.get("CONFLUENT_EMAIL") and env_creds.get("CONFLUENT_PASSWORD")):
+            print("\nConfluent Cloud login (credentials will be saved to credentials.env for auto-login):")
+            for attempt in range(3):
+                email = input("  Email (press Enter to skip): ").strip()
+                if not email:
+                    print("  Skipped. You'll need to run `confluent login` manually if your session expires.")
+                    break
+                password = getpass.getpass("  Password: ")
+                if _attempt_login_quiet(email, password):
+                    _save_env_safe(creds_file, "CONFLUENT_EMAIL", email)
+                    _save_env_safe(creds_file, "CONFLUENT_PASSWORD", password)
+                    env_creds["CONFLUENT_EMAIL"] = email
+                    env_creds["CONFLUENT_PASSWORD"] = password
+                    print("  ✓ Logged in and saved.")
+                    break
+                else:
+                    remaining = 2 - attempt
+                    if remaining > 0:
+                        print(f"  Login failed. {remaining} attempt{'s' if remaining > 1 else ''} remaining.")
+                    else:
+                        print("  Login failed. Skipping. You'll need to run `confluent login` manually.")
+                        print("  (If your account uses SSO, run `confluent login --sso` instead.)")
+
+        # 0b. Final assurance — works whether just authenticated, already logged in, or has saved creds
+        ensure_confluent_login(env_creds)
+        print("✓ Confluent CLI logged in")
 
         # Step 1: Select cloud provider
         cloud = prompt_choice("Select cloud provider:", ["aws", "azure"])
@@ -274,8 +303,8 @@ def main():
         region = "us-east-1" if cloud == "aws" else "eastus2"
         print(f"Using region: {region} (required for workshop mode compatibility)")
 
-        # Load credentials file
-        creds_file, creds = load_or_create_credentials_file(root)
+        # Use the credentials loaded in Step 0
+        creds = env_creds
 
         # Step 3: Generate Confluent API keys (optional)
         generate = input("\nGenerate new Confluent Cloud API keys? (y/n): ").strip().lower()
@@ -327,11 +356,6 @@ def main():
         api_secret = prompt_with_default("Confluent Cloud API Secret", creds.get("TF_VAR_confluent_cloud_api_secret", ""))
         _save_env_safe(creds_file, "TF_VAR_confluent_cloud_api_key", api_key)
         _save_env_safe(creds_file, "TF_VAR_confluent_cloud_api_secret", api_secret)
-
-        # Owner email (optional, for resource tagging)
-        owner_email = prompt_with_default("Owner Email (for AWS/Azure resource tagging)", creds.get("TF_VAR_owner_email", ""))
-        if owner_email:
-            _save_env_safe(creds_file, "TF_VAR_owner_email", owner_email)
 
         # AWS Bedrock credentials
         if cloud == "aws":

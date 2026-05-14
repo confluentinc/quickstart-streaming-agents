@@ -28,7 +28,7 @@ from typing import Any, Dict, Optional, Tuple
 import yaml
 
 from .common.cloud_detection import auto_detect_cloud_provider, validate_cloud_provider, suggest_cloud_provider
-from .common.login_checks import check_confluent_login
+from .common.login_checks import check_confluent_login, ensure_confluent_login
 from .common.terraform import extract_kafka_credentials, validate_terraform_state, get_project_root
 
 # Global lock to ensure only one thread checks login at a time
@@ -155,13 +155,10 @@ class FlinkDocsPublisherCLI:
                 # Already verified by another worker
                 return True
 
-            # First worker to acquire lock performs the check
-            if check_confluent_login():
-                self._login_verified = True
-                return True
-            else:
-                self.logger.error("Confluent CLI login session expired during publishing")
-                return False
+            # First worker to acquire lock performs the check; auto-login from saved creds if needed
+            ensure_confluent_login()
+            self._login_verified = True
+            return True
 
     def parse_markdown_file(self, file_path: Path) -> Optional[Dict[str, Any]]:
         """
@@ -578,19 +575,8 @@ Examples:
     # Set up logging
     logger = setup_logging(args.verbose)
 
-    # Check Confluent CLI login before proceeding
-    if not check_confluent_login():
-        print("\n" + "=" * 60)
-        print("ERROR: Not logged into Confluent Cloud")
-        print("=" * 60)
-        print("\nYou must be logged in to publish documents.")
-        print("\nTo log in, run:")
-        print("  confluent login")
-        print("\nTo avoid session timeouts, save credentials with:")
-        print("  confluent login --save")
-        print("=" * 60 + "\n")
-        return 1
-
+    # Check Confluent CLI login before proceeding (auto-login from saved creds if needed)
+    ensure_confluent_login()
     logger.info("✓ Confluent CLI logged in")
 
     # Determine lab number and docs directory

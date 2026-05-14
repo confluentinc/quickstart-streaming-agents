@@ -144,7 +144,7 @@ def get_tags(project_root: Path, owner_email: str) -> Dict[str, str]:
 
 
 def get_owner_email(project_root: Path) -> str:
-    """Get owner email from credentials.env or prompt user."""
+    """Get owner email from credentials.env or prompt user, saving the prompted value back."""
     creds_file = project_root / "credentials.env"
 
     # Try to load from credentials.env
@@ -153,11 +153,14 @@ def get_owner_email(project_root: Path) -> str:
         if "TF_VAR_owner_email" in creds and creds["TF_VAR_owner_email"]:
             return creds["TF_VAR_owner_email"].strip("'\"")
 
-    # Prompt user
-    return prompt_with_default(
-        "Enter owner email (for resource tagging)",
+    # Prompt user and save back to credentials.env
+    email = prompt_with_default(
+        "Owner email for resource tagging (saved to credentials.env)",
         default=""
     )
+    if email:
+        set_key(str(creds_file), "TF_VAR_owner_email", email)
+    return email
 
 
 def prompt_cloud_provider() -> str:

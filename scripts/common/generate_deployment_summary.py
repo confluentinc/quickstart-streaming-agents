@@ -21,6 +21,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Any, Union, Optional
 
+from dotenv import dotenv_values
+
 
 def generate_credentials_markdown(cloud_provider: str, tf_outputs: Dict[str, Any], output_path: Path) -> None:
     """
@@ -43,10 +45,18 @@ def generate_credentials_markdown(cloud_provider: str, tf_outputs: Dict[str, Any
                 return str(output['value']) if output['value'] is not None else default
             return str(output) if output is not None else default
 
+        # Read owner_email from credentials.env (not from terraform outputs — variable removed)
+        try:
+            project_root = output_path.parent.parent.parent
+            env_creds = dotenv_values(str(project_root / "credentials.env"))
+            owner_email = env_creds.get("TF_VAR_owner_email", "") or "Not provided"
+        except Exception:
+            owner_email = "Not provided"
+
         # Build markdown sections
         sections = [
             _build_header(),
-            _build_account_section(tf_outputs, get_output),
+            _build_account_section(tf_outputs, get_output, owner_email),
             _build_cloud_details_section(cloud_provider, tf_outputs, get_output),
             _build_cloud_resources_section(cloud_provider, get_output),
             _build_credentials_section(tf_outputs, get_output),
@@ -77,9 +87,8 @@ def _build_header() -> str:
 ---"""
 
 
-def _build_account_section(tf_outputs: Dict[str, Any], get_output: callable) -> str:
+def _build_account_section(tf_outputs: Dict[str, Any], get_output: callable, owner_email: str = "Not provided") -> str:
     """Build the Account Information section."""
-    owner_email = get_output("owner_email", "Not provided")
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
     region = get_output("cloud_region")
     env_name = get_output("confluent_environment_display_name")
