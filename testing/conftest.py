@@ -110,7 +110,6 @@ def ensure_confluent_login(credentials: Dict[str, str]):
 
     # If command succeeds, we're already authenticated
     if result.returncode == 0:
-        print("✅ Already logged into Confluent Cloud")
         return
 
     # Not logged in - attempt automatic login

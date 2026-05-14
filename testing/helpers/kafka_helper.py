@@ -83,55 +83,33 @@ class KafkaHelper:
     def get_topic_message_count(
         self, topic: str, timeout: int = 30, max_messages: int = 100000
     ) -> int:
-        """Get approximate message count in a topic.
+        """Get message count using partition watermark offsets (no consuming required).
 
         Args:
             topic: Topic name
-            timeout: Max time to consume in seconds (default: 30)
-            max_messages: Max messages to consume (default: 100000)
+            timeout: Timeout for metadata/watermark calls in seconds (default: 30)
+            max_messages: Stop counting once this many messages are found (default: 100000)
 
         Returns:
-            Number of messages consumed
-
-        Note:
-            This consumes from earliest offset and counts messages.
-            For large topics, it may not read all messages within timeout.
+            Number of retained messages across all partitions (capped at max_messages)
         """
+        from confluent_kafka import TopicPartition
+
         consumer = Consumer(self.consumer_config)
-
         try:
-            consumer.subscribe([topic])
-            count = 0
-
-            import time
-            start_time = time.time()
-
-            while True:
-                # Check timeout
-                if time.time() - start_time > timeout:
-                    break
-
-                # Check max messages
-                if count >= max_messages:
-                    break
-
-                msg = consumer.poll(timeout=1.0)
-
-                if msg is None:
-                    # No more messages within poll timeout
-                    continue
-
-                if msg.error():
-                    if msg.error().code() == KafkaError._PARTITION_EOF:
-                        # Reached end of partition
-                        continue
-                    else:
-                        raise KafkaException(msg.error())
-
-                count += 1
-
-            return count
-
+            meta = consumer.list_topics(topic, timeout=timeout)
+            if topic not in meta.topics:
+                return 0
+            total = 0
+            for partition_id in meta.topics[topic].partitions:
+                tp = TopicPartition(topic, partition_id)
+                low, high = consumer.get_watermark_offsets(tp, timeout=5)
+                total += max(0, high - low)
+                if total >= max_messages:
+                    return total
+            return total
+        except Exception:
+            return 0
         finally:
             consumer.close()
 

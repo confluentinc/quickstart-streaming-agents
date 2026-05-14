@@ -177,11 +177,11 @@ class TestLab4FraudDetection:
 
     @pytest.mark.order(1)
     def test_claims_datagen(self, env):
-        """claims topic has >= 35,000 messages (Terraform datagen runs ~36,000 claims)."""
+        """claims topic has >= 33,000 messages (datagen publishes ~33,984 FEMA claims)."""
         kafka = env["kafka"]
-        count = kafka.get_topic_message_count("claims", timeout=120, max_messages=36000)
-        if count < 35000:
-            # Terraform datagen should have run; attempt manual fallback
+        count = kafka.get_topic_message_count("claims", max_messages=34000)
+        if count < 33000:
+            # Attempt manual fallback
             subprocess.run(
                 ["uv", "run", "lab4_datagen"],
                 cwd=PROJECT_ROOT,
@@ -189,13 +189,13 @@ class TestLab4FraudDetection:
                 check=False,
             )
             count = poll_until(
-                getter=lambda: kafka.get_topic_message_count("claims", timeout=120, max_messages=36000),
-                condition=lambda c: c >= 35000,
+                getter=lambda: kafka.get_topic_message_count("claims", max_messages=34000),
+                condition=lambda c: c >= 33000,
                 timeout=600,
                 interval=30,
-                description="claims topic has >= 35,000 messages",
+                description="claims topic has >= 33,000 messages",
             )
-        assert count >= 35000, f"claims topic has only {count} messages (expected >= 35,000) — was Lab 4 deployed?"
+        assert count >= 33000, f"claims topic has only {count} messages (expected >= 33,000) — was Lab 4 deployed?"
 
     @pytest.mark.order(2)
     def test_claims_anomalies_by_city(self, env):
