@@ -6,7 +6,6 @@ In this lab, we'll use Apache Flink for Confluent Cloud's MCP tool calling featu
 
 ## Prerequisites
 
-- **Zapier:** Free account and remote MCP server ([Setup guide](./assets/pre-setup/Zapier-Setup.md))
 - **LLM Access:** AWS Bedrock API keys **OR** Azure OpenAI endpoint + API key
   - No AWS/Azure account required - just the LLM API credentials!
   - **Easy key creation:** Run `uv run api-keys create` to quickly generate ready-to-use credentials
@@ -14,6 +13,12 @@ In this lab, we'll use Apache Flink for Confluent Cloud's MCP tool calling featu
 > [!WARNING]
 >
 > **AWS Bedrock Users:** You must request access to Claude Sonnet 4.5 by filling out an Anthropic use case form. Visit the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog), select Claude Sonnet 4.5, open it in the Playground, and send a message - the form will appear automatically.
+
+- **Remote MCP server backend:** Lab 1 calls a remote MCP server for HTTP fetch and email send. `uv run deploy` will prompt you to choose:
+  - **AWS Lambda (Recommended)** — a Confluent-hosted endpoint. No setup on your end; obtain a token by asking your presenter, or, if you're a Confluent employee, see `go/lambda-keys` or `#help-tmm`.
+  - **Zapier** — a third-party MCP server. See [Zapier-Setup.md](./assets/pre-setup/Zapier-Setup.md) for setup. As of 2026-05-11 this path is broken pending a Confluent Cloud Flink runtime patch; prefer Lambda.
+
+  To switch backends after deploying, run `uv run destroy` first, then re-deploy.
 
 ## Deploy the Demo
 
@@ -48,14 +53,14 @@ LATERAL TABLE(ML_PREDICT('llm_textgen_model', question, MAP['debug', 'true'])) a
 ```sql
  SELECT
       AI_TOOL_INVOKE(
-          'zapier_mcp_model',
-          'Use the gmail_send_email tool to send an email. 
+          'remote_mcp_model',
+          'Use the send_email tool to send an email. 
            The "to" parameter must be a single string value: <<YOUR-EMAIL-ADDRESS-HERE>>
            The "subject" parameter is: Direct Query Test
            The "body" parameter is: This email was sent directly from Confluent Cloud!
            Important: pass the to address as a string, not an array.',
           MAP[],
-          MAP['gmail_send_email', 'Create and send a new email message'],
+          MAP['send_email', 'Send an email via Gmail SMTP'],
           MAP['debug', 'true']
       ) as response;
 ```
@@ -100,14 +105,14 @@ JOIN products p ON o.product_id = p.product_id;
 ### 4. Run  `CREATE TOOL` and `CREATE AGENT`
 
 The agent will use the [Tool Calling](https://docs.confluent.io/cloud/current/ai/builtin-functions/invoke-tool-ai-workflow.html) feature to scrape competitors’ websites, extract the price of the same product, and send an email when a price match is found.
-Create a new tool that leverages your Zapier connection:
+Create a new tool that leverages the remote MCP connection:
 
 ```sql
-CREATE TOOL zapier
-USING CONNECTION `zapier-mcp-connection`
+CREATE TOOL lab1_remote_mcp
+USING CONNECTION `remote-mcp-connection`
 WITH (
   'type' = 'mcp',
-  'allowed_tools' = 'webhooks_by_zapier_get, gmail_send_email',
+  'allowed_tools' = 'http_get, send_email',
   'request_timeout' = '30'
 );
 ```
@@ -118,14 +123,14 @@ This agent will compare the extracted competitor price with our own product pric
 
 ```sql
 CREATE AGENT price_match_agent
-USING MODEL llm_textgen_model
+USING MODEL remote_mcp_model
 USING PROMPT 'You are a price matching assistant that performs the following steps:
 
-1. SCRAPE COMPETITOR PRICE: Use the webhooks_by_zapier_get tool to extract page contents from the competitor URL provided in the prompt.
+1. SCRAPE COMPETITOR PRICE: Use the http_get tool to extract page contents from the competitor URL provided in the prompt.
 
 2. EXTRACT PRICE: Analyze the scraped page content to find the product that most closely matches the product name. Extract only the price in format: XX.XX (for example: 29.95). If you cannot find a valid price, stop here.
 
-3. COMPARE AND NOTIFY: Compare the extracted competitor price with our order price. If the competitor price is lower than our price, use the gmail_send_email tool to send a price match notification email. Use the exact format provided in the prompt for the email subject and body.
+3. COMPARE AND NOTIFY: Compare the extracted competitor price with our order price. If the competitor price is lower than our price, use the send_email tool to send a price match notification email. Use the exact format provided in the prompt for the email subject and body.
 
 Return your results in this exact format:
 
@@ -137,7 +142,7 @@ Decision:
 
 Summary:
 [One sentence describing what you found and what action you took]'
-USING TOOLS zapier
+USING TOOLS lab1_remote_mcp
 COMMENT 'Consolidated agent for scraping competitor prices and sending price match notifications'
 WITH (
   'max_consecutive_failures' = '2',
@@ -240,9 +245,9 @@ Then check out your email for price matched orders:
 <summary>Click to expand</summary>
 
 - **Not getting emails?**
-  - Ensure you replaced `<<YOUR-EMAIL-ADDRESS-HERE>>` in both the test query and the `CREATE TABLE price_match_input` query with the email address where you want to receive the emails. Be sure to use single quotes around your email address ('your@email.com').
-  - **Run the MCP test query** to confirm your Zapier remote MCP server connection is working and able to send emails.
-  - **Check the Zapier Zap history** at [mcp.zapier.com](https://mcp.zapier.com/) to see whether calls to send emails are going through at all, and if so, why they are failing.
+  - Ensure you replaced `<<YOUR-EMAIL-ADDRESS-HERE>>` in both the test query and the `CREATE TABLE price_match_results` query with the email address where you want to receive the emails. Be sure to use single quotes around your email address ('your@email.com').
+  - **Run the MCP test query** (Test Query 2) to confirm the `remote-mcp-connection` is working and able to send emails.
+  - **Check Lambda logs** in CloudWatch (`/aws/lambda/remote-mcp-server-MCPFunction-*`) for errors from the `send_email` tool.
   - **Make sure to run `uv run lab1_datagen`** to begin producing orders data.
 - **Getting duplicate orders / duplicate price matching emails?**
   - Drop `orders`, `customers`, and `products` tables to start with a clean slate before re-running `uv run lab1_datagen`. The data generator randomly generates new customer information beginning with the same customer ID each time it is run, causing collisions if you do not clear the tables before restarting.
@@ -251,10 +256,12 @@ Then check out your email for price matched orders:
   - **AWS?** Ensure you've activated Claude Sonnet 4.5 in your AWS account. See: [Prerequisites](#prerequisites)
   - **Azure?** Increase the tokens per minute quota for your GPT-4 model. Quota is low by default.
 
-- `MCP error -32602: Invalid arguments for tool gmail_send_email` error?
+- `MCP error -32602: Invalid arguments for tool send_email` error?
   - Be sure to use single quotes around your email address ('your@email.com').
-  - Configure the Gmail send email tool to specify the email address you want to send to directly.
   - Modify the model prompt to be more prescriptive about what format you need the email in (string, not array).
+
+- **`remote-mcp-connection` not found after `terraform apply`?**
+  - The connection is created via Confluent CLI in a `local-exec` provisioner. Check that `confluent` CLI is installed and `CONFLUENT_CLOUD_API_KEY`/`CONFLUENT_CLOUD_API_SECRET` are set, then re-run `terraform apply`.
   </details>
 
 ## Navigation

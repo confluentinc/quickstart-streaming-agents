@@ -107,3 +107,18 @@ env/
 # Testing infrastructure (contains sensitive credentials)
 tests/
 credentials.json
+
+# Node (used by setup-mcp script)
+node_modules/
+package.json
+package-lock.json
+
+# Arcade deployment state (per-user terraform + credentials sheet)
+arcade/
+
+# Agent-workflow scaffolding (mirrors .claude/ and CLAUDE.md)
+.scratch/
+CONTEXT.md
+PLAN.md
+docs/
+lambda-keys.html

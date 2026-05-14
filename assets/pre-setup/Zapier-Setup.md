@@ -1,3 +1,5 @@
+> ⚠️ **As of 2026-05-11, the Confluent Cloud Flink MCP client is incompatible with a recent Zapier change. A fix has been merged but is not yet released. Until it ships, use the default AWS Lambda backend.**
+
 ## Zapier Remote MCP Server Setup
 
 > **Note:** SSE endpoints are now deprecated by Zapier. If you previously created an SSE endpoint, you'll need to create a new Streamable HTTP endpoint and copy the token instead.

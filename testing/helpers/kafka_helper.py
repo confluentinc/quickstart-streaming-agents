@@ -1,10 +1,18 @@
 """Kafka topic validation utilities for tests."""
 
 import sys
+import json
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 from confluent_kafka import Consumer, KafkaError, KafkaException
-import json
+
+try:
+    from confluent_kafka.schema_registry import SchemaRegistryClient
+    from confluent_kafka.schema_registry.avro import AvroDeserializer
+    from confluent_kafka.serialization import SerializationContext, MessageField
+    _AVRO_AVAILABLE = True
+except ImportError:
+    _AVRO_AVAILABLE = False
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).parent.parent.parent
@@ -42,58 +50,66 @@ class KafkaHelper:
             'enable.auto.commit': False,
         }
 
+        # Initialize Schema Registry client for Avro deserialization
+        self._sr_client = None
+        if _AVRO_AVAILABLE:
+            try:
+                self._sr_client = SchemaRegistryClient({
+                    "url": self.kafka_creds["schema_registry_url"],
+                    "basic.auth.user.info": (
+                        f"{self.kafka_creds['schema_registry_api_key']}"
+                        f":{self.kafka_creds['schema_registry_api_secret']}"
+                    ),
+                })
+            except Exception:
+                pass  # Fall back to JSON-only deserialization
+
+    def _deserialize(self, msg_bytes: bytes, topic: str) -> Any:
+        """Deserialize a message value; try Avro first, fall back to JSON."""
+        if msg_bytes is None:
+            return None
+        # Confluent Avro wire format starts with magic byte 0x00
+        if self._sr_client and msg_bytes[0] == 0:
+            try:
+                deserializer = AvroDeserializer(self._sr_client)
+                return deserializer(msg_bytes, SerializationContext(topic, MessageField.VALUE))
+            except Exception:
+                pass
+        try:
+            return json.loads(msg_bytes.decode("utf-8"))
+        except Exception:
+            return {"raw": msg_bytes.decode("utf-8", errors="replace")}
+
     def get_topic_message_count(
         self, topic: str, timeout: int = 30, max_messages: int = 100000
     ) -> int:
-        """Get approximate message count in a topic.
+        """Get message count using partition watermark offsets (no consuming required).
 
         Args:
             topic: Topic name
-            timeout: Max time to consume in seconds (default: 30)
-            max_messages: Max messages to consume (default: 100000)
+            timeout: Timeout for metadata/watermark calls in seconds (default: 30)
+            max_messages: Stop counting once this many messages are found (default: 100000)
 
         Returns:
-            Number of messages consumed
-
-        Note:
-            This consumes from earliest offset and counts messages.
-            For large topics, it may not read all messages within timeout.
+            Number of retained messages across all partitions (capped at max_messages)
         """
+        from confluent_kafka import TopicPartition
+
         consumer = Consumer(self.consumer_config)
-
         try:
-            consumer.subscribe([topic])
-            count = 0
-
-            import time
-            start_time = time.time()
-
-            while True:
-                # Check timeout
-                if time.time() - start_time > timeout:
-                    break
-
-                # Check max messages
-                if count >= max_messages:
-                    break
-
-                msg = consumer.poll(timeout=1.0)
-
-                if msg is None:
-                    # No more messages within poll timeout
-                    continue
-
-                if msg.error():
-                    if msg.error().code() == KafkaError._PARTITION_EOF:
-                        # Reached end of partition
-                        continue
-                    else:
-                        raise KafkaException(msg.error())
-
-                count += 1
-
-            return count
-
+            meta = consumer.list_topics(topic, timeout=timeout)
+            if topic not in meta.topics:
+                return 0
+            total = 0
+            for partition_id in meta.topics[topic].partitions:
+                tp = TopicPartition(topic, partition_id)
+                low, high = consumer.get_watermark_offsets(tp, timeout=5)
+                total += max(0, high - low)
+                if total >= max_messages:
+                    return total
+            return total
+        except Exception:
+            return 0
         finally:
             consumer.close()
 
@@ -134,13 +150,9 @@ class KafkaHelper:
                     else:
                         raise KafkaException(msg.error())
 
-                # Try to decode as JSON
-                try:
-                    value = json.loads(msg.value().decode('utf-8'))
+                value = self._deserialize(msg.value(), topic)
+                if value is not None:
                     messages.append(value)
-                except Exception:
-                    # If not JSON, store as raw string
-                    messages.append({'raw': msg.value().decode('utf-8')})
 
             return messages
 

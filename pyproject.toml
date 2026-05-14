@@ -77,6 +77,15 @@ destroy = "scripts.common.destroy:main"
 lab1_datagen = "scripts.lab1_datagen:main"
 lab1-datagen = "scripts.lab1_datagen:main"
 #
+capture_lab1_data = "scripts.capture_lab1_data:main"
+capture-lab1-data = "scripts.capture_lab1_data:main"
+#
+publish_lab1_data = "scripts.publish_lab1_data:main"
+publish-lab1-data = "scripts.publish_lab1_data:main"
+#
+generate_lab1_data = "scripts.generate_lab1_data:main"
+generate-lab1-data = "scripts.generate_lab1_data:main"
+#
 lab3_datagen = "scripts.lab3_datagen:main"
 lab3-datagen = "scripts.lab3_datagen:main"
 #
@@ -130,6 +139,12 @@ test_mongodb_creds = "scripts.common.test_mongodb_credentials:main"
 test-mongodb-creds = "scripts.common.test_mongodb_credentials:main"
 #
 tests = "scripts.run_tests:main"
+#
+setup_mcp = "scripts.mcp_setup:main"
+setup-mcp = "scripts.mcp_setup:main"
+#
+setup_rtce = "scripts.setup_rtce:main"
+setup-rtce = "scripts.setup_rtce:main"
 
 
 [project.urls]

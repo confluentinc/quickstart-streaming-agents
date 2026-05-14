@@ -359,6 +359,12 @@ Dependencies:
     )
 
     parser.add_argument(
+        "--local",
+        action="store_true",
+        help="Use pre-captured local data instead of ShadowTraffic (no Docker required)"
+    )
+
+    parser.add_argument(
         "--dry-run",
         action="store_true",
         help="Validate setup and generate connection files without running ShadowTraffic"
@@ -380,6 +386,23 @@ def main() -> None:
 
     logger = setup_logging(args.verbose)
     logger.info("Quickstart Streaming Agents - Data Generation")
+
+    # Handle --local flag: use pre-captured data instead of ShadowTraffic
+    if args.local:
+        logger.info("Using local pre-captured data (no ShadowTraffic/Docker required)")
+        try:
+            project_root = get_project_root()
+            import subprocess
+            cmd = ["uv", "run", "publish_lab1_data"]
+            if args.verbose:
+                cmd.append("--verbose")
+            if args.dry_run:
+                cmd.append("--dry-run")
+            result = subprocess.run(cmd, cwd=project_root)
+            sys.exit(result.returncode)
+        except Exception as e:
+            logger.error(f"Failed to publish local data: {e}")
+            sys.exit(1)
 
     try:
         # Get project root
