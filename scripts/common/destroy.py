@@ -5,6 +5,7 @@ Uses credentials from credentials.env or credentials.json for destruction via Te
 """
 
 import argparse
+import json
 import os
 import shutil
 import subprocess
@@ -71,6 +72,143 @@ def cleanup_terraform_artifacts(env_path: Path) -> None:
         pass
 
 
+def strip_stale_lab_state(env_path: Path, root: Path) -> int:
+    """
+    Remove Flink/SR resources from a lab's tfstate when core credentials are gone.
+
+    When a previous destroy attempted core before labs, it deletes API keys and the
+    compute pool while the Kafka cluster survives (blocked by active connectors).
+    Those Flink statements and subject configs no longer exist in Confluent Cloud, but
+    terraform still tries to DELETE them using the now-invalid credentials → 401 error.
+
+    Detection: core state has the Kafka cluster but no confluent_api_key resources.
+    Action: drop confluent_flink_statement and confluent_subject_config from lab state.
+
+    Returns the number of resources removed.
+    """
+    core_state_path = root / "terraform" / "core" / "terraform.tfstate"
+    state_path = env_path / "terraform.tfstate"
+    if not core_state_path.exists() or not state_path.exists():
+        return 0
+
+    with open(core_state_path) as f:
+        core_state = json.load(f)
+
+    core_types = {r["type"] for r in core_state.get("resources", []) if r.get("mode") == "managed"}
+    # Only strip when cluster survived but API keys are gone (partial destroy signature)
+    if "confluent_kafka_cluster" not in core_types or "confluent_api_key" in core_types:
+        return 0
+
+    stale_types = {"confluent_flink_statement", "confluent_subject_config"}
+    with open(state_path) as f:
+        lab_state = json.load(f)
+
+    stale = [r for r in lab_state.get("resources", []) if r.get("type") in stale_types]
+    if not stale:
+        return 0
+
+    lab_state["resources"] = [r for r in lab_state["resources"] if r.get("type") not in stale_types]
+    lab_state["serial"] = lab_state.get("serial", 0) + 1
+    with open(state_path, "w") as f:
+        json.dump(lab_state, f, indent=2)
+    return len(stale)
+
+
+def restore_core_outputs(root: Path) -> bool:
+    """
+    Restore missing outputs in core's tfstate by reading values from resource instances
+    and from lab state files.
+
+    A previous partial destroy can clear core's outputs ({}) while leaving the Kafka
+    cluster and environment intact (due to active connectors blocking cluster deletion).
+    When outputs are empty, lab environment terraform destroys fail immediately because
+    lab configs read provider credentials from data.terraform_remote_state.core.outputs.
+
+    Returns True if outputs are present (restored or already populated), False on error.
+    """
+    core_state_path = root / "terraform" / "core" / "terraform.tfstate"
+    lab5_state_path = root / "terraform" / "lab5-insurance-fraud-watson" / "terraform.tfstate"
+
+    if not core_state_path.exists():
+        return False
+
+    with open(core_state_path) as f:
+        core_state = json.load(f)
+
+    if core_state.get("outputs"):
+        return True  # Already populated
+
+    outputs: dict = {}
+
+    # From core resource instances
+    for r in core_state.get("resources", []):
+        if not r.get("instances"):
+            continue
+        attrs = r["instances"][0].get("attributes", {})
+        if r["type"] == "confluent_environment":
+            outputs["confluent_environment_id"] = {"value": attrs.get("id"), "type": "string", "sensitive": False}
+            outputs["confluent_environment_display_name"] = {"value": attrs.get("display_name"), "type": "string", "sensitive": False}
+        elif r["type"] == "confluent_kafka_cluster":
+            outputs["confluent_kafka_cluster_id"] = {"value": attrs.get("id"), "type": "string", "sensitive": False}
+            outputs["confluent_kafka_cluster_display_name"] = {"value": attrs.get("display_name"), "type": "string", "sensitive": False}
+            outputs["confluent_kafka_cluster_bootstrap_endpoint"] = {"value": attrs.get("bootstrap_endpoint"), "type": "string", "sensitive": False}
+            outputs["confluent_kafka_cluster_rest_endpoint"] = {"value": attrs.get("rest_endpoint"), "type": "string", "sensitive": False}
+        elif r["type"] == "random_id":
+            outputs["random_id"] = {"value": attrs.get("hex"), "type": "string", "sensitive": False}
+
+    # From environment variables (already loaded by destroy.py before this call)
+    for env_key, out_key, sensitive in [
+        ("TF_VAR_confluent_cloud_api_key", "confluent_cloud_api_key", True),
+        ("TF_VAR_confluent_cloud_api_secret", "confluent_cloud_api_secret", True),
+        ("TF_VAR_cloud_provider", "cloud_provider", False),
+        ("TF_VAR_cloud_region", "cloud_region", False),
+    ]:
+        val = os.environ.get(env_key, "")
+        if val:
+            outputs[out_key] = {"value": val, "type": "string", "sensitive": sensitive}
+
+    # From lab5 state (Flink statements and subject configs carry the remaining IDs/keys)
+    if lab5_state_path.exists():
+        with open(lab5_state_path) as f:
+            lab5_state = json.load(f)
+
+        for r in lab5_state.get("resources", []):
+            if not r.get("instances"):
+                continue
+            attrs = r["instances"][0].get("attributes", {})
+
+            if r["type"] == "confluent_flink_statement" and "confluent_flink_compute_pool_id" not in outputs:
+                for pool in attrs.get("compute_pool", []):
+                    outputs["confluent_flink_compute_pool_id"] = {"value": pool["id"], "type": "string", "sensitive": False}
+                for principal in attrs.get("principal", []):
+                    outputs["app_manager_service_account_id"] = {"value": principal["id"], "type": "string", "sensitive": False}
+                for creds in attrs.get("credentials", []):
+                    outputs["app_manager_flink_api_key"] = {"value": creds["key"], "type": "string", "sensitive": True}
+                    outputs["app_manager_flink_api_secret"] = {"value": creds["secret"], "type": "string", "sensitive": True}
+                rest_ep = attrs.get("rest_endpoint")
+                if rest_ep:
+                    outputs["confluent_flink_rest_endpoint"] = {"value": rest_ep, "type": "string", "sensitive": False}
+
+            elif r["type"] == "confluent_subject_config" and "confluent_schema_registry_id" not in outputs:
+                for creds in attrs.get("credentials", []):
+                    outputs["app_manager_schema_registry_api_key"] = {"value": creds["key"], "type": "string", "sensitive": True}
+                    outputs["app_manager_schema_registry_api_secret"] = {"value": creds["secret"], "type": "string", "sensitive": True}
+                sr_ep = attrs.get("rest_endpoint")
+                if sr_ep:
+                    outputs["confluent_schema_registry_rest_endpoint"] = {"value": sr_ep, "type": "string", "sensitive": False}
+                for sr in attrs.get("schema_registry_cluster", []):
+                    outputs["confluent_schema_registry_id"] = {"value": sr["id"], "type": "string", "sensitive": False}
+
+    if not outputs:
+        return False
+
+    core_state["outputs"] = outputs
+    core_state["serial"] = core_state.get("serial", 0) + 1
+    with open(core_state_path, "w") as f:
+        json.dump(core_state, f, indent=2)
+    return True
+
+
 def _cleanup_mcp(root: Path) -> None:
     """Remove MCP server config and registration if MCP was installed."""
     mcp_env = root / "terraform" / "core" / "confluent-mcp.env"
@@ -124,7 +262,7 @@ def main():
     if args.testing:
         creds = load_credentials_json(root)
         cloud = creds["cloud"]
-        envs_to_destroy = ["lab4-pubsec-fraud-agents", "lab3-agentic-fleet-management", "lab2-vector-search", "lab1-tool-calling", "core"]  # Reverse order
+        envs_to_destroy = ["lab5-insurance-fraud-watson", "lab4-pubsec-fraud-agents", "lab3-agentic-fleet-management", "lab2-vector-search", "lab1-tool-calling", "core"]  # Reverse order
 
         # Build environment variables
         env_vars = {
@@ -184,7 +322,7 @@ def main():
         cloud = prompt_choice("Select cloud provider to destroy:", ["aws", "azure"])
 
         # Step 2: Always destroy all environments
-        envs_to_destroy = ["lab4-pubsec-fraud-agents", "lab3-agentic-fleet-management", "lab2-vector-search", "lab1-tool-calling", "core"]
+        envs_to_destroy = ["lab5-insurance-fraud-watson", "lab4-pubsec-fraud-agents", "lab3-agentic-fleet-management", "lab2-vector-search", "lab1-tool-calling", "core"]
         print(f"✓ Will destroy all environments: {', '.join(envs_to_destroy)}")
 
         # Load credentials file
@@ -206,8 +344,18 @@ def main():
             print("Destroy cancelled.")
             sys.exit(0)
 
-    # Step 5: Destroy environments
+    # Step 5: Restore core outputs if a previous partial destroy cleared them
+    print("\n→ Checking core state outputs...")
+    core_state_path = root / "terraform" / "core" / "terraform.tfstate"
+    if core_state_path.exists():
+        if restore_core_outputs(root):
+            print("  ✓ Core outputs verified")
+        else:
+            print("  ⚠ Could not restore core outputs — lab destroys may fail")
+
+    # Step 6: Destroy environments
     print("\n=== Starting Destroy ===")
+    any_lab_failed = False
     for env in envs_to_destroy:
         env_path = root / "terraform" / env
         if not env_path.exists():
@@ -220,6 +368,16 @@ def main():
             print(f"⊘ Skipping {env}: no terraform state found (never deployed)")
             continue
 
+        # Don't attempt core if a lab environment failed — connectors would still be active
+        if env == "core" and any_lab_failed and not args.force:
+            print(f"\n✗ Skipping core destroy: lab environment(s) failed above. Fix those errors first, or use --force.")
+            continue
+
+        if env != "core":
+            stripped = strip_stale_lab_state(env_path, root)
+            if stripped:
+                print(f"  → Removed {stripped} Flink/SR resources from state (core credentials already deleted)")
+
         print(f"\n→ Destroying {env}...")
         if run_terraform_destroy(env_path):
             cleanup_terraform_artifacts(env_path)
@@ -227,6 +385,8 @@ def main():
             print(f"  ⚠ Destroy failed but --force set: cleaning local state for {env}")
             cleanup_terraform_artifacts(env_path)
         else:
+            if env != "core":
+                any_lab_failed = True
             print(f"\n✗ Destroy failed at {env}. Use --force to clean local state anyway. Continuing...")
 
     _cleanup_mcp(root)
