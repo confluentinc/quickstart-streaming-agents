@@ -38,7 +38,7 @@ class FlinkSQLHelper:
         self.created_statements = []  # Track for cleanup
 
     def execute_statement(
-        self, name: str, sql: str, wait: bool = True
+        self, name: str, sql: str, wait: bool = True, properties: dict | None = None
     ) -> str:
         """Execute a Flink SQL statement via confluent CLI.
 
@@ -77,6 +77,9 @@ class FlinkSQLHelper:
 
         if wait:
             cmd.append("--wait")
+
+        for k, v in (properties or {}).items():
+            cmd.extend(["--property", f"{k}={v}"])
 
         result = subprocess.run(
             cmd, capture_output=True, text=True, check=True
@@ -119,8 +122,12 @@ class FlinkSQLHelper:
             cmd, capture_output=True, text=True, check=True
         )
 
-        # Parse JSON output to get status
-        output = json.loads(result.stdout)
+        # CLI may prefix informational lines (e.g. "No Flink endpoint specified...")
+        # before the JSON block — find the first '{' and parse from there.
+        json_start = result.stdout.find("{")
+        if json_start == -1:
+            return "UNKNOWN"
+        output = json.loads(result.stdout[json_start:])
         return output.get("status", "UNKNOWN")
 
     def wait_for_status(

@@ -27,13 +27,18 @@ brew install uv git python && brew tap hashicorp/tap && brew install hashicorp/t
 winget install astral-sh.uv Git.Git Hashicorp.Terraform ConfluentInc.Confluent-CLI Python.Python
 ```
 Once software is installed, you'll need:
-- **Zapier:** Free account and remote MCP server ([Setup guide](./assets/pre-setup/Zapier-Setup.md))
 - **LLM Access:** AWS Bedrock API keys **OR** Azure OpenAI endpoint + API key
   - **Easy key creation:** Run `uv run api-keys create` to quickly auto-generate credentials
 
 > [!WARNING]
 >
 > **AWS Bedrock Users:** You must request access to Claude Sonnet 4.5 by filling out an Anthropic use case form. Visit the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog), select Claude Sonnet 4.5, open it in the Playground, and send a message - the form will appear automatically.
+
+- **Remote MCP server backend:** Lab 3 calls a remote MCP server for HTTP fetch and HTTP post (vessel catalog lookup + dispatch). `uv run deploy` will prompt you to choose:
+  - **AWS Lambda (Recommended)** — a Confluent-hosted remote MCP server endpoint. No setup on your end; obtain a token by asking your workshop presenter, or, if you're a Confluent employee, see `go/lambda-keys` or `#help-tmm`.
+  - **Zapier** — a third-party MCP server. See [Zapier-Setup.md](./assets/pre-setup/Zapier-Setup.md) for setup. As of 2026-05-11 this path is broken pending a Confluent Cloud Flink runtime patch; prefer Lambda.
+
+  To switch backends after deploying, run `uv run destroy` first, then re-deploy.
 
 ## Deploy the Demo
 
@@ -58,7 +63,6 @@ uv run deploy
 The deployment script will prompt you for your:
 - Cloud provider (AWS/Azure)
 - LLM API keys (Bedrock keys or Azure OpenAI endpoint/key - run `uv run api-keys create` beforehand or see [Workshop Mode Setup Guide](./assets/pre-setup/Workshop-Mode-Setup.md) for more info)
-- Zapier MCP token ([Setup guide](./assets/pre-setup/Zapier-Setup.md))
 
 ## Usecase Walkthrough
 
@@ -369,11 +373,11 @@ These agents leverage tool calling to interact directly with external systems or
 
 See [CREATE TOOL documentation](https://docs.confluent.io/cloud/current/flink/reference/statements/create-tool.html).
 ```sql
-CREATE TOOL zapier
-USING CONNECTION `zapier-mcp-connection`
+CREATE TOOL lab3_remote_mcp
+USING CONNECTION `remote-mcp-connection`
 WITH (
   'type' = 'mcp',
-  'allowed_tools' = 'webhooks_by_zapier_get, webhooks_by_zapier_custom_request, gmail_send_email',
+  'allowed_tools' = 'http_get, http_post',
   'request_timeout' = '30'
 );
 ```
@@ -381,12 +385,12 @@ WITH (
 See [CREATE AGENT documentation](https://docs.confluent.io/cloud/current/flink/reference/statements/create-agent.html#flink-sql-create-agent).
 ```sql
 CREATE AGENT `boat_dispatch_agent`
-USING MODEL `zapier_mcp_model`
+USING MODEL `remote_mcp_model`
 USING PROMPT 'You are an intelligent boat dispatch coordinator for a riverboat ride-sharing service.
 
 Your workflow:
 1. ANALYZE the surge information provided (zone, time, request count). Use the anomaly reason as background context if available, but do not rely on it to proceed.
-2. REVIEW the available vessels list by sending a basic GET request using the webhooks_by_zapier_get tool to "https://p8jrtzaj78.execute-api.us-east-1.amazonaws.com/prod/api/vessel_catalog"
+2. REVIEW the available vessels list by using the http_get tool to fetch "https://p8jrtzaj78.execute-api.us-east-1.amazonaws.com/prod/api/vessel_catalog"
 3. SELECT appropriate boats to dispatch based on:
    - Proximity to the target zone
    - Boat capacity
@@ -404,11 +408,9 @@ Your workflow:
        }
      ]
    }
-5. USE the webhooks_by_zapier_custom_request tool to POST the dispatch request to:
+5. USE the http_post tool to POST the dispatch request to:
    URL: https://p8jrtzaj78.execute-api.us-east-1.amazonaws.com/prod/api/dispatch
-   Method: POST
-   Headers: {"Content-Type": "application/json"}
-   Data: <your generated JSON>
+   Body: <your generated JSON>
 
 6. FORMAT your final response with these THREE sections:
 
@@ -430,7 +432,7 @@ CRITICAL INSTRUCTIONS:
 - Do NOT include any other explanatory text outside these three sections
 - The anomaly reason describes the likely cause of the surge but may be uncertain or generic — it is context only, NOT a required input. If it is vague or unclear, proceed with dispatching using the zone and request count alone.
 - NEVER ask for clarification. You always have enough information to dispatch: the zone name and surge magnitude are always present. Act immediately.'
-USING TOOLS `zapier`
+USING TOOLS `lab3_remote_mcp`
 WITH (
   'max_iterations' = '10'
 );
@@ -483,9 +485,8 @@ By chaining these intelligent streaming components together, we’ve built an al
 ALTER TABLE ride_requests
 MODIFY (WATERMARK FOR request_ts AS request_ts - INTERVAL '5' SECOND);
 ```
-- **Email about a degraded Flink statement?**
-  - Press "Stop" on the running `CREATE TABLE anomalies_detected_per_zone` statement in the SQL Workspace.
-    - The anomaly detection algorithm expects data to be flowing through it, and the statement will change to "degraded" after some time if you turn off data generation. Turning it off will stop the problem, or it will automatically resume running properly once data begins flowing again.
+- **Degraded Flink statement email?**
+  - Press "Stop" on the running `CREATE TABLE anomalies_per_zone` statement in the SQL Workspace. The anomaly detection algorithm expects data to be flowing through it and will go degraded if data generation is stopped. It will automatically resume once data begins flowing again.
 
 - `Runtime received bad response code 403. Please also double check if your model has multiple versions.` error?
   - **AWS?** Ensure you've activated Claude Sonnet 4.5 in your AWS account. See: [Prerequisites](#prerequisites)

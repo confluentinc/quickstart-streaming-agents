@@ -10,6 +10,13 @@ data "terraform_remote_state" "core" {
 locals {
   cloud_provider = data.terraform_remote_state.core.outputs.cloud_provider
   cloud_region   = data.terraform_remote_state.core.outputs.cloud_region
+
+  # Remote MCP backend selection. Endpoints are hard-coded so users can't point
+  # Flink at an arbitrary MCP server via tfvars.
+  mcp_lambda_endpoint    = "https://z04yuqut2a.execute-api.us-east-1.amazonaws.com/mcp"
+  mcp_zapier_endpoint    = "https://mcp.zapier.com/api/v1/connect"
+  effective_mcp_endpoint = var.mcp_backend == "zapier" ? local.mcp_zapier_endpoint : local.mcp_lambda_endpoint
+  effective_mcp_token    = var.mcp_backend == "zapier" ? var.zapier_token : var.mcp_token
 }
 
 # Random ID for unique resource names for this lab
@@ -33,8 +40,8 @@ data "confluent_flink_region" "lab1_flink_region" {
   region = local.cloud_region
 }
 
-# Create MCP connection using Flink SQL
-resource "confluent_flink_statement" "zapier_mcp_connection" {
+# Create remote MCP connection using Flink SQL
+resource "confluent_flink_statement" "remote_mcp_connection" {
   organization {
     id = data.confluent_organization.main.id
   }
@@ -53,14 +60,14 @@ resource "confluent_flink_statement" "zapier_mcp_connection" {
     secret = data.terraform_remote_state.core.outputs.app_manager_flink_api_secret
   }
 
-  statement_name = "zapier-mcp-connection-create"
+  statement_name = "remote-mcp-connection-create"
 
   statement = <<-EOT
-    CREATE CONNECTION IF NOT EXISTS `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`zapier-mcp-connection`
+    CREATE CONNECTION IF NOT EXISTS `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`remote-mcp-connection`
     WITH (
       'type' = 'MCP_SERVER',
-      'endpoint' = 'https://mcp.zapier.com/api/v1/connect',
-      'token' = '${var.zapier_token}',
+      'endpoint' = '${local.effective_mcp_endpoint}',
+      'token' = '${local.effective_mcp_token}',
       'transport-type' = 'STREAMABLE_HTTP'
     );
   EOT
@@ -79,8 +86,8 @@ resource "confluent_flink_statement" "zapier_mcp_connection" {
   ]
 }
 
-# Create the Zapier MCP Model via Flink SQL (AWS/Bedrock)
-resource "confluent_flink_statement" "zapier_mcp_model_aws" {
+# Create the remote MCP Model via Flink SQL (AWS/Bedrock)
+resource "confluent_flink_statement" "remote_mcp_model_aws" {
   count = local.cloud_provider == "aws" ? 1 : 0
 
   organization {
@@ -101,10 +108,10 @@ resource "confluent_flink_statement" "zapier_mcp_model_aws" {
     secret = data.terraform_remote_state.core.outputs.app_manager_flink_api_secret
   }
 
-  statement_name = "zapier-mcp-model-create"
+  statement_name = "remote-mcp-model-create"
 
   statement = <<-EOT
-    CREATE MODEL IF NOT EXISTS `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`zapier_mcp_model`
+    CREATE MODEL IF NOT EXISTS `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`remote_mcp_model`
     INPUT (prompt STRING)
     OUTPUT (response STRING)
     WITH (
@@ -112,7 +119,7 @@ resource "confluent_flink_statement" "zapier_mcp_model_aws" {
       'task' = 'text_generation',
       'bedrock.connection' = '${data.terraform_remote_state.core.outputs.llm_connection_name}',
       'bedrock.params.max_tokens' = '50000',
-      'mcp.connection' = 'zapier-mcp-connection'
+      'mcp.connection' = 'remote-mcp-connection'
     );
   EOT
 
@@ -121,14 +128,13 @@ resource "confluent_flink_statement" "zapier_mcp_model_aws" {
     "sql.current-database" = "default"
   }
 
-  # Ensure MCP connection is created first
   depends_on = [
-    confluent_flink_statement.zapier_mcp_connection
+    confluent_flink_statement.remote_mcp_connection
   ]
 }
 
-# Create the Zapier MCP Model via Flink SQL (Azure/OpenAI)
-resource "confluent_flink_statement" "zapier_mcp_model_azure" {
+# Create the remote MCP Model via Flink SQL (Azure/OpenAI)
+resource "confluent_flink_statement" "remote_mcp_model_azure" {
   count = local.cloud_provider == "azure" ? 1 : 0
 
   organization {
@@ -149,17 +155,17 @@ resource "confluent_flink_statement" "zapier_mcp_model_azure" {
     secret = data.terraform_remote_state.core.outputs.app_manager_flink_api_secret
   }
 
-  statement_name = "zapier-mcp-model-create"
+  statement_name = "remote-mcp-model-create"
 
   statement = <<-EOT
-    CREATE MODEL IF NOT EXISTS `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`zapier_mcp_model`
+    CREATE MODEL IF NOT EXISTS `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`remote_mcp_model`
     INPUT (prompt STRING)
     OUTPUT (response STRING)
     WITH (
       'provider' = 'azureopenai',
       'task' = 'text_generation',
       'azureopenai.connection' = '${data.terraform_remote_state.core.outputs.llm_connection_name}',
-      'mcp.connection' = 'zapier-mcp-connection'
+      'mcp.connection' = 'remote-mcp-connection'
     );
   EOT
 
@@ -170,7 +176,7 @@ resource "confluent_flink_statement" "zapier_mcp_model_azure" {
 
   # Ensure MCP connection is created first
   depends_on = [
-    confluent_flink_statement.zapier_mcp_connection
+    confluent_flink_statement.remote_mcp_connection
   ]
 }
 
@@ -178,9 +184,9 @@ resource "confluent_flink_statement" "zapier_mcp_model_azure" {
 resource "null_resource" "generate_flink_sql_summary" {
   # Trigger regeneration when key resources change
   triggers = {
-    mcp_connection = confluent_flink_statement.zapier_mcp_connection.id
-    mcp_model_aws  = local.cloud_provider == "aws" ? confluent_flink_statement.zapier_mcp_model_aws[0].id : ""
-    mcp_model_azure = local.cloud_provider == "azure" ? confluent_flink_statement.zapier_mcp_model_azure[0].id : ""
+    mcp_connection = confluent_flink_statement.remote_mcp_connection.id
+    mcp_model_aws  = local.cloud_provider == "aws" ? confluent_flink_statement.remote_mcp_model_aws[0].id : ""
+    mcp_model_azure = local.cloud_provider == "azure" ? confluent_flink_statement.remote_mcp_model_azure[0].id : ""
   }
 
   provisioner "local-exec" {
@@ -189,9 +195,9 @@ resource "null_resource" "generate_flink_sql_summary" {
   }
 
   depends_on = [
-    confluent_flink_statement.zapier_mcp_connection,
-    confluent_flink_statement.zapier_mcp_model_aws,
-    confluent_flink_statement.zapier_mcp_model_azure,
+    confluent_flink_statement.remote_mcp_connection,
+    confluent_flink_statement.remote_mcp_model_aws,
+    confluent_flink_statement.remote_mcp_model_azure,
     confluent_flink_statement.orders_table,
     confluent_flink_statement.customers_table,
     confluent_flink_statement.products_table
@@ -240,8 +246,8 @@ resource "confluent_flink_statement" "orders_table" {
   }
 
   depends_on = [
-    confluent_flink_statement.zapier_mcp_model_aws,
-    confluent_flink_statement.zapier_mcp_model_azure
+    confluent_flink_statement.remote_mcp_model_aws,
+    confluent_flink_statement.remote_mcp_model_azure
   ]
 }
 
@@ -283,8 +289,8 @@ resource "confluent_flink_statement" "products_table" {
   }
 
   depends_on = [
-    confluent_flink_statement.zapier_mcp_model_aws,
-    confluent_flink_statement.zapier_mcp_model_azure
+    confluent_flink_statement.remote_mcp_model_aws,
+    confluent_flink_statement.remote_mcp_model_azure
   ]
 }
 
@@ -326,7 +332,7 @@ resource "confluent_flink_statement" "customers_table" {
   }
 
   depends_on = [
-    confluent_flink_statement.zapier_mcp_model_aws,
-    confluent_flink_statement.zapier_mcp_model_azure
+    confluent_flink_statement.remote_mcp_model_aws,
+    confluent_flink_statement.remote_mcp_model_azure
   ]
 }

@@ -100,4 +100,4 @@ If running Lab2 or Lab3, set up a free MongoDB Atlas account and cluster. First 
 - **← Back to Overview**: [Main README](../../README.md)
 - **→ Lab2**: [Vector Search & RAG](../../LAB2-Walkthrough.md)
 - **→ Lab3**: [Agentic Fleet Management](../../LAB3-Walkthrough.md)
-- **→ Zapier Setup**: [Zapier Remote MCP Server Setup Guide](./Zapier-Setup.md)
+- **→ Lab3**: [Agentic Fleet Management](../../LAB3-Walkthrough.md)
