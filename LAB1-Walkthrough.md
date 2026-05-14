@@ -22,7 +22,11 @@ In this lab, we'll use Apache Flink for Confluent Cloud's MCP tool calling featu
 
 ## Deploy the Demo
 
-Once you have these credentials ready, run the following command and choose **Lab3** (see [main README](./README.md)):
+> [!CAUTION]
+>
+> You must be logged in to the Confluent CLI before running `uv run deploy`. Run `confluent login` first if you haven't already.
+
+Once you have these credentials ready, run the following command and choose **Lab1** (see [main README](./README.md)):
 
   ```bash
   uv run deploy

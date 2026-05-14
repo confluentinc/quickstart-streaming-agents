@@ -16,6 +16,10 @@ In this lab, we'll create a Retrieval-Augmented Generation (RAG) pipeline using 
 
 ## Deployment
 
+> [!CAUTION]
+>
+> You must be logged in to the Confluent CLI before running `uv run deploy`. Run `confluent login` first if you haven't already.
+
 Use the setup script and select "Lab2" when prompted to automatically deploy Lab2 infrastructure:
 
 ```bash
