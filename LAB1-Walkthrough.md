@@ -55,7 +55,7 @@ Once you have these credentials ready, run the following command and choose **La
 
 ## 1. Test the LLM models before continuing
 
-Once you've deployed Lab1, run the following queries in the [SQL Workspace](https://confluent.cloud/go/flink) to make sure your models are working as expected:
+Once you've deployed Lab1, open the [SQL Workspace](https://confluent.cloud/go/flink), select your Confluent Cloud environment, and run the following queries to make sure your models are working as expected:
 
 #### Test Query 1: Base LLM model
 
@@ -90,10 +90,10 @@ LATERAL TABLE(ML_PREDICT('llm_textgen_model', question, MAP['debug', 'true'])) a
 
 ## 2. Generate Data
 
-Open **Docker Desktop**, then begin generating data with the following command:
+Begin generating data with the following command:
 
 ```bash
-uv run lab1_datagen
+uv run lab1_datagen --local
 ```
 
 The data generator creates three typical ecommerce data streams:
