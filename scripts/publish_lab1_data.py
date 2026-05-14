@@ -90,12 +90,12 @@ def _parse_iso_ms(s: str) -> int:
     return int(datetime.fromisoformat(s.replace("Z", "+00:00")).timestamp() * 1000)
 
 
-def _coerce_row(topic: str, row: dict) -> dict:
+def _coerce_row(topic: str, row: dict, now_ms: int = 0) -> dict:
     record = dict(row)
     if "price" in record:
         record["price"] = float(record["price"])
     if "updated_at" in record:
-        record["updated_at"] = _parse_iso_ms(record["updated_at"])
+        record["updated_at"] = now_ms
     if "order_ts" in record:
         record["order_ts"] = _parse_iso_ms(record["order_ts"])
     return record
@@ -201,9 +201,10 @@ class Lab1DataPublisher:
         if not self.dry_run:
             self.purge_topic(topic)
 
+        now_ms = int(time.time() * 1000)
         for idx, row in enumerate(rows, 1):
             try:
-                value_dict = _coerce_row(topic, row)
+                value_dict = _coerce_row(topic, row, now_ms=now_ms)
 
                 if ts_field and ts_offset_ms and ts_field in value_dict:
                     value_dict[ts_field] += ts_offset_ms
@@ -278,7 +279,7 @@ def main():
     for topic in ("customers", "products", "orders"):
         f = data_dir / f"{topic}.csv"
         if not f.exists():
-            logger.error(f"Data file not found: {f} — run 'uv run generate_lab1_data' first")
+            logger.error(f"Data file not found: {f} — ensure you are on the mcp-lambda branch and files are present in assets/lab1/data/")
             return 1
 
     publisher = Lab1DataPublisher(
