@@ -6,6 +6,10 @@ In this lab, we'll create a Retrieval-Augmented Generation (RAG) pipeline using 
 
 ## Prerequisites
 
+> [!NOTE]
+>
+> These prerequisites are not required in instructor-led workshops — credentials will be provided for you.
+
 - **LLM Access:** AWS Bedrock API keys **OR** Azure OpenAI endpoint + API key
   - **Easy key creation:** Run `uv run api-keys create` to quickly generate ready-to-use credentials
 - **MongoDB vector database:** Pre-configured and managed for you - no setup required.
@@ -15,6 +19,10 @@ In this lab, we'll create a Retrieval-Augmented Generation (RAG) pipeline using 
 > **AWS Bedrock Users:** You must request access to Claude Sonnet 4.5 by filling out an Anthropic use case form. Visit the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog), select Claude Sonnet 4.5, open it in the Playground, and send a message - the form will appear automatically.
 
 ## Deployment
+
+> [!CAUTION]
+>
+> You must be logged in to the Confluent CLI before running `uv run deploy`. Run `confluent login` first if you haven't already.
 
 Use the setup script and select "Lab2" when prompted to automatically deploy Lab2 infrastructure:
 

@@ -85,6 +85,8 @@ SCHEMAS = {
 
 TS_FIELD = {"orders": "order_ts"}
 
+ORDERS_PUBLISH_INTERVAL_SECONDS = 120
+
 
 def _parse_iso_ms(s: str) -> int:
     return int(datetime.fromisoformat(s.replace("Z", "+00:00")).timestamp() * 1000)
@@ -206,7 +208,9 @@ class Lab1DataPublisher:
             try:
                 value_dict = _coerce_row(topic, row, now_ms=now_ms)
 
-                if ts_field and ts_offset_ms and ts_field in value_dict:
+                if topic == "orders":
+                    value_dict["order_ts"] = int(time.time() * 1000)
+                elif ts_field and ts_offset_ms and ts_field in value_dict:
                     value_dict[ts_field] += ts_offset_ms
 
                 if self.dry_run:
@@ -219,7 +223,17 @@ class Lab1DataPublisher:
                 self.producer.produce(topic, value=serialized, partition=0)
                 results["success"] += 1
 
-                if idx % 100 == 0:
+                if topic == "orders":
+                    self.producer.flush()
+                    self.logger.info(
+                        f"Published order {idx}/{len(rows)}: {value_dict['order_id']}"
+                    )
+                    if idx < len(rows):
+                        self.logger.info(
+                            f"Waiting {ORDERS_PUBLISH_INTERVAL_SECONDS}s before next order..."
+                        )
+                        time.sleep(ORDERS_PUBLISH_INTERVAL_SECONDS)
+                elif idx % 100 == 0:
                     self.producer.poll(0)
 
             except Exception as e:
@@ -296,15 +310,14 @@ def main():
         if args.dry_run:
             logger.info("[DRY RUN MODE]")
 
-        orders_file = data_dir / "orders.csv"
-        ts_offset_ms = compute_orders_ts_offset(orders_file)
-        offset_minutes = ts_offset_ms / 60000
-        logger.info(f"Rebasing order_ts by {offset_minutes:+.1f} minutes")
+        logger.info(
+            f"Orders will be published one every {ORDERS_PUBLISH_INTERVAL_SECONDS}s "
+            f"with order_ts set to publish time"
+        )
 
         all_results = {}
         for topic in ("customers", "products", "orders"):
-            offset = ts_offset_ms if topic == "orders" else 0
-            results = publisher.publish_topic(topic, data_dir / f"{topic}.csv", offset)
+            results = publisher.publish_topic(topic, data_dir / f"{topic}.csv", 0)
             all_results[topic] = results
 
         print(f"\n{'=' * 55}")
