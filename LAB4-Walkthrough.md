@@ -32,7 +32,7 @@ winget install astral-sh.uv Git.Git Hashicorp.Terraform ConfluentInc.Confluent-C
 
 ## Deploy the Demo
 
-First, clone the repo:
+If you haven't already, clone the repo:
 
 ```bash
 git clone https://github.com/confluentinc/quickstart-streaming-agents.git

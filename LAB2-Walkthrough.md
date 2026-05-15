@@ -20,6 +20,13 @@ In this lab, we'll create a Retrieval-Augmented Generation (RAG) pipeline using 
 
 ## Deployment
 
+If you haven't already, clone the repo:
+
+```bash
+git clone https://github.com/confluentinc/quickstart-streaming-agents.git
+cd quickstart-streaming-agents
+```
+
 Use the setup script and select "Lab2" when prompted to automatically deploy Lab2 infrastructure:
 
 ```bash
