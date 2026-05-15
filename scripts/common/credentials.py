@@ -66,24 +66,33 @@ def load_credentials_json(root: Path) -> Dict[str, str]:
         sys.exit(1)
 
     try:
-        with open(creds_file, 'r') as f:
+        with open(creds_file, "r") as f:
             creds = json.load(f)
     except json.JSONDecodeError as e:
         print(f"\nError: Invalid JSON in credentials.json: {e}")
         sys.exit(1)
 
     # Validate required fields
-    required_fields = ["cloud", "region", "confluent_cloud_api_key", "confluent_cloud_api_secret"]
+    required_fields = [
+        "cloud",
+        "region",
+        "confluent_cloud_api_key",
+        "confluent_cloud_api_secret",
+    ]
     missing = [f for f in required_fields if f not in creds or not creds[f]]
 
     if missing:
-        print(f"\nError: Missing required fields in credentials.json: {', '.join(missing)}")
+        print(
+            f"\nError: Missing required fields in credentials.json: {', '.join(missing)}"
+        )
         sys.exit(1)
 
     return creds
 
 
-def generate_confluent_api_keys(prefix: str = "streaming-agents") -> Tuple[Optional[str], Optional[str]]:
+def generate_confluent_api_keys(
+    prefix: str = "streaming-agents",
+) -> Tuple[Optional[str], Optional[str]]:
     """
     Generate Confluent API keys using CLI.
 
@@ -101,9 +110,18 @@ def generate_confluent_api_keys(prefix: str = "streaming-agents") -> Tuple[Optio
 
         print(f"Creating service account: {sa_name}...")
         sa_result = subprocess.run(
-            ["confluent", "iam", "service-account", "create", sa_name,
-             "--description", f"Service account for {prefix} streaming agents setup"],
-            capture_output=True, text=True, check=True
+            [
+                "confluent",
+                "iam",
+                "service-account",
+                "create",
+                sa_name,
+                "--description",
+                f"Service account for {prefix} streaming agents setup",
+            ],
+            capture_output=True,
+            text=True,
+            check=True,
         )
 
         sa_id = None
@@ -120,11 +138,20 @@ def generate_confluent_api_keys(prefix: str = "streaming-agents") -> Tuple[Optio
 
         print("Creating API key with Cloud Resource Management scope...")
         key_result = subprocess.run(
-            ["confluent", "api-key", "create",
-             "--service-account", sa_id,
-             "--resource", "cloud",
-             "--description", f"{prefix} setup key"],
-            capture_output=True, text=True, check=True
+            [
+                "confluent",
+                "api-key",
+                "create",
+                "--service-account",
+                sa_id,
+                "--resource",
+                "cloud",
+                "--description",
+                f"{prefix} setup key",
+            ],
+            capture_output=True,
+            text=True,
+            check=True,
         )
 
         api_key = api_secret = None
@@ -142,10 +169,20 @@ def generate_confluent_api_keys(prefix: str = "streaming-agents") -> Tuple[Optio
             print("Assigning OrganizationAdmin role...")
             try:
                 subprocess.run(
-                    ["confluent", "iam", "rbac", "role-binding", "create",
-                     "--principal", f"User:{sa_id}",
-                     "--role", "OrganizationAdmin"],
-                    capture_output=True, text=True, check=True
+                    [
+                        "confluent",
+                        "iam",
+                        "rbac",
+                        "role-binding",
+                        "create",
+                        "--principal",
+                        f"User:{sa_id}",
+                        "--role",
+                        "OrganizationAdmin",
+                    ],
+                    capture_output=True,
+                    text=True,
+                    check=True,
                 )
                 print("✓ API keys generated successfully!")
                 return api_key, api_secret

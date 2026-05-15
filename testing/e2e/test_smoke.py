@@ -37,6 +37,7 @@ def test_fixture_setup():
         # Verify credentials.json exists
         import os
         from pathlib import Path
+
         creds_file = Path.cwd() / "credentials.json"
         assert creds_file.exists(), "credentials.json not created"
         print("✅ credentials.json exists in project root")

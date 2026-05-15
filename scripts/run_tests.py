@@ -42,23 +42,44 @@ Environment Variables:
 Infrastructure Management:
   By default, infrastructure is KEPT on test failure (for debugging).
   Use --resume to rerun tests after fixing issues.
-"""
+""",
     )
 
-    parser.add_argument("--resume", action="store_true",
-                       help="Resume from existing deployment (skip deploy/teardown)")
-    parser.add_argument("--quick", action="store_true",
-                       help="Run smoke tests only (fast validation)")
-    parser.add_argument("--no-teardown", action="store_true",
-                       help="Keep infrastructure after tests (for debugging)")
-    parser.add_argument("-k", type=str, default=None,
-                       help="Only run tests matching pattern")
-    parser.add_argument("-v", "--verbose", action="count", default=0,
-                       help="Increase verbosity (-v, -vv, -vvv)")
-    parser.add_argument("--timeout", type=int, default=5400,
-                       help="Test timeout in seconds (default: 5400 = 90 min)")
-    parser.add_argument("path", nargs="?", default="testing/e2e",
-                       help="Test path (default: testing/e2e)")
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        help="Resume from existing deployment (skip deploy/teardown)",
+    )
+    parser.add_argument(
+        "--quick", action="store_true", help="Run smoke tests only (fast validation)"
+    )
+    parser.add_argument(
+        "--no-teardown",
+        action="store_true",
+        help="Keep infrastructure after tests (for debugging)",
+    )
+    parser.add_argument(
+        "-k", type=str, default=None, help="Only run tests matching pattern"
+    )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="count",
+        default=0,
+        help="Increase verbosity (-v, -vv, -vvv)",
+    )
+    parser.add_argument(
+        "--timeout",
+        type=int,
+        default=5400,
+        help="Test timeout in seconds (default: 5400 = 90 min)",
+    )
+    parser.add_argument(
+        "path",
+        nargs="?",
+        default="testing/e2e",
+        help="Test path (default: testing/e2e)",
+    )
 
     args = parser.parse_args()
 
@@ -101,27 +122,27 @@ Infrastructure Management:
     if "-s" not in cmd:
         cmd.append("-s")
 
-    print(f"\n{'='*70}")
+    print(f"\n{'=' * 70}")
     print(f"Running: {' '.join(cmd)}")
-    print(f"{'='*70}\n")
+    print(f"{'=' * 70}\n")
 
     # Execute pytest
     result = subprocess.run(cmd, env=env)
 
     # Print summary
     if result.returncode == 0:
-        print(f"\n{'='*70}")
+        print(f"\n{'=' * 70}")
         print("✅ Tests passed!")
-        print(f"{'='*70}\n")
+        print(f"{'=' * 70}\n")
 
         if args.resume or args.no_teardown:
             print("💡 Reminder: Infrastructure is still deployed")
             print("   To clean up: uv run destroy --testing")
             print("   To rerun tests: uv run tests --resume")
     else:
-        print(f"\n{'='*70}")
+        print(f"\n{'=' * 70}")
         print("❌ Tests failed")
-        print(f"{'='*70}\n")
+        print(f"{'=' * 70}\n")
 
         if not args.resume and not args.no_teardown:
             print("💡 Infrastructure kept automatically for debugging")

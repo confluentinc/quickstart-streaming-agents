@@ -26,8 +26,17 @@ import time
 from pathlib import Path
 from typing import Any, Dict
 
-from .common.cloud_detection import auto_detect_cloud_provider, validate_cloud_provider, suggest_cloud_provider
-from .common.terraform import extract_kafka_credentials, validate_terraform_state, get_project_root
+from .common.cloud_detection import (
+    auto_detect_cloud_provider,
+    validate_cloud_provider,
+    suggest_cloud_provider,
+)
+from .common.login_checks import ensure_confluent_login
+from .common.terraform import (
+    extract_kafka_credentials,
+    validate_terraform_state,
+    get_project_root,
+)
 from .common.logging_utils import setup_logging as _base_setup_logging
 
 
@@ -51,9 +60,7 @@ class QueryPublisherCLI:
         "type": "record",
         "name": "queries_value",
         "namespace": "org.apache.flink.avro.generated.record",
-        "fields": [
-            {"name": "query", "type": ["null", "string"], "default": None}
-        ],
+        "fields": [{"name": "query", "type": ["null", "string"], "default": None}],
     }
 
     def __init__(
@@ -65,7 +72,7 @@ class QueryPublisherCLI:
         schema_registry_api_key: str,
         schema_registry_api_secret: str,
         environment_id: str = None,
-        cluster_id: str = None
+        cluster_id: str = None,
     ):
         """Initialize the publisher with Kafka and Schema Registry configuration."""
         self.bootstrap_servers = bootstrap_servers
@@ -85,10 +92,7 @@ class QueryPublisherCLI:
     def _create_schema_file(self) -> None:
         """Create temporary Avro schema file."""
         self.schema_file = tempfile.NamedTemporaryFile(
-            mode='w',
-            suffix='.avsc',
-            delete=False,
-            prefix='queries_schema_'
+            mode="w", suffix=".avsc", delete=False, prefix="queries_schema_"
         )
         json.dump(self.QUERY_VALUE_SCHEMA, self.schema_file)
         self.schema_file.flush()
@@ -112,15 +116,27 @@ class QueryPublisherCLI:
 
             # Prepare confluent CLI command
             cmd = [
-                "confluent", "kafka", "topic", "produce", topic,
-                "--value-format", "avro",
-                "--schema", self.schema_file.name,
-                "--bootstrap", self.bootstrap_servers,
-                "--api-key", self.kafka_api_key,
-                "--api-secret", self.kafka_api_secret,
-                "--schema-registry-endpoint", self.schema_registry_url,
-                "--schema-registry-api-key", self.schema_registry_api_key,
-                "--schema-registry-api-secret", self.schema_registry_api_secret,
+                "confluent",
+                "kafka",
+                "topic",
+                "produce",
+                topic,
+                "--value-format",
+                "avro",
+                "--schema",
+                self.schema_file.name,
+                "--bootstrap",
+                self.bootstrap_servers,
+                "--api-key",
+                self.kafka_api_key,
+                "--api-secret",
+                self.kafka_api_secret,
+                "--schema-registry-endpoint",
+                self.schema_registry_url,
+                "--schema-registry-api-key",
+                self.schema_registry_api_key,
+                "--schema-registry-api-secret",
+                self.schema_registry_api_secret,
             ]
 
             # Add environment and cluster if provided
@@ -137,7 +153,7 @@ class QueryPublisherCLI:
                 input=json.dumps(value) + "\n",
                 capture_output=True,
                 text=True,
-                timeout=30
+                timeout=30,
             )
 
             if result.returncode != 0:
@@ -173,30 +189,24 @@ Examples:
   %(prog)s "How do I use window functions?"
   %(prog)s aws "What is watermarking?"
   %(prog)s azure --verbose
-        """
+        """,
     )
 
     parser.add_argument(
         "cloud_provider",
         nargs="?",
         choices=["aws", "azure"],
-        help="Cloud provider (aws or azure). If not specified, will auto-detect."
+        help="Cloud provider (aws or azure). If not specified, will auto-detect.",
     )
     parser.add_argument(
         "query",
         nargs="?",
-        help="Query to publish. If not provided, interactive mode will be used."
+        help="Query to publish. If not provided, interactive mode will be used.",
     )
     parser.add_argument(
-        "--topic",
-        default="queries",
-        help="Kafka topic name (default: queries)"
+        "--topic", default="queries", help="Kafka topic name (default: queries)"
     )
-    parser.add_argument(
-        "--verbose",
-        action="store_true",
-        help="Enable verbose logging"
-    )
+    parser.add_argument("--verbose", action="store_true", help="Enable verbose logging")
 
     args = parser.parse_args()
 
@@ -212,7 +222,9 @@ Examples:
         if args.query in ["aws", "azure"]:
             cloud_provider = args.query
             args.query = None
-            logger.debug(f"Interpreted first argument as cloud provider: {cloud_provider}")
+            logger.debug(
+                f"Interpreted first argument as cloud provider: {cloud_provider}"
+            )
         else:
             cloud_provider = auto_detect_cloud_provider()
             if not cloud_provider:
@@ -221,7 +233,9 @@ Examples:
                     logger.info(f"Auto-detected cloud provider: {suggestion}")
                     cloud_provider = suggestion
                 else:
-                    print("❌ Could not auto-detect cloud provider. Please specify 'aws' or 'azure'.")
+                    print(
+                        "❌ Could not auto-detect cloud provider. Please specify 'aws' or 'azure'."
+                    )
                     return 1
 
     # Validate cloud provider
@@ -235,6 +249,9 @@ Examples:
     except Exception as e:
         print(f"❌ Could not find project root: {e}")
         return 1
+
+    # Ensure Confluent CLI is logged in (auto-login from saved creds if needed)
+    ensure_confluent_login()
 
     # Validate terraform state
     try:
@@ -272,7 +289,7 @@ Examples:
             schema_registry_api_key=credentials["schema_registry_api_key"],
             schema_registry_api_secret=credentials["schema_registry_api_secret"],
             environment_id=credentials.get("environment_id"),
-            cluster_id=credentials.get("cluster_id")
+            cluster_id=credentials.get("cluster_id"),
         )
     except Exception as e:
         print(f"❌ Failed to initialize publisher: {e}")
@@ -291,8 +308,12 @@ Examples:
         if credentials.get("environment_id") and credentials.get("cluster_id"):
             env_id = credentials["environment_id"]
             cluster_id = credentials["cluster_id"]
-            print(f"\n  View messages:  https://confluent.cloud/environments/{env_id}/clusters/{cluster_id}/topics/{args.topic}/message-viewer")
-            print(f"  View responses: https://confluent.cloud/environments/{env_id}/clusters/{cluster_id}/topics/search_results_response/message-viewer")
+            print(
+                f"\n  View messages:  https://confluent.cloud/environments/{env_id}/clusters/{cluster_id}/topics/{args.topic}/message-viewer"
+            )
+            print(
+                f"  View responses: https://confluent.cloud/environments/{env_id}/clusters/{cluster_id}/topics/search_results_response/message-viewer"
+            )
 
         return 0
     finally:

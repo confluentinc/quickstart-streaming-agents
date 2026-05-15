@@ -35,7 +35,11 @@ _PREFIX = "test-lab4"
 _SET_RE = re.compile(r"SET\s+'([^']+)'\s*=\s*'([^']+)'\s*;\s*", re.IGNORECASE)
 
 _VALID_VERDICTS = {
-    "APPROVE", "APPROVE_PARTIAL", "REQUEST_DOCS", "DENY_INELIGIBLE", "DENY_FRAUD"
+    "APPROVE",
+    "APPROVE_PARTIAL",
+    "REQUEST_DOCS",
+    "DENY_INELIGIBLE",
+    "DENY_FRAUD",
 }
 
 
@@ -159,9 +163,15 @@ class TestLab4FraudDetection:
 
         walkthrough = PROJECT_ROOT / "LAB4-Walkthrough.md"
         sql = _parse_lab4_sql(walkthrough)
-        assert sql.get("claims_anomalies_by_city"), "Could not parse claims_anomalies_by_city SQL"
-        assert sql.get("claims_to_investigate"), "Could not parse claims_to_investigate SQL"
-        assert sql.get("claims_to_investigate_with_policies"), "Could not parse claims_to_investigate_with_policies SQL"
+        assert sql.get("claims_anomalies_by_city"), (
+            "Could not parse claims_anomalies_by_city SQL"
+        )
+        assert sql.get("claims_to_investigate"), (
+            "Could not parse claims_to_investigate SQL"
+        )
+        assert sql.get("claims_to_investigate_with_policies"), (
+            "Could not parse claims_to_investigate_with_policies SQL"
+        )
         assert sql.get("create_agent"), "Could not parse CREATE AGENT SQL"
         assert sql.get("claims_reviewed"), "Could not parse claims_reviewed SQL"
 
@@ -189,24 +199,33 @@ class TestLab4FraudDetection:
                 check=False,
             )
             count = poll_until(
-                getter=lambda: kafka.get_topic_message_count("claims", max_messages=34000),
+                getter=lambda: kafka.get_topic_message_count(
+                    "claims", max_messages=34000
+                ),
                 condition=lambda c: c >= 33000,
                 timeout=600,
                 interval=30,
                 description="claims topic has >= 33,000 messages",
             )
-        assert count >= 33000, f"claims topic has only {count} messages (expected >= 33,000) — was Lab 4 deployed?"
+        assert count >= 33000, (
+            f"claims topic has only {count} messages (expected >= 33,000) — was Lab 4 deployed?"
+        )
 
     @pytest.mark.order(2)
     def test_claims_anomalies_by_city(self, env):
         """Create claims_anomalies_by_city and verify only Naples anomaly fires (max 2)."""
         flink, kafka, sql = env["flink"], env["kafka"], env["sql"]
         _ensure_statement(
-            flink, f"{_PREFIX}-anomalies-by-city", sql["claims_anomalies_by_city"], timeout=360
+            flink,
+            f"{_PREFIX}-anomalies-by-city",
+            sql["claims_anomalies_by_city"],
+            timeout=360,
         )
 
         def _get_city_anomalies():
-            return kafka.consume_messages("claims_anomalies_by_city", max_messages=3, timeout=15)
+            return kafka.consume_messages(
+                "claims_anomalies_by_city", max_messages=3, timeout=15
+            )
 
         anomalies = poll_until(
             getter=_get_city_anomalies,
@@ -215,7 +234,9 @@ class TestLab4FraudDetection:
             interval=30,
             description="claims_anomalies_by_city has >= 1 message",
         )
-        assert anomalies, "claims_anomalies_by_city is empty — Naples anomaly not detected"
+        assert anomalies, (
+            "claims_anomalies_by_city is empty — Naples anomaly not detected"
+        )
         assert len(anomalies) <= 2, (
             f"claims_anomalies_by_city has {len(anomalies)} anomalies (expected <= 2): "
             f"{[m.get('city') for m in anomalies]}"
@@ -232,7 +253,10 @@ class TestLab4FraudDetection:
         """Create claims_to_investigate and verify claims enter the investigation queue."""
         flink, kafka, sql = env["flink"], env["kafka"], env["sql"]
         _ensure_statement(
-            flink, f"{_PREFIX}-claims-to-investigate", sql["claims_to_investigate"], timeout=360
+            flink,
+            f"{_PREFIX}-claims-to-investigate",
+            sql["claims_to_investigate"],
+            timeout=360,
         )
         has_messages = poll_until(
             getter=lambda: kafka.check_topic_has_messages(
@@ -243,7 +267,9 @@ class TestLab4FraudDetection:
             interval=30,
             description="claims_to_investigate has >= 1 message",
         )
-        assert has_messages, "claims_to_investigate is empty — claims_anomalies_by_city may have no anomalies yet"
+        assert has_messages, (
+            "claims_to_investigate is empty — claims_anomalies_by_city may have no anomalies yet"
+        )
 
     @pytest.mark.order(4)
     def test_claims_to_investigate_with_policies(self, env):
@@ -286,7 +312,9 @@ class TestLab4FraudDetection:
             interval=30,
             description="claims_reviewed has >= 1 message",
         )
-        assert messages, "claims_reviewed topic is empty — claims_to_investigate pipeline may have no data"
+        assert messages, (
+            "claims_reviewed topic is empty — claims_to_investigate pipeline may have no data"
+        )
 
         first = messages[0]
         verdict = first.get("verdict") or first.get("VERDICT") or ""

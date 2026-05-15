@@ -27,9 +27,7 @@ from typing import Dict, List, Tuple, Any
 
 
 def extract_sql_from_terraform(
-    lab_terraform_dir: Path,
-    core_terraform_dir: Path,
-    cloud_provider: str
+    lab_terraform_dir: Path, core_terraform_dir: Path, cloud_provider: str
 ) -> Tuple[List[Dict[str, str]], List[Dict[str, str]]]:
     """
     Extract all Flink SQL commands for a lab from Terraform state.
@@ -79,41 +77,37 @@ def extract_flink_statements(terraform_dir: Path) -> List[Dict[str, str]]:
         # Extract resources from state (direct state file has different structure than terraform show)
         # State file has resources as top-level array with instances inside
         resources = []
-        for resource in state.get('resources', []):
-            for instance in resource.get('instances', []):
+        for resource in state.get("resources", []):
+            for instance in resource.get("instances", []):
                 # Create a resource dict similar to terraform show output
-                resources.append({
-                    'type': resource.get('type'),
-                    'name': resource.get('name'),
-                    'values': instance.get('attributes', {})
-                })
+                resources.append(
+                    {
+                        "type": resource.get("type"),
+                        "name": resource.get("name"),
+                        "values": instance.get("attributes", {}),
+                    }
+                )
 
         # Process confluent_flink_statement resources
         for resource in resources:
-            if resource.get('type') == 'confluent_flink_statement':
-                values = resource.get('values', {})
-                statement_name = values.get('statement_name', 'Unknown')
-                raw_sql = values.get('statement', '')
+            if resource.get("type") == "confluent_flink_statement":
+                values = resource.get("values", {})
+                statement_name = values.get("statement_name", "Unknown")
+                raw_sql = values.get("statement", "")
 
                 # Sanitize SQL for documentation
                 sanitized_sql = sanitize_sql(raw_sql)
 
-                commands.append({
-                    'title': statement_name,
-                    'sql': sanitized_sql
-                })
+                commands.append({"title": statement_name, "sql": sanitized_sql})
 
         # Process confluent_flink_connection resources (native, not SQL-based)
         for resource in resources:
-            if resource.get('type') == 'confluent_flink_connection':
-                values = resource.get('values', {})
+            if resource.get("type") == "confluent_flink_connection":
+                values = resource.get("values", {})
                 connection_sql = reconstruct_connection_sql(values)
-                connection_name = values.get('display_name', 'Unknown Connection')
+                connection_name = values.get("display_name", "Unknown Connection")
 
-                commands.append({
-                    'title': f"{connection_name}",
-                    'sql': connection_sql
-                })
+                commands.append({"title": f"{connection_name}", "sql": connection_sql})
 
     except subprocess.CalledProcessError as e:
         print(f"Warning: Failed to extract from {terraform_dir}: {e}")
@@ -124,8 +118,7 @@ def extract_flink_statements(terraform_dir: Path) -> List[Dict[str, str]]:
 
 
 def extract_core_llm_resources(
-    core_terraform_dir: Path,
-    cloud_provider: str
+    core_terraform_dir: Path, cloud_provider: str
 ) -> List[Dict[str, str]]:
     """
     Extract LLM connection and model resources from Core Terraform.
@@ -153,24 +146,33 @@ def extract_core_llm_resources(
 
         # Extract resources from state (direct state file structure)
         tf_resources = []
-        for resource in state.get('resources', []):
-            for instance in resource.get('instances', []):
+        for resource in state.get("resources", []):
+            for instance in resource.get("instances", []):
                 # Create a resource dict similar to terraform show output
-                tf_resources.append({
-                    'type': resource.get('type'),
-                    'name': resource.get('name'),
-                    'values': instance.get('attributes', {})
-                })
+                tf_resources.append(
+                    {
+                        "type": resource.get("type"),
+                        "name": resource.get("name"),
+                        "values": instance.get("attributes", {}),
+                    }
+                )
 
         # Look for LLM-related Flink statements
         # These typically have statement_name containing 'llm', 'model', 'textgen', or 'embedding'
-        llm_keywords = ['llm', 'model', 'textgen', 'embedding', 'bedrock', 'azureopenai']
+        llm_keywords = [
+            "llm",
+            "model",
+            "textgen",
+            "embedding",
+            "bedrock",
+            "azureopenai",
+        ]
 
         for resource in tf_resources:
-            if resource.get('type') == 'confluent_flink_statement':
-                values = resource.get('values', {})
-                statement_name = values.get('statement_name', '').lower()
-                raw_sql = values.get('statement', '')
+            if resource.get("type") == "confluent_flink_statement":
+                values = resource.get("values", {})
+                statement_name = values.get("statement_name", "").lower()
+                raw_sql = values.get("statement", "")
 
                 # Check if this is an LLM-related resource
                 if any(keyword in statement_name for keyword in llm_keywords):
@@ -179,27 +181,26 @@ def extract_core_llm_resources(
                     # Add comment to indicate it's from Core Terraform
                     commented_sql = f"-- Created in Core Terraform\n{sanitized_sql}"
 
-                    resources.append({
-                        'title': values.get('statement_name', 'Unknown'),
-                        'sql': commented_sql
-                    })
+                    resources.append(
+                        {
+                            "title": values.get("statement_name", "Unknown"),
+                            "sql": commented_sql,
+                        }
+                    )
 
         # Also check for LLM connection resources
         for resource in tf_resources:
-            if resource.get('type') == 'confluent_flink_connection':
-                values = resource.get('values', {})
-                conn_type = values.get('type', '').lower()
+            if resource.get("type") == "confluent_flink_connection":
+                values = resource.get("values", {})
+                conn_type = values.get("type", "").lower()
 
                 # Check if this is an LLM connection (Bedrock or AzureOpenAI)
-                if conn_type in ['bedrock', 'azureopenai']:
+                if conn_type in ["bedrock", "azureopenai"]:
                     connection_sql = reconstruct_connection_sql(values)
                     commented_sql = f"-- Created in Core Terraform\n{connection_sql}"
-                    connection_name = values.get('display_name', 'Unknown Connection')
+                    connection_name = values.get("display_name", "Unknown Connection")
 
-                    resources.append({
-                        'title': connection_name,
-                        'sql': commented_sql
-                    })
+                    resources.append({"title": connection_name, "sql": commented_sql})
 
     except subprocess.CalledProcessError as e:
         print(f"Warning: Failed to extract core resources: {e}")
@@ -221,9 +222,9 @@ def reconstruct_connection_sql(connection_values: Dict[str, Any]) -> str:
     Returns:
         SQL string for CREATE CONNECTION with actual credentials
     """
-    conn_type = connection_values.get('type', 'UNKNOWN')
-    display_name = connection_values.get('display_name', 'unknown-connection')
-    endpoint = connection_values.get('endpoint', '')
+    conn_type = connection_values.get("type", "UNKNOWN")
+    display_name = connection_values.get("display_name", "unknown-connection")
+    endpoint = connection_values.get("endpoint", "")
 
     # Build WITH clause - start with type and endpoint
     with_clauses = [f"'type' = '{conn_type}'"]
@@ -233,18 +234,20 @@ def reconstruct_connection_sql(connection_values: Dict[str, Any]) -> str:
 
     # Add all credential-related attributes (these come from state file unredacted)
     credential_attrs = [
-        'api-key', 'api_key',
-        'password',
-        'connection-string', 'connection_string',
-        'username',
-        'aws_access_key_id',
-        'aws_secret_access_key'
+        "api-key",
+        "api_key",
+        "password",
+        "connection-string",
+        "connection_string",
+        "username",
+        "aws_access_key_id",
+        "aws_secret_access_key",
     ]
 
     for attr in credential_attrs:
         if attr in connection_values and connection_values[attr]:
             # Use the attribute name with hyphens for SQL (Flink convention)
-            sql_attr_name = attr.replace('_', '-')
+            sql_attr_name = attr.replace("_", "-")
             with_clauses.append(f"'{sql_attr_name}' = '{connection_values[attr]}'")
 
     with_clause = ",\n  ".join(with_clauses)
@@ -272,11 +275,7 @@ def sanitize_sql(sql: str) -> str:
 
     # Remove full table qualification: `env`.`cluster`.`table` -> `table`
     # This regex looks for backtick-quoted identifiers with 3 parts
-    sanitized = re.sub(
-        r'`[^`]+`\.`[^`]+`\.`([^`]+)`',
-        r'`\1`',
-        sanitized
-    )
+    sanitized = re.sub(r"`[^`]+`\.`[^`]+`\.`([^`]+)`", r"`\1`", sanitized)
 
     return sanitized
 
@@ -298,7 +297,7 @@ def extract_sql_from_lab_walkthroughs(md_path: Path) -> str:
     """
     txt = md_path.read_text()
     # Match either: numbered headers OR sql blocks (not no-parse) OR bash blocks (not no-parse)
-    pattern = r'(^#{1,3}\s+\d+\.[^\n]+)|(^```sql(?!\s+no-parse)\n.*?^```)|(^```bash(?!\s+no-parse)\n.*?^```)'
-    return '\n\n'.join(
+    pattern = r"(^#{1,3}\s+\d+\.[^\n]+)|(^```sql(?!\s+no-parse)\n.*?^```)|(^```bash(?!\s+no-parse)\n.*?^```)"
+    return "\n\n".join(
         m.group(0) for m in re.finditer(pattern, txt, re.MULTILINE | re.DOTALL)
     )

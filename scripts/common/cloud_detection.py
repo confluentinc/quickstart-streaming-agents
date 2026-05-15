@@ -51,6 +51,7 @@ def detect_from_state_files(project_root: Optional[Path] = None) -> Optional[str
     """
     if project_root is None:
         from .terraform import get_project_root
+
         project_root = get_project_root()
 
     # Check for unified terraform directory state files
@@ -59,7 +60,8 @@ def detect_from_state_files(project_root: Optional[Path] = None) -> Optional[str
         # Read state file to determine actual cloud provider
         try:
             import json
-            with open(terraform_core, 'r') as f:
+
+            with open(terraform_core, "r") as f:
                 state = json.load(f)
             # Try to find cloud_provider in outputs
             outputs = state.get("outputs", {})
@@ -167,6 +169,7 @@ def suggest_cloud_provider(project_root: Optional[Path] = None) -> None:
     """
     if project_root is None:
         from .terraform import get_project_root
+
         try:
             project_root = get_project_root()
         except FileNotFoundError:
@@ -185,6 +188,7 @@ def suggest_cloud_provider(project_root: Optional[Path] = None) -> None:
         # Try to detect cloud provider from state
         try:
             import json
+
             with open(terraform_core) as f:
                 state = json.load(f)
                 outputs = state.get("outputs", {})

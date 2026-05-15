@@ -113,7 +113,3 @@ output "random_id" {
   description = "Random ID suffix used for resource naming"
 }
 
-output "owner_email" {
-  value       = var.owner_email
-  description = "Owner email for resource tagging"
-}

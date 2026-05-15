@@ -23,6 +23,7 @@ from typing import Optional
 
 try:
     from confluent_kafka import Consumer, KafkaError, KafkaException
+
     CONFLUENT_KAFKA_AVAILABLE = True
 except ImportError:
     CONFLUENT_KAFKA_AVAILABLE = False
@@ -30,6 +31,7 @@ except ImportError:
 try:
     import avro.io
     import avro.schema
+
     AVRO_AVAILABLE = True
 except ImportError:
     AVRO_AVAILABLE = False
@@ -50,7 +52,13 @@ _SCHEMAS = {
 }
 
 _FIELDNAMES = {
-    "customers": ["customer_id", "customer_email", "customer_name", "state", "updated_at"],
+    "customers": [
+        "customer_id",
+        "customer_email",
+        "customer_name",
+        "state",
+        "updated_at",
+    ],
     "products": ["product_id", "product_name", "price", "department", "updated_at"],
     "orders": ["order_id", "customer_id", "product_id", "price", "order_ts"],
 }
@@ -61,15 +69,22 @@ _TS_FIELDS = {"customers": "updated_at", "products": "updated_at", "orders": "or
 def _decode_avro(raw_bytes: bytes, schema_str: str) -> dict:
     """Decode Confluent wire-format Avro (magic byte + 4-byte schema ID + payload)."""
     if len(raw_bytes) < 5 or raw_bytes[0] != 0:
-        raise ValueError(f"Invalid Avro wire format (len={len(raw_bytes)}, magic={raw_bytes[0] if raw_bytes else 'empty'})")
+        raise ValueError(
+            f"Invalid Avro wire format (len={len(raw_bytes)}, magic={raw_bytes[0] if raw_bytes else 'empty'})"
+        )
     schema = avro.schema.parse(schema_str)
     reader = avro.io.DatumReader(schema)
     result = reader.read(avro.io.BinaryDecoder(io.BytesIO(raw_bytes[5:])))
     # Convert datetime objects to ISO-8601 strings
     for k, v in result.items():
         if isinstance(v, datetime.datetime):
-            result[k] = v.strftime("%Y-%m-%dT%H:%M:%S.000Z") if v.tzinfo else \
-                        v.replace(tzinfo=datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.000Z")
+            result[k] = (
+                v.strftime("%Y-%m-%dT%H:%M:%S.000Z")
+                if v.tzinfo
+                else v.replace(tzinfo=datetime.timezone.utc).strftime(
+                    "%Y-%m-%dT%H:%M:%S.000Z"
+                )
+            )
     return result
 
 
@@ -183,7 +198,9 @@ def main():
     logger = setup_logging(args.verbose)
 
     if not CONFLUENT_KAFKA_AVAILABLE:
-        logger.error("confluent-kafka not available. Run: uv pip install confluent-kafka")
+        logger.error(
+            "confluent-kafka not available. Run: uv pip install confluent-kafka"
+        )
         return 1
     if not AVRO_AVAILABLE:
         logger.error("avro-python3 not available. Run: uv pip install avro-python3")

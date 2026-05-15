@@ -47,7 +47,7 @@ def write_tfvars_file(tfvars_path: Path, content: str) -> bool:
         tfvars_path.parent.mkdir(parents=True, exist_ok=True)
 
         # Write new content
-        with open(tfvars_path, 'w') as f:
+        with open(tfvars_path, "w") as f:
             f.write(content)
 
         return True
@@ -62,12 +62,11 @@ def generate_core_tfvars_content(
     api_key: str,
     api_secret: str,
     cloud_provider: Optional[str] = None,
-    owner_email: Optional[str] = None,
     aws_bedrock_access_key: Optional[str] = None,
     aws_bedrock_secret_key: Optional[str] = None,
     aws_session_token: Optional[str] = None,
     azure_openai_endpoint: Optional[str] = None,
-    azure_openai_api_key: Optional[str] = None
+    azure_openai_api_key: Optional[str] = None,
 ) -> str:
     """
     Generate terraform.tfvars content for Core module.
@@ -78,7 +77,6 @@ def generate_core_tfvars_content(
         api_key: Confluent Cloud API key
         api_secret: Confluent Cloud API secret
         cloud_provider: Cloud provider value for terraform variable (defaults to cloud)
-        owner_email: Owner email for resource tagging (optional)
         aws_bedrock_access_key: AWS Bedrock access key
         aws_bedrock_secret_key: AWS Bedrock secret key
         azure_openai_endpoint: Azure OpenAI endpoint URL
@@ -96,9 +94,6 @@ confluent_cloud_api_secret = "{api_secret}"
 cloud_provider = "{provider}"
 """
 
-    if owner_email:
-        content += f'owner_email = "{owner_email}"\n'
-
     # AWS Bedrock credentials
     if cloud == "aws" and aws_bedrock_access_key and aws_bedrock_secret_key:
         content += f'aws_bedrock_access_key = "{aws_bedrock_access_key}"\n'
@@ -115,9 +110,7 @@ cloud_provider = "{provider}"
 
 
 def generate_lab1_tfvars_content(
-    mcp_token: str,
-    mcp_backend: str = "lambda",
-    zapier_token: str = ""
+    mcp_token: str, mcp_backend: str = "lambda", zapier_token: str = ""
 ) -> str:
     """
     Generate terraform.tfvars content for Lab1 module.
@@ -141,9 +134,7 @@ zapier_token = "{zapier_token}"
 
 
 def generate_lab2_tfvars_content(
-    mongo_conn: str,
-    mongo_user: str,
-    mongo_pass: str
+    mongo_conn: str, mongo_user: str, mongo_pass: str
 ) -> str:
     """
     Generate terraform.tfvars content for Lab2 module.
@@ -173,7 +164,7 @@ def generate_lab3_tfvars_content(
     mongo_user: Optional[str] = None,
     mongo_pass: Optional[str] = None,
     mcp_backend: str = "lambda",
-    zapier_token: str = ""
+    zapier_token: str = "",
 ) -> str:
     """
     Generate terraform.tfvars content for Lab3 module.
@@ -208,11 +199,7 @@ zapier_token = "{zapier_token}"
 
 
 def write_tfvars_for_deployment(
-    root: Path,
-    cloud: str,
-    region: str,
-    creds: Dict[str, str],
-    envs_to_deploy: list
+    root: Path, cloud: str, region: str, creds: Dict[str, str], envs_to_deploy: list
 ) -> None:
     """
     Write terraform.tfvars files for all environments being deployed.
@@ -228,24 +215,44 @@ def write_tfvars_for_deployment(
     if "core" in envs_to_deploy:
         api_key = get_credential_value(creds, "confluent_cloud_api_key")
         api_secret = get_credential_value(creds, "confluent_cloud_api_secret")
-        owner_email = get_credential_value(creds, "owner_email")
 
-        aws_bedrock_access_key = get_credential_value(creds, "aws_bedrock_access_key") if cloud == "aws" else None
-        aws_bedrock_secret_key = get_credential_value(creds, "aws_bedrock_secret_key") if cloud == "aws" else None
-        aws_session_token = get_credential_value(creds, "aws_session_token") if cloud == "aws" else None
-        azure_openai_endpoint = get_credential_value(creds, "azure_openai_endpoint") if cloud == "azure" else None
-        azure_openai_api_key = get_credential_value(creds, "azure_openai_api_key") if cloud == "azure" else None
+        aws_bedrock_access_key = (
+            get_credential_value(creds, "aws_bedrock_access_key")
+            if cloud == "aws"
+            else None
+        )
+        aws_bedrock_secret_key = (
+            get_credential_value(creds, "aws_bedrock_secret_key")
+            if cloud == "aws"
+            else None
+        )
+        aws_session_token = (
+            get_credential_value(creds, "aws_session_token") if cloud == "aws" else None
+        )
+        azure_openai_endpoint = (
+            get_credential_value(creds, "azure_openai_endpoint")
+            if cloud == "azure"
+            else None
+        )
+        azure_openai_api_key = (
+            get_credential_value(creds, "azure_openai_api_key")
+            if cloud == "azure"
+            else None
+        )
 
         if api_key and api_secret:
             core_tfvars_path = root / "terraform" / "core" / "terraform.tfvars"
             content = generate_core_tfvars_content(
-                cloud, region, api_key, api_secret,
-                cloud_provider=cloud, owner_email=owner_email,
+                cloud,
+                region,
+                api_key,
+                api_secret,
+                cloud_provider=cloud,
                 aws_bedrock_access_key=aws_bedrock_access_key,
                 aws_bedrock_secret_key=aws_bedrock_secret_key,
                 aws_session_token=aws_session_token,
                 azure_openai_endpoint=azure_openai_endpoint,
-                azure_openai_api_key=azure_openai_api_key
+                azure_openai_api_key=azure_openai_api_key,
             )
             if write_tfvars_file(core_tfvars_path, content):
                 print(f"✓ Wrote {core_tfvars_path}")
@@ -257,7 +264,9 @@ def write_tfvars_for_deployment(
         mcp_backend = (get_credential_value(creds, "mcp_backend") or "lambda").lower()
         active_token = zapier_token if mcp_backend == "zapier" else mcp_token
         if active_token:
-            lab1_tfvars_path = root / "terraform" / "lab1-tool-calling" / "terraform.tfvars"
+            lab1_tfvars_path = (
+                root / "terraform" / "lab1-tool-calling" / "terraform.tfvars"
+            )
             content = generate_lab1_tfvars_content(mcp_token, mcp_backend, zapier_token)
             if write_tfvars_file(lab1_tfvars_path, content):
                 print(f"✓ Wrote {lab1_tfvars_path}")
@@ -269,7 +278,9 @@ def write_tfvars_for_deployment(
         mongo_pass = get_credential_value(creds, "mongodb_password")
 
         if mongo_conn and mongo_user and mongo_pass:
-            lab2_tfvars_path = root / "terraform" / "lab2-vector-search" / "terraform.tfvars"
+            lab2_tfvars_path = (
+                root / "terraform" / "lab2-vector-search" / "terraform.tfvars"
+            )
             content = generate_lab2_tfvars_content(mongo_conn, mongo_user, mongo_pass)
             if write_tfvars_file(lab2_tfvars_path, content):
                 print(f"✓ Wrote {lab2_tfvars_path}")
@@ -287,14 +298,14 @@ def write_tfvars_for_deployment(
         mongo_pass = get_credential_value(creds, "mongodb_password")
 
         if active_token:
-            lab3_tfvars_path = root / "terraform" / "lab3-agentic-fleet-management" / "terraform.tfvars"
+            lab3_tfvars_path = (
+                root
+                / "terraform"
+                / "lab3-agentic-fleet-management"
+                / "terraform.tfvars"
+            )
             content = generate_lab3_tfvars_content(
-                mcp_token,
-                mongo_conn,
-                mongo_user,
-                mongo_pass,
-                mcp_backend,
-                zapier_token
+                mcp_token, mongo_conn, mongo_user, mongo_pass, mcp_backend, zapier_token
             )
             if write_tfvars_file(lab3_tfvars_path, content):
                 print(f"✓ Wrote {lab3_tfvars_path}")

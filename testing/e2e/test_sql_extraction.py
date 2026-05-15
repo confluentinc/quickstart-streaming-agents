@@ -18,7 +18,13 @@ def test_sql_extraction():
     print(f"✅ Parsed {len(sql_statements)} SQL statements")
 
     # Verify all required statements
-    required = ['anomalies_per_zone', 'anomalies_enriched', 'create_tool', 'create_agent', 'completed_actions']
+    required = [
+        "anomalies_per_zone",
+        "anomalies_enriched",
+        "create_tool",
+        "create_agent",
+        "completed_actions",
+    ]
     for stmt in required:
         assert stmt in sql_statements, f"Missing statement: {stmt}"
         print(f"  ✅ {stmt}: {len(sql_statements[stmt])} chars")

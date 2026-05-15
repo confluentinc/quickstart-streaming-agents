@@ -27,16 +27,28 @@ from typing import Any, Dict, Optional, Tuple
 
 import yaml
 
-from .common.cloud_detection import auto_detect_cloud_provider, validate_cloud_provider, suggest_cloud_provider
-from .common.login_checks import check_confluent_login
-from .common.terraform import extract_kafka_credentials, validate_terraform_state, get_project_root
+from .common.cloud_detection import (
+    auto_detect_cloud_provider,
+    validate_cloud_provider,
+    suggest_cloud_provider,
+)
+from .common.login_checks import check_confluent_login, ensure_confluent_login
+from .common.terraform import (
+    extract_kafka_credentials,
+    validate_terraform_state,
+    get_project_root,
+)
 
 # Global lock to ensure only one thread checks login at a time
 _login_check_lock = threading.Lock()
 _login_verified = False
 
 try:
-    from .common.clear_mongodb import extract_mongodb_credentials, clear_mongodb_collection
+    from .common.clear_mongodb import (
+        extract_mongodb_credentials,
+        clear_mongodb_collection,
+    )
+
     CLEAR_MONGODB_AVAILABLE = True
 except ImportError:
     CLEAR_MONGODB_AVAILABLE = False
@@ -107,7 +119,7 @@ class FlinkDocsPublisherCLI:
         environment_id: str = None,
         cluster_id: str = None,
         dry_run: bool = False,
-        max_workers: int = 10
+        max_workers: int = 10,
     ):
         """Initialize the publisher with Kafka and Schema Registry configuration."""
         self.bootstrap_servers = bootstrap_servers
@@ -133,10 +145,7 @@ class FlinkDocsPublisherCLI:
     def _create_schema_file(self) -> None:
         """Create temporary Avro schema file."""
         self.schema_file = tempfile.NamedTemporaryFile(
-            mode='w',
-            suffix='.avsc',
-            delete=False,
-            prefix='documents_schema_'
+            mode="w", suffix=".avsc", delete=False, prefix="documents_schema_"
         )
         json.dump(self.DOCUMENT_VALUE_SCHEMA, self.schema_file)
         self.schema_file.flush()
@@ -155,13 +164,10 @@ class FlinkDocsPublisherCLI:
                 # Already verified by another worker
                 return True
 
-            # First worker to acquire lock performs the check
-            if check_confluent_login():
-                self._login_verified = True
-                return True
-            else:
-                self.logger.error("Confluent CLI login session expired during publishing")
-                return False
+            # First worker to acquire lock performs the check; auto-login from saved creds if needed
+            ensure_confluent_login()
+            self._login_verified = True
+            return True
 
     def parse_markdown_file(self, file_path: Path) -> Optional[Dict[str, Any]]:
         """
@@ -231,7 +237,9 @@ class FlinkDocsPublisherCLI:
             # Verify login once per publisher instance (thread-safe)
             # This prevents all workers from bombarding the login endpoint
             if not self._verify_login_once():
-                self.logger.error(f"Skipping document {document['document_id']}: Not logged in")
+                self.logger.error(
+                    f"Skipping document {document['document_id']}: Not logged in"
+                )
                 return False
 
             # Create Avro record with union type formatting
@@ -242,37 +250,67 @@ class FlinkDocsPublisherCLI:
             def wrap_string_array(items):
                 if not items:
                     return None
-                return {"array": [{"string": str(item)} if item is not None else None for item in items]}
+                return {
+                    "array": [
+                        {"string": str(item)} if item is not None else None
+                        for item in items
+                    ]
+                }
 
             value = {
                 "document_id": {"string": str(document["document_id"])},
                 "document_text": {"string": str(document["document_text"])},
-                "pages": {"string": str(document["pages"])} if document.get("pages") is not None else None,
-                "section_reference": {"string": str(document["section_reference"])} if document.get("section_reference") is not None else None,
-                "title": {"string": str(document["title"])} if document.get("title") is not None else None,
+                "pages": {"string": str(document["pages"])}
+                if document.get("pages") is not None
+                else None,
+                "section_reference": {"string": str(document["section_reference"])}
+                if document.get("section_reference") is not None
+                else None,
+                "title": {"string": str(document["title"])}
+                if document.get("title") is not None
+                else None,
                 "fraud_categories": wrap_string_array(document.get("fraud_categories")),
                 "policy_keywords": wrap_string_array(document.get("policy_keywords")),
-                "char_count": {"int": int(document["char_count"])} if document.get("char_count") is not None else None,
+                "char_count": {"int": int(document["char_count"])}
+                if document.get("char_count") is not None
+                else None,
             }
 
             if self.dry_run:
-                self.logger.info(f"[DRY RUN] Would publish document: {document['document_id']}")
-                self.logger.debug(f"[DRY RUN] Content length: {len(document['document_text'])} chars")
+                self.logger.info(
+                    f"[DRY RUN] Would publish document: {document['document_id']}"
+                )
+                self.logger.debug(
+                    f"[DRY RUN] Content length: {len(document['document_text'])} chars"
+                )
                 return True
 
             # Prepare confluent CLI command
             cmd = [
-                "confluent", "kafka", "topic", "produce", topic,
-                "--value-format", "avro",
-                "--schema", self.schema_file.name,
+                "confluent",
+                "kafka",
+                "topic",
+                "produce",
+                topic,
+                "--value-format",
+                "avro",
+                "--schema",
+                self.schema_file.name,
                 "--parse-key",
-                "--delimiter", ":",
-                "--bootstrap", self.bootstrap_servers,
-                "--api-key", self.kafka_api_key,
-                "--api-secret", self.kafka_api_secret,
-                "--schema-registry-endpoint", self.schema_registry_url,
-                "--schema-registry-api-key", self.schema_registry_api_key,
-                "--schema-registry-api-secret", self.schema_registry_api_secret,
+                "--delimiter",
+                ":",
+                "--bootstrap",
+                self.bootstrap_servers,
+                "--api-key",
+                self.kafka_api_key,
+                "--api-secret",
+                self.kafka_api_secret,
+                "--schema-registry-endpoint",
+                self.schema_registry_url,
+                "--schema-registry-api-key",
+                self.schema_registry_api_key,
+                "--schema-registry-api-secret",
+                self.schema_registry_api_secret,
             ]
 
             # Add environment and cluster if provided
@@ -289,22 +327,22 @@ class FlinkDocsPublisherCLI:
 
             # Run command with message as input
             result = subprocess.run(
-                cmd,
-                input=message,
-                capture_output=True,
-                text=True,
-                timeout=60
+                cmd, input=message, capture_output=True, text=True, timeout=60
             )
 
             if result.returncode != 0:
-                self.logger.error(f"Failed to publish document {document['document_id']}: {result.stderr}")
+                self.logger.error(
+                    f"Failed to publish document {document['document_id']}: {result.stderr}"
+                )
                 return False
 
             self.logger.info(f"Published document: {document['document_id']}")
             return True
 
         except subprocess.TimeoutExpired:
-            self.logger.error(f"Timeout while publishing document {document.get('document_id', 'unknown')} (60s)")
+            self.logger.error(
+                f"Timeout while publishing document {document.get('document_id', 'unknown')} (60s)"
+            )
             return False
         except Exception as e:
             self.logger.error(
@@ -312,7 +350,9 @@ class FlinkDocsPublisherCLI:
             )
             return False
 
-    def _process_single_file(self, file_path: Path, topic: str) -> Tuple[str, bool, Optional[str]]:
+    def _process_single_file(
+        self, file_path: Path, topic: str
+    ) -> Tuple[str, bool, Optional[str]]:
         """
         Process a single markdown file: parse and publish.
 
@@ -403,7 +443,9 @@ class FlinkDocsPublisherCLI:
                 self.logger.debug(f"Could not clean up schema file: {e}")
 
 
-def find_docs_directory(project_root: Path, lab: int, cloud_provider: str) -> Optional[Path]:
+def find_docs_directory(
+    project_root: Path, lab: int, cloud_provider: str
+) -> Optional[Path]:
     """
     Find the documentation directory for a specific lab.
 
@@ -423,7 +465,9 @@ def find_docs_directory(project_root: Path, lab: int, cloud_provider: str) -> Op
             return standard_path
 
         # Legacy location with markdown_chunks subdirectory
-        legacy_chunks_path = project_root / "assets" / "lab2" / "flink_docs" / "markdown_chunks"
+        legacy_chunks_path = (
+            project_root / "assets" / "lab2" / "flink_docs" / "markdown_chunks"
+        )
         if legacy_chunks_path.exists():
             return legacy_chunks_path
 
@@ -452,7 +496,9 @@ def find_docs_directory(project_root: Path, lab: int, cloud_provider: str) -> Op
     return None
 
 
-def prompt_clear_mongodb(cloud_provider: str, project_root: Path, logger: logging.Logger) -> bool:
+def prompt_clear_mongodb(
+    cloud_provider: str, project_root: Path, logger: logging.Logger
+) -> bool:
     """
     Prompt user to clear MongoDB collection and perform clearing if confirmed.
 
@@ -465,7 +511,9 @@ def prompt_clear_mongodb(cloud_provider: str, project_root: Path, logger: loggin
         True if successful or skipped, False if failed
     """
     if not CLEAR_MONGODB_AVAILABLE:
-        print("\nNote: MongoDB clearing functionality not available (pymongo not installed).")
+        print(
+            "\nNote: MongoDB clearing functionality not available (pymongo not installed)."
+        )
         print("Proceeding with publishing documents...")
         return True
 
@@ -474,12 +522,16 @@ def prompt_clear_mongodb(cloud_provider: str, project_root: Path, logger: loggin
     print("MONGODB COLLECTION MANAGEMENT")
     print("=" * 60)
     try:
-        response = input("Clear existing documents from MongoDB before publishing? (y/n): ").strip().lower()
+        response = (
+            input("Clear existing documents from MongoDB before publishing? (y/n): ")
+            .strip()
+            .lower()
+        )
     except (EOFError, KeyboardInterrupt):
         print("\n\nSkipping MongoDB clearing.")
         return True
 
-    if response not in ['y', 'yes']:
+    if response not in ["y", "yes"]:
         print("Skipping MongoDB clearing.")
         return True
 
@@ -488,13 +540,15 @@ def prompt_clear_mongodb(cloud_provider: str, project_root: Path, logger: loggin
         logger.info("Extracting MongoDB credentials...")
         mongodb_creds = extract_mongodb_credentials(cloud_provider, project_root)
 
-        logger.info(f"Connecting to MongoDB ({mongodb_creds['database']}.{mongodb_creds['collection']})...")
+        logger.info(
+            f"Connecting to MongoDB ({mongodb_creds['database']}.{mongodb_creds['collection']})..."
+        )
         deleted_count = clear_mongodb_collection(
-            connection_string=mongodb_creds['connection_string'],
-            username=mongodb_creds['username'],
-            password=mongodb_creds['password'],
-            database=mongodb_creds['database'],
-            collection=mongodb_creds['collection']
+            connection_string=mongodb_creds["connection_string"],
+            username=mongodb_creds["username"],
+            password=mongodb_creds["password"],
+            database=mongodb_creds["database"],
+            collection=mongodb_creds["collection"],
         )
 
         print(f"\n{'=' * 60}")
@@ -530,47 +584,37 @@ Examples:
   %(prog)s --lab3
   %(prog)s --lab2 --dry-run
   %(prog)s --docs-dir temp_pdf_extraction/output_chunks --topic documents
-        """
+        """,
     )
 
     # Create mutually exclusive group for lab selection (optional if --docs-dir is provided)
     lab_group = parser.add_mutually_exclusive_group(required=False)
     lab_group.add_argument(
-        "--lab2",
-        action="store_true",
-        help="Publish Lab2 Flink SQL documentation"
+        "--lab2", action="store_true", help="Publish Lab2 Flink SQL documentation"
     )
     lab_group.add_argument(
         "--lab3",
         action="store_true",
-        help="Publish Lab3 New Orleans event documentation"
+        help="Publish Lab3 New Orleans event documentation",
     )
 
     parser.add_argument(
-        "--topic",
-        default="documents",
-        help="Kafka topic name (default: documents)"
+        "--topic", default="documents", help="Kafka topic name (default: documents)"
     )
     parser.add_argument(
         "--docs-dir",
         type=Path,
-        help="Directory containing markdown files (auto-detected if not specified)"
+        help="Directory containing markdown files (auto-detected if not specified)",
     )
     parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="Test without actually publishing"
+        "--dry-run", action="store_true", help="Test without actually publishing"
     )
-    parser.add_argument(
-        "--verbose",
-        action="store_true",
-        help="Enable verbose logging"
-    )
+    parser.add_argument("--verbose", action="store_true", help="Enable verbose logging")
     parser.add_argument(
         "--workers",
         type=int,
         default=10,
-        help="Number of parallel workers for publishing (default: 10)"
+        help="Number of parallel workers for publishing (default: 10)",
     )
 
     args = parser.parse_args()
@@ -578,19 +622,8 @@ Examples:
     # Set up logging
     logger = setup_logging(args.verbose)
 
-    # Check Confluent CLI login before proceeding
-    if not check_confluent_login():
-        print("\n" + "=" * 60)
-        print("ERROR: Not logged into Confluent Cloud")
-        print("=" * 60)
-        print("\nYou must be logged in to publish documents.")
-        print("\nTo log in, run:")
-        print("  confluent login")
-        print("\nTo avoid session timeouts, save credentials with:")
-        print("  confluent login --save")
-        print("=" * 60 + "\n")
-        return 1
-
+    # Check Confluent CLI login before proceeding (auto-login from saved creds if needed)
+    ensure_confluent_login()
     logger.info("✓ Confluent CLI logged in")
 
     # Determine lab number and docs directory
@@ -626,7 +659,9 @@ Examples:
                 logger.info(f"Auto-detected cloud provider: {suggestion}")
                 cloud_provider = suggestion
             else:
-                logger.error("Could not auto-detect cloud provider. Please check your terraform deployment.")
+                logger.error(
+                    "Could not auto-detect cloud provider. Please check your terraform deployment."
+                )
                 return 1
 
         # Validate cloud provider
@@ -644,7 +679,9 @@ Examples:
         # Find docs directory
         docs_dir = find_docs_directory(project_root, lab, cloud_provider)
         if not docs_dir:
-            logger.error(f"Could not find documentation directory for Lab{lab}. Please specify --docs-dir")
+            logger.error(
+                f"Could not find documentation directory for Lab{lab}. Please specify --docs-dir"
+            )
             return 1
         logger.info(f"Found documentation directory: {docs_dir}")
 
@@ -683,7 +720,9 @@ Examples:
             credentials = extract_kafka_credentials(cloud_provider_temp, project_root)
         except Exception as e:
             logger.error(f"Failed to extract Kafka credentials: {e}")
-            logger.error("Make sure you're running from a terraform-deployed project directory")
+            logger.error(
+                "Make sure you're running from a terraform-deployed project directory"
+            )
             return 1
 
     # Initialize publisher
@@ -698,7 +737,7 @@ Examples:
             environment_id=credentials.get("environment_id"),
             cluster_id=credentials.get("cluster_id"),
             dry_run=args.dry_run,
-            max_workers=args.workers
+            max_workers=args.workers,
         )
     except Exception as e:
         logger.error(f"Failed to initialize publisher: {e}")
@@ -723,7 +762,7 @@ Examples:
         if args.dry_run:
             print("\n[DRY RUN COMPLETE - No messages were actually published]")
 
-        return 0 if results['failed'] == 0 else 1
+        return 0 if results["failed"] == 0 else 1
     finally:
         publisher.close()
 

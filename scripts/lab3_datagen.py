@@ -19,20 +19,28 @@ import sys
 from pathlib import Path
 
 from .common.cloud_detection import auto_detect_cloud_provider, suggest_cloud_provider
-from .common.terraform import extract_kafka_credentials, validate_terraform_state, get_project_root
+from .common.terraform import (
+    extract_kafka_credentials,
+    validate_terraform_state,
+    get_project_root,
+)
 from .common.datagen_helpers import (
     check_dependencies,
     validate_dependencies,
     generate_all_connections,
     check_shadowtraffic_config,
-    run_shadowtraffic_docker
+    run_shadowtraffic_docker,
 )
 from .common.logging_utils import setup_logging
 
 
 # Lab3-Specific Configuration
 LAB3_CONNECTION_NAMES = ["ride-requests"]
-LAB3_REQUIRED_GENERATORS = ["base-rides.json", "steady-state-rides.json", "surge-rides.json"]
+LAB3_REQUIRED_GENERATORS = [
+    "base-rides.json",
+    "steady-state-rides.json",
+    "surge-rides.json",
+]
 LAB3_DIR_NAME = "lab3-agentic-fleet-management"
 
 
@@ -41,7 +49,7 @@ def run_lab3_datagen(
     duration: int = None,
     messages_per_minute: int = None,
     dry_run: bool = False,
-    verbose: bool = False
+    verbose: bool = False,
 ) -> int:
     """
     Run Lab3 data generation workflow.
@@ -85,7 +93,9 @@ def run_lab3_datagen(
         credentials = extract_kafka_credentials(cloud_provider, project_root)
 
         # Generate connection files
-        generate_all_connections(credentials, connections_dir, ["ride-requests", "vessel-telemetry"])
+        generate_all_connections(
+            credentials, connections_dir, ["ride-requests", "vessel-telemetry"]
+        )
 
         # Check ShadowTraffic configuration
         if not check_shadowtraffic_config(generators_dir, LAB3_REQUIRED_GENERATORS):
@@ -101,13 +111,14 @@ def run_lab3_datagen(
             functions_dir=functions_dir,
             duration=duration,
             messages_per_minute=messages_per_minute,
-            dry_run=dry_run
+            dry_run=dry_run,
         )
 
     except Exception as e:
         logger.error(f"Data generation failed: {e}")
         if verbose:
             import traceback
+
             logger.error(f"Stack trace: {traceback.format_exc()}")
         return 1
 
@@ -135,44 +146,44 @@ Dependencies (ShadowTraffic mode):
   - Docker: https://docs.docker.com/get-docker/
   - Terraform: https://developer.hashicorp.com/terraform/install
   - Confluent CLI: https://docs.confluent.io/confluent-cli/current/install.html
-        """.strip()
+        """.strip(),
     )
 
     parser.add_argument(
         "cloud_provider",
         nargs="?",
         choices=["aws", "azure"],
-        help="Target cloud provider (auto-detected if not specified)"
+        help="Target cloud provider (auto-detected if not specified)",
     )
 
     parser.add_argument(
-        "--duration",
-        type=int,
-        help="Duration to run data generation in seconds"
+        "--duration", type=int, help="Duration to run data generation in seconds"
     )
 
     parser.add_argument(
-        "--messages-per-minute", "-m",
+        "--messages-per-minute",
+        "-m",
         type=int,
-        help="Ride requests per minute to generate"
+        help="Ride requests per minute to generate",
     )
 
     parser.add_argument(
         "--dry-run",
         action="store_true",
-        help="Validate setup and generate connection files without running ShadowTraffic"
+        help="Validate setup and generate connection files without running ShadowTraffic",
     )
 
     parser.add_argument(
-        "--verbose", "-v",
+        "--verbose",
+        "-v",
         action="store_true",
-        help="Show detailed output and debug information"
+        help="Show detailed output and debug information",
     )
 
     parser.add_argument(
         "--local",
         action="store_true",
-        help="Use pre-generated local data instead of ShadowTraffic (no Docker required)"
+        help="Use pre-generated local data instead of ShadowTraffic (no Docker required)",
     )
 
     return parser
@@ -191,7 +202,9 @@ def main() -> None:
         logger.info("Using local pre-generated data (no ShadowTraffic/Docker required)")
         try:
             project_root = get_project_root()
-            data_file = project_root / "assets" / "lab3" / "data" / "ride_requests.jsonl"
+            data_file = (
+                project_root / "assets" / "lab3" / "data" / "ride_requests.jsonl"
+            )
 
             if not data_file.exists():
                 logger.error(f"Data file not found: {data_file}")
@@ -199,6 +212,7 @@ def main() -> None:
 
             # Call publish_lab3_data script
             import subprocess
+
             cmd = ["uv", "run", "publish_lab3_data", "--data-file", str(data_file)]
             if args.verbose:
                 cmd.append("--verbose")
@@ -231,7 +245,9 @@ def main() -> None:
         # Validate terraform state
         if not validate_terraform_state(cloud_provider, project_root):
             logger.error(f"Terraform state validation failed for {cloud_provider}")
-            logger.error(f"Please run 'terraform apply' in terraform/core/ and terraform/{LAB3_DIR_NAME}/")
+            logger.error(
+                f"Please run 'terraform apply' in terraform/core/ and terraform/{LAB3_DIR_NAME}/"
+            )
             sys.exit(1)
 
         # Run data generation
@@ -240,7 +256,7 @@ def main() -> None:
             duration=args.duration,
             messages_per_minute=args.messages_per_minute,
             dry_run=args.dry_run,
-            verbose=args.verbose
+            verbose=args.verbose,
         )
 
         if args.dry_run:
@@ -257,6 +273,7 @@ def main() -> None:
         logger.error(f"Data generation failed: {e}")
         if args.verbose:
             import traceback
+
             logger.error(f"Stack trace: {traceback.format_exc()}")
         sys.exit(1)
 

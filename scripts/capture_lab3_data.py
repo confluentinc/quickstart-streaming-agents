@@ -23,6 +23,7 @@ from typing import Optional
 
 try:
     from confluent_kafka import Consumer, KafkaError, KafkaException
+
     CONFLUENT_KAFKA_AVAILABLE = True
 except ImportError:
     CONFLUENT_KAFKA_AVAILABLE = False
@@ -41,7 +42,7 @@ def capture_ride_requests(
     max_records: Optional[int] = None,
     from_beginning: bool = False,
     timeout_seconds: int = 30,
-    logger: Optional[logging.Logger] = None
+    logger: Optional[logging.Logger] = None,
 ) -> int:
     """
     Capture ride request data from Kafka topic using confluent-kafka library.
@@ -74,16 +75,16 @@ def capture_ride_requests(
 
     # Configure Kafka consumer
     consumer_config = {
-        'bootstrap.servers': bootstrap_servers,
-        'sasl.mechanisms': 'PLAIN',
-        'security.protocol': 'SASL_SSL',
-        'sasl.username': kafka_api_key,
-        'sasl.password': kafka_api_secret,
-        'group.id': f'capture-lab3-data-{int(time.time())}',
-        'auto.offset.reset': 'earliest' if from_beginning else 'latest',
-        'enable.auto.commit': False,
-        'fetch.min.bytes': 1,
-        'fetch.wait.max.ms': 500,
+        "bootstrap.servers": bootstrap_servers,
+        "sasl.mechanisms": "PLAIN",
+        "security.protocol": "SASL_SSL",
+        "sasl.username": kafka_api_key,
+        "sasl.password": kafka_api_secret,
+        "group.id": f"capture-lab3-data-{int(time.time())}",
+        "auto.offset.reset": "earliest" if from_beginning else "latest",
+        "enable.auto.commit": False,
+        "fetch.min.bytes": 1,
+        "fetch.wait.max.ms": 500,
     }
 
     consumer = Consumer(consumer_config)
@@ -109,7 +110,9 @@ def capture_ride_requests(
             if msg is None:
                 # No message received - check timeout
                 if time.time() - last_message_time > timeout_seconds:
-                    logger.info(f"No new messages for {timeout_seconds}s, stopping capture")
+                    logger.info(
+                        f"No new messages for {timeout_seconds}s, stopping capture"
+                    )
                     break
                 continue
 
@@ -130,15 +133,21 @@ def capture_ride_requests(
 
             # Encode to base64 for storage
             record = {
-                'key': base64.b64encode(key_bytes).decode('utf-8') if key_bytes else None,
-                'value': base64.b64encode(value_bytes).decode('utf-8') if value_bytes else None,
-                'partition': msg.partition(),
-                'offset': msg.offset(),
+                "key": base64.b64encode(key_bytes).decode("utf-8")
+                if key_bytes
+                else None,
+                "value": base64.b64encode(value_bytes).decode("utf-8")
+                if value_bytes
+                else None,
+                "partition": msg.partition(),
+                "offset": msg.offset(),
             }
 
             # Add headers if present
             if headers:
-                record['headers'] = {k: base64.b64encode(v).decode('utf-8') for k, v in headers}
+                record["headers"] = {
+                    k: base64.b64encode(v).decode("utf-8") for k, v in headers
+                }
 
             records_written.append(record)
             records_captured += 1
@@ -165,11 +174,13 @@ def capture_ride_requests(
     # Write all records to file
     if records_written:
         logger.info(f"Writing {len(records_written)} records to {output_file}")
-        with open(output_file, 'w', encoding='utf-8') as f:
+        with open(output_file, "w", encoding="utf-8") as f:
             for record in records_written:
                 f.write(json.dumps(record) + "\n")
 
-        logger.info(f"Successfully captured {records_captured} records to {output_file}")
+        logger.info(
+            f"Successfully captured {records_captured} records to {output_file}"
+        )
     else:
         logger.warning("No records were captured")
 
@@ -186,42 +197,38 @@ Examples:
   %(prog)s --output assets/lab3/data/ride_requests.jsonl
   %(prog)s --from-beginning
   %(prog)s --topic ride_requests --output data.jsonl --max-records 50000
-        """
+        """,
     )
 
     parser.add_argument(
         "--topic",
         default="ride_requests",
-        help="Kafka topic to consume from (default: ride_requests)"
+        help="Kafka topic to consume from (default: ride_requests)",
     )
     parser.add_argument(
         "--output",
         type=Path,
         default=Path("assets/lab3/data/ride_requests.jsonl"),
-        help="Output JSONL file path (default: assets/lab3/data/ride_requests.jsonl)"
+        help="Output JSONL file path (default: assets/lab3/data/ride_requests.jsonl)",
     )
     parser.add_argument(
         "--max-records",
         type=int,
         default=None,
-        help="Maximum number of records to capture (default: unlimited)"
+        help="Maximum number of records to capture (default: unlimited)",
     )
     parser.add_argument(
         "--from-beginning",
         action="store_true",
-        help="Consume from beginning of topic (default: from latest)"
+        help="Consume from beginning of topic (default: from latest)",
     )
     parser.add_argument(
         "--timeout",
         type=int,
         default=30,
-        help="Stop after N seconds of no new messages (default: 30)"
+        help="Stop after N seconds of no new messages (default: 30)",
     )
-    parser.add_argument(
-        "--verbose",
-        action="store_true",
-        help="Enable verbose logging"
-    )
+    parser.add_argument("--verbose", action="store_true", help="Enable verbose logging")
 
     args = parser.parse_args()
 
@@ -230,7 +237,9 @@ Examples:
 
     # Check confluent-kafka library is available
     if not CONFLUENT_KAFKA_AVAILABLE:
-        logger.error("confluent-kafka library not available. Please install it with: uv pip install confluent-kafka")
+        logger.error(
+            "confluent-kafka library not available. Please install it with: uv pip install confluent-kafka"
+        )
         return 1
 
     # Auto-detect cloud provider
@@ -241,7 +250,9 @@ Examples:
             logger.info(f"Auto-detected cloud provider: {suggestion}")
             cloud_provider = suggestion
         else:
-            logger.error("Could not auto-detect cloud provider. Please check your terraform deployment.")
+            logger.error(
+                "Could not auto-detect cloud provider. Please check your terraform deployment."
+            )
             return 1
 
     # Get project root
@@ -270,7 +281,7 @@ Examples:
             max_records=args.max_records,
             from_beginning=args.from_beginning,
             timeout_seconds=args.timeout,
-            logger=logger
+            logger=logger,
         )
 
         print(f"\n{'=' * 60}")

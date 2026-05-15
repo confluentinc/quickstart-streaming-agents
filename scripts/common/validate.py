@@ -23,6 +23,7 @@ from typing import Dict, List, Tuple, Optional
 try:
     from pymongo import MongoClient
     from pymongo.errors import ConnectionFailure, OperationFailure
+
     PYMONGO_AVAILABLE = True
 except ImportError:
     PYMONGO_AVAILABLE = False
@@ -44,10 +45,10 @@ def colorize(text: str, color: str) -> str:
         Colorized text string
     """
     colors = {
-        'green': '\033[92m',
-        'red': '\033[91m',
-        'yellow': '\033[93m',
-        'reset': '\033[0m'
+        "green": "\033[92m",
+        "red": "\033[91m",
+        "yellow": "\033[93m",
+        "reset": "\033[0m",
     }
     return f"{colors.get(color, '')}{text}{colors['reset']}"
 
@@ -57,7 +58,7 @@ def verify_vector_search_index(
     expected_name: str = "vector_index",
     expected_dims: int = 1536,
     expected_similarity: str = "cosine",
-    expected_path: str = "embedding"
+    expected_path: str = "embedding",
 ) -> Tuple[bool, List[str]]:
     """
     Verify Atlas Vector Search index exists and is properly configured.
@@ -83,84 +84,127 @@ def verify_vector_search_index(
         # Find the vector index
         vector_index = None
         for idx in indexes:
-            if idx.get('name') == expected_name:
+            if idx.get("name") == expected_name:
                 vector_index = idx
                 break
 
         if not vector_index:
-            available = [idx.get('name') for idx in indexes if idx.get('name')]
+            available = [idx.get("name") for idx in indexes if idx.get("name")]
             if available:
-                messages.append(colorize(f"✗ Vector index '{expected_name}' not found", 'red'))
+                messages.append(
+                    colorize(f"✗ Vector index '{expected_name}' not found", "red")
+                )
                 messages.append(f"   Available indexes: {', '.join(available)}")
             else:
-                messages.append(colorize(f"✗ Vector index '{expected_name}' not found (no search indexes exist)", 'red'))
-            messages.append("   → Create index (step 7): assets/pre-setup/MongoDB-Setup.md#step-7")
+                messages.append(
+                    colorize(
+                        f"✗ Vector index '{expected_name}' not found (no search indexes exist)",
+                        "red",
+                    )
+                )
+            messages.append(
+                "   → Create index (step 7): assets/pre-setup/MongoDB-Setup.md#step-7"
+            )
             return False, messages
 
         # Check type
-        index_type = vector_index.get('type')
-        if index_type != 'vectorSearch':
-            messages.append(colorize(f"✗ Index type is '{index_type}', expected 'vectorSearch'", 'red'))
-            messages.append("   → Recreate as vector search index (step 7): assets/pre-setup/MongoDB-Setup.md#step-7")
+        index_type = vector_index.get("type")
+        if index_type != "vectorSearch":
+            messages.append(
+                colorize(
+                    f"✗ Index type is '{index_type}', expected 'vectorSearch'", "red"
+                )
+            )
+            messages.append(
+                "   → Recreate as vector search index (step 7): assets/pre-setup/MongoDB-Setup.md#step-7"
+            )
             return False, messages
 
         # Check status
-        status = vector_index.get('status')
-        if status != 'READY':
-            if status in ['PENDING', 'BUILDING']:
-                messages.append(colorize(f"⚠️  Index status is '{status}' - index is still being built", 'yellow'))
-                messages.append("   This is normal for new indexes. Wait a few minutes and try again.")
+        status = vector_index.get("status")
+        if status != "READY":
+            if status in ["PENDING", "BUILDING"]:
+                messages.append(
+                    colorize(
+                        f"⚠️  Index status is '{status}' - index is still being built",
+                        "yellow",
+                    )
+                )
+                messages.append(
+                    "   This is normal for new indexes. Wait a few minutes and try again."
+                )
                 return True, messages  # Don't fail for pending/building
             else:
-                messages.append(colorize(f"✗ Index status is '{status}', expected 'READY'", 'red'))
-                messages.append("   → Check index in MongoDB Atlas UI and recreate if needed (step 7)")
+                messages.append(
+                    colorize(f"✗ Index status is '{status}', expected 'READY'", "red")
+                )
+                messages.append(
+                    "   → Check index in MongoDB Atlas UI and recreate if needed (step 7)"
+                )
                 messages.append("      assets/pre-setup/MongoDB-Setup.md#step-7")
                 return False, messages
 
         # Check configuration
-        definition = vector_index.get('latestDefinition', {})
-        fields = definition.get('fields', [])
+        definition = vector_index.get("latestDefinition", {})
+        fields = definition.get("fields", [])
 
         # Find vector field
         vector_field = None
         for field in fields:
-            if field.get('type') == 'vector':
+            if field.get("type") == "vector":
                 vector_field = field
                 break
 
         if not vector_field:
-            messages.append(colorize("✗ No vector field found in index definition", 'red'))
-            messages.append("   → Configure vector field (step 8): assets/pre-setup/MongoDB-Setup.md#step-8")
+            messages.append(
+                colorize("✗ No vector field found in index definition", "red")
+            )
+            messages.append(
+                "   → Configure vector field (step 8): assets/pre-setup/MongoDB-Setup.md#step-8"
+            )
             return False, messages
 
         # Verify vector field configuration
         issues = []
-        actual_path = vector_field.get('path')
-        actual_dims = vector_field.get('numDimensions')
-        actual_similarity = vector_field.get('similarity')
+        actual_path = vector_field.get("path")
+        actual_dims = vector_field.get("numDimensions")
+        actual_similarity = vector_field.get("similarity")
 
         if actual_path != expected_path:
             issues.append(f"field path is '{actual_path}', expected '{expected_path}'")
         if actual_dims != expected_dims:
             issues.append(f"dimensions are {actual_dims}, expected {expected_dims}")
         if actual_similarity != expected_similarity:
-            issues.append(f"similarity is '{actual_similarity}', expected '{expected_similarity}'")
+            issues.append(
+                f"similarity is '{actual_similarity}', expected '{expected_similarity}'"
+            )
 
         if issues:
-            messages.append(colorize("✗ Vector index configuration issues:", 'red'))
+            messages.append(colorize("✗ Vector index configuration issues:", "red"))
             for issue in issues:
                 messages.append(f"   • {issue}")
-            messages.append("   → Fix configuration (step 8): assets/pre-setup/MongoDB-Setup.md#step-8")
+            messages.append(
+                "   → Fix configuration (step 8): assets/pre-setup/MongoDB-Setup.md#step-8"
+            )
             return False, messages
 
         # All checks passed
-        messages.append(colorize(f"✓ Vector Search index '{expected_name}' is properly configured", 'green'))
+        messages.append(
+            colorize(
+                f"✓ Vector Search index '{expected_name}' is properly configured",
+                "green",
+            )
+        )
         messages.append(f"   • Type: {index_type}, Status: {status}")
-        messages.append(f"   • Field: {actual_path}, Dimensions: {actual_dims}, Similarity: {actual_similarity}")
+        messages.append(
+            f"   • Field: {actual_path}, Dimensions: {actual_dims}, Similarity: {actual_similarity}"
+        )
         return True, messages
 
     except Exception as e:
-        messages.append(colorize(f"⚠️  Error checking vector search index: {e}", 'yellow'))
+        messages.append(
+            colorize(f"⚠️  Error checking vector search index: {e}", "yellow")
+        )
         messages.append("   → Verify index manually in MongoDB Atlas UI (step 7-8)")
         messages.append("      assets/pre-setup/MongoDB-Setup.md#step-7")
         return False, messages
@@ -172,7 +216,7 @@ def validate_mongodb(
     password: str,
     database: str = "vector_search",
     collection: str = "documents",
-    index_name: str = "vector_index"
+    index_name: str = "vector_index",
 ) -> Tuple[bool, List[str]]:
     """
     Validate MongoDB Atlas configuration.
@@ -207,13 +251,11 @@ def validate_mongodb(
         if username and password:
             if "mongodb+srv://" in connection_string:
                 uri = connection_string.replace(
-                    "mongodb+srv://",
-                    f"mongodb+srv://{username}:{password}@"
+                    "mongodb+srv://", f"mongodb+srv://{username}:{password}@"
                 )
             else:
                 uri = connection_string.replace(
-                    "mongodb://",
-                    f"mongodb://{username}:{password}@"
+                    "mongodb://", f"mongodb://{username}:{password}@"
                 )
         else:
             uri = connection_string
@@ -223,13 +265,19 @@ def validate_mongodb(
 
         # Test connection and credentials
         try:
-            client.admin.command('ping')
-            messages.append(colorize("✓ Successfully connected to MongoDB", 'green'))
+            client.admin.command("ping")
+            messages.append(colorize("✓ Successfully connected to MongoDB", "green"))
         except Exception as e:
-            messages.append(colorize(f"✗ Failed to connect to MongoDB: {e}", 'red'))
-            messages.append("   → Check connection string (step 5): assets/pre-setup/MongoDB-Setup.md#step-5")
-            messages.append("   → Check username/password (step 4): assets/pre-setup/MongoDB-Setup.md#step-4")
-            messages.append("   → Check network access allows 0.0.0.0/0 (step 6): assets/pre-setup/MongoDB-Setup.md#step-6")
+            messages.append(colorize(f"✗ Failed to connect to MongoDB: {e}", "red"))
+            messages.append(
+                "   → Check connection string (step 5): assets/pre-setup/MongoDB-Setup.md#step-5"
+            )
+            messages.append(
+                "   → Check username/password (step 4): assets/pre-setup/MongoDB-Setup.md#step-4"
+            )
+            messages.append(
+                "   → Check network access allows 0.0.0.0/0 (step 6): assets/pre-setup/MongoDB-Setup.md#step-6"
+            )
             all_passed = False
             client.close()
             return all_passed, messages
@@ -237,20 +285,24 @@ def validate_mongodb(
         # Check database exists
         db_list = client.list_database_names()
         if database in db_list:
-            messages.append(colorize(f"✓ Database '{database}' exists", 'green'))
+            messages.append(colorize(f"✓ Database '{database}' exists", "green"))
         else:
-            messages.append(colorize(f"✗ Database '{database}' not found", 'red'))
-            messages.append("   → Create database (step 7): assets/pre-setup/MongoDB-Setup.md#step-7")
+            messages.append(colorize(f"✗ Database '{database}' not found", "red"))
+            messages.append(
+                "   → Create database (step 7): assets/pre-setup/MongoDB-Setup.md#step-7"
+            )
             all_passed = False
 
         # Check collection exists
         db = client[database]
         coll_list = db.list_collection_names()
         if collection in coll_list:
-            messages.append(colorize(f"✓ Collection '{collection}' exists", 'green'))
+            messages.append(colorize(f"✓ Collection '{collection}' exists", "green"))
         else:
-            messages.append(colorize(f"✗ Collection '{collection}' not found", 'red'))
-            messages.append("   → Create collection (step 7): assets/pre-setup/MongoDB-Setup.md#step-7")
+            messages.append(colorize(f"✗ Collection '{collection}' not found", "red"))
+            messages.append(
+                "   → Create collection (step 7): assets/pre-setup/MongoDB-Setup.md#step-7"
+            )
             all_passed = False
 
         # Check Atlas Vector Search index using PyMongo's list_search_indexes()
@@ -266,22 +318,30 @@ def validate_mongodb(
         client.close()
 
     except ConnectionFailure as e:
-        messages.append(colorize(f"✗ MongoDB connection failed: {e}", 'red'))
-        messages.append("   → Check connection string (step 5): assets/pre-setup/MongoDB-Setup.md#step-5")
-        messages.append("   → Check network access (step 6): assets/pre-setup/MongoDB-Setup.md#step-6")
+        messages.append(colorize(f"✗ MongoDB connection failed: {e}", "red"))
+        messages.append(
+            "   → Check connection string (step 5): assets/pre-setup/MongoDB-Setup.md#step-5"
+        )
+        messages.append(
+            "   → Check network access (step 6): assets/pre-setup/MongoDB-Setup.md#step-6"
+        )
         all_passed = False
     except OperationFailure as e:
-        messages.append(colorize(f"✗ MongoDB operation failed: {e}", 'red'))
-        messages.append("   → Check username/password (step 4): assets/pre-setup/MongoDB-Setup.md#step-4")
+        messages.append(colorize(f"✗ MongoDB operation failed: {e}", "red"))
+        messages.append(
+            "   → Check username/password (step 4): assets/pre-setup/MongoDB-Setup.md#step-4"
+        )
         all_passed = False
     except Exception as e:
-        messages.append(colorize(f"✗ Unexpected MongoDB error: {e}", 'red'))
+        messages.append(colorize(f"✗ Unexpected MongoDB error: {e}", "red"))
         all_passed = False
 
     return all_passed, messages
 
 
-def validate_aws_bedrock_credentials(access_key: str, secret_key: str, session_token: str = "") -> Tuple[bool, List[str]]:
+def validate_aws_bedrock_credentials(
+    access_key: str, secret_key: str, session_token: str = ""
+) -> Tuple[bool, List[str]]:
     """
     Validate AWS Bedrock credential format (advisory only).
 
@@ -303,43 +363,75 @@ def validate_aws_bedrock_credentials(access_key: str, secret_key: str, session_t
 
     # Check access key format
     if not access_key:
-        messages.append(colorize("⚠️  Warning: AWS access key is empty", 'yellow'))
+        messages.append(colorize("⚠️  Warning: AWS access key is empty", "yellow"))
         all_passed = False
     elif not (access_key.startswith("AKIA") or access_key.startswith("ASIA")):
-        messages.append(colorize("⚠️  Warning: AWS access key should start with 'AKIA' (permanent) or 'ASIA' (temporary)", 'yellow'))
+        messages.append(
+            colorize(
+                "⚠️  Warning: AWS access key should start with 'AKIA' (permanent) or 'ASIA' (temporary)",
+                "yellow",
+            )
+        )
         messages.append("   → Verify this is a valid IAM access key")
         all_passed = False
     elif len(access_key) != 20:
-        messages.append(colorize(f"⚠️  Warning: AWS access key should be 20 characters (found {len(access_key)})", 'yellow'))
+        messages.append(
+            colorize(
+                f"⚠️  Warning: AWS access key should be 20 characters (found {len(access_key)})",
+                "yellow",
+            )
+        )
         messages.append("   → Verify this is a valid IAM access key")
         all_passed = False
     elif access_key.startswith("ASIA") and not session_token:
-        messages.append(colorize("⚠️  Warning: Temporary credentials (ASIA) require a session token", 'yellow'))
-        messages.append("   → Provide AWS_SESSION_TOKEN along with access key and secret key")
+        messages.append(
+            colorize(
+                "⚠️  Warning: Temporary credentials (ASIA) require a session token",
+                "yellow",
+            )
+        )
+        messages.append(
+            "   → Provide AWS_SESSION_TOKEN along with access key and secret key"
+        )
         all_passed = False
     else:
         key_type = "temporary" if access_key.startswith("ASIA") else "permanent"
-        messages.append(colorize(f"✓ AWS access key format looks valid ({key_type} credentials)", 'green'))
+        messages.append(
+            colorize(
+                f"✓ AWS access key format looks valid ({key_type} credentials)", "green"
+            )
+        )
 
     # Check secret key format
     if not secret_key:
-        messages.append(colorize("⚠️  Warning: AWS secret key is empty", 'yellow'))
+        messages.append(colorize("⚠️  Warning: AWS secret key is empty", "yellow"))
         all_passed = False
     elif len(secret_key) != 40:
-        messages.append(colorize(f"⚠️  Warning: AWS secret key should be 40 characters (found {len(secret_key)})", 'yellow'))
+        messages.append(
+            colorize(
+                f"⚠️  Warning: AWS secret key should be 40 characters (found {len(secret_key)})",
+                "yellow",
+            )
+        )
         messages.append("   → Verify this is a valid IAM secret key")
         all_passed = False
-    elif not all(c.isalnum() or c in '+/=' for c in secret_key):
-        messages.append(colorize("⚠️  Warning: AWS secret key contains unexpected characters", 'yellow'))
+    elif not all(c.isalnum() or c in "+/=" for c in secret_key):
+        messages.append(
+            colorize(
+                "⚠️  Warning: AWS secret key contains unexpected characters", "yellow"
+            )
+        )
         messages.append("   → Should only contain alphanumeric, +, /, and = characters")
         all_passed = False
     else:
-        messages.append(colorize("✓ AWS secret key format looks valid", 'green'))
+        messages.append(colorize("✓ AWS secret key format looks valid", "green"))
 
     return all_passed, messages
 
 
-def validate_azure_openai_credentials(endpoint: str, api_key: str) -> Tuple[bool, List[str]]:
+def validate_azure_openai_credentials(
+    endpoint: str, api_key: str
+) -> Tuple[bool, List[str]]:
     """
     Validate Azure OpenAI credential format (advisory only).
 
@@ -359,44 +451,79 @@ def validate_azure_openai_credentials(endpoint: str, api_key: str) -> Tuple[bool
 
     # Check endpoint format
     if not endpoint:
-        messages.append(colorize("⚠️  Warning: Azure OpenAI endpoint is empty", 'yellow'))
+        messages.append(
+            colorize("⚠️  Warning: Azure OpenAI endpoint is empty", "yellow")
+        )
         all_passed = False
     elif not endpoint.startswith("https://"):
-        messages.append(colorize("⚠️  Warning: Azure OpenAI endpoint should start with 'https://'", 'yellow'))
+        messages.append(
+            colorize(
+                "⚠️  Warning: Azure OpenAI endpoint should start with 'https://'",
+                "yellow",
+            )
+        )
         messages.append(f"   → Current: {endpoint}")
         all_passed = False
     elif ".openai.azure.com" not in endpoint:
-        messages.append(colorize("⚠️  Warning: Azure OpenAI endpoint should contain '.openai.azure.com'", 'yellow'))
+        messages.append(
+            colorize(
+                "⚠️  Warning: Azure OpenAI endpoint should contain '.openai.azure.com'",
+                "yellow",
+            )
+        )
         messages.append(f"   → Current: {endpoint}")
         messages.append("   → Expected format: https://[name].openai.azure.com/")
         all_passed = False
     else:
-        messages.append(colorize("✓ Azure OpenAI endpoint format looks valid", 'green'))
+        messages.append(colorize("✓ Azure OpenAI endpoint format looks valid", "green"))
 
     # Check API key format
     # Modern Azure OpenAI keys are 84 characters (base64-like)
     # Legacy keys were 32 characters (hex)
     if not api_key:
-        messages.append(colorize("⚠️  Warning: Azure OpenAI API key is empty", 'yellow'))
+        messages.append(colorize("⚠️  Warning: Azure OpenAI API key is empty", "yellow"))
         all_passed = False
     elif len(api_key) == 84:
         # Modern format: 84 characters, alphanumeric + some special chars
         if all(c.isalnum() for c in api_key):
-            messages.append(colorize("✓ Azure OpenAI API key format looks valid (modern format)", 'green'))
+            messages.append(
+                colorize(
+                    "✓ Azure OpenAI API key format looks valid (modern format)", "green"
+                )
+            )
         else:
-            messages.append(colorize("⚠️  Warning: Azure OpenAI API key contains unexpected characters", 'yellow'))
+            messages.append(
+                colorize(
+                    "⚠️  Warning: Azure OpenAI API key contains unexpected characters",
+                    "yellow",
+                )
+            )
             messages.append("   → Should only contain alphanumeric characters")
             all_passed = False
     elif len(api_key) == 32:
         # Legacy format: 32 characters, hex only
-        if all(c in '0123456789abcdefABCDEF' for c in api_key):
-            messages.append(colorize("✓ Azure OpenAI API key format looks valid (legacy format)", 'green'))
+        if all(c in "0123456789abcdefABCDEF" for c in api_key):
+            messages.append(
+                colorize(
+                    "✓ Azure OpenAI API key format looks valid (legacy format)", "green"
+                )
+            )
         else:
-            messages.append(colorize("⚠️  Warning: Azure OpenAI API key should only contain hex characters (0-9, a-f)", 'yellow'))
+            messages.append(
+                colorize(
+                    "⚠️  Warning: Azure OpenAI API key should only contain hex characters (0-9, a-f)",
+                    "yellow",
+                )
+            )
             messages.append("   → Verify this is a valid Azure OpenAI API key")
             all_passed = False
     else:
-        messages.append(colorize(f"⚠️  Warning: Azure OpenAI API key length is {len(api_key)} (expected 84 or 32)", 'yellow'))
+        messages.append(
+            colorize(
+                f"⚠️  Warning: Azure OpenAI API key length is {len(api_key)} (expected 84 or 32)",
+                "yellow",
+            )
+        )
         messages.append("   → Modern keys are 84 chars, legacy keys are 32 chars")
         messages.append("   → Verify this is a valid Azure OpenAI API key")
         all_passed = False
@@ -426,19 +553,23 @@ def validate_mcp_lambda(token: str) -> Tuple[bool, List[str]]:
 
     # Check token format
     if not token or len(token) < 10:
-        messages.append(colorize("⚠️  Warning: Token appears to be invalid or too short", 'yellow'))
+        messages.append(
+            colorize("⚠️  Warning: Token appears to be invalid or too short", "yellow")
+        )
         all_passed = False
     else:
-        messages.append(colorize("✓ Token format looks valid", 'green'))
+        messages.append(colorize("✓ Token format looks valid", "green"))
 
     # Check endpoint reachability via tools/list
     endpoint = "https://z04yuqut2a.execute-api.us-east-1.amazonaws.com/mcp"
     try:
-        payload = _json.dumps({"jsonrpc": "2.0", "id": 1, "method": "tools/list"}).encode()
+        payload = _json.dumps(
+            {"jsonrpc": "2.0", "id": 1, "method": "tools/list"}
+        ).encode()
         req = urllib.request.Request(endpoint, data=payload, method="POST")
-        req.add_header('Authorization', f'Bearer {token}')
-        req.add_header('Content-Type', 'application/json')
-        req.add_header('Accept', 'application/json, text/event-stream')
+        req.add_header("Authorization", f"Bearer {token}")
+        req.add_header("Content-Type", "application/json")
+        req.add_header("Accept", "application/json, text/event-stream")
 
         with urllib.request.urlopen(req, timeout=10) as response:
             status_code = response.getcode()
@@ -449,32 +580,51 @@ def validate_mcp_lambda(token: str) -> Tuple[bool, List[str]]:
                     data = _json.loads(body)
                     tools = data.get("result", {}).get("tools", [])
                     tool_names = [t.get("name") for t in tools]
-                    messages.append(colorize(f"✓ Remote MCP endpoint reachable, {len(tools)} tool(s) available", 'green'))
+                    messages.append(
+                        colorize(
+                            f"✓ Remote MCP endpoint reachable, {len(tools)} tool(s) available",
+                            "green",
+                        )
+                    )
                     if tool_names:
                         messages.append(f"   Tools: {', '.join(tool_names)}")
                 except Exception:
-                    messages.append(colorize("✓ Remote MCP endpoint reachable (response: 200)", 'green'))
+                    messages.append(
+                        colorize(
+                            "✓ Remote MCP endpoint reachable (response: 200)", "green"
+                        )
+                    )
             else:
-                messages.append(colorize(f"⚠️  Warning: Unexpected status code: {status_code}", 'yellow'))
+                messages.append(
+                    colorize(
+                        f"⚠️  Warning: Unexpected status code: {status_code}", "yellow"
+                    )
+                )
                 all_passed = False
 
     except urllib.error.HTTPError as e:
         if e.code == 401:
-            messages.append(colorize("✗ Authentication failed (401 Unauthorized)", 'red'))
+            messages.append(
+                colorize("✗ Authentication failed (401 Unauthorized)", "red")
+            )
             messages.append("   → Verify TF_VAR_mcp_token in credentials.env")
         else:
-            messages.append(colorize(f"✗ HTTP error accessing endpoint: {e.code} {e.reason}", 'red'))
+            messages.append(
+                colorize(f"✗ HTTP error accessing endpoint: {e.code} {e.reason}", "red")
+            )
         all_passed = False
     except urllib.error.URLError as e:
-        messages.append(colorize(f"✗ Cannot reach endpoint: {e.reason}", 'red'))
+        messages.append(colorize(f"✗ Cannot reach endpoint: {e.reason}", "red"))
         messages.append("   → Check network connectivity")
         all_passed = False
     except TimeoutError:
-        messages.append(colorize("✗ Timeout connecting to endpoint", 'red'))
+        messages.append(colorize("✗ Timeout connecting to endpoint", "red"))
         messages.append("   → Check network connectivity")
         all_passed = False
     except Exception as e:
-        messages.append(colorize(f"✗ Unexpected error validating Remote MCP token: {e}", 'red'))
+        messages.append(
+            colorize(f"✗ Unexpected error validating Remote MCP token: {e}", "red")
+        )
         all_passed = False
 
     return all_passed, messages
@@ -500,58 +650,92 @@ def validate_zapier(token: str) -> Tuple[bool, List[str]]:
 
     # Check token format
     if not token or len(token) < 50:
-        messages.append(colorize("⚠️  Warning: Token appears to be invalid or too short", 'yellow'))
-        messages.append("   → Check token (step 4): assets/pre-setup/Zapier-Setup.md#step-4")
+        messages.append(
+            colorize("⚠️  Warning: Token appears to be invalid or too short", "yellow")
+        )
+        messages.append(
+            "   → Check token (step 4): assets/pre-setup/Zapier-Setup.md#step-4"
+        )
         all_passed = False
     else:
-        messages.append(colorize("✓ Token format looks valid", 'green'))
+        messages.append(colorize("✓ Token format looks valid", "green"))
 
     # Check endpoint reachability with token authentication
     endpoint = "https://mcp.zapier.com/api/v1/connect"
     try:
         req = urllib.request.Request(endpoint)
-        req.add_header('Authorization', f'Bearer {token}')
-        req.add_header('Accept', 'text/event-stream')
+        req.add_header("Authorization", f"Bearer {token}")
+        req.add_header("Accept", "text/event-stream")
 
         with urllib.request.urlopen(req, timeout=10) as response:
             # Check if the connection is successful
             status_code = response.getcode()
 
             if status_code == 200:
-                messages.append(colorize("✓ Streamable HTTP endpoint is reachable with token", 'green'))
-                messages.append("   ℹ️  Please verify these tools are enabled in your MCP server:")
+                messages.append(
+                    colorize(
+                        "✓ Streamable HTTP endpoint is reachable with token", "green"
+                    )
+                )
+                messages.append(
+                    "   ℹ️  Please verify these tools are enabled in your MCP server:"
+                )
                 messages.append("      - webhooks_by_zapier_get")
                 messages.append("      - webhooks_by_zapier_custom_request")
                 messages.append("      - gmail_send_email")
-                messages.append("   → Verify tools (step 3): assets/pre-setup/Zapier-Setup.md#step-3")
+                messages.append(
+                    "   → Verify tools (step 3): assets/pre-setup/Zapier-Setup.md#step-3"
+                )
             else:
-                messages.append(colorize(f"⚠️  Warning: Unexpected status code: {status_code}", 'yellow'))
-                messages.append("   Endpoint is reachable but may not be configured correctly")
-                messages.append("   → Check MCP server setup (step 2): assets/pre-setup/Zapier-Setup.md#step-2")
+                messages.append(
+                    colorize(
+                        f"⚠️  Warning: Unexpected status code: {status_code}", "yellow"
+                    )
+                )
+                messages.append(
+                    "   Endpoint is reachable but may not be configured correctly"
+                )
+                messages.append(
+                    "   → Check MCP server setup (step 2): assets/pre-setup/Zapier-Setup.md#step-2"
+                )
                 all_passed = False
 
     except urllib.error.HTTPError as e:
         if e.code == 401:
-            messages.append(colorize("✗ Authentication failed (401 Unauthorized)", 'red'))
-            messages.append("   → Check token (step 4): assets/pre-setup/Zapier-Setup.md#step-4")
+            messages.append(
+                colorize("✗ Authentication failed (401 Unauthorized)", "red")
+            )
+            messages.append(
+                "   → Check token (step 4): assets/pre-setup/Zapier-Setup.md#step-4"
+            )
         elif e.code == 404:
-            messages.append(colorize("✗ Endpoint not found (404)", 'red'))
-            messages.append("   → Verify MCP server is created (step 2): assets/pre-setup/Zapier-Setup.md#step-2")
+            messages.append(colorize("✗ Endpoint not found (404)", "red"))
+            messages.append(
+                "   → Verify MCP server is created (step 2): assets/pre-setup/Zapier-Setup.md#step-2"
+            )
         else:
-            messages.append(colorize(f"✗ HTTP error accessing endpoint: {e.code} {e.reason}", 'red'))
-            messages.append("   → Check MCP server setup (step 2): assets/pre-setup/Zapier-Setup.md#step-2")
+            messages.append(
+                colorize(f"✗ HTTP error accessing endpoint: {e.code} {e.reason}", "red")
+            )
+            messages.append(
+                "   → Check MCP server setup (step 2): assets/pre-setup/Zapier-Setup.md#step-2"
+            )
         all_passed = False
     except urllib.error.URLError as e:
-        messages.append(colorize(f"✗ Cannot reach endpoint: {e.reason}", 'red'))
+        messages.append(colorize(f"✗ Cannot reach endpoint: {e.reason}", "red"))
         messages.append("   → Check network connectivity")
-        messages.append("   → Verify MCP server is created (step 2): assets/pre-setup/Zapier-Setup.md#step-2")
+        messages.append(
+            "   → Verify MCP server is created (step 2): assets/pre-setup/Zapier-Setup.md#step-2"
+        )
         all_passed = False
     except TimeoutError:
-        messages.append(colorize("✗ Timeout connecting to endpoint", 'red'))
+        messages.append(colorize("✗ Timeout connecting to endpoint", "red"))
         messages.append("   → Check network connectivity")
         all_passed = False
     except Exception as e:
-        messages.append(colorize(f"✗ Unexpected error validating Zapier token: {e}", 'red'))
+        messages.append(
+            colorize(f"✗ Unexpected error validating Zapier token: {e}", "red")
+        )
         all_passed = False
 
     return all_passed, messages
@@ -568,20 +752,16 @@ Examples:
   %(prog)s mongodb         # Validate MongoDB only
   %(prog)s mcp             # Validate Remote MCP only
   %(prog)s --verbose       # Show detailed logging
-        """
+        """,
     )
 
     parser.add_argument(
         "service",
         nargs="?",
         choices=["mongodb", "mcp"],
-        help="Service to validate (mongodb or mcp). If not specified, will auto-detect based on credentials."
+        help="Service to validate (mongodb or mcp). If not specified, will auto-detect based on credentials.",
     )
-    parser.add_argument(
-        "--verbose",
-        action="store_true",
-        help="Enable verbose logging"
-    )
+    parser.add_argument("--verbose", action="store_true", help="Enable verbose logging")
 
     args = parser.parse_args()
 
@@ -619,13 +799,19 @@ Examples:
         validate_mcp = True
     else:
         # Auto-detect based on credentials
-        has_mongo = all([
-            creds.get("TF_VAR_mongodb_connection_string"),
-            creds.get("TF_VAR_mongodb_username"),
-            creds.get("TF_VAR_mongodb_password")
-        ])
+        has_mongo = all(
+            [
+                creds.get("TF_VAR_mongodb_connection_string"),
+                creds.get("TF_VAR_mongodb_username"),
+                creds.get("TF_VAR_mongodb_password"),
+            ]
+        )
         mcp_backend = (creds.get("TF_VAR_mcp_backend") or "lambda").lower()
-        has_mcp = bool(creds.get("TF_VAR_zapier_token") if mcp_backend == "zapier" else creds.get("TF_VAR_mcp_token"))
+        has_mcp = bool(
+            creds.get("TF_VAR_zapier_token")
+            if mcp_backend == "zapier"
+            else creds.get("TF_VAR_mcp_token")
+        )
 
         if has_mongo:
             validate_mongo = True
@@ -661,7 +847,9 @@ Examples:
         password = creds.get("TF_VAR_mongodb_password", "")
 
         if not all([connection_string, username, password]):
-            print(colorize("✗ MongoDB credentials incomplete in credentials.env", 'red'))
+            print(
+                colorize("✗ MongoDB credentials incomplete in credentials.env", "red")
+            )
             print("  Missing: ", end="")
             missing = []
             if not connection_string:
@@ -693,7 +881,9 @@ Examples:
         if backend == "zapier":
             zapier_token = creds.get("TF_VAR_zapier_token", "")
             if not zapier_token:
-                print(colorize("✗ Zapier MCP token not found in credentials.env", 'red'))
+                print(
+                    colorize("✗ Zapier MCP token not found in credentials.env", "red")
+                )
                 print("  Missing: TF_VAR_zapier_token")
                 all_services_passed = False
             else:
@@ -705,7 +895,11 @@ Examples:
         else:
             mcp_token = creds.get("TF_VAR_mcp_token", "")
             if not mcp_token:
-                print(colorize("✗ Remote MCP Lambda token not found in credentials.env", 'red'))
+                print(
+                    colorize(
+                        "✗ Remote MCP Lambda token not found in credentials.env", "red"
+                    )
+                )
                 print("  Missing: TF_VAR_mcp_token")
                 all_services_passed = False
             else:
@@ -720,12 +914,12 @@ Examples:
     # Print summary
     print("=" * 70)
     if all_services_passed:
-        print(colorize("✓ ALL VALIDATION CHECKS PASSED", 'green'))
+        print(colorize("✓ ALL VALIDATION CHECKS PASSED", "green"))
         print("=" * 70)
         print("\nYour configuration appears to be correct!")
         print("You can proceed with deployment.")
     else:
-        print(colorize("⚠️  SOME VALIDATION CHECKS FAILED", 'yellow'))
+        print(colorize("⚠️  SOME VALIDATION CHECKS FAILED", "yellow"))
         print("=" * 70)
         print("\nPlease review the warnings above and verify your configuration.")
         print("You can still proceed with deployment if you believe the")
