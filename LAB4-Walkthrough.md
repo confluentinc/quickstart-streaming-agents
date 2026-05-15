@@ -39,10 +39,6 @@ git clone https://github.com/confluentinc/quickstart-streaming-agents.git
 cd quickstart-streaming-agents
 ```
 
-> [!CAUTION]
->
-> You must be logged in to the Confluent CLI before running `uv run deploy`. Run `confluent login` first if you haven't already.
-
 Once you have your credentials ready, run the deployment script and choose **Lab4**:
 
 ```bash
