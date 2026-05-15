@@ -7,7 +7,9 @@ Parses SQL from LAB3-Walkthrough.md and drives the full pipeline:
 Run: uv run pytest testing/e2e/test_lab3.py -v --timeout=5400
 """
 
+import os
 import re
+import signal
 import subprocess
 import sys
 from pathlib import Path
@@ -160,18 +162,34 @@ class TestLab3FleetManagement:
         )
         if count < 28000:
             # Datagen is a long-running streaming process; launch non-blocking.
+            # start_new_session detaches the wrapper + its publish child into
+            # their own process group so we can take both down with killpg.
             proc = subprocess.Popen(
-                ["uv", "run", "lab3_datagen", "--local"], cwd=PROJECT_ROOT
+                ["uv", "run", "lab3_datagen", "--local"],
+                cwd=PROJECT_ROOT,
+                start_new_session=True,
             )
-            count = poll_until(
-                getter=lambda: kafka.get_topic_message_count(
-                    "ride_requests", timeout=60, max_messages=28001
-                ),
-                condition=lambda c: c >= 28000,
-                timeout=600,
-                interval=30,
-                description="ride_requests >= 28,000 messages",
-            )
+            try:
+                count = poll_until(
+                    getter=lambda: kafka.get_topic_message_count(
+                        "ride_requests", timeout=60, max_messages=28001
+                    ),
+                    condition=lambda c: c >= 28000,
+                    timeout=600,
+                    interval=30,
+                    description="ride_requests >= 28,000 messages",
+                )
+            finally:
+                if proc.poll() is None:
+                    try:
+                        os.killpg(proc.pid, signal.SIGTERM)
+                        try:
+                            proc.wait(timeout=10)
+                        except subprocess.TimeoutExpired:
+                            os.killpg(proc.pid, signal.SIGKILL)
+                            proc.wait(timeout=5)
+                    except ProcessLookupError:
+                        pass
         assert count >= 28000, (
             f"ride_requests has only {count} messages (expected >= 28,000)"
         )

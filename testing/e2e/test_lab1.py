@@ -10,6 +10,7 @@ Run: uv run pytest testing/e2e/test_lab1.py -v --timeout=3600
 
 import os
 import re
+import signal
 import subprocess
 import sys
 from pathlib import Path
@@ -164,19 +165,36 @@ class TestLab1PriceMatch:
         kafka = env["kafka"]
         has_messages = kafka.check_topic_has_messages("orders", min_count=1, timeout=15)
         if not has_messages:
-            # Datagen is a long-running streaming process; launch non-blocking.
+            # --interval 0 disables the production pacing (default 120s/order) so
+            # the publisher finishes in seconds and the wrapper exits cleanly.
+            # start_new_session detaches the wrapper + its publish_lab1_data child
+            # into their own process group so we can take both down with killpg.
             proc = subprocess.Popen(
-                ["uv", "run", "lab1_datagen", "--local"], cwd=PROJECT_ROOT
+                ["uv", "run", "lab1_datagen", "--local", "--interval", "0"],
+                cwd=PROJECT_ROOT,
+                start_new_session=True,
             )
-            has_messages = poll_until(
-                getter=lambda: kafka.check_topic_has_messages(
-                    "orders", min_count=1, timeout=10
-                ),
-                condition=lambda r: r is True,
-                timeout=120,
-                interval=10,
-                description="orders topic has >= 1 message after datagen",
-            )
+            try:
+                has_messages = poll_until(
+                    getter=lambda: kafka.check_topic_has_messages(
+                        "orders", min_count=1, timeout=10
+                    ),
+                    condition=lambda r: r is True,
+                    timeout=120,
+                    interval=10,
+                    description="orders topic has >= 1 message after datagen",
+                )
+            finally:
+                if proc.poll() is None:
+                    try:
+                        os.killpg(proc.pid, signal.SIGTERM)
+                        try:
+                            proc.wait(timeout=10)
+                        except subprocess.TimeoutExpired:
+                            os.killpg(proc.pid, signal.SIGKILL)
+                            proc.wait(timeout=5)
+                    except ProcessLookupError:
+                        pass
         assert has_messages, "orders topic is empty — datagen may have failed"
 
     @pytest.mark.order(2)

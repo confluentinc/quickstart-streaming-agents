@@ -221,7 +221,11 @@ class Lab1DataPublisher:
             self.logger.warning(f"Could not purge '{topic}': {e} — continuing")
 
     def publish_topic(
-        self, topic: str, csv_file: Path, ts_offset_ms: int = 0
+        self,
+        topic: str,
+        csv_file: Path,
+        ts_offset_ms: int = 0,
+        interval_seconds: float = ORDERS_PUBLISH_INTERVAL_SECONDS,
     ) -> Dict[str, int]:
         results = {"success": 0, "failed": 0, "total": 0}
         ts_field = TS_FIELD.get(topic)
@@ -265,11 +269,11 @@ class Lab1DataPublisher:
                     self.logger.info(
                         f"Published order {idx}/{len(rows)}: {value_dict['order_id']}"
                     )
-                    if idx < len(rows):
+                    if idx < len(rows) and interval_seconds > 0:
                         self.logger.info(
-                            f"Waiting {ORDERS_PUBLISH_INTERVAL_SECONDS}s before next order..."
+                            f"Waiting {interval_seconds}s before next order..."
                         )
-                        time.sleep(ORDERS_PUBLISH_INTERVAL_SECONDS)
+                        time.sleep(interval_seconds)
                 elif idx % 100 == 0:
                     self.producer.poll(0)
 
@@ -297,6 +301,15 @@ def main():
         default=None,
         help="Directory containing customers.csv, products.csv, orders.csv "
         "(default: assets/lab1/data/)",
+    )
+    parser.add_argument(
+        "--interval",
+        type=float,
+        default=ORDERS_PUBLISH_INTERVAL_SECONDS,
+        help=(
+            f"Seconds between orders (default: {ORDERS_PUBLISH_INTERVAL_SECONDS}). "
+            "0 disables pacing — publish all orders back-to-back."
+        ),
     )
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--verbose", action="store_true")
@@ -351,14 +364,24 @@ def main():
         if args.dry_run:
             logger.info("[DRY RUN MODE]")
 
-        logger.info(
-            f"Orders will be published one every {ORDERS_PUBLISH_INTERVAL_SECONDS}s "
-            f"with order_ts set to publish time"
-        )
+        if args.interval > 0:
+            logger.info(
+                f"Orders will be published one every {args.interval}s "
+                f"with order_ts set to publish time"
+            )
+        else:
+            logger.info(
+                "Pacing disabled (--interval 0): orders will be published back-to-back"
+            )
 
         all_results = {}
         for topic in ("customers", "products", "orders"):
-            results = publisher.publish_topic(topic, data_dir / f"{topic}.csv", 0)
+            results = publisher.publish_topic(
+                topic,
+                data_dir / f"{topic}.csv",
+                ts_offset_ms=0,
+                interval_seconds=args.interval,
+            )
             all_results[topic] = results
 
         print(f"\n{'=' * 55}")

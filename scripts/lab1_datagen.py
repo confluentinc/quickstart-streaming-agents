@@ -393,6 +393,16 @@ Dependencies:
     )
 
     parser.add_argument(
+        "--interval",
+        type=float,
+        default=None,
+        help=(
+            "Seconds between orders when using --local. "
+            "0 disables pacing. Forwarded to publish_lab1_data."
+        ),
+    )
+
+    parser.add_argument(
         "--dry-run",
         action="store_true",
         help="Validate setup and generate connection files without running ShadowTraffic",
@@ -428,6 +438,8 @@ def main() -> None:
                 cmd.append("--verbose")
             if args.dry_run:
                 cmd.append("--dry-run")
+            if args.interval is not None:
+                cmd.extend(["--interval", str(args.interval)])
             result = subprocess.run(cmd, cwd=project_root)
             sys.exit(result.returncode)
         except Exception as e:
