@@ -52,7 +52,7 @@ def prompt_with_default(prompt_text: str, default: str = "") -> str:
     """
     if default:
         display_default = default if len(default) <= 50 else default[:47] + "..."
-        value = input(f"{prompt_text} [current: \"{display_default}\"]: ").strip()
+        value = input(f'{prompt_text} [current: "{display_default}"]: ').strip()
         return value if value else default
     else:
         value = input(f"{prompt_text}: ").strip()

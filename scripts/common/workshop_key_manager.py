@@ -55,6 +55,7 @@ from typing import Dict, Optional, Tuple
 try:
     import boto3
     from botocore.exceptions import BotoCoreError, ClientError
+
     BOTO3_AVAILABLE = True
 except ImportError:
     BOTO3_AVAILABLE = False
@@ -74,6 +75,7 @@ try:
     from azure.mgmt.resource import ResourceManagementClient
     from azure.mgmt.resource.resources.models import ResourceGroup
     from azure.core.exceptions import ResourceNotFoundError, HttpResponseError
+
     AZURE_SDK_AVAILABLE = True
 except ImportError:
     AZURE_SDK_AVAILABLE = False
@@ -103,16 +105,12 @@ AZURE_CREDENTIALS_FILE = "API-KEYS-AZURE.md"
 
 # Azure model deployment configurations
 AZURE_DEPLOYMENTS = {
-    "gpt-5-mini": {
-        "model": "gpt-5-mini",
-        "version": "2025-08-07",
-        "capacity": 150
-    },
+    "gpt-5-mini": {"model": "gpt-5-mini", "version": "2025-08-07", "capacity": 150},
     "text-embedding-ada-002": {
         "model": "text-embedding-ada-002",
         "version": "2",
-        "capacity": 120
-    }
+        "capacity": 120,
+    },
 }
 
 
@@ -120,8 +118,10 @@ AZURE_DEPLOYMENTS = {
 # EXCEPTIONS
 # ============================================================================
 
+
 class MaxKeysReached(Exception):
     """Raised when an IAM user already has 2 access keys (AWS limit)."""
+
     pass
 
 
@@ -139,12 +139,12 @@ def get_tags(project_root: Path, owner_email: str) -> Dict[str, str]:
         "Project": PROJECT_URL,
         "Environment": "workshop",
         "ManagedBy": "workshop-key-manager",
-        "LocalPath": str(project_root)
+        "LocalPath": str(project_root),
     }
 
 
 def get_owner_email(project_root: Path) -> str:
-    """Get owner email from credentials.env or prompt user."""
+    """Get owner email from credentials.env or prompt user, saving the prompted value back."""
     creds_file = project_root / "credentials.env"
 
     # Try to load from credentials.env
@@ -153,11 +153,13 @@ def get_owner_email(project_root: Path) -> str:
         if "TF_VAR_owner_email" in creds and creds["TF_VAR_owner_email"]:
             return creds["TF_VAR_owner_email"].strip("'\"")
 
-    # Prompt user
-    return prompt_with_default(
-        "Enter owner email (for resource tagging)",
-        default=""
+    # Prompt user and save back to credentials.env
+    email = prompt_with_default(
+        "Owner email for resource tagging (saved to credentials.env)", default=""
     )
+    if email:
+        set_key(str(creds_file), "TF_VAR_owner_email", email)
+    return email
 
 
 def prompt_cloud_provider() -> str:
@@ -167,10 +169,7 @@ def prompt_cloud_provider() -> str:
     print("=" * 70)
     print("\nSelect cloud provider for workshop credentials:")
 
-    choice = prompt_choice(
-        "Cloud Provider",
-        ["AWS (Bedrock)", "Azure (OpenAI)"]
-    )
+    choice = prompt_choice("Cloud Provider", ["AWS (Bedrock)", "Azure (OpenAI)"])
 
     if "AWS" in choice:
         return "aws"
@@ -182,6 +181,7 @@ def prompt_cloud_provider() -> str:
 # AWS-SPECIFIC FUNCTIONS
 # ============================================================================
 
+
 def get_bedrock_policy() -> Dict:
     """Get the IAM policy document for Bedrock model invocation."""
     return {
@@ -191,11 +191,11 @@ def get_bedrock_policy() -> Dict:
                 "Effect": "Allow",
                 "Action": [
                     "bedrock:InvokeModel",
-                    "bedrock:InvokeModelWithResponseStream"
+                    "bedrock:InvokeModelWithResponseStream",
                 ],
-                "Resource": "*"
+                "Resource": "*",
             }
-        ]
+        ],
     }
 
 
@@ -208,7 +208,12 @@ def get_aws_region(project_root: Path) -> str:
     return "us-east-1"
 
 
-def create_or_get_iam_user(iam_client, tags: Dict[str, str], logger: logging.Logger, username: str = AWS_IAM_USERNAME) -> bool:
+def create_or_get_iam_user(
+    iam_client,
+    tags: Dict[str, str],
+    logger: logging.Logger,
+    username: str = AWS_IAM_USERNAME,
+) -> bool:
     """Create IAM user if it doesn't exist, or get existing user."""
     try:
         # Check if user exists
@@ -216,21 +221,20 @@ def create_or_get_iam_user(iam_client, tags: Dict[str, str], logger: logging.Log
         logger.info(f"IAM user '{username}' already exists")
         return False
     except ClientError as e:
-        if e.response['Error']['Code'] == 'NoSuchEntity':
+        if e.response["Error"]["Code"] == "NoSuchEntity":
             # User doesn't exist, create it
             logger.info(f"Creating IAM user '{username}'...")
             tag_list = [{"Key": k, "Value": v} for k, v in tags.items()]
-            iam_client.create_user(
-                UserName=username,
-                Tags=tag_list
-            )
+            iam_client.create_user(UserName=username, Tags=tag_list)
             logger.info(f"✓ Created IAM user '{username}'")
             return True
         else:
             raise
 
 
-def attach_bedrock_policy(iam_client, logger: logging.Logger, username: str = AWS_IAM_USERNAME) -> None:
+def attach_bedrock_policy(
+    iam_client, logger: logging.Logger, username: str = AWS_IAM_USERNAME
+) -> None:
     """Attach inline Bedrock policy to IAM user."""
     logger.info(f"Attaching Bedrock policy '{AWS_POLICY_NAME}'...")
 
@@ -239,17 +243,19 @@ def attach_bedrock_policy(iam_client, logger: logging.Logger, username: str = AW
     iam_client.put_user_policy(
         UserName=username,
         PolicyName=AWS_POLICY_NAME,
-        PolicyDocument=json.dumps(policy_doc)
+        PolicyDocument=json.dumps(policy_doc),
     )
 
     logger.info(f"✓ Attached inline policy '{AWS_POLICY_NAME}'")
 
 
-def create_access_key(iam_client, logger: logging.Logger, username: str = AWS_IAM_USERNAME) -> Tuple[str, str]:
+def create_access_key(
+    iam_client, logger: logging.Logger, username: str = AWS_IAM_USERNAME
+) -> Tuple[str, str]:
     """Create new access key for IAM user."""
     # Check existing keys
     response = iam_client.list_access_keys(UserName=username)
-    existing_keys = response.get('AccessKeyMetadata', [])
+    existing_keys = response.get("AccessKeyMetadata", [])
 
     if len(existing_keys) >= 2:
         raise MaxKeysReached(
@@ -259,10 +265,10 @@ def create_access_key(iam_client, logger: logging.Logger, username: str = AWS_IA
     logger.info("Generating new access key...")
 
     response = iam_client.create_access_key(UserName=username)
-    access_key = response['AccessKey']
+    access_key = response["AccessKey"]
 
-    access_key_id = access_key['AccessKeyId']
-    secret_access_key = access_key['SecretAccessKey']
+    access_key_id = access_key["AccessKeyId"]
+    secret_access_key = access_key["SecretAccessKey"]
 
     logger.info(f"✓ Created access key: {access_key_id}")
 
@@ -270,10 +276,7 @@ def create_access_key(iam_client, logger: logging.Logger, username: str = AWS_IA
 
 
 def test_bedrock_credentials(
-    access_key_id: str,
-    secret_access_key: str,
-    region: str,
-    logger: logging.Logger
+    access_key_id: str, secret_access_key: str, region: str, logger: logging.Logger
 ) -> bool:
     """Test AWS Bedrock credentials."""
     from .test_bedrock_credentials import test_bedrock_credentials as test_func
@@ -284,10 +287,8 @@ def test_bedrock_credentials(
         access_key_id=access_key_id,
         secret_access_key=secret_access_key,
         region=region,
-        logger=logger
+        logger=logger,
     )
-
-
 
 
 def save_aws_credentials_file(
@@ -297,13 +298,15 @@ def save_aws_credentials_file(
     region: str,
     tags: Dict[str, str],
     logger: logging.Logger,
-    username: str = AWS_IAM_USERNAME
+    username: str = AWS_IAM_USERNAME,
 ) -> None:
     """Save AWS credentials to markdown file with usage instructions."""
     creds_file = project_root / AWS_CREDENTIALS_FILE
 
     # Format tags for display (exclude LocalPath as it's not useful for workshop participants)
-    tags_display = "\n".join([f"**{key}:** `{value}`" for key, value in tags.items() if key != "LocalPath"])
+    tags_display = "\n".join(
+        [f"**{key}:** `{value}`" for key, value in tags.items() if key != "LocalPath"]
+    )
 
     content = f"""# Workshop Credentials (AWS)
 
@@ -376,10 +379,10 @@ The api-keys destroy command will:
 **Tags:**
 {tags_display}
 
-**Created:** {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC
+**Created:** {datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")} UTC
 """
 
-    with open(creds_file, 'w') as f:
+    with open(creds_file, "w") as f:
         f.write(content)
 
     logger.info(f"✓ Saved credentials to {creds_file}")
@@ -404,7 +407,7 @@ def parse_iam_username_from_md(project_root: Path) -> Optional[str]:
         return None
     try:
         content = creds_file.read_text()
-        match = re.search(r'^\*\*IAM User:\*\*\s+`([^`]+)`', content, re.MULTILINE)
+        match = re.search(r"^\*\*IAM User:\*\*\s+`([^`]+)`", content, re.MULTILINE)
         if match:
             return match.group(1)
     except OSError:
@@ -413,9 +416,7 @@ def parse_iam_username_from_md(project_root: Path) -> Optional[str]:
 
 
 def cleanup_user_dependencies(
-    iam_client,
-    username: str,
-    logger: logging.Logger
+    iam_client, username: str, logger: logging.Logger
 ) -> Tuple[bool, Optional[str]]:
     """Comprehensively clean up all IAM user dependencies before deletion."""
     errors = []
@@ -423,18 +424,17 @@ def cleanup_user_dependencies(
     # 1. Remove from all groups
     try:
         response = iam_client.list_groups_for_user(UserName=username)
-        groups = response.get('Groups', [])
+        groups = response.get("Groups", [])
         if groups:
             for group in groups:
-                group_name = group['GroupName']
+                group_name = group["GroupName"]
                 try:
                     iam_client.remove_user_from_group(
-                        UserName=username,
-                        GroupName=group_name
+                        UserName=username, GroupName=group_name
                     )
                     logger.debug(f"  Removed from group '{group_name}'")
                 except ClientError as e:
-                    if e.response['Error']['Code'] != 'NoSuchEntity':
+                    if e.response["Error"]["Code"] != "NoSuchEntity":
                         error_msg = f"Failed to remove from group '{group_name}': {e.response['Error']['Code']}"
                         errors.append(error_msg)
                         logger.error(f"  ✗ {error_msg}")
@@ -450,18 +450,15 @@ def cleanup_user_dependencies(
     # 2. Delete all access keys
     try:
         response = iam_client.list_access_keys(UserName=username)
-        keys = response.get('AccessKeyMetadata', [])
+        keys = response.get("AccessKeyMetadata", [])
         if keys:
             for key in keys:
-                key_id = key['AccessKeyId']
+                key_id = key["AccessKeyId"]
                 try:
-                    iam_client.delete_access_key(
-                        UserName=username,
-                        AccessKeyId=key_id
-                    )
+                    iam_client.delete_access_key(UserName=username, AccessKeyId=key_id)
                     logger.debug(f"  Deleted access key {key_id}")
                 except ClientError as e:
-                    if e.response['Error']['Code'] != 'NoSuchEntity':
+                    if e.response["Error"]["Code"] != "NoSuchEntity":
                         error_msg = f"Failed to delete access key {key_id}: {e.response['Error']['Code']}"
                         errors.append(error_msg)
                         logger.error(f"  ✗ {error_msg}")
@@ -477,18 +474,17 @@ def cleanup_user_dependencies(
     # 3. Detach all managed policies
     try:
         response = iam_client.list_attached_user_policies(UserName=username)
-        policies = response.get('AttachedPolicies', [])
+        policies = response.get("AttachedPolicies", [])
         if policies:
             for policy in policies:
-                policy_arn = policy['PolicyArn']
+                policy_arn = policy["PolicyArn"]
                 try:
                     iam_client.detach_user_policy(
-                        UserName=username,
-                        PolicyArn=policy_arn
+                        UserName=username, PolicyArn=policy_arn
                     )
                     logger.debug(f"  Detached policy {policy_arn}")
                 except ClientError as e:
-                    if e.response['Error']['Code'] != 'NoSuchEntity':
+                    if e.response["Error"]["Code"] != "NoSuchEntity":
                         error_msg = f"Failed to detach policy {policy_arn}: {e.response['Error']['Code']}"
                         errors.append(error_msg)
                         logger.error(f"  ✗ {error_msg}")
@@ -504,17 +500,16 @@ def cleanup_user_dependencies(
     # 4. Delete all inline policies
     try:
         response = iam_client.list_user_policies(UserName=username)
-        policy_names = response.get('PolicyNames', [])
+        policy_names = response.get("PolicyNames", [])
         if policy_names:
             for policy_name in policy_names:
                 try:
                     iam_client.delete_user_policy(
-                        UserName=username,
-                        PolicyName=policy_name
+                        UserName=username, PolicyName=policy_name
                     )
                     logger.debug(f"  Deleted inline policy '{policy_name}'")
                 except ClientError as e:
-                    if e.response['Error']['Code'] != 'NoSuchEntity':
+                    if e.response["Error"]["Code"] != "NoSuchEntity":
                         error_msg = f"Failed to delete inline policy '{policy_name}': {e.response['Error']['Code']}"
                         errors.append(error_msg)
                         logger.error(f"  ✗ {error_msg}")
@@ -532,7 +527,7 @@ def cleanup_user_dependencies(
         iam_client.delete_login_profile(UserName=username)
         logger.info("✓ Deleted login profile")
     except ClientError as e:
-        if e.response['Error']['Code'] == 'NoSuchEntity':
+        if e.response["Error"]["Code"] == "NoSuchEntity":
             logger.info("✓ No login profile to delete")
         else:
             error_msg = f"Failed to delete login profile: {e.response['Error']['Code']}"
@@ -542,26 +537,27 @@ def cleanup_user_dependencies(
     # 6. Deactivate/delete MFA devices
     try:
         response = iam_client.list_mfa_devices(UserName=username)
-        devices = response.get('MFADevices', [])
+        devices = response.get("MFADevices", [])
         if devices:
             for device in devices:
-                serial = device['SerialNumber']
+                serial = device["SerialNumber"]
                 try:
                     iam_client.deactivate_mfa_device(
-                        UserName=username,
-                        SerialNumber=serial
+                        UserName=username, SerialNumber=serial
                     )
                     logger.debug(f"  Deactivated MFA device {serial}")
 
-                    if ':mfa/' in serial:
+                    if ":mfa/" in serial:
                         try:
                             iam_client.delete_virtual_mfa_device(SerialNumber=serial)
                             logger.debug(f"  Deleted virtual MFA device {serial}")
                         except ClientError as e:
-                            if e.response['Error']['Code'] != 'NoSuchEntity':
-                                logger.warning(f"  Could not delete virtual MFA device: {e.response['Error']['Code']}")
+                            if e.response["Error"]["Code"] != "NoSuchEntity":
+                                logger.warning(
+                                    f"  Could not delete virtual MFA device: {e.response['Error']['Code']}"
+                                )
                 except ClientError as e:
-                    if e.response['Error']['Code'] != 'NoSuchEntity':
+                    if e.response["Error"]["Code"] != "NoSuchEntity":
                         error_msg = f"Failed to deactivate MFA device {serial}: {e.response['Error']['Code']}"
                         errors.append(error_msg)
                         logger.error(f"  ✗ {error_msg}")
@@ -577,18 +573,17 @@ def cleanup_user_dependencies(
     # 7. Delete SSH public keys
     try:
         response = iam_client.list_ssh_public_keys(UserName=username)
-        keys = response.get('SSHPublicKeys', [])
+        keys = response.get("SSHPublicKeys", [])
         if keys:
             for key in keys:
-                key_id = key['SSHPublicKeyId']
+                key_id = key["SSHPublicKeyId"]
                 try:
                     iam_client.delete_ssh_public_key(
-                        UserName=username,
-                        SSHPublicKeyId=key_id
+                        UserName=username, SSHPublicKeyId=key_id
                     )
                     logger.debug(f"  Deleted SSH key {key_id}")
                 except ClientError as e:
-                    if e.response['Error']['Code'] != 'NoSuchEntity':
+                    if e.response["Error"]["Code"] != "NoSuchEntity":
                         error_msg = f"Failed to delete SSH key {key_id}: {e.response['Error']['Code']}"
                         errors.append(error_msg)
                         logger.error(f"  ✗ {error_msg}")
@@ -604,18 +599,17 @@ def cleanup_user_dependencies(
     # 8. Delete signing certificates
     try:
         response = iam_client.list_signing_certificates(UserName=username)
-        certs = response.get('Certificates', [])
+        certs = response.get("Certificates", [])
         if certs:
             for cert in certs:
-                cert_id = cert['CertificateId']
+                cert_id = cert["CertificateId"]
                 try:
                     iam_client.delete_signing_certificate(
-                        UserName=username,
-                        CertificateId=cert_id
+                        UserName=username, CertificateId=cert_id
                     )
                     logger.debug(f"  Deleted signing certificate {cert_id}")
                 except ClientError as e:
-                    if e.response['Error']['Code'] != 'NoSuchEntity':
+                    if e.response["Error"]["Code"] != "NoSuchEntity":
                         error_msg = f"Failed to delete certificate {cert_id}: {e.response['Error']['Code']}"
                         errors.append(error_msg)
                         logger.error(f"  ✗ {error_msg}")
@@ -624,26 +618,27 @@ def cleanup_user_dependencies(
         else:
             logger.info("✓ No signing certificates to delete")
     except ClientError as e:
-        error_msg = f"Failed to list signing certificates: {e.response['Error']['Code']}"
+        error_msg = (
+            f"Failed to list signing certificates: {e.response['Error']['Code']}"
+        )
         errors.append(error_msg)
         logger.error(f"✗ {error_msg}")
 
     # 9. Delete service-specific credentials
     try:
         response = iam_client.list_service_specific_credentials(UserName=username)
-        creds = response.get('ServiceSpecificCredentials', [])
+        creds = response.get("ServiceSpecificCredentials", [])
         if creds:
             for cred in creds:
-                cred_id = cred['ServiceSpecificCredentialId']
-                service_name = cred['ServiceName']
+                cred_id = cred["ServiceSpecificCredentialId"]
+                service_name = cred["ServiceName"]
                 try:
                     iam_client.delete_service_specific_credential(
-                        UserName=username,
-                        ServiceSpecificCredentialId=cred_id
+                        UserName=username, ServiceSpecificCredentialId=cred_id
                     )
                     logger.debug(f"  Deleted {service_name} credential {cred_id}")
                 except ClientError as e:
-                    if e.response['Error']['Code'] != 'NoSuchEntity':
+                    if e.response["Error"]["Code"] != "NoSuchEntity":
                         error_msg = f"Failed to delete {service_name} credential: {e.response['Error']['Code']}"
                         errors.append(error_msg)
                         logger.error(f"  ✗ {error_msg}")
@@ -661,10 +656,12 @@ def cleanup_user_dependencies(
         iam_client.delete_user_permissions_boundary(UserName=username)
         logger.info("✓ Deleted permission boundary")
     except ClientError as e:
-        if e.response['Error']['Code'] == 'NoSuchEntity':
+        if e.response["Error"]["Code"] == "NoSuchEntity":
             logger.info("✓ No permission boundary to delete")
         else:
-            error_msg = f"Failed to delete permission boundary: {e.response['Error']['Code']}"
+            error_msg = (
+                f"Failed to delete permission boundary: {e.response['Error']['Code']}"
+            )
             errors.append(error_msg)
             logger.error(f"✗ {error_msg}")
 
@@ -683,15 +680,17 @@ def cleanup_user_dependencies(
 # AZURE-SPECIFIC FUNCTIONS
 # ============================================================================
 
+
 def check_azure_cli_login() -> bool:
     """Check if user is authenticated to Azure CLI."""
     try:
         import subprocess
+
         result = subprocess.run(
             ["az", "account", "get-access-token"],
             capture_output=True,
             text=True,
-            timeout=5
+            timeout=5,
         )
         return result.returncode == 0
     except (FileNotFoundError, Exception):
@@ -700,7 +699,7 @@ def check_azure_cli_login() -> bool:
 
 def generate_random_id(length: int = 6) -> str:
     """Generate random alphanumeric ID for resource naming."""
-    return ''.join(random.choices(string.ascii_lowercase + string.digits, k=length))
+    return "".join(random.choices(string.ascii_lowercase + string.digits, k=length))
 
 
 def get_azure_region(project_root: Path) -> str:
@@ -719,11 +718,12 @@ def get_subscription_id(credential) -> str:
     """Get Azure subscription ID from az CLI."""
     try:
         import subprocess
+
         result = subprocess.run(
             ["az", "account", "show", "--query", "id", "-o", "tsv"],
             capture_output=True,
             text=True,
-            check=True
+            check=True,
         )
         subscription_id = result.stdout.strip()
         if subscription_id:
@@ -742,19 +742,15 @@ def create_resource_group(
     resource_group_name: str,
     region: str,
     tags: Dict[str, str],
-    logger: logging.Logger
+    logger: logging.Logger,
 ) -> None:
     """Create Azure resource group if it doesn't exist."""
     logger.info(f"Creating resource group '{resource_group_name}'...")
 
-    resource_group = ResourceGroup(
-        location=region,
-        tags=tags
-    )
+    resource_group = ResourceGroup(location=region, tags=tags)
 
     resource_client.resource_groups.create_or_update(
-        resource_group_name,
-        resource_group
+        resource_group_name, resource_group
     )
 
     logger.info(f"✓ Created resource group '{resource_group_name}'")
@@ -766,7 +762,7 @@ def create_cognitive_account(
     account_name: str,
     region: str,
     tags: Dict[str, str],
-    logger: logging.Logger
+    logger: logging.Logger,
 ) -> str:
     """Create Azure Cognitive Services account (OpenAI)."""
     logger.info(f"Creating Azure Cognitive Services account '{account_name}'...")
@@ -776,17 +772,14 @@ def create_cognitive_account(
         sku=CognitiveServicesSku(name="S0"),
         kind="OpenAI",
         properties=AccountProperties(
-            public_network_access="Enabled",
-            custom_sub_domain_name=account_name
+            public_network_access="Enabled", custom_sub_domain_name=account_name
         ),
-        tags=tags
+        tags=tags,
     )
 
     # This is a long-running operation
     poller = cognitive_client.accounts.begin_create(
-        resource_group_name,
-        account_name,
-        account
+        resource_group_name, account_name, account
     )
 
     result = poller.result()
@@ -806,31 +799,25 @@ def create_model_deployment(
     model_name: str,
     model_version: str,
     capacity: int,
-    logger: logging.Logger
+    logger: logging.Logger,
 ) -> None:
     """Create Azure OpenAI model deployment."""
-    logger.info(f"Creating deployment '{deployment_name}' (model: {model_name}, version: {model_version})...")
+    logger.info(
+        f"Creating deployment '{deployment_name}' (model: {model_name}, version: {model_version})..."
+    )
 
     deployment = Deployment(
         properties=DeploymentProperties(
             model=DeploymentModel(
-                format="OpenAI",
-                name=model_name,
-                version=model_version
+                format="OpenAI", name=model_name, version=model_version
             )
         ),
-        sku=CognitiveServicesSku(
-            name="GlobalStandard",
-            capacity=capacity
-        )
+        sku=CognitiveServicesSku(name="GlobalStandard", capacity=capacity),
     )
 
     # This is a long-running operation
     poller = cognitive_client.deployments.begin_create_or_update(
-        resource_group_name,
-        account_name,
-        deployment_name,
-        deployment
+        resource_group_name, account_name, deployment_name, deployment
     )
 
     poller.result()
@@ -842,15 +829,12 @@ def get_api_key(
     cognitive_client: CognitiveServicesManagementClient,
     resource_group_name: str,
     account_name: str,
-    logger: logging.Logger
+    logger: logging.Logger,
 ) -> str:
     """Retrieve API key for Cognitive Services account."""
     logger.info("Retrieving API key...")
 
-    keys = cognitive_client.accounts.list_keys(
-        resource_group_name,
-        account_name
-    )
+    keys = cognitive_client.accounts.list_keys(resource_group_name, account_name)
 
     api_key = keys.key1
 
@@ -860,12 +844,12 @@ def get_api_key(
 
 
 def test_azure_openai_credentials(
-    endpoint: str,
-    api_key: str,
-    logger: logging.Logger
+    endpoint: str, api_key: str, logger: logging.Logger
 ) -> bool:
     """Test Azure OpenAI credentials."""
-    from .test_azure_openai_credentials import test_azure_openai_credentials as test_func
+    from .test_azure_openai_credentials import (
+        test_azure_openai_credentials as test_func,
+    )
 
     logger.info("Testing Azure OpenAI credentials...")
 
@@ -880,15 +864,15 @@ def save_azure_state(
     endpoint: str,
     region: str,
     owner_email: str,
-    logger: logging.Logger
+    logger: logging.Logger,
 ) -> None:
     """Save Azure resource identifiers to credentials.env for use by destroy."""
     env_file = project_root / "credentials.env"
     if not env_file.exists():
         env_file.touch()
-    set_key(str(env_file), "AZURE_RESOURCE_GROUP",   resource_group)
+    set_key(str(env_file), "AZURE_RESOURCE_GROUP", resource_group)
     set_key(str(env_file), "AZURE_COGNITIVE_ACCOUNT", cognitive_account)
-    set_key(str(env_file), "AZURE_DEPLOYMENTS",       ",".join(deployments))
+    set_key(str(env_file), "AZURE_DEPLOYMENTS", ",".join(deployments))
     logger.debug(f"Saved Azure state to credentials.env")
 
 
@@ -900,13 +884,15 @@ def save_azure_credentials_file(
     resource_group: str,
     cognitive_account: str,
     tags: Dict[str, str],
-    logger: logging.Logger
+    logger: logging.Logger,
 ) -> None:
     """Save Azure credentials to markdown file with usage instructions."""
     creds_file = project_root / AZURE_CREDENTIALS_FILE
 
     # Format tags for display (exclude LocalPath as it's not useful for workshop participants)
-    tags_display = "\n".join([f"**{key}:** `{value}`" for key, value in tags.items() if key != "LocalPath"])
+    tags_display = "\n".join(
+        [f"**{key}:** `{value}`" for key, value in tags.items() if key != "LocalPath"]
+    )
 
     content = f"""# Workshop Credentials (Azure)
 
@@ -988,10 +974,10 @@ The api-keys destroy command will:
 **Tags:**
 {tags_display}
 
-**Created:** {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC
+**Created:** {datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")} UTC
 """
 
-    with open(creds_file, 'w') as f:
+    with open(creds_file, "w") as f:
         f.write(content)
 
     logger.info(f"✓ Saved credentials to {creds_file}")
@@ -1015,15 +1001,16 @@ def load_azure_state(project_root: Path) -> Optional[Dict]:
         return None
     deployments_raw = creds.get("AZURE_DEPLOYMENTS", "")
     return {
-        "resource_group":    rg,
+        "resource_group": rg,
         "cognitive_account": creds.get("AZURE_COGNITIVE_ACCOUNT", ""),
-        "deployments":       [d.strip() for d in deployments_raw.split(",") if d.strip()],
+        "deployments": [d.strip() for d in deployments_raw.split(",") if d.strip()],
     }
 
 
 # ============================================================================
 # COMMAND HANDLERS
 # ============================================================================
+
 
 def create_aws_command(args: argparse.Namespace, logger: logging.Logger) -> int:
     """Create AWS IAM user and access keys for workshop."""
@@ -1052,12 +1039,11 @@ def create_aws_command(args: argparse.Namespace, logger: logging.Logger) -> int:
 
         # Prompt for IAM username (allows custom name, defaults to standard)
         iam_username = prompt_with_default(
-            "IAM username for workshop user",
-            default=AWS_IAM_USERNAME
+            "IAM username for workshop user", default=AWS_IAM_USERNAME
         )
 
         # Create IAM client (uses default AWS credentials from environment/config)
-        iam_client = boto3.client('iam')
+        iam_client = boto3.client("iam")
 
         print("\n" + "=" * 70)
         print("CREATING AWS WORKSHOP CREDENTIALS")
@@ -1072,7 +1058,9 @@ def create_aws_command(args: argparse.Namespace, logger: logging.Logger) -> int:
 
             # Create access key (may raise MaxKeysReached)
             try:
-                access_key_id, secret_access_key = create_access_key(iam_client, logger, username=iam_username)
+                access_key_id, secret_access_key = create_access_key(
+                    iam_client, logger, username=iam_username
+                )
                 break  # success — exit loop
             except MaxKeysReached as e:
                 print(f"\n{e}")
@@ -1082,14 +1070,13 @@ def create_aws_command(args: argparse.Namespace, logger: logging.Logger) -> int:
                     [
                         "Cancel — I'll delete an existing key manually then retry",
                         "Create a new IAM user with a different name",
-                    ]
+                    ],
                 )
                 if "Cancel" in choice:
                     return 1
                 # Prompt for a new username and loop back
                 iam_username = prompt_with_default(
-                    "New IAM username",
-                    default=f"{iam_username}-2"
+                    "New IAM username", default=f"{iam_username}-2"
                 )
                 print("\n" + "=" * 70)
                 print("CREATING AWS WORKSHOP CREDENTIALS (new user)")
@@ -1100,7 +1087,7 @@ def create_aws_command(args: argparse.Namespace, logger: logging.Logger) -> int:
             access_key_id=access_key_id,
             secret_access_key=secret_access_key,
             region=region,
-            logger=logger
+            logger=logger,
         )
 
         if not test_success:
@@ -1119,12 +1106,19 @@ def create_aws_command(args: argparse.Namespace, logger: logging.Logger) -> int:
             print("=" * 70)
             logger.warning("Bedrock test did not pass, but continuing anyway")
         else:
-            logger.info("✓ Bedrock access test passed - Claude Sonnet 4.5 is accessible")
+            logger.info(
+                "✓ Bedrock access test passed - Claude Sonnet 4.5 is accessible"
+            )
 
         # Save credentials
         save_aws_credentials_file(
-            project_root, access_key_id, secret_access_key, region, tags, logger,
-            username=iam_username
+            project_root,
+            access_key_id,
+            secret_access_key,
+            region,
+            tags,
+            logger,
+            username=iam_username,
         )
 
         print("=" * 70)
@@ -1185,7 +1179,7 @@ def destroy_aws_command(args: argparse.Namespace, logger: logging.Logger) -> int
             return 1
 
         # Create IAM client
-        iam_client = boto3.client('iam')
+        iam_client = boto3.client("iam")
 
         print("\n" + "=" * 70)
         print("DESTROYING AWS WORKSHOP CREDENTIALS")
@@ -1194,13 +1188,14 @@ def destroy_aws_command(args: argparse.Namespace, logger: logging.Logger) -> int
 
         try:
             iam_client.delete_access_key(
-                UserName=iam_username,
-                AccessKeyId=access_key_id
+                UserName=iam_username, AccessKeyId=access_key_id
             )
             logger.info(f"✓ Deleted access key {access_key_id}")
         except ClientError as e:
-            if e.response['Error']['Code'] == 'NoSuchEntity':
-                logger.warning(f"Access key {access_key_id} not found (may already be deleted)")
+            if e.response["Error"]["Code"] == "NoSuchEntity":
+                logger.warning(
+                    f"Access key {access_key_id} not found (may already be deleted)"
+                )
             else:
                 raise
 
@@ -1213,7 +1208,7 @@ def destroy_aws_command(args: argparse.Namespace, logger: logging.Logger) -> int
 
             delete_user = prompt_choice(
                 "Delete IAM user?",
-                ["No (keep user for future workshops)", "Yes (delete user completely)"]
+                ["No (keep user for future workshops)", "Yes (delete user completely)"],
             )
 
             if "Yes" in delete_user:
@@ -1232,7 +1227,9 @@ def destroy_aws_command(args: argparse.Namespace, logger: logging.Logger) -> int
                     print("2. Review and remove remaining dependencies")
                     print("3. Delete the user")
                     print("=" * 70 + "\n")
-                    logger.warning(f"User {iam_username} could not be deleted automatically")
+                    logger.warning(
+                        f"User {iam_username} could not be deleted automatically"
+                    )
                 else:
                     # All dependencies cleaned up, now delete user
                     logger.info(f"Deleting IAM user {iam_username}...")
@@ -1241,17 +1238,25 @@ def destroy_aws_command(args: argparse.Namespace, logger: logging.Logger) -> int
                         logger.info(f"✓ Deleted IAM user {iam_username}")
                         user_deleted = True
                     except ClientError as e:
-                        if e.response['Error']['Code'] == 'NoSuchEntity':
-                            logger.warning(f"User {iam_username} not found (may already be deleted)")
+                        if e.response["Error"]["Code"] == "NoSuchEntity":
+                            logger.warning(
+                                f"User {iam_username} not found (may already be deleted)"
+                            )
                             user_deleted = True
                         else:
                             print("\n" + "=" * 70)
-                            print("⚠ WARNING: User cleanup succeeded but deletion failed")
+                            print(
+                                "⚠ WARNING: User cleanup succeeded but deletion failed"
+                            )
                             print("=" * 70)
                             print(f"\nError: {e}")
                             print(f"User: {iam_username}")
-                            print("\nThe user dependencies were cleaned up, but deletion failed.")
-                            print("Try running the command again, or delete manually via AWS Console.")
+                            print(
+                                "\nThe user dependencies were cleaned up, but deletion failed."
+                            )
+                            print(
+                                "Try running the command again, or delete manually via AWS Console."
+                            )
                             print("=" * 70 + "\n")
                             logger.error(f"Failed to delete user after cleanup: {e}")
         else:
@@ -1260,6 +1265,7 @@ def destroy_aws_command(args: argparse.Namespace, logger: logging.Logger) -> int
         # Clear credentials from credentials.env; delete legacy state file if present
         if env_file.exists():
             from dotenv import unset_key
+
             unset_key(str(env_file), "TF_VAR_aws_bedrock_access_key")
             unset_key(str(env_file), "TF_VAR_aws_bedrock_secret_key")
             unset_key(str(env_file), "TF_VAR_aws_iam_username")
@@ -1280,7 +1286,9 @@ def destroy_aws_command(args: argparse.Namespace, logger: logging.Logger) -> int
         if user_deleted:
             print(f"  - IAM user: {iam_username}")
         elif not args.keep_user:
-            print(f"  - IAM user: {iam_username} (cleanup attempted, may require manual deletion)")
+            print(
+                f"  - IAM user: {iam_username} (cleanup attempted, may require manual deletion)"
+            )
         print(f"  - Credentials cleared from credentials.env")
         print("=" * 70 + "\n")
 
@@ -1306,7 +1314,9 @@ def create_azure_command(args: argparse.Namespace, logger: logging.Logger) -> in
         print("  - azure-mgmt-resource")
         print("  - azure-ai-inference")
         print("\nPlease install them with:")
-        print("\n  pip install azure-identity azure-mgmt-cognitiveservices azure-mgmt-resource azure-ai-inference")
+        print(
+            "\n  pip install azure-identity azure-mgmt-cognitiveservices azure-mgmt-resource azure-ai-inference"
+        )
         print("\nOr add them to your project dependencies.")
         print("=" * 70)
         return 1
@@ -1346,7 +1356,9 @@ def create_azure_command(args: argparse.Namespace, logger: logging.Logger) -> in
 
         # Create Azure clients
         resource_client = ResourceManagementClient(credential, subscription_id)
-        cognitive_client = CognitiveServicesManagementClient(credential, subscription_id)
+        cognitive_client = CognitiveServicesManagementClient(
+            credential, subscription_id
+        )
 
         print("\n" + "=" * 70)
         print("CREATING AZURE WORKSHOP CREDENTIALS")
@@ -1359,21 +1371,12 @@ def create_azure_command(args: argparse.Namespace, logger: logging.Logger) -> in
 
         # Create resource group
         create_resource_group(
-            resource_client,
-            resource_group_name,
-            region,
-            tags,
-            logger
+            resource_client, resource_group_name, region, tags, logger
         )
 
         # Create cognitive services account
         endpoint = create_cognitive_account(
-            cognitive_client,
-            resource_group_name,
-            account_name,
-            region,
-            tags,
-            logger
+            cognitive_client, resource_group_name, account_name, region, tags, logger
         )
 
         # Create model deployments
@@ -1387,16 +1390,13 @@ def create_azure_command(args: argparse.Namespace, logger: logging.Logger) -> in
                 config["model"],
                 config["version"],
                 config["capacity"],
-                logger
+                logger,
             )
             deployment_names.append(deployment_name)
 
         # Get API key
         api_key = get_api_key(
-            cognitive_client,
-            resource_group_name,
-            account_name,
-            logger
+            cognitive_client, resource_group_name, account_name, logger
         )
 
         # Wait for deployments to fully propagate
@@ -1431,7 +1431,7 @@ def create_azure_command(args: argparse.Namespace, logger: logging.Logger) -> in
             endpoint,
             region,
             owner_email,
-            logger
+            logger,
         )
         save_azure_credentials_file(
             project_root,
@@ -1441,7 +1441,7 @@ def create_azure_command(args: argparse.Namespace, logger: logging.Logger) -> in
             resource_group_name,
             account_name,
             tags,
-            logger
+            logger,
         )
 
         print("=" * 70)
@@ -1466,6 +1466,7 @@ def create_azure_command(args: argparse.Namespace, logger: logging.Logger) -> in
     except Exception as e:
         logger.error(f"Error creating workshop credentials: {e}")
         import traceback
+
         logger.debug(traceback.format_exc())
         return 1
 
@@ -1522,29 +1523,31 @@ def destroy_azure_command(args: argparse.Namespace, logger: logging.Logger) -> i
 
         # Create Azure clients
         resource_client = ResourceManagementClient(credential, subscription_id)
-        cognitive_client = CognitiveServicesManagementClient(credential, subscription_id)
+        cognitive_client = CognitiveServicesManagementClient(
+            credential, subscription_id
+        )
 
         print("\n" + "=" * 70)
         print("DESTROYING AZURE WORKSHOP CREDENTIALS")
         print("=" * 70)
 
-        resource_group = state['resource_group']
-        cognitive_account = state['cognitive_account']
-        deployments = state.get('deployments', [])
+        resource_group = state["resource_group"]
+        cognitive_account = state["cognitive_account"]
+        deployments = state.get("deployments", [])
 
         # Delete model deployments
         for deployment_name in deployments:
             logger.info(f"Deleting deployment '{deployment_name}'...")
             try:
                 poller = cognitive_client.deployments.begin_delete(
-                    resource_group,
-                    cognitive_account,
-                    deployment_name
+                    resource_group, cognitive_account, deployment_name
                 )
                 poller.result()
                 logger.info(f"✓ Deleted deployment '{deployment_name}'")
             except ResourceNotFoundError:
-                logger.warning(f"Deployment '{deployment_name}' not found (may already be deleted)")
+                logger.warning(
+                    f"Deployment '{deployment_name}' not found (may already be deleted)"
+                )
             except Exception as e:
                 logger.error(f"Failed to delete deployment '{deployment_name}': {e}")
 
@@ -1557,18 +1560,22 @@ def destroy_azure_command(args: argparse.Namespace, logger: logging.Logger) -> i
 
             delete_rg = prompt_choice(
                 "Delete resource group?",
-                ["No (keep for future workshops)", "Yes (delete all resources)"]
+                ["No (keep for future workshops)", "Yes (delete all resources)"],
             )
 
             if "Yes" in delete_rg:
                 logger.info(f"Deleting resource group '{resource_group}'...")
                 try:
-                    poller = resource_client.resource_groups.begin_delete(resource_group)
+                    poller = resource_client.resource_groups.begin_delete(
+                        resource_group
+                    )
                     poller.result()
                     logger.info(f"✓ Deleted resource group '{resource_group}'")
                     resource_group_deleted = True
                 except ResourceNotFoundError:
-                    logger.warning(f"Resource group '{resource_group}' not found (may already be deleted)")
+                    logger.warning(
+                        f"Resource group '{resource_group}' not found (may already be deleted)"
+                    )
                     resource_group_deleted = True
                 except Exception as e:
                     logger.error(f"Failed to delete resource group: {e}")
@@ -1579,22 +1586,26 @@ def destroy_azure_command(args: argparse.Namespace, logger: logging.Logger) -> i
                 logger.info(f"Deleting cognitive account '{cognitive_account}'...")
                 try:
                     poller = cognitive_client.accounts.begin_delete(
-                        resource_group,
-                        cognitive_account
+                        resource_group, cognitive_account
                     )
                     poller.result()
                     logger.info(f"✓ Deleted cognitive account '{cognitive_account}'")
                 except ResourceNotFoundError:
-                    logger.warning(f"Cognitive account '{cognitive_account}' not found (may already be deleted)")
+                    logger.warning(
+                        f"Cognitive account '{cognitive_account}' not found (may already be deleted)"
+                    )
                 except Exception as e:
                     logger.error(f"Failed to delete cognitive account: {e}")
         else:
-            logger.info(f"Keeping resource group '{resource_group}' (--keep-resource-group flag)")
+            logger.info(
+                f"Keeping resource group '{resource_group}' (--keep-resource-group flag)"
+            )
 
         # Clear Azure state from credentials.env; delete legacy state file if present
         env_file = project_root / "credentials.env"
         if env_file.exists():
             from dotenv import unset_key
+
             unset_key(str(env_file), "AZURE_RESOURCE_GROUP")
             unset_key(str(env_file), "AZURE_COGNITIVE_ACCOUNT")
             unset_key(str(env_file), "AZURE_DEPLOYMENTS")
@@ -1629,6 +1640,7 @@ def destroy_azure_command(args: argparse.Namespace, logger: logging.Logger) -> i
     except Exception as e:
         logger.error(f"Error destroying credentials: {e}")
         import traceback
+
         logger.debug(traceback.format_exc())
         return 1
 
@@ -1636,6 +1648,7 @@ def destroy_azure_command(args: argparse.Namespace, logger: logging.Logger) -> i
 # ============================================================================
 # MAIN ENTRY POINT
 # ============================================================================
+
 
 def main():
     """Main entry point for unified workshop key manager (AWS + Azure)."""
@@ -1663,53 +1676,43 @@ Examples:
   # Keep IAM user/resource group for reuse
   %(prog)s destroy aws --keep-user
   %(prog)s destroy azure --keep-resource-group
-        """
+        """,
     )
 
-    subparsers = parser.add_subparsers(dest='command', help='Command to execute')
+    subparsers = parser.add_subparsers(dest="command", help="Command to execute")
 
     # Create command
-    create_parser = subparsers.add_parser(
-        'create',
-        help='Create workshop credentials'
+    create_parser = subparsers.add_parser("create", help="Create workshop credentials")
+    create_parser.add_argument(
+        "cloud",
+        nargs="?",
+        choices=["aws", "azure"],
+        help="Cloud provider (aws or azure). If not specified, you will be prompted.",
     )
     create_parser.add_argument(
-        'cloud',
-        nargs='?',
-        choices=['aws', 'azure'],
-        help='Cloud provider (aws or azure). If not specified, you will be prompted.'
-    )
-    create_parser.add_argument(
-        '--verbose',
-        action='store_true',
-        help='Enable verbose logging'
+        "--verbose", action="store_true", help="Enable verbose logging"
     )
 
     # Destroy command
     destroy_parser = subparsers.add_parser(
-        'destroy',
-        help='Revoke workshop credentials'
+        "destroy", help="Revoke workshop credentials"
     )
     destroy_parser.add_argument(
-        'cloud',
-        nargs='?',
-        choices=['aws', 'azure'],
-        help='Cloud provider (aws or azure). If not specified, you will be prompted.'
+        "cloud",
+        nargs="?",
+        choices=["aws", "azure"],
+        help="Cloud provider (aws or azure). If not specified, you will be prompted.",
     )
     destroy_parser.add_argument(
-        '--keep-user',
-        action='store_true',
-        help='Keep IAM user for reuse (AWS only)'
+        "--keep-user", action="store_true", help="Keep IAM user for reuse (AWS only)"
     )
     destroy_parser.add_argument(
-        '--keep-resource-group',
-        action='store_true',
-        help='Keep resource group for reuse (Azure only)'
+        "--keep-resource-group",
+        action="store_true",
+        help="Keep resource group for reuse (Azure only)",
     )
     destroy_parser.add_argument(
-        '--verbose',
-        action='store_true',
-        help='Enable verbose logging'
+        "--verbose", action="store_true", help="Enable verbose logging"
     )
 
     args = parser.parse_args()
@@ -1720,22 +1723,22 @@ Examples:
         return 1
 
     # Set up logging
-    logger = setup_logging(getattr(args, 'verbose', False), suppress_azure=True)
+    logger = setup_logging(getattr(args, "verbose", False), suppress_azure=True)
 
     # Handle interactive cloud selection (for both create and destroy)
     if not args.cloud:
         args.cloud = prompt_cloud_provider()
 
     # Dispatch based on command and cloud provider
-    if args.command == 'create':
-        if args.cloud == 'aws':
+    if args.command == "create":
+        if args.cloud == "aws":
             return create_aws_command(args, logger)
-        elif args.cloud == 'azure':
+        elif args.cloud == "azure":
             return create_azure_command(args, logger)
-    elif args.command == 'destroy':
-        if args.cloud == 'aws':
+    elif args.command == "destroy":
+        if args.cloud == "aws":
             return destroy_aws_command(args, logger)
-        elif args.cloud == 'azure':
+        elif args.cloud == "azure":
             return destroy_azure_command(args, logger)
 
     parser.print_help()

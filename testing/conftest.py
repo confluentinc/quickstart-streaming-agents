@@ -25,6 +25,7 @@ _failures: List = []
 
 # --- Session hooks ---
 
+
 def pytest_runtest_logreport(report: pytest.TestReport) -> None:
     if report.failed:
         _failures.append(report)
@@ -37,7 +38,9 @@ def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
             try:
                 answer = input("\nTests failed. Launch Claude to investigate? [y/N] ")
                 if answer.strip().lower() == "y":
-                    summary_path = PROJECT_ROOT / "testing" / "reports" / "failure_summary.md"
+                    summary_path = (
+                        PROJECT_ROOT / "testing" / "reports" / "failure_summary.md"
+                    )
                     subprocess.Popen(["claude", "--add-file", str(summary_path)])
             except (EOFError, KeyboardInterrupt):
                 pass
@@ -48,7 +51,9 @@ def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
                 "Run clean validation (delete + recreate all statements)? [y/N] "
             )
             if answer.strip().lower() == "y":
-                print("Re-run without PYTEST_RESUME=true to perform a full clean validation.")
+                print(
+                    "Re-run without PYTEST_RESUME=true to perform a full clean validation."
+                )
         except (EOFError, KeyboardInterrupt):
             pass
 
@@ -65,10 +70,7 @@ def _write_failure_summary(failures: List) -> None:
             lines.append(f"```\n{report.longrepr}\n```\n")
     path.write_text("\n".join(lines))
     print(f"\nFailure summary written to: {path}")
-    print(
-        "To investigate: claude 'investigate the test failures' "
-        f"--add-file {path}"
-    )
+    print(f"To investigate: claude 'investigate the test failures' --add-file {path}")
 
 
 def _is_interactive() -> bool:
@@ -103,9 +105,7 @@ def ensure_confluent_login(credentials: Dict[str, str]):
     """
     # Check if already logged in by trying to list environments
     result = subprocess.run(
-        ["confluent", "environment", "list"],
-        capture_output=True,
-        text=True
+        ["confluent", "environment", "list"], capture_output=True, text=True
     )
 
     # If command succeeds, we're already authenticated
@@ -113,7 +113,7 @@ def ensure_confluent_login(credentials: Dict[str, str]):
         return
 
     # Not logged in - attempt automatic login
-    email = credentials.get("confluent_cloud_email") or credentials.get("owner_email")
+    email = credentials.get("confluent_cloud_email")
     password = credentials.get("confluent_cloud_password")
 
     # Fall back to credentials.env if JSON creds don't have what we need
@@ -121,7 +121,7 @@ def ensure_confluent_login(credentials: Dict[str, str]):
         env_file = PROJECT_ROOT / "credentials.env"
         if env_file.exists():
             env_creds = dotenv_values(str(env_file))
-            email = email or env_creds.get("CONFLUENT_EMAIL") or env_creds.get("TF_VAR_owner_email")
+            email = email or env_creds.get("CONFLUENT_EMAIL")
             password = password or env_creds.get("CONFLUENT_PASSWORD")
 
     if not email or not password:
@@ -142,7 +142,7 @@ def ensure_confluent_login(credentials: Dict[str, str]):
         ["confluent", "login", "--save"],
         input=f"{email}\n{password}\n",
         capture_output=True,
-        text=True
+        text=True,
     )
 
     if result.returncode != 0:
@@ -153,9 +153,7 @@ def ensure_confluent_login(credentials: Dict[str, str]):
 
     # Verify login succeeded
     result = subprocess.run(
-        ["confluent", "environment", "list"],
-        capture_output=True,
-        text=True
+        ["confluent", "environment", "list"], capture_output=True, text=True
     )
 
     if result.returncode != 0:
@@ -205,19 +203,25 @@ def load_test_credentials(cloud: str) -> Dict[str, Any]:
     ]
 
     # Email can be either confluent_cloud_email or owner_email
-    if not credentials.get("confluent_cloud_email") and not credentials.get("owner_email"):
+    if not credentials.get("confluent_cloud_email") and not credentials.get(
+        "owner_email"
+    ):
         raise ValueError("Missing required field: confluent_cloud_email or owner_email")
 
     if cloud == "aws":
-        required_fields.extend([
-            "aws_bedrock_access_key",
-            "aws_bedrock_secret_key",
-        ])
+        required_fields.extend(
+            [
+                "aws_bedrock_access_key",
+                "aws_bedrock_secret_key",
+            ]
+        )
     elif cloud == "azure":
-        required_fields.extend([
-            "azure_openai_endpoint",
-            "azure_openai_api_key",
-        ])
+        required_fields.extend(
+            [
+                "azure_openai_endpoint",
+                "azure_openai_api_key",
+            ]
+        )
 
     missing = [f for f in required_fields if not credentials.get(f)]
     if missing:

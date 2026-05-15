@@ -73,7 +73,9 @@ class TestLab2VectorSearch:
     @pytest.mark.order(1)
     def test_sample_query_inserted(self, env):
         """queries topic has >= 1 message (Terraform inserted sample on deploy)."""
-        has_messages = env["kafka"].check_topic_has_messages("queries", min_count=1, timeout=30)
+        has_messages = env["kafka"].check_topic_has_messages(
+            "queries", min_count=1, timeout=30
+        )
         assert has_messages, "queries topic has no messages — was Lab 2 deployed?"
 
     @pytest.mark.order(2)
@@ -113,7 +115,9 @@ class TestLab2VectorSearch:
         kafka = env["kafka"]
 
         def _get_messages():
-            return kafka.consume_messages("search_results_response", max_messages=5, timeout=15)
+            return kafka.consume_messages(
+                "search_results_response", max_messages=5, timeout=15
+            )
 
         messages = poll_until(
             getter=_get_messages,

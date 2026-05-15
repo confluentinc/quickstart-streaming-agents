@@ -18,6 +18,7 @@ from pathlib import Path
 
 try:
     from dotenv import dotenv_values, set_key
+
     _DOTENV_AVAILABLE = True
 except ImportError:
     _DOTENV_AVAILABLE = False
@@ -88,7 +89,9 @@ def _get_credentials(creds_file: Path, creds: dict) -> tuple[str, str]:
         return api_key, api_secret
 
     print("\nNo RTCE global API key found.")
-    print("Create one in Confluent Cloud: top-right hamburger menu → API keys → Add API key → Global scope")
+    print(
+        "Create one in Confluent Cloud: top-right hamburger menu → API keys → Add API key → Global scope"
+    )
     print()
     api_key = _ask("Global API key:    ")
     api_secret = _ask("Global API secret: ")
@@ -130,7 +133,12 @@ def _get_infra(creds_file: Path) -> dict[str, str]:
         print(f"  Environment:  {env_id}")
         print(f"  Cluster:      {cluster_id}")
         print(f"  Region:       {region}")
-        return {"org_id": org_id, "env_id": env_id, "cluster_id": cluster_id, "region": region}
+        return {
+            "org_id": org_id,
+            "env_id": env_id,
+            "cluster_id": cluster_id,
+            "region": region,
+        }
 
     print("\nEnter your Confluent Cloud infrastructure details:")
     if not org_id:
@@ -142,7 +150,12 @@ def _get_infra(creds_file: Path) -> dict[str, str]:
     if not region:
         region = _ask("  AWS Region (e.g. us-east-1): ")
 
-    return {"org_id": org_id, "env_id": env_id, "cluster_id": cluster_id, "region": region}
+    return {
+        "org_id": org_id,
+        "env_id": env_id,
+        "cluster_id": cluster_id,
+        "region": region,
+    }
 
 
 def _ask(prompt: str) -> str:
@@ -172,7 +185,11 @@ def _pick_scope() -> tuple[str, Path]:
     Note: mcpServers in settings.local.json is silently ignored by Claude Code.
     """
     print()
-    raw = input("Register for (l)ocal/this project or (u)ser/all projects? [l]: ").strip().lower()
+    raw = (
+        input("Register for (l)ocal/this project or (u)ser/all projects? [l]: ")
+        .strip()
+        .lower()
+    )
     if raw in ("u", "user"):
         return "local", Path.home() / ".claude.json"
     return "project", Path.cwd() / ".mcp.json"
@@ -185,10 +202,15 @@ def _register_gemini(server_name: str, url: str, token: str) -> str:
         capture_output=True,
     )
     cmd = [
-        "gemini", "mcp", "add",
-        "--transport", "http",
-        "--scope", "user",
-        "--header", f"Authorization: Basic {token}",
+        "gemini",
+        "mcp",
+        "add",
+        "--transport",
+        "http",
+        "--scope",
+        "user",
+        "--header",
+        f"Authorization: Basic {token}",
         server_name,
         url,
     ]
@@ -199,7 +221,9 @@ def _register_gemini(server_name: str, url: str, token: str) -> str:
     return "gemini user scope"
 
 
-def _write_mcp_to_config(config_file: Path, server_name: str, url: str, token: str) -> None:
+def _write_mcp_to_config(
+    config_file: Path, server_name: str, url: str, token: str
+) -> None:
     """Write the HTTP MCP server directly into the target Claude Code MCP config file.
 
     Bypasses `claude mcp add` when Confluent's enterprise policy blocks HTTP
@@ -271,13 +295,19 @@ def main():
             capture_output=True,
         )
         cmd = [
-            "claude", "mcp", "add",
-            "--transport", "http",
-            "--scope", claude_scope,
+            "claude",
+            "mcp",
+            "add",
+            "--transport",
+            "http",
+            "--scope",
+            claude_scope,
             server_name,
             url,
-            "--env", f"CONFLUENT_RTCE_TOKEN={token}",
-            "--header", "Authorization: Basic ${CONFLUENT_RTCE_TOKEN}",
+            "--env",
+            f"CONFLUENT_RTCE_TOKEN={token}",
+            "--header",
+            "Authorization: Basic ${CONFLUENT_RTCE_TOKEN}",
         ]
         result = subprocess.run(cmd, capture_output=True, text=True)
         if result.returncode == 0:
@@ -290,7 +320,7 @@ def main():
             "  NOTE (Confluent employees): If the server does not appear in /mcp after\n"
             "  restart, your machine's JAMF policy may block the RTCE URL pattern.\n"
             "  File an ITSEC ticket (label: claude-code-governance) to add:\n"
-            "    { \"serverUrl\": \"https://mcp.*.confluent.cloud/mcp/v1/context-engine/*\" }\n"
+            '    { "serverUrl": "https://mcp.*.confluent.cloud/mcp/v1/context-engine/*" }\n'
             "  to allowedMcpServers in confluentinc/claude-code-governance."
         )
 

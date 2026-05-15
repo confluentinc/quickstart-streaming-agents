@@ -31,6 +31,7 @@ from typing import Optional, Tuple
 try:
     from pymongo import MongoClient
     from pymongo.errors import ConfigurationError, ConnectionFailure, OperationFailure
+
     PYMONGO_AVAILABLE = True
 except ImportError:
     PYMONGO_AVAILABLE = False
@@ -97,9 +98,13 @@ def test_mongodb_connection(
         enc_user = urllib.parse.quote_plus(username)
         enc_pass = urllib.parse.quote_plus(password)
         if "mongodb+srv://" in connection_string:
-            uri = connection_string.replace("mongodb+srv://", f"mongodb+srv://{enc_user}:{enc_pass}@")
+            uri = connection_string.replace(
+                "mongodb+srv://", f"mongodb+srv://{enc_user}:{enc_pass}@"
+            )
         else:
-            uri = connection_string.replace("mongodb://", f"mongodb://{enc_user}:{enc_pass}@")
+            uri = connection_string.replace(
+                "mongodb://", f"mongodb://{enc_user}:{enc_pass}@"
+            )
     else:
         uri = connection_string
 
@@ -168,12 +173,23 @@ Examples:
     parser.add_argument("--connection-string", help="MongoDB connection string")
     parser.add_argument("--username", default="", help="MongoDB username")
     parser.add_argument("--password", default="", help="MongoDB password")
-    parser.add_argument("--workshop", action="store_true",
-                        help="Test the pre-populated workshop credentials instead")
-    parser.add_argument("--lab", choices=["lab2", "lab3", "lab4"], default="lab2",
-                        help="Lab to test (--workshop mode only)")
-    parser.add_argument("--cloud", choices=["aws", "azure"], default="aws",
-                        help="Cloud provider (--workshop mode only)")
+    parser.add_argument(
+        "--workshop",
+        action="store_true",
+        help="Test the pre-populated workshop credentials instead",
+    )
+    parser.add_argument(
+        "--lab",
+        choices=["lab2", "lab3", "lab4"],
+        default="lab2",
+        help="Lab to test (--workshop mode only)",
+    )
+    parser.add_argument(
+        "--cloud",
+        choices=["aws", "azure"],
+        default="aws",
+        help="Cloud provider (--workshop mode only)",
+    )
     parser.add_argument("--verbose", action="store_true", help="Enable verbose output")
     args = parser.parse_args()
 

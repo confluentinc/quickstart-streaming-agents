@@ -31,10 +31,14 @@ def check_dependencies() -> Dict[str, bool]:
             capture_output=True,
             text=True,
             check=True,
-            timeout=10
+            timeout=10,
         )
         dependencies["docker"] = True
-    except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired):
+    except (
+        subprocess.CalledProcessError,
+        FileNotFoundError,
+        subprocess.TimeoutExpired,
+    ):
         dependencies["docker"] = False
 
     # Check terraform
@@ -44,10 +48,14 @@ def check_dependencies() -> Dict[str, bool]:
             capture_output=True,
             text=True,
             check=True,
-            timeout=10
+            timeout=10,
         )
         dependencies["terraform"] = True
-    except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired):
+    except (
+        subprocess.CalledProcessError,
+        FileNotFoundError,
+        subprocess.TimeoutExpired,
+    ):
         dependencies["terraform"] = False
 
     return dependencies
@@ -76,15 +84,15 @@ def validate_dependencies(dependencies: Dict[str, bool]) -> bool:
         if dep == "docker":
             logger.error("  - Docker: https://docs.docker.com/get-docker/")
         elif dep == "terraform":
-            logger.error("  - Terraform: https://developer.hashicorp.com/terraform/install")
+            logger.error(
+                "  - Terraform: https://developer.hashicorp.com/terraform/install"
+            )
 
     return False
 
 
 def generate_connection_file(
-    credentials: Dict[str, str],
-    connection_name: str,
-    output_path: Path
+    credentials: Dict[str, str], connection_name: str, output_path: Path
 ) -> None:
     """
     Generate a ShadowTraffic connection file.
@@ -103,9 +111,7 @@ def generate_connection_file(
 
     connection_config = {
         "kind": "kafka",
-        "topicPolicy": {
-            "policy": "create"
-        },
+        "topicPolicy": {"policy": "create"},
         "producerConfigs": {
             "bootstrap.servers": bootstrap_endpoint,
             "security.protocol": "SASL_SSL",
@@ -115,20 +121,18 @@ def generate_connection_file(
             "value.serializer": "io.confluent.kafka.serializers.KafkaAvroSerializer",
             "schema.registry.url": credentials["schema_registry_url"],
             "basic.auth.credentials.source": "USER_INFO",
-            "basic.auth.user.info": f"{credentials['schema_registry_api_key']}:{credentials['schema_registry_api_secret']}"
-        }
+            "basic.auth.user.info": f"{credentials['schema_registry_api_key']}:{credentials['schema_registry_api_secret']}",
+        },
     }
 
-    with open(output_path, 'w') as f:
+    with open(output_path, "w") as f:
         json.dump(connection_config, f, indent=2)
 
     logger.debug(f"Generated connection file: {output_path}")
 
 
 def generate_all_connections(
-    credentials: Dict[str, str],
-    connections_dir: Path,
-    connection_names: List[str]
+    credentials: Dict[str, str], connections_dir: Path, connection_names: List[str]
 ) -> None:
     """
     Generate all required ShadowTraffic connection files.
@@ -153,7 +157,9 @@ def generate_all_connections(
     logger.info(f"🎉 Successfully generated all connection files in: {connections_dir}")
 
 
-def check_shadowtraffic_config(generators_dir: Path, required_generators: List[str]) -> bool:
+def check_shadowtraffic_config(
+    generators_dir: Path, required_generators: List[str]
+) -> bool:
     """
     Check that ShadowTraffic configuration files exist.
 
@@ -189,11 +195,7 @@ def check_docker_env_file(datagen_dir: Path) -> Optional[Path]:
     Returns:
         Path to environment file if found, None otherwise
     """
-    env_files = [
-        "free-trial-license-docker.env",
-        "shadowtraffic.env",
-        ".env"
-    ]
+    env_files = ["free-trial-license-docker.env", "shadowtraffic.env", ".env"]
 
     for env_file in env_files:
         env_path = datagen_dir / env_file
@@ -224,7 +226,7 @@ def download_shadowtraffic_license(datagen_dir: Path) -> Optional[Path]:
         with urllib.request.urlopen(license_url, timeout=30) as response:
             license_content = response.read()
 
-        with open(license_path, 'wb') as f:
+        with open(license_path, "wb") as f:
             f.write(license_content)
 
         logger.info(f"✓ License file downloaded to: {license_path}")
@@ -249,13 +251,13 @@ def get_license_expiration(license_path: Path) -> Optional[datetime]:
     logger = logging.getLogger(__name__)
 
     try:
-        with open(license_path, 'r') as f:
+        with open(license_path, "r") as f:
             for line in f:
                 line = line.strip()
-                if line.startswith('LICENSE_EXPIRATION='):
-                    expiration_str = line.split('=', 1)[1]
+                if line.startswith("LICENSE_EXPIRATION="):
+                    expiration_str = line.split("=", 1)[1]
                     # Parse YYYY-MM-DD format
-                    return datetime.strptime(expiration_str, '%Y-%m-%d')
+                    return datetime.strptime(expiration_str, "%Y-%m-%d")
 
         logger.debug(f"No LICENSE_EXPIRATION found in {license_path}")
         return None
@@ -297,7 +299,7 @@ def run_shadowtraffic_docker(
     functions_dir: Optional[Path] = None,
     duration: Optional[int] = None,
     messages_per_minute: Optional[int] = None,
-    dry_run: bool = False
+    dry_run: bool = False,
 ) -> int:
     """
     Run ShadowTraffic data generation with Docker.
@@ -321,10 +323,12 @@ def run_shadowtraffic_docker(
     # If messages_per_minute is specified, create modified root.json
     if messages_per_minute:
         throttle_ms = int(60000 / messages_per_minute)
-        logger.info(f"📊 Setting message rate to {messages_per_minute} messages/minute (throttle: {throttle_ms}ms)")
+        logger.info(
+            f"📊 Setting message rate to {messages_per_minute} messages/minute (throttle: {throttle_ms}ms)"
+        )
 
         # Load original root.json
-        with open(root_config, 'r') as f:
+        with open(root_config, "r") as f:
             root_json = json.load(f)
 
         # Update the throttleMs in schedule overrides
@@ -339,14 +343,16 @@ def run_shadowtraffic_docker(
                         stage["overrides"]["orders"]["localConfigs"] = {}
 
                     # Set fixed throttle (remove randomization for predictability)
-                    stage["overrides"]["orders"]["localConfigs"]["throttleMs"] = throttle_ms
+                    stage["overrides"]["orders"]["localConfigs"]["throttleMs"] = (
+                        throttle_ms
+                    )
 
         # Create temp directory for modified config
         temp_dir = tempfile.mkdtemp(prefix="shadowtraffic_")
         temp_root_config = Path(temp_dir) / "root.json"
 
         # Write modified root.json
-        with open(temp_root_config, 'w') as f:
+        with open(temp_root_config, "w") as f:
             json.dump(root_json, f, indent=2)
 
         logger.debug(f"Created temporary root.json at: {temp_root_config}")
@@ -359,7 +365,9 @@ def run_shadowtraffic_docker(
         # Check if existing license is expired
         if is_license_expired(env_file):
             expiration = get_license_expiration(env_file)
-            expiration_str = expiration.strftime('%Y-%m-%d') if expiration else "unknown"
+            expiration_str = (
+                expiration.strftime("%Y-%m-%d") if expiration else "unknown"
+            )
 
             logger.warning(f"⚠️  ShadowTraffic license expired on {expiration_str}")
             logger.info("📥 Deleting expired license and downloading fresh one...")
@@ -381,11 +389,17 @@ def run_shadowtraffic_docker(
                 logger.error("✗ Failed to download a new license file")
                 logger.error("")
                 logger.error("Please download a fresh license manually:")
-                logger.error("  1. Visit: https://github.com/ShadowTraffic/shadowtraffic-examples")
+                logger.error(
+                    "  1. Visit: https://github.com/ShadowTraffic/shadowtraffic-examples"
+                )
                 logger.error("  2. Download: free-trial-license-docker.env")
-                logger.error(f"  3. Save to: {datagen_dir}/free-trial-license-docker.env")
+                logger.error(
+                    f"  3. Save to: {datagen_dir}/free-trial-license-docker.env"
+                )
                 logger.error("")
-                logger.error("Alternatively, get a full license at: https://shadowtraffic.io")
+                logger.error(
+                    "Alternatively, get a full license at: https://shadowtraffic.io"
+                )
                 return 1
     else:
         logger.info("📄 No ShadowTraffic license file found, attempting to download...")
@@ -396,12 +410,16 @@ def run_shadowtraffic_docker(
 
     # Build Docker command
     docker_cmd = [
-        "docker", "run",
+        "docker",
+        "run",
         "--rm",
         "--net=host",
-        "-v", f"{root_config}:/home/root.json",
-        "-v", f"{generators_dir}:/home/generators",
-        "-v", f"{connections_dir}:/home/connections",
+        "-v",
+        f"{root_config}:/home/root.json",
+        "-v",
+        f"{generators_dir}:/home/generators",
+        "-v",
+        f"{connections_dir}:/home/connections",
     ]
 
     # Add zones directory if it exists
@@ -421,9 +439,12 @@ def run_shadowtraffic_docker(
     if duration:
         shadowtraffic_args.extend(["--duration", str(duration)])
 
-    docker_cmd.extend([
-        "shadowtraffic/shadowtraffic:1.14.1"  # pinned for stability
-    ] + shadowtraffic_args)
+    docker_cmd.extend(
+        [
+            "shadowtraffic/shadowtraffic:1.14.1"  # pinned for stability
+        ]
+        + shadowtraffic_args
+    )
 
     logger.info(f"🚀 Starting ShadowTraffic data generation...")
     logger.info(f"   Config: {root_config}")
@@ -447,11 +468,7 @@ def run_shadowtraffic_docker(
 
     try:
         # Change to datagen directory for relative path resolution
-        result = subprocess.run(
-            docker_cmd,
-            cwd=datagen_dir,
-            check=True
-        )
+        result = subprocess.run(docker_cmd, cwd=datagen_dir, check=True)
 
         logger.info("✓ ShadowTraffic data generation completed successfully")
         return result.returncode

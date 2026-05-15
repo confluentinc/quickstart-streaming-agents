@@ -10,6 +10,7 @@ Run: uv run pytest testing/e2e/test_lab1.py -v --timeout=3600
 
 import os
 import re
+import signal
 import subprocess
 import sys
 from pathlib import Path
@@ -135,10 +136,18 @@ class TestLab1PriceMatch:
 
         walkthrough = PROJECT_ROOT / "LAB1-Walkthrough.md"
         sql = _parse_lab1_sql(walkthrough)
-        assert sql.get("enriched_orders"), "Could not parse enriched_orders SQL from LAB1-Walkthrough.md"
-        assert sql.get("create_tool"), "Could not parse CREATE TOOL SQL from LAB1-Walkthrough.md"
-        assert sql.get("create_agent"), "Could not parse CREATE AGENT SQL from LAB1-Walkthrough.md"
-        assert sql.get("price_match_results"), "Could not parse price_match_results SQL from LAB1-Walkthrough.md"
+        assert sql.get("enriched_orders"), (
+            "Could not parse enriched_orders SQL from LAB1-Walkthrough.md"
+        )
+        assert sql.get("create_tool"), (
+            "Could not parse CREATE TOOL SQL from LAB1-Walkthrough.md"
+        )
+        assert sql.get("create_agent"), (
+            "Could not parse CREATE AGENT SQL from LAB1-Walkthrough.md"
+        )
+        assert sql.get("price_match_results"), (
+            "Could not parse price_match_results SQL from LAB1-Walkthrough.md"
+        )
 
         yield {
             "cloud": cloud,
@@ -156,15 +165,36 @@ class TestLab1PriceMatch:
         kafka = env["kafka"]
         has_messages = kafka.check_topic_has_messages("orders", min_count=1, timeout=15)
         if not has_messages:
-            # Datagen is a long-running streaming process; launch non-blocking.
-            proc = subprocess.Popen(["uv", "run", "lab1_datagen", "--local"], cwd=PROJECT_ROOT)
-            has_messages = poll_until(
-                getter=lambda: kafka.check_topic_has_messages("orders", min_count=1, timeout=10),
-                condition=lambda r: r is True,
-                timeout=120,
-                interval=10,
-                description="orders topic has >= 1 message after datagen",
+            # --interval 0 disables the production pacing (default 120s/order) so
+            # the publisher finishes in seconds and the wrapper exits cleanly.
+            # start_new_session detaches the wrapper + its publish_lab1_data child
+            # into their own process group so we can take both down with killpg.
+            proc = subprocess.Popen(
+                ["uv", "run", "lab1_datagen", "--local", "--interval", "0"],
+                cwd=PROJECT_ROOT,
+                start_new_session=True,
             )
+            try:
+                has_messages = poll_until(
+                    getter=lambda: kafka.check_topic_has_messages(
+                        "orders", min_count=1, timeout=10
+                    ),
+                    condition=lambda r: r is True,
+                    timeout=120,
+                    interval=10,
+                    description="orders topic has >= 1 message after datagen",
+                )
+            finally:
+                if proc.poll() is None:
+                    try:
+                        os.killpg(proc.pid, signal.SIGTERM)
+                        try:
+                            proc.wait(timeout=10)
+                        except subprocess.TimeoutExpired:
+                            os.killpg(proc.pid, signal.SIGKILL)
+                            proc.wait(timeout=5)
+                    except ProcessLookupError:
+                        pass
         assert has_messages, "orders topic is empty — datagen may have failed"
 
     @pytest.mark.order(2)
@@ -174,7 +204,9 @@ class TestLab1PriceMatch:
         _ensure_statement(flink, f"{_PREFIX}-enriched-orders", sql["enriched_orders"])
 
         has_messages = poll_until(
-            getter=lambda: kafka.check_topic_has_messages("enriched_orders", min_count=1, timeout=10),
+            getter=lambda: kafka.check_topic_has_messages(
+                "enriched_orders", min_count=1, timeout=10
+            ),
             condition=lambda r: r is True,
             timeout=300,
             interval=15,
@@ -203,7 +235,10 @@ class TestLab1PriceMatch:
         """
         flink, kafka, sql = env["flink"], env["kafka"], env["sql"]
         _ensure_statement(
-            flink, f"{_PREFIX}-price-match-results", sql["price_match_results"], timeout=600
+            flink,
+            f"{_PREFIX}-price-match-results",
+            sql["price_match_results"],
+            timeout=600,
         )
 
         has_messages = poll_until(

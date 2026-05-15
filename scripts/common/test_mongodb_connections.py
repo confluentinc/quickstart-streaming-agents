@@ -123,9 +123,7 @@ def test_connection(
             print(f"Document ID: {doc.get('document_id', 'N/A')}")
 
             chunk = doc.get("chunk", "")
-            chunk_preview = (
-                chunk[:200] + "..." if len(chunk) > 200 else chunk
-            )
+            chunk_preview = chunk[:200] + "..." if len(chunk) > 200 else chunk
             print(f"Chunk Preview: {chunk_preview}")
 
             # Check if expected content is present
@@ -153,9 +151,7 @@ def test_connection(
             ]
 
             if vector_indexes:
-                print(
-                    f"✅ Found {len(vector_indexes)} vector search index(es):"
-                )
+                print(f"✅ Found {len(vector_indexes)} vector search index(es):")
                 for idx in vector_indexes:
                     print(f"   - {idx.get('name', 'unnamed')}")
             else:
@@ -202,12 +198,8 @@ def main():
     args = parser.parse_args()
 
     # Determine which tests to run
-    labs_to_test = (
-        ["lab2", "lab3"] if args.lab == "all" else [args.lab]
-    )
-    clouds_to_test = (
-        ["aws", "azure"] if args.cloud == "all" else [args.cloud]
-    )
+    labs_to_test = ["lab2", "lab3"] if args.lab == "all" else [args.lab]
+    clouds_to_test = ["aws", "azure"] if args.cloud == "all" else [args.cloud]
 
     print("\n" + "=" * 70)
     print("MongoDB Connection & Vector Search Test")
@@ -251,9 +243,7 @@ def main():
         print("\n🎉 All tests passed!")
         return 0
     else:
-        print(
-            f"\n⚠️  {total_tests - passed_tests} test(s) failed. Check errors above."
-        )
+        print(f"\n⚠️  {total_tests - passed_tests} test(s) failed. Check errors above.")
         return 1
 
 
