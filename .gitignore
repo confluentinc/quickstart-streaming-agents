@@ -106,7 +106,6 @@ env/
 
 # Testing infrastructure (contains sensitive credentials)
 tests/
-credentials.json
 
 # Node (used by setup-mcp script)
 node_modules/

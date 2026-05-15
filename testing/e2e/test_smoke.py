@@ -5,8 +5,6 @@ from testing.conftest import (
     ensure_confluent_cli_installed,
     ensure_confluent_login,
     load_test_credentials,
-    write_credentials_to_project_root,
-    remove_credentials_from_project_root,
 )
 
 
@@ -28,20 +26,3 @@ def test_fixture_setup():
     # Step 3: Ensure Confluent CLI is logged in
     ensure_confluent_login(credentials)
     print("✅ Confluent CLI is authenticated")
-
-    # Step 4: Write credentials to project root
-    write_credentials_to_project_root(credentials)
-    print("✅ Wrote credentials to project root")
-
-    try:
-        # Verify credentials.json exists
-        import os
-        from pathlib import Path
-        creds_file = Path.cwd() / "credentials.json"
-        assert creds_file.exists(), "credentials.json not created"
-        print("✅ credentials.json exists in project root")
-
-    finally:
-        # Cleanup
-        remove_credentials_from_project_root()
-        print("✅ Cleaned up credentials.json")

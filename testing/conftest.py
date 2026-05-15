@@ -1,6 +1,5 @@
 """Pytest configuration and shared fixtures for workshop tests."""
 
-import json
 import os
 import subprocess
 import shutil
@@ -113,26 +112,13 @@ def ensure_confluent_login(credentials: Dict[str, str]):
         return
 
     # Not logged in - attempt automatic login
-    email = credentials.get("confluent_cloud_email") or credentials.get("owner_email")
-    password = credentials.get("confluent_cloud_password")
-
-    # Fall back to credentials.env if JSON creds don't have what we need
-    if not email or not password:
-        env_file = PROJECT_ROOT / "credentials.env"
-        if env_file.exists():
-            env_creds = dotenv_values(str(env_file))
-            email = email or env_creds.get("CONFLUENT_EMAIL") or env_creds.get("TF_VAR_owner_email")
-            password = password or env_creds.get("CONFLUENT_PASSWORD")
+    email = credentials.get("CONFLUENT_EMAIL") or credentials.get("TF_VAR_owner_email")
+    password = credentials.get("CONFLUENT_PASSWORD")
 
     if not email or not password:
         pytest.skip(
             "Confluent CLI not logged in and no credentials found — "
             "run `confluent login --save` or add CONFLUENT_EMAIL and CONFLUENT_PASSWORD to credentials.env"
-        )
-
-    if password == "YOUR_PASSWORD_HERE":
-        pytest.skip(
-            "Confluent CLI not logged in and password not set in testing/credentials.json"
         )
 
     print(f"🔐 Logging into Confluent Cloud as {email}...")
@@ -148,7 +134,7 @@ def ensure_confluent_login(credentials: Dict[str, str]):
     if result.returncode != 0:
         raise RuntimeError(
             f"Confluent Cloud login failed:\n{result.stderr}\n"
-            "Please verify your email and password in testing/credentials.json"
+            "Please verify CONFLUENT_EMAIL and CONFLUENT_PASSWORD in credentials.env"
         )
 
     # Verify login succeeded
@@ -165,58 +151,50 @@ def ensure_confluent_login(credentials: Dict[str, str]):
 
 
 def load_test_credentials(cloud: str) -> Dict[str, Any]:
-    """Load credentials from testing/credentials.json and set cloud/region.
+    """Load credentials from credentials.env and validate for the given cloud.
 
     Args:
         cloud: Cloud provider ('aws' or 'azure')
 
     Returns:
-        Credentials dictionary with cloud and region set
+        Credentials dictionary (TF_VAR_* keys) with cloud and region set
 
     Raises:
-        FileNotFoundError: If testing/credentials.json not found
-        json.JSONDecodeError: If credentials file is invalid JSON
+        FileNotFoundError: If credentials.env not found
+        ValueError: If required fields are missing
     """
-    creds_file = TESTING_DIR / "credentials.json"
+    creds_file = PROJECT_ROOT / "credentials.env"
 
     if not creds_file.exists():
         raise FileNotFoundError(
             f"Credentials file not found: {creds_file}\n"
-            f"Copy credentials.template.json to testing/credentials.json "
-            f"and fill in your API keys."
+            f"Create credentials.env with the required TF_VAR_* fields."
         )
 
-    with open(creds_file, "r") as f:
-        credentials = json.load(f)
+    credentials = dict(dotenv_values(str(creds_file)))
 
-    # Set cloud and region based on test parameter
-    credentials["cloud"] = cloud
+    # Override cloud/region for the test parameter
+    credentials["TF_VAR_cloud_provider"] = cloud
     if cloud == "aws":
-        credentials["region"] = "us-east-1"
+        credentials["TF_VAR_cloud_region"] = "us-east-1"
     elif cloud == "azure":
-        credentials["region"] = "eastus2"
+        credentials["TF_VAR_cloud_region"] = "eastus2"
     else:
         raise ValueError(f"Unsupported cloud provider: {cloud}")
 
-    # Validate required fields (password is optional when CLI is already logged in)
     required_fields = [
-        "confluent_cloud_api_key",
-        "confluent_cloud_api_secret",
+        "TF_VAR_confluent_cloud_api_key",
+        "TF_VAR_confluent_cloud_api_secret",
     ]
-
-    # Email can be either confluent_cloud_email or owner_email
-    if not credentials.get("confluent_cloud_email") and not credentials.get("owner_email"):
-        raise ValueError("Missing required field: confluent_cloud_email or owner_email")
-
     if cloud == "aws":
         required_fields.extend([
-            "aws_bedrock_access_key",
-            "aws_bedrock_secret_key",
+            "TF_VAR_aws_bedrock_access_key",
+            "TF_VAR_aws_bedrock_secret_key",
         ])
     elif cloud == "azure":
         required_fields.extend([
-            "azure_openai_endpoint",
-            "azure_openai_api_key",
+            "TF_VAR_azure_openai_endpoint_raw",
+            "TF_VAR_azure_openai_api_key",
         ])
 
     missing = [f for f in required_fields if not credentials.get(f)]
@@ -225,25 +203,10 @@ def load_test_credentials(cloud: str) -> Dict[str, Any]:
             f"Missing required credentials for {cloud}: {', '.join(missing)}"
         )
 
+    if not credentials.get("TF_VAR_owner_email") and not credentials.get("CONFLUENT_EMAIL"):
+        raise ValueError("Missing required field: TF_VAR_owner_email or CONFLUENT_EMAIL")
+
     return credentials
-
-
-def write_credentials_to_project_root(credentials: Dict[str, Any]):
-    """Write credentials.json to project root for deploy.py --testing.
-
-    Args:
-        credentials: Credentials dictionary
-    """
-    creds_file = PROJECT_ROOT / "credentials.json"
-    with open(creds_file, "w") as f:
-        json.dump(credentials, f, indent=2)
-
-
-def remove_credentials_from_project_root():
-    """Remove credentials.json from project root (cleanup)."""
-    creds_file = PROJECT_ROOT / "credentials.json"
-    if creds_file.exists():
-        creds_file.unlink()
 
 
 @pytest.fixture(scope="session")
