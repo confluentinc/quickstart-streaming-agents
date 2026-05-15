@@ -11,6 +11,14 @@ locals {
   cloud_provider = data.terraform_remote_state.core.outputs.cloud_provider
   cloud_region   = data.terraform_remote_state.core.outputs.cloud_region
 
+  # Remote MCP backend selection. Endpoints are hard-coded so users can't point
+  # Flink at an arbitrary MCP server via tfvars.
+  mcp_lambda_endpoint    = "https://z04yuqut2a.execute-api.us-east-1.amazonaws.com/mcp"
+  mcp_zapier_endpoint    = "https://mcp.zapier.com/api/v1/connect"
+  effective_mcp_endpoint = var.mcp_backend == "zapier" ? local.mcp_zapier_endpoint : local.mcp_lambda_endpoint
+  effective_mcp_token    = var.mcp_backend == "zapier" ? var.zapier_token : var.mcp_token
+  mcp_tool_name          = var.mcp_backend == "zapier" ? "webhooks_by_zapier_get" : "http_get"
+
   # Amazon MQ (ActiveMQ engine) credentials - workshop read-only access
   # Broker in AWS us-east-1, used via Confluent Cloud ActiveMQ Source connector
   activemq_url      = "ssl://b-f5cac8db-4315-42f8-9d2e-300a720feb46-1.mq.us-east-1.amazonaws.com:61617"
@@ -531,7 +539,7 @@ resource "confluent_connector" "fraud_investigation_http_sink" {
   }
 
   config_sensitive = {
-    "schema.registry.basic.auth.user.info" = var.schema_registry_auth
+    "schema.registry.basic.auth.user.info" = "${data.terraform_remote_state.core.outputs.app_manager_schema_registry_api_key}:${data.terraform_remote_state.core.outputs.app_manager_schema_registry_api_secret}"
   }
 
   config_nonsensitive = {
@@ -549,7 +557,7 @@ resource "confluent_connector" "fraud_investigation_http_sink" {
     "tasks.max"           = "1"
 
     "input.data.format"                            = "AVRO"
-    "schema.registry.url"                          = "https://psrc-1ry6wml.us-east-1.aws.confluent.cloud"
+    "schema.registry.url"                          = data.terraform_remote_state.core.outputs.confluent_schema_registry_rest_endpoint
     "schema.registry.basic.auth.credentials.source" = "USER_INFO"
     "consumer.override.auto.offset.reset"          = "earliest"
   }
@@ -631,7 +639,7 @@ resource "confluent_connector" "fraud_investigation_http_sink" {
 # Flink: CREATE CONNECTION — Zapier MCP Server
 # Required before CREATE TOOL can reference it.
 # ==============================================================================
-resource "confluent_flink_statement" "zapier_mcp_connection" {
+resource "confluent_flink_statement" "mcp_connection" {
   organization {
     id = data.confluent_organization.main.id
   }
@@ -650,14 +658,14 @@ resource "confluent_flink_statement" "zapier_mcp_connection" {
     secret = data.terraform_remote_state.core.outputs.app_manager_flink_api_secret
   }
 
-  statement_name = "zapier-mcp-connection-create-lab5"
+  statement_name = "mcp-connection-create-lab5"
 
   statement = <<-EOT
-    CREATE CONNECTION IF NOT EXISTS `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`zapier-mcp-connection`
+    CREATE CONNECTION IF NOT EXISTS `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`mcp-connection-lab5`
     WITH (
       'type'           = 'MCP_SERVER',
-      'endpoint'       = 'https://mcp.zapier.com/api/v1/connect',
-      'token'          = '${var.zapier_token}',
+      'endpoint'       = '${local.effective_mcp_endpoint}',
+      'token'          = '${local.effective_mcp_token}',
       'transport-type' = 'STREAMABLE_HTTP'
     );
   EOT
@@ -705,10 +713,10 @@ resource "confluent_flink_statement" "cis_tool" {
 
   statement = <<-EOT
     CREATE TOOL IF NOT EXISTS `claims_investigation_service`
-    USING CONNECTION `zapier-mcp-connection`
+    USING CONNECTION `mcp-connection-lab5`
     WITH (
       'type'             = 'mcp',
-      'allowed_tools'    = 'webhooks_by_zapier_get',
+      'allowed_tools'    = '${local.mcp_tool_name}',
       'request_timeout'  = '30'
     );
   EOT
@@ -723,7 +731,7 @@ resource "confluent_flink_statement" "cis_tool" {
   }
 
   depends_on = [
-    confluent_flink_statement.zapier_mcp_connection
+    confluent_flink_statement.mcp_connection
   ]
 }
 
@@ -788,7 +796,7 @@ resource "confluent_flink_statement" "fraud_review_agent" {
     You are an insurance fraud review agent investigating flagged claims for hurricane damage in Naples, FL. Each claim was already identified as a statistical anomaly.
 
     STEP 1 — FETCH INVESTIGATION DATA:
-    Before evaluating any fraud rules, you MUST call the webhooks_by_zapier_get tool to retrieve the full investigation record for this claim.
+    Before evaluating any fraud rules, you MUST call the ${local.mcp_tool_name} tool to retrieve the full investigation record for this claim.
     Use this URL: https://ildw2o0gik.execute-api.us-east-1.amazonaws.com/prod/investigation/{claim_id}
     Replace {claim_id} with the claim_id provided in the input.
     The response contains: policy owner name, coverage amount, policy status, policy history, CLUE history, ip_country, bank_account_country, identity_verified, ssn_matches_policyholder, identity_theft_history.

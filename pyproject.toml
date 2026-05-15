@@ -64,8 +64,7 @@ dev = [
     "pytest-cov>=4.0.0",
     "pytest-timeout>=2.2.0",
     "pytest-order>=1.2.0",
-    "black>=23.0.0",
-    "isort>=5.12.0",
+    "ruff>=0.4.0",
     "flake8>=6.0.0",
     "mypy>=1.0.0",
     "detect-secrets>=1.5.0",
@@ -190,30 +189,19 @@ exclude = [
 ]
 
 # Development tools configuration
-[tool.black]
+[tool.ruff]
 line-length = 88
-target-version = ['py38']
-include = '\.pyi?$'
-extend-exclude = '''
-/(
-    \.git
-  | \.venv
-  | \.env
-  | venv
-  | env
-  | __pycache__
-  | \.pytest_cache
-)/
-'''
+target-version = "py310"
 
-[tool.isort]
-profile = "black"
-line_length = 88
-multi_line_output = 3
-include_trailing_comma = true
-force_grid_wrap = 0
-use_parentheses = true
-ensure_newline_before_comments = true
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["scripts"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
 
 [tool.mypy]
 python_version = "3.8"

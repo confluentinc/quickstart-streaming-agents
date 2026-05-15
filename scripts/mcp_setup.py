@@ -81,7 +81,7 @@ _TF_TO_MCP = {
     "confluent_flink_rest_endpoint": ["FLINK_REST_ENDPOINT"],
     "confluent_flink_compute_pool_id": ["FLINK_COMPUTE_POOL_ID"],
     "confluent_organization_id": ["FLINK_ORG_ID"],
-    "confluent_environment_display_name": ["FLINK_ENV_NAME"],
+    "confluent_environment_display_name": ["FLINK_CATALOG_NAME"],
     "confluent_kafka_cluster_display_name": ["FLINK_DATABASE_NAME"],
     "app_manager_schema_registry_api_key": ["SCHEMA_REGISTRY_API_KEY"],
     "app_manager_schema_registry_api_secret": ["SCHEMA_REGISTRY_API_SECRET"],
@@ -91,35 +91,33 @@ _TF_TO_MCP = {
 }
 
 
-def _clear_broken_npx_cache() -> None:
-    """Remove stale npx cache entries where the kafka-javascript native binary is missing."""
+def _clear_mcp_confluent_cache() -> None:
+    """Remove all npx cache entries for mcp-confluent to force a fresh install.
+
+    Clears unconditionally — a binary can exist but be corrupted or have stale
+    shared-library bindings. Only a forced re-download guarantees a clean state.
+    """
     npx_cache = Path.home() / ".npm" / "_npx"
     if not npx_cache.exists():
         return
+    cleared = False
     for entry in npx_cache.iterdir():
         if not entry.is_dir():
             continue
         if not (entry / "node_modules" / "@confluentinc" / "mcp-confluent").exists():
             continue
-        build_release = (
-            entry
-            / "node_modules"
-            / "@confluentinc"
-            / "kafka-javascript"
-            / "build"
-            / "Release"
+        print(f"  Clearing npx cache for @confluentinc/mcp-confluent: {entry.name[:16]}…")
+        shutil.rmtree(entry)
+        cleared = True
+    if cleared:
+        print(
+            "  npx will download a fresh @confluentinc/mcp-confluent on next MCP server start."
         )
-        if not any(build_release.glob("*.node")) if build_release.exists() else True:
-            print(f"  Clearing broken npx cache (missing native binary): {entry.name}")
-            shutil.rmtree(entry)
-            print(
-                "  npx will re-download @confluentinc/mcp-confluent on next MCP server start."
-            )
 
 
 def main():
     _check_node_version()
-    _clear_broken_npx_cache()
+    _clear_mcp_confluent_cache()
 
     project_root = get_project_root()
     state_path = project_root / "terraform" / "core" / "terraform.tfstate"
@@ -138,10 +136,24 @@ def main():
         for var in mcp_vars:
             env_vars[var] = value
 
-    subprocess.run(
+    # mcp-confluent requires host:port format; terraform outputs include SASL_SSL:// prefix.
+    if "://" in env_vars.get("BOOTSTRAP_SERVERS", ""):
+        env_vars["BOOTSTRAP_SERVERS"] = env_vars["BOOTSTRAP_SERVERS"].split("://", 1)[1]
+
+    empty_vars = [var for var, val in env_vars.items() if not val]
+    if empty_vars:
+        print("Error: The following credentials are missing from terraform state:")
+        for var in sorted(empty_vars):
+            print(f"  {var}")
+        print("This usually means the deployment is incomplete. Run `uv run deploy` first.")
+        sys.exit(1)
+
+    result_remove = subprocess.run(
         ["claude", "mcp", "remove", "confluent-cloud-mcp-server", "-s", "local"],
         capture_output=True,
     )
+    if result_remove.returncode != 0:
+        print("  (Note: no previous registration found — proceeding with fresh registration.)")
 
     # Use the exact allowlisted command; pass credentials as --env so the
     # registered serverCommand matches Confluent's JAMF policy exactly.

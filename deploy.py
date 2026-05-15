@@ -267,8 +267,6 @@ def main():
             env_vars["TF_VAR_ibmmq_password"] = creds["ibmmq_password"]
         if "activemq_password" in creds and creds["activemq_password"]:
             env_vars["TF_VAR_activemq_password"] = creds["activemq_password"]
-        if "schema_registry_auth" in creds and creds["schema_registry_auth"]:
-            env_vars["TF_VAR_schema_registry_auth"] = creds["schema_registry_auth"]
         if "mongodb_connection_string" in creds and creds["mongodb_connection_string"]:
             env_vars["TF_VAR_mongodb_connection_string"] = creds[
                 "mongodb_connection_string"
@@ -426,11 +424,12 @@ def main():
                 "lab5-insurance-fraud-watson",
             ]
 
-        # Step 4.5: Remote MCP backend selection (Lab 1 / Lab 3 only)
+        # Step 4.5: Remote MCP backend selection (Lab 1, Lab 3, Lab 5)
         mcp_backend = ""
         if (
             "lab1-tool-calling" in envs_to_deploy
             or "lab3-agentic-fleet-management" in envs_to_deploy
+            or "lab5-insurance-fraud-watson" in envs_to_deploy
         ):
             backend_choice = prompt_choice(
                 "Remote MCP server backend:",
@@ -641,11 +640,12 @@ def main():
         if (
             "lab1-tool-calling" in envs_to_deploy
             or "lab3-agentic-fleet-management" in envs_to_deploy
+            or "lab5-insurance-fraud-watson" in envs_to_deploy
         ):
             _save_env_safe(creds_file, "TF_VAR_mcp_backend", mcp_backend)
             if mcp_backend == "zapier":
                 zapier_token = prompt_with_default(
-                    "Zapier MCP Server Token (Lab 1 and Lab 3) — see assets/pre-setup/Zapier-Setup.md",
+                    "Zapier MCP Server Token (Lab 1, Lab 3, and Lab 5) — see assets/pre-setup/Zapier-Setup.md",
                     creds.get("TF_VAR_zapier_token", ""),
                 )
                 _save_env_safe(creds_file, "TF_VAR_zapier_token", zapier_token)
@@ -662,10 +662,6 @@ def main():
             activemq_password = prompt_with_default("ActiveMQ Password (Lab 5 — optional, leave blank if unused)", creds.get("TF_VAR_activemq_password", ""))
             if activemq_password:
                 set_key(creds_file, "TF_VAR_activemq_password", activemq_password)
-            schema_registry_auth = prompt_with_default("Schema Registry Auth (Lab 5 — KEY:SECRET format)", creds.get("TF_VAR_schema_registry_auth", ""))
-            if schema_registry_auth:
-                set_key(creds_file, "TF_VAR_schema_registry_auth", schema_registry_auth)
-
         # Set cloud region and cloud provider
         _save_env_safe(creds_file, "TF_VAR_cloud_region", region)
         _save_env_safe(creds_file, "TF_VAR_cloud_provider", cloud)
@@ -674,6 +670,7 @@ def main():
         needs_mcp = (
             "lab1-tool-calling" in envs_to_deploy
             or "lab3-agentic-fleet-management" in envs_to_deploy
+            or "lab5-insurance-fraud-watson" in envs_to_deploy
         )
         needs_mongodb = (
             "lab2-vector-search" in envs_to_deploy
