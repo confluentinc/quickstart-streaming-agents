@@ -15,10 +15,14 @@ Usage:
 import argparse
 import csv
 import json
+import logging
 import os
+import random
 import sys
 import time
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
+from typing import Any, Dict, List
 
 import requests
 from requests.auth import HTTPBasicAuth
@@ -57,6 +61,102 @@ MQ_REST_URL = f"https://{MQ_HOST}/ibmmq/rest/v2/messaging/qmgr/{MQ_QM}/queue/{MQ
 # terraform/lab5-insurance-fraud-watson/main.tf (search for FLAT_JSON_SWITCH)
 # to use simplified JSON paths: $.claim_id instead of $.value.claim_id, etc.
 
+# Total time window: 24 hours of data
+TOTAL_WINDOW_HOURS = 24
+# Spike window: last 1 hour
+SPIKE_WINDOW_HOURS = 1
+# Steady-state rate: ~25-30 claims per hour (we use 27 for ~23 hours = 621 claims)
+STEADY_STATE_PER_HOUR = 27
+# Extra non-narrative claims mixed into the spike hour alongside the 47 narrative claims
+SPIKE_EXTRA_NORMAL = 47
+
+
+def rebase_timestamps(
+    claims: List[Dict[str, Any]],
+) -> List[Dict[str, Any]]:
+    """
+    Rebase claim timestamps so data ends at 'now'.
+
+    - A small number of non-narrative claims (~27/hr) fill the first 23 hours
+      (steady state).
+    - The last 1 hour contains all 47 narrative claims plus 47 additional
+      non-narrative claims (94 total) — the spike.
+    - Remaining claims from the CSV are discarded.
+
+    All claims are returned sorted by their new timestamp.
+    """
+    logger = logging.getLogger(__name__)
+
+    now = datetime.now(timezone.utc)
+    window_start = now - timedelta(hours=TOTAL_WINDOW_HOURS)
+    spike_start = now - timedelta(hours=SPIKE_WINDOW_HOURS)
+
+    # Separate claims by whether they have a narrative
+    narrative_claims = [c for c in claims if c.get("claim_narrative", "").strip()]
+    normal_claims = [c for c in claims if not c.get("claim_narrative", "").strip()]
+
+    # Select subsets
+    steady_state_hours = TOTAL_WINDOW_HOURS - SPIKE_WINDOW_HOURS
+    steady_state_count = STEADY_STATE_PER_HOUR * steady_state_hours
+    total_normal_needed = steady_state_count + SPIKE_EXTRA_NORMAL
+
+    if len(normal_claims) < total_normal_needed:
+        logger.warning(
+            f"Only {len(normal_claims)} non-narrative claims available, "
+            f"need {total_normal_needed}"
+        )
+        total_normal_needed = len(normal_claims)
+        steady_state_count = total_normal_needed - SPIKE_EXTRA_NORMAL
+
+    steady_state_claims = normal_claims[:steady_state_count]
+    spike_normal_claims = normal_claims[steady_state_count:steady_state_count + SPIKE_EXTRA_NORMAL]
+
+    total_emitted = len(steady_state_claims) + len(spike_normal_claims) + len(narrative_claims)
+    logger.info(f"Steady state: {len(steady_state_claims)} claims over {steady_state_hours}h (~{STEADY_STATE_PER_HOUR}/hr)")
+    logger.info(f"Spike hour: {len(narrative_claims)} narrative + {len(spike_normal_claims)} normal = {len(narrative_claims) + len(spike_normal_claims)} claims")
+    logger.info(f"Total to publish: {total_emitted} (discarding {len(claims) - total_emitted} from CSV)")
+
+    rebased = []
+
+    # Spread steady-state claims over the first 23 hours with jitter.
+    # Generate random offsets within the window, then sort them to maintain
+    # chronological order while producing natural per-hour count variation.
+    if steady_state_claims:
+        total_seconds = steady_state_hours * 3600
+        offsets = sorted(random.uniform(0, total_seconds) for _ in steady_state_claims)
+        for claim, offset in zip(steady_state_claims, offsets):
+            new_ts = window_start + timedelta(seconds=offset)
+            claim = claim.copy()
+            claim["claim_timestamp"] = new_ts.strftime("%Y-%m-%dT%H:%M:%S+00:00")
+            rebased.append(claim)
+
+    # Combine narrative + extra normal claims for the spike hour
+    spike_claims = narrative_claims + spike_normal_claims
+    if spike_claims:
+        spike_seconds = SPIKE_WINDOW_HOURS * 3600
+        interval = spike_seconds / (len(spike_claims) + 1)
+        for i, claim in enumerate(spike_claims):
+            new_ts = spike_start + timedelta(seconds=(i + 1) * interval)
+            claim = claim.copy()
+            claim["claim_timestamp"] = new_ts.strftime("%Y-%m-%dT%H:%M:%S+00:00")
+            rebased.append(claim)
+
+    # Sort ALL claims by rebased timestamp for chronological publishing
+    rebased.sort(key=lambda c: c["claim_timestamp"])
+
+    logger.info(
+        f"Rebased time window: "
+        f"{window_start.strftime('%Y-%m-%d %H:%M')} to "
+        f"{now.strftime('%Y-%m-%d %H:%M')} UTC"
+    )
+    logger.info(
+        f"Spike window: "
+        f"{spike_start.strftime('%Y-%m-%d %H:%M')} to "
+        f"{now.strftime('%Y-%m-%d %H:%M')} UTC"
+    )
+
+    return rebased
+
 
 def load_claims(csv_file: Path, limit: int | None = None) -> list[dict]:
     """Load claims from the synthetic FEMA claims CSV."""
@@ -85,7 +185,7 @@ def load_claims(csv_file: Path, limit: int | None = None) -> list[dict]:
                 "assessment_source": row.get("assessment_source", ""),
                 "shared_account": row.get("shared_account", ""),
                 "shared_phone": row.get("shared_phone", ""),
-                "claim_timestamp": int(row["claim_timestamp"]),
+                "claim_timestamp": row["claim_timestamp"],
             })
     return claims
 
@@ -131,6 +231,8 @@ def publish_to_mq(claims: list[dict], dry_run: bool = False) -> dict:
 
 
 def main():
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
+
     parser = argparse.ArgumentParser(
         description="Publish insurance claims to IBM MQ (CLAIMSQM) via REST API"
     )
@@ -152,6 +254,11 @@ def main():
     print(f"Loading claims from {data_file}...")
     claims = load_claims(data_file, limit=args.limit)
     print(f"Loaded {len(claims)} claims")
+
+    claims = rebase_timestamps(claims)
+    for claim in claims:
+        dt = datetime.fromisoformat(claim["claim_timestamp"])
+        claim["claim_timestamp"] = int(dt.timestamp() * 1000)
 
     print(f"Publishing to {MQ_QM}/{MQ_QUEUE}...")
     results = publish_to_mq(claims, dry_run=args.dry_run)

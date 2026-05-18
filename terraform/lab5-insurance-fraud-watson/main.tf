@@ -84,7 +84,7 @@ resource "confluent_flink_statement" "claims_table" {
     secret = data.terraform_remote_state.core.outputs.app_manager_flink_api_secret
   }
 
-  statement_name = "claims-create-table"
+  statement_name = "claims-create-table-lab5"
 
   statement = <<-EOT
     CREATE TABLE IF NOT EXISTS `claims` (
@@ -486,26 +486,26 @@ resource "confluent_flink_statement" "claim_mq_to_claims" {
   statement = <<-EOT
     INSERT INTO `claims`
     SELECT
-      JSON_VALUE(`text`, '$.value.claim_id')                          AS `claim_id`,
-      JSON_VALUE(`text`, '$.value.applicant_name.string')             AS `applicant_name`,
-      JSON_VALUE(`text`, '$.value.city')                              AS `city`,
-      JSON_VALUE(`text`, '$.value.is_primary_residence.string')       AS `is_primary_residence`,
-      JSON_VALUE(`text`, '$.value.damage_assessed.string')            AS `damage_assessed`,
-      JSON_VALUE(`text`, '$.value.claim_amount')                      AS `claim_amount`,
-      JSON_VALUE(`text`, '$.value.has_insurance.string')              AS `has_insurance`,
-      JSON_VALUE(`text`, '$.value.insurance_amount.string')           AS `insurance_amount`,
-      JSON_VALUE(`text`, '$.value.claim_narrative.string')            AS `claim_narrative`,
-      JSON_VALUE(`text`, '$.value.assessment_date.string')            AS `assessment_date`,
-      JSON_VALUE(`text`, '$.value.disaster_date.string')              AS `disaster_date`,
-      JSON_VALUE(`text`, '$.value.previous_claims_count.string')      AS `previous_claims_count`,
-      JSON_VALUE(`text`, '$.value.last_claim_date.string')            AS `last_claim_date`,
-      JSON_VALUE(`text`, '$.value.assessment_source.string')          AS `assessment_source`,
-      JSON_VALUE(`text`, '$.value.shared_account.string')             AS `shared_account`,
-      JSON_VALUE(`text`, '$.value.shared_phone.string')               AS `shared_phone`,
+      JSON_VALUE(`text`, '$.claim_id')                          AS `claim_id`,
+      JSON_VALUE(`text`, '$.applicant_name')                    AS `applicant_name`,
+      JSON_VALUE(`text`, '$.city')                              AS `city`,
+      JSON_VALUE(`text`, '$.is_primary_residence')              AS `is_primary_residence`,
+      JSON_VALUE(`text`, '$.damage_assessed')                   AS `damage_assessed`,
+      JSON_VALUE(`text`, '$.claim_amount')                      AS `claim_amount`,
+      JSON_VALUE(`text`, '$.has_insurance')                     AS `has_insurance`,
+      JSON_VALUE(`text`, '$.insurance_amount')                  AS `insurance_amount`,
+      JSON_VALUE(`text`, '$.claim_narrative')                   AS `claim_narrative`,
+      JSON_VALUE(`text`, '$.assessment_date')                   AS `assessment_date`,
+      JSON_VALUE(`text`, '$.disaster_date')                     AS `disaster_date`,
+      JSON_VALUE(`text`, '$.previous_claims_count')             AS `previous_claims_count`,
+      JSON_VALUE(`text`, '$.last_claim_date')                   AS `last_claim_date`,
+      JSON_VALUE(`text`, '$.assessment_source')                 AS `assessment_source`,
+      JSON_VALUE(`text`, '$.shared_account')                    AS `shared_account`,
+      JSON_VALUE(`text`, '$.shared_phone')                      AS `shared_phone`,
       TO_TIMESTAMP_LTZ(
-        CAST(JSON_VALUE(`text`, '$.value.claim_timestamp') AS BIGINT),
+        CAST(JSON_VALUE(`text`, '$.claim_timestamp') AS BIGINT),
         3
-      )                                                               AS `claim_timestamp`
+      )                                                         AS `claim_timestamp`
     FROM `claim_mq`;
   EOT
 
@@ -524,52 +524,6 @@ resource "confluent_flink_statement" "claim_mq_to_claims" {
   ]
 }
 
-# ==============================================================================
-# HTTP Sink Connector
-# Reads anomalous claims from claims_anomalies → POSTs to webhook_proxy.py
-# (tunneled via ngrok static domain → localhost:8090 on the demo Mac)
-# ==============================================================================
-resource "confluent_connector" "fraud_investigation_http_sink" {
-  environment {
-    id = data.terraform_remote_state.core.outputs.confluent_environment_id
-  }
-
-  kafka_cluster {
-    id = data.terraform_remote_state.core.outputs.confluent_kafka_cluster_id
-  }
-
-  config_sensitive = {
-    "schema.registry.basic.auth.user.info" = "${data.terraform_remote_state.core.outputs.app_manager_schema_registry_api_key}:${data.terraform_remote_state.core.outputs.app_manager_schema_registry_api_secret}"
-  }
-
-  config_nonsensitive = {
-    "connector.class"          = "HttpSink"
-    "name"                     = "fraud-investigation-sink"
-    "kafka.auth.mode"          = "SERVICE_ACCOUNT"
-    "kafka.service.account.id" = data.terraform_remote_state.core.outputs.app_manager_service_account_id
-
-    "topics"              = "claims_anomalies"
-    "http.api.url"        = "https://proacquittal-freddy-astigmic.ngrok-free.dev/alert"
-    "request.method"      = "POST"
-    "headers"             = "Content-Type: application/json"
-    "request.body.format" = "json"
-    "batch.max.size"      = "1"
-    "tasks.max"           = "1"
-
-    "input.data.format"                            = "AVRO"
-    "schema.registry.url"                          = data.terraform_remote_state.core.outputs.confluent_schema_registry_rest_endpoint
-    "schema.registry.basic.auth.credentials.source" = "USER_INFO"
-    "consumer.override.auto.offset.reset"          = "earliest"
-  }
-
-  lifecycle {
-    prevent_destroy = false
-  }
-
-  depends_on = [
-    confluent_flink_statement.claims_anomalies_table,
-  ]
-}
 
 # # Run datagen — disabled; data now comes from IBM MQ connector + HTTP Source V2
 # resource "null_resource" "run_datagen" {
@@ -587,7 +541,7 @@ resource "confluent_connector" "fraud_investigation_http_sink" {
 # ==============================================================================
 # HTTP Source V2 Connector — DISABLED
 # Previously polled ngrok/WatsonX for investigation results → claims_investigation.
-# Replaced by: agent calls CIS directly via CREATE TOOL (webhooks_by_zapier_get).
+# Replaced by: agent calls CIS directly via CREATE TOOL (http_get via remote MCP server).
 # ==============================================================================
 # resource "confluent_connector" "watsonx_response_http_source" {
 #   environment {
@@ -636,7 +590,7 @@ resource "confluent_connector" "fraud_investigation_http_sink" {
 # }
 
 # ==============================================================================
-# Flink: CREATE CONNECTION — Zapier MCP Server
+# Flink: CREATE CONNECTION — Remote MCP Server (Lambda or Zapier, per mcp_backend)
 # Required before CREATE TOOL can reference it.
 # ==============================================================================
 resource "confluent_flink_statement" "mcp_connection" {
@@ -906,7 +860,7 @@ resource "confluent_flink_statement" "claims_reviewed_table" {
 
 # ==============================================================================
 # Flink INSERT: reads claims_anomalies, runs AI_RUN_AGENT (agent fetches CIS data)
-# Agent calls CIS directly via webhooks_by_zapier_get — no join needed.
+# Agent calls CIS directly via http_get (remote MCP server) — no join needed.
 # ==============================================================================
 resource "confluent_flink_statement" "claims_reviewed_insert" {
   organization {
@@ -978,7 +932,7 @@ resource "confluent_flink_statement" "claims_reviewed_insert" {
 # ==============================================================================
 # DISABLED: old claims_reviewed_insert — joined claims_anomalies with
 # claims_investigation topic (populated by HTTP Source V2 / WatsonX connector).
-# Replaced by: agent fetches CIS data directly via webhooks_by_zapier_get tool.
+# Replaced by: agent fetches CIS data directly via http_get (remote MCP server).
 # ==============================================================================
 # INSERT INTO `claims_reviewed`
 # WITH enriched AS (

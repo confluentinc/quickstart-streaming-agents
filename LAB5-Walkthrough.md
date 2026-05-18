@@ -74,7 +74,7 @@ IBM MQ (IBM Cloud US South)
         ▼ [Flink time-range JOIN]
   claims_anomalies (individual claims inside surge windows)
         │
-        ▼ [Flink AI_RUN_AGENT — fraud_review_agent via Zapier MCP → CIS API]
+        ▼ [Flink AI_RUN_AGENT — fraud_review_agent via Remote MCP → CIS API]
   claims_reviewed (APPROVE/DENY verdicts, payment amounts)
         │
         ├─> Real Time Context Engine (not yet provisioned — see Known Gaps)
@@ -97,7 +97,7 @@ IBM MQ (IBM Cloud US South)
 
 3. **Confluent Streaming Agent** (`fraud_review_agent`)
    - Reads from `claims_anomalies` via `AI_RUN_AGENT`
-   - Calls Claims Investigation Service (CIS) REST API via Zapier MCP tool
+   - Calls Claims Investigation Service (CIS) REST API via remote MCP server (`http_get` tool)
    - Applies 5 fraud detection rules; outputs structured plain-text verdict
    - Writes APPROVE/DENY results with payment amounts to `claims_reviewed`
 
@@ -335,26 +335,26 @@ This table is the input to the fraud investigation agent in the next step.
 
 With anomalous claims collected in `claims_anomalies`, the next step is to create the **Confluent Streaming Agent** that investigates each one.
 
-The agent connects to the **Claims Investigation Service (CIS)** via a Zapier MCP tool (`webhooks_by_zapier_get`). For each claim, it fetches the full investigation record (policy details, CLUE history, identity verification), applies 5 fraud detection rules in sequence, and outputs a structured plain-text verdict.
+The agent connects to the **Claims Investigation Service (CIS)** via the remote MCP server's `http_get` tool. For each claim, it fetches the full investigation record (policy details, CLUE history, identity verification), applies 5 fraud detection rules in sequence, and outputs a structured plain-text verdict.
 
 See [CREATE AGENT documentation](https://docs.confluent.io/cloud/current/flink/reference/statements/create-agent.html).
 
 **First, create the MCP connection and tool:**
 
 ```sql
-CREATE CONNECTION IF NOT EXISTS `zapier-mcp-connection`
+CREATE CONNECTION IF NOT EXISTS `mcp-connection-lab5`
 WITH (
   'type'           = 'MCP_SERVER',
-  'endpoint'       = 'https://mcp.zapier.com/api/v1/connect',
-  'token'          = '<your-zapier-token>',
+  'endpoint'       = 'https://z04yuqut2a.execute-api.us-east-1.amazonaws.com/mcp',
+  'token'          = '<your-mcp-token>',
   'transport-type' = 'STREAMABLE_HTTP'
 );
 
 CREATE TOOL IF NOT EXISTS `claims_investigation_service`
-USING CONNECTION `zapier-mcp-connection`
+USING CONNECTION `mcp-connection-lab5`
 WITH (
   'type'             = 'mcp',
-  'allowed_tools'    = 'webhooks_by_zapier_get',
+  'allowed_tools'    = 'http_get',
   'request_timeout'  = '30'
 );
 ```
@@ -381,7 +381,7 @@ USING PROMPT 'OUTPUT RULES — read before anything else:
 You are an insurance fraud review agent investigating flagged claims for hurricane damage in Naples, FL. Each claim was already identified as a statistical anomaly.
 
 STEP 1 — FETCH INVESTIGATION DATA:
-Before evaluating any fraud rules, you MUST call the webhooks_by_zapier_get tool to retrieve the full investigation record for this claim.
+Before evaluating any fraud rules, you MUST call the http_get tool to retrieve the full investigation record for this claim.
 Use this URL: https://ildw2o0gik.execute-api.us-east-1.amazonaws.com/prod/investigation/{claim_id}
 Replace {claim_id} with the claim_id provided in the input.
 The response contains: policy owner name, coverage amount, policy status, policy history, CLUE history, ip_country, bank_account_country, identity_verified, ssn_matches_policyholder, identity_theft_history.
@@ -477,7 +477,7 @@ LATERAL TABLE(AI_RUN_AGENT(
 
 **What it does:**
 1. For each row in `claims_anomalies`, calls `AI_RUN_AGENT` which invokes `fraud_review_agent`
-2. The agent fetches investigation data from the CIS API via the Zapier MCP tool
+2. The agent fetches investigation data from the CIS API via the remote MCP server
 3. Applies 5 fraud rules and produces a plain-text verdict
 4. `REGEXP_EXTRACT` parses the 6 labeled sections into individual columns
 5. Results are continuously written to `claims_reviewed`
@@ -603,7 +603,7 @@ By integrating Confluent Intelligence with IBM MQ and Watson X, this demo builds
 
 1. **Ingests** insurance claims from IBM MQ (IBM Cloud US South) into `claim_mq` via IBM MQ Source Connector, then parses the JMS envelope into the `claims` table via a Flink INSERT
 2. **Detects** anomalous surge windows in 1-hour tumbles for Naples using `ML_DETECT_ANOMALIES` on claim volume → `claims_surge_windows`; joins those windows back to raw claims → `claims_anomalies`
-3. **Investigates** each flagged claim using `fraud_review_agent`, a Confluent Streaming Agent that calls the Claims Investigation Service via Zapier MCP, applies 5 fraud detection rules, and writes verdicts to `claims_reviewed`
+3. **Investigates** each flagged claim using `fraud_review_agent`, a Confluent Streaming Agent that calls the Claims Investigation Service via the remote MCP server, applies 5 fraud detection rules, and writes verdicts to `claims_reviewed`
 4. **Serves** real-time fraud status to external applications via Real Time Context Engine *(not yet provisioned)*
 5. **Archives** investigation results to Watson X Data Lakehouse via Tableflow → `claims_reviewed_iceberg` in S3/Iceberg format *(not yet provisioned)*
 
@@ -612,7 +612,7 @@ By integrating Confluent Intelligence with IBM MQ and Watson X, this demo builds
 - **Confluent Cloud** - Real-time event streaming and AI
 - **Confluent Flink** - Anomaly detection and stream processing
 - **Confluent Streaming Agents** - Autonomous fraud investigation
-- **Zapier MCP** - CIS API integration layer for agent tool calls
+- **Remote MCP Server** - CIS API integration layer for agent tool calls (`http_get`)
 - **Real Time Context Engine** - API layer for external applications
 - **Tableflow** - Seamless integration to data lakehouse
 - **Watson X Data Lakehouse** - Historical analytics (S3 + Iceberg format)
@@ -642,7 +642,7 @@ The following items are referenced in this walkthrough but are **not yet provisi
 **Check:**
 1. Verify `claims_anomalies` has data: `SELECT COUNT(*) FROM claims_anomalies;`
 2. Verify the agent INSERT is running: check Flink statement status in Confluent Cloud UI
-3. Check Zapier MCP connection is active — the agent calls `webhooks_by_zapier_get`; verify the token in the `zapier-mcp-connection` is valid
+3. Check remote MCP connection is active — the agent calls `http_get`; verify the token in the `mcp-connection-lab5` is valid
 
 ### No anomalies detected?
 

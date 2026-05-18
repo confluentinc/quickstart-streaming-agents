@@ -103,6 +103,9 @@ lab4-datagen-alternate = "scripts.lab4_datagen_alternate:main"
 lab5_datagen = "scripts.lab4_datagen_alternate:main"
 lab5-datagen = "scripts.lab4_datagen_alternate:main"
 #
+lab5_datagen_mq = "scripts.publish_claims_to_ibmmq:main"
+lab5-datagen-mq = "scripts.publish_claims_to_ibmmq:main"
+#
 generate_claims_reviewed = "scripts.generate_claims_reviewed:main"
 generate-claims-reviewed = "scripts.generate_claims_reviewed:main"
 #
