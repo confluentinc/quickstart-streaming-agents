@@ -59,6 +59,7 @@ terraform/terraform.tfvars.backup
 **/terraform.tfvars.backup
 
 # Files with sensitive credentials
+LAB5-WXO-RTCE-Demo.md
 confluent_api_keys.md
 mongodb_commands.txt
 mcp_commands.txt

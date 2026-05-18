@@ -162,6 +162,9 @@ setup-mcp = "scripts.mcp_setup:main"
 #
 setup_rtce = "scripts.setup_rtce:main"
 setup-rtce = "scripts.setup_rtce:main"
+#
+setup_wxo_rtce = "scripts.setup_wxo_rtce:main"
+setup-wxo-rtce = "scripts.setup_wxo_rtce:main"
 
 
 [project.urls]

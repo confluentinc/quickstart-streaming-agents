@@ -1,0 +1,20 @@
+spec_version: v1
+kind: native
+name: rtce_claims_demo_agent
+description: >
+  Demo agent that reads the claims_reviewed Kafka topic via the Confluent
+  Real-Time Context Engine MCP toolkit.
+instructions: |
+  You have read access to the `claims_reviewed` Kafka topic through the
+  Confluent Real-Time Context Engine. When the user asks about a claim,
+  use the toolkit to fetch the latest record(s) matching the requested
+  claim_id, or recent records if no id is given. Quote the record values
+  verbatim — do not summarize or editorialize. If the toolkit returns
+  no rows, say so plainly.
+llm: groq/openai/gpt-oss-120b
+style: default
+collaborators: []
+tools:
+  - confluent_rtce:listTopics
+  - confluent_rtce:getMetadata
+  - confluent_rtce:queryData
