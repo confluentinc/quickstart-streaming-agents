@@ -33,6 +33,7 @@ from typing import Optional, Tuple
 
 try:
     import requests
+
     REQUESTS_AVAILABLE = True
 except ImportError:
     REQUESTS_AVAILABLE = False
@@ -58,7 +59,9 @@ def _invoke_azure(
         try:
             if attempt > 0:
                 wait = retry_delay * (2 ** (attempt - 1))
-                logger.info(f"Waiting {wait}s before retry (attempt {attempt + 1}/{max_retries})...")
+                logger.info(
+                    f"Waiting {wait}s before retry (attempt {attempt + 1}/{max_retries})..."
+                )
                 time.sleep(wait)
 
             response = requests.post(url, json=payload, headers=headers, timeout=30)
@@ -77,10 +80,14 @@ def _invoke_azure(
 
             # Retry on 400/429 (rate limit / not-yet-ready)
             if response.status_code in (400, 429) and attempt < max_retries - 1:
-                logger.warning(f"{label} not ready (HTTP {response.status_code}), will retry...")
+                logger.warning(
+                    f"{label} not ready (HTTP {response.status_code}), will retry..."
+                )
                 continue
 
-            logger.debug(f"{label} returned unexpected HTTP {response.status_code}: {response.text[:200]}")
+            logger.debug(
+                f"{label} returned unexpected HTTP {response.status_code}: {response.text[:200]}"
+            )
             return False, "error"
 
         except Exception as e:
@@ -120,7 +127,9 @@ def test_azure_openai_chat(
         "max_completion_tokens": 10,
     }
 
-    return _invoke_azure(url, headers, payload, "gpt-5-mini", logger, max_retries, retry_delay)
+    return _invoke_azure(
+        url, headers, payload, "gpt-5-mini", logger, max_retries, retry_delay
+    )
 
 
 def test_azure_openai_embeddings(
@@ -147,7 +156,15 @@ def test_azure_openai_embeddings(
     headers = {"api-key": api_key, "Content-Type": "application/json"}
     payload = {"input": "test"}
 
-    return _invoke_azure(url, headers, payload, "text-embedding-ada-002", logger, max_retries, retry_delay)
+    return _invoke_azure(
+        url,
+        headers,
+        payload,
+        "text-embedding-ada-002",
+        logger,
+        max_retries,
+        retry_delay,
+    )
 
 
 def test_azure_openai_credentials(
@@ -166,11 +183,15 @@ def test_azure_openai_credentials(
     if logger is None:
         logger = logging.getLogger(__name__)
 
-    chat_ok, chat_err = test_azure_openai_chat(endpoint, api_key, logger, max_retries, retry_delay)
+    chat_ok, chat_err = test_azure_openai_chat(
+        endpoint, api_key, logger, max_retries, retry_delay
+    )
     if not chat_ok:
         return False, chat_err
 
-    emb_ok, emb_err = test_azure_openai_embeddings(endpoint, api_key, logger, max_retries, retry_delay)
+    emb_ok, emb_err = test_azure_openai_embeddings(
+        endpoint, api_key, logger, max_retries, retry_delay
+    )
     if not emb_ok:
         return False, emb_err
 

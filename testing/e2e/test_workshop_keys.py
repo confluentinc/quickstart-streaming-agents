@@ -37,7 +37,7 @@ def test_workshop_keys_create_and_destroy():
         cwd=PROJECT_ROOT,
         capture_output=True,
         text=True,
-        timeout=300
+        timeout=300,
     )
 
     print(result.stdout)
@@ -67,7 +67,7 @@ def test_workshop_keys_create_and_destroy():
         cwd=PROJECT_ROOT,
         capture_output=True,
         text=True,
-        timeout=300
+        timeout=300,
     )
 
     if result.returncode != 0:

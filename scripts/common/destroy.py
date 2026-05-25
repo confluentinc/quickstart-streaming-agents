@@ -14,7 +14,7 @@ from pathlib import Path
 from dotenv import dotenv_values
 
 from .credentials import load_or_create_credentials_file
-from .login_checks import check_confluent_login, attempt_confluent_auto_login
+from .login_checks import ensure_confluent_login
 from .terraform import get_project_root
 from .terraform_runner import run_terraform_destroy
 from .ui import prompt_choice
@@ -106,11 +106,19 @@ def _cleanup_mcp(root: Path) -> None:
 def main():
     """Main entry point for destroy."""
     # Parse command-line arguments
-    parser = argparse.ArgumentParser(description="Destroy deployed Confluent streaming agents resources")
-    parser.add_argument("--testing", action="store_true",
-                       help="Non-interactive mode: load from credentials.env, skip all prompts (for CI test runs)")
-    parser.add_argument("--force", action="store_true",
-                       help="Force-clean local state files even if terraform destroy fails (use when resources are already gone)")
+    parser = argparse.ArgumentParser(
+        description="Destroy deployed Confluent streaming agents resources"
+    )
+    parser.add_argument(
+        "--testing",
+        action="store_true",
+        help="Non-interactive mode: load from credentials.env, skip all prompts (for CI test runs)",
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Force-clean local state files even if terraform destroy fails (use when resources are already gone)",
+    )
     args = parser.parse_args()
 
     print("=== Simple Destroy Tool ===\n")
@@ -129,7 +137,13 @@ def main():
 
         creds = dotenv_values(str(creds_file))
         cloud = creds.get("TF_VAR_cloud_provider", "").lower()
-        envs_to_destroy = ["lab4-pubsec-fraud-agents", "lab3-agentic-fleet-management", "lab2-vector-search", "lab1-tool-calling", "core"]
+        envs_to_destroy = [
+            "lab4-pubsec-fraud-agents",
+            "lab3-agentic-fleet-management",
+            "lab2-vector-search",
+            "lab1-tool-calling",
+            "core",
+        ]
 
         for key, value in creds.items():
             if value:
@@ -142,24 +156,22 @@ def main():
 
     # INTERACTIVE MODE: Original flow
     else:
-        # Step 0: Check Confluent CLI login
-        if not check_confluent_login():
-            env_creds = dotenv_values(str(root / "credentials.env"))
-            if attempt_confluent_auto_login(env_creds):
-                print("✓ Auto-logged into Confluent Cloud")
-            else:
-                print("\nError: Not logged into Confluent Cloud.")
-                print("Please run: confluent login")
-                print("  (or add CONFLUENT_EMAIL and CONFLUENT_PASSWORD to credentials.env)")
-                sys.exit(1)
-        else:
-            print("✓ Confluent CLI logged in")
+        # Step 0: Ensure Confluent CLI login
+        env_creds = dotenv_values(str(root / "credentials.env"))
+        ensure_confluent_login(env_creds)
+        print("✓ Confluent CLI logged in")
 
         # Step 1: Select cloud provider
         cloud = prompt_choice("Select cloud provider to destroy:", ["aws", "azure"])
 
         # Step 2: Always destroy all environments
-        envs_to_destroy = ["lab4-pubsec-fraud-agents", "lab3-agentic-fleet-management", "lab2-vector-search", "lab1-tool-calling", "core"]
+        envs_to_destroy = [
+            "lab4-pubsec-fraud-agents",
+            "lab3-agentic-fleet-management",
+            "lab2-vector-search",
+            "lab1-tool-calling",
+            "core",
+        ]
         print(f"✓ Will destroy all environments: {', '.join(envs_to_destroy)}")
 
         # Load credentials file
@@ -174,7 +186,9 @@ def main():
         print("\n--- Destroy Summary ---")
         print(f"Cloud: {cloud}")
         print(f"Destroying: {', '.join(envs_to_destroy)}")
-        print("\n⚠️  WARNING: This will permanently destroy all resources in the selected environments!")
+        print(
+            "\n⚠️  WARNING: This will permanently destroy all resources in the selected environments!"
+        )
 
         confirm = input("\nAre you sure you want to proceed? (y/n): ").strip().lower()
         if confirm != "y":
@@ -202,7 +216,9 @@ def main():
             print(f"  ⚠ Destroy failed but --force set: cleaning local state for {env}")
             cleanup_terraform_artifacts(env_path)
         else:
-            print(f"\n✗ Destroy failed at {env}. Use --force to clean local state anyway. Continuing...")
+            print(
+                f"\n✗ Destroy failed at {env}. Use --force to clean local state anyway. Continuing..."
+            )
 
     _cleanup_mcp(root)
 

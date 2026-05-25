@@ -29,53 +29,77 @@ try:
     from confluent_kafka.schema_registry import SchemaRegistryClient
     from confluent_kafka.schema_registry.avro import AvroSerializer
     from confluent_kafka.serialization import SerializationContext, MessageField
+
     CONFLUENT_KAFKA_AVAILABLE = True
 except ImportError:
     CONFLUENT_KAFKA_AVAILABLE = False
 
-from .common.cloud_detection import auto_detect_cloud_provider, validate_cloud_provider, suggest_cloud_provider
-from .common.terraform import extract_kafka_credentials, validate_terraform_state, get_project_root
+from .common.cloud_detection import (
+    auto_detect_cloud_provider,
+    validate_cloud_provider,
+    suggest_cloud_provider,
+)
+from .common.terraform import (
+    extract_kafka_credentials,
+    validate_terraform_state,
+    get_project_root,
+)
 from .common.logging_utils import setup_logging
 
 
-CUSTOMERS_VALUE_SCHEMA_STR = json.dumps({
-    "type": "record",
-    "name": "customers_value",
-    "namespace": "org.apache.flink.avro.generated.record",
-    "fields": [
-        {"name": "customer_id", "type": "string"},
-        {"name": "customer_email", "type": "string"},
-        {"name": "customer_name", "type": "string"},
-        {"name": "state", "type": "string"},
-        {"name": "updated_at", "type": {"type": "long", "logicalType": "timestamp-millis"}},
-    ],
-})
+CUSTOMERS_VALUE_SCHEMA_STR = json.dumps(
+    {
+        "type": "record",
+        "name": "customers_value",
+        "namespace": "org.apache.flink.avro.generated.record",
+        "fields": [
+            {"name": "customer_id", "type": "string"},
+            {"name": "customer_email", "type": "string"},
+            {"name": "customer_name", "type": "string"},
+            {"name": "state", "type": "string"},
+            {
+                "name": "updated_at",
+                "type": {"type": "long", "logicalType": "timestamp-millis"},
+            },
+        ],
+    }
+)
 
-PRODUCTS_VALUE_SCHEMA_STR = json.dumps({
-    "type": "record",
-    "name": "products_value",
-    "namespace": "org.apache.flink.avro.generated.record",
-    "fields": [
-        {"name": "product_id", "type": "string"},
-        {"name": "product_name", "type": "string"},
-        {"name": "price", "type": "double"},
-        {"name": "department", "type": "string"},
-        {"name": "updated_at", "type": {"type": "long", "logicalType": "timestamp-millis"}},
-    ],
-})
+PRODUCTS_VALUE_SCHEMA_STR = json.dumps(
+    {
+        "type": "record",
+        "name": "products_value",
+        "namespace": "org.apache.flink.avro.generated.record",
+        "fields": [
+            {"name": "product_id", "type": "string"},
+            {"name": "product_name", "type": "string"},
+            {"name": "price", "type": "double"},
+            {"name": "department", "type": "string"},
+            {
+                "name": "updated_at",
+                "type": {"type": "long", "logicalType": "timestamp-millis"},
+            },
+        ],
+    }
+)
 
-ORDERS_VALUE_SCHEMA_STR = json.dumps({
-    "type": "record",
-    "name": "orders_value",
-    "namespace": "org.apache.flink.avro.generated.record",
-    "fields": [
-        {"name": "order_id", "type": "string"},
-        {"name": "customer_id", "type": "string"},
-        {"name": "product_id", "type": "string"},
-        {"name": "price", "type": "double"},
-        {"name": "order_ts", "type": {"type": "long", "logicalType": "timestamp-millis"}},
-    ],
-})
+ORDERS_VALUE_SCHEMA_STR = json.dumps(
+    {
+        "type": "record",
+        "name": "orders_value",
+        "namespace": "org.apache.flink.avro.generated.record",
+        "fields": [
+            {"name": "order_id", "type": "string"},
+            {"name": "customer_id", "type": "string"},
+            {"name": "product_id", "type": "string"},
+            {"name": "price", "type": "double"},
+            {
+                "name": "order_ts",
+                "type": {"type": "long", "logicalType": "timestamp-millis"},
+            },
+        ],
+    }
+)
 
 SCHEMAS = {
     "customers": CUSTOMERS_VALUE_SCHEMA_STR,
@@ -160,9 +184,20 @@ class Lab1DataPublisher:
         from confluent_kafka import TopicPartition as AdminTP
 
         self.logger.info(f"Purging '{topic}'...")
-        admin = AdminClient({k: v for k, v in self._producer_conf.items()
-                             if k in ("bootstrap.servers", "sasl.mechanisms",
-                                      "security.protocol", "sasl.username", "sasl.password")})
+        admin = AdminClient(
+            {
+                k: v
+                for k, v in self._producer_conf.items()
+                if k
+                in (
+                    "bootstrap.servers",
+                    "sasl.mechanisms",
+                    "security.protocol",
+                    "sasl.username",
+                    "sasl.password",
+                )
+            }
+        )
         try:
             meta = admin.list_topics(topic=topic, timeout=10)
             if topic not in meta.topics:
@@ -177,14 +212,20 @@ class Lab1DataPublisher:
             if delete_offsets:
                 for fut in admin.delete_records(delete_offsets).values():
                     fut.result()
-                self.logger.info(f"Purged {len(delete_offsets)} partition(s) in '{topic}'")
+                self.logger.info(
+                    f"Purged {len(delete_offsets)} partition(s) in '{topic}'"
+                )
             else:
                 self.logger.info(f"'{topic}' already empty")
         except Exception as e:
             self.logger.warning(f"Could not purge '{topic}': {e} — continuing")
 
     def publish_topic(
-        self, topic: str, csv_file: Path, ts_offset_ms: int = 0
+        self,
+        topic: str,
+        csv_file: Path,
+        ts_offset_ms: int = 0,
+        interval_seconds: float = ORDERS_PUBLISH_INTERVAL_SECONDS,
     ) -> Dict[str, int]:
         results = {"success": 0, "failed": 0, "total": 0}
         ts_field = TS_FIELD.get(topic)
@@ -228,11 +269,11 @@ class Lab1DataPublisher:
                     self.logger.info(
                         f"Published order {idx}/{len(rows)}: {value_dict['order_id']}"
                     )
-                    if idx < len(rows):
+                    if idx < len(rows) and interval_seconds > 0:
                         self.logger.info(
-                            f"Waiting {ORDERS_PUBLISH_INTERVAL_SECONDS}s before next order..."
+                            f"Waiting {interval_seconds}s before next order..."
                         )
-                        time.sleep(ORDERS_PUBLISH_INTERVAL_SECONDS)
+                        time.sleep(interval_seconds)
                 elif idx % 100 == 0:
                     self.producer.poll(0)
 
@@ -259,7 +300,16 @@ def main():
         type=Path,
         default=None,
         help="Directory containing customers.csv, products.csv, orders.csv "
-             "(default: assets/lab1/data/)",
+        "(default: assets/lab1/data/)",
+    )
+    parser.add_argument(
+        "--interval",
+        type=float,
+        default=ORDERS_PUBLISH_INTERVAL_SECONDS,
+        help=(
+            f"Seconds between orders (default: {ORDERS_PUBLISH_INTERVAL_SECONDS}). "
+            "0 disables pacing — publish all orders back-to-back."
+        ),
     )
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--verbose", action="store_true")
@@ -268,7 +318,9 @@ def main():
     logger = setup_logging(args.verbose)
 
     if not CONFLUENT_KAFKA_AVAILABLE:
-        logger.error("confluent-kafka not available. Run: uv pip install confluent-kafka[avro,schema-registry]")
+        logger.error(
+            "confluent-kafka not available. Run: uv pip install confluent-kafka[avro,schema-registry]"
+        )
         return 1
 
     cloud_provider = auto_detect_cloud_provider()
@@ -293,7 +345,9 @@ def main():
     for topic in ("customers", "products", "orders"):
         f = data_dir / f"{topic}.csv"
         if not f.exists():
-            logger.error(f"Data file not found: {f} — ensure you are on the mcp-lambda branch and files are present in assets/lab1/data/")
+            logger.error(
+                f"Data file not found: {f} — ensure you are on the mcp-lambda branch and files are present in assets/lab1/data/"
+            )
             return 1
 
     publisher = Lab1DataPublisher(
@@ -310,21 +364,33 @@ def main():
         if args.dry_run:
             logger.info("[DRY RUN MODE]")
 
-        logger.info(
-            f"Orders will be published one every {ORDERS_PUBLISH_INTERVAL_SECONDS}s "
-            f"with order_ts set to publish time"
-        )
+        if args.interval > 0:
+            logger.info(
+                f"Orders will be published one every {args.interval}s "
+                f"with order_ts set to publish time"
+            )
+        else:
+            logger.info(
+                "Pacing disabled (--interval 0): orders will be published back-to-back"
+            )
 
         all_results = {}
         for topic in ("customers", "products", "orders"):
-            results = publisher.publish_topic(topic, data_dir / f"{topic}.csv", 0)
+            results = publisher.publish_topic(
+                topic,
+                data_dir / f"{topic}.csv",
+                ts_offset_ms=0,
+                interval_seconds=args.interval,
+            )
             all_results[topic] = results
 
         print(f"\n{'=' * 55}")
         print("LAB 1 DATA PUBLISHING SUMMARY")
         print(f"{'=' * 55}")
         for topic, r in all_results.items():
-            print(f"  {topic:<12}  published: {r['success']:>4}  failed: {r['failed']:>3}  total: {r['total']:>4}")
+            print(
+                f"  {topic:<12}  published: {r['success']:>4}  failed: {r['failed']:>3}  total: {r['total']:>4}"
+            )
         print(f"{'=' * 55}")
         if args.dry_run:
             print("\n[DRY RUN — no messages actually published]")

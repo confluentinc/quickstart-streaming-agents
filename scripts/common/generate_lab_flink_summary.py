@@ -44,9 +44,9 @@ def get_manual_commands_for_lab(lab_name: str) -> str:
     """
     # Map lab names to markdown files
     markdown_files = {
-        'lab1': 'LAB1-Walkthrough.md',
-        'lab2': 'LAB2-Walkthrough.md',
-        'lab3': 'Lab3-Walkthrough.md'
+        "lab1": "LAB1-Walkthrough.md",
+        "lab2": "LAB2-Walkthrough.md",
+        "lab3": "Lab3-Walkthrough.md",
     }
 
     if lab_name not in markdown_files:
@@ -69,7 +69,9 @@ def get_manual_commands_for_lab(lab_name: str) -> str:
         return ""
 
 
-def generate_summary_for_lab(lab_name: str, cloud_provider: str, terraform_dir: Path) -> bool:
+def generate_summary_for_lab(
+    lab_name: str, cloud_provider: str, terraform_dir: Path
+) -> bool:
     """Generate Flink SQL summary for a single lab. Returns True if successful."""
     if not terraform_dir.exists():
         return False
@@ -86,7 +88,7 @@ def generate_summary_for_lab(lab_name: str, cloud_provider: str, terraform_dir: 
             cwd=core_terraform_dir,
             capture_output=True,
             text=True,
-            check=True
+            check=True,
         )
         tf_outputs = json.loads(result.stdout)
     except (subprocess.CalledProcessError, FileNotFoundError, json.JSONDecodeError):
@@ -98,7 +100,7 @@ def generate_summary_for_lab(lab_name: str, cloud_provider: str, terraform_dir: 
         automated_commands, core_resources = extract_sql_from_terraform(
             lab_terraform_dir=terraform_dir,
             core_terraform_dir=core_terraform_dir,
-            cloud_provider=cloud_provider
+            cloud_provider=cloud_provider,
         )
         print(f"  - Extracted {len(automated_commands)} automated commands")
         print(f"  - Extracted {len(core_resources)} core resources")
@@ -107,14 +109,22 @@ def generate_summary_for_lab(lab_name: str, cloud_provider: str, terraform_dir: 
 
     # Extract manual commands from walkthrough markdown
     manual_commands = get_manual_commands_for_lab(lab_name)
-    num_headers = manual_commands.count('#') if manual_commands else 0
-    num_sql = manual_commands.count('```sql') if manual_commands else 0
-    num_bash = manual_commands.count('```bash') if manual_commands else 0
-    print(f"  - Extracted {num_headers} headers, {num_sql} SQL blocks, and {num_bash} bash blocks from walkthrough markdown")
+    num_headers = manual_commands.count("#") if manual_commands else 0
+    num_sql = manual_commands.count("```sql") if manual_commands else 0
+    num_bash = manual_commands.count("```bash") if manual_commands else 0
+    print(
+        f"  - Extracted {num_headers} headers, {num_sql} SQL blocks, and {num_bash} bash blocks from walkthrough markdown"
+    )
 
     # Generate the summary
     output_file = terraform_dir / "FLINK_SQL_COMMANDS.md"
-    lab_full_name = f"{lab_name}-tool-calling" if lab_name == "lab1" else f"{lab_name}-vector-search" if lab_name == "lab2" else f"{lab_name}-anomaly-detection"
+    lab_full_name = (
+        f"{lab_name}-tool-calling"
+        if lab_name == "lab1"
+        else f"{lab_name}-vector-search"
+        if lab_name == "lab2"
+        else f"{lab_name}-anomaly-detection"
+    )
 
     generate_flink_sql_summary(
         lab_name=lab_full_name,
@@ -123,7 +133,7 @@ def generate_summary_for_lab(lab_name: str, cloud_provider: str, terraform_dir: 
         output_path=output_file,
         automated_commands=automated_commands,
         manual_commands=manual_commands,
-        core_resources=core_resources
+        core_resources=core_resources,
     )
 
     print(f"Success! Flink SQL summary generated at: {output_file}\n")
@@ -159,20 +169,24 @@ def main():
 
     # Validate cloud provider
     if cloud_provider not in ["aws", "azure"]:
-        print(f"Error: Invalid cloud provider '{cloud_provider}'. Must be 'aws' or 'azure'")
+        print(
+            f"Error: Invalid cloud provider '{cloud_provider}'. Must be 'aws' or 'azure'"
+        )
         sys.exit(1)
 
     # Lab configuration
     lab_configs = {
-        'lab1': 'lab1-tool-calling',
-        'lab2': 'lab2-vector-search',
-        'lab3': 'lab3-agentic-fleet-management'
+        "lab1": "lab1-tool-calling",
+        "lab2": "lab2-vector-search",
+        "lab3": "lab3-agentic-fleet-management",
     }
 
     # Get project root (two levels up from scripts/common)
     project_root = Path(__file__).parent.parent.parent
 
-    print(f"Generating Flink SQL summaries for all deployed {cloud_provider.upper()} labs...\n")
+    print(
+        f"Generating Flink SQL summaries for all deployed {cloud_provider.upper()} labs...\n"
+    )
 
     successful = []
     skipped = []

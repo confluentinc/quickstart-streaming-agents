@@ -24,6 +24,7 @@ _failures: List = []
 
 # --- Session hooks ---
 
+
 def pytest_runtest_logreport(report: pytest.TestReport) -> None:
     if report.failed:
         _failures.append(report)
@@ -36,7 +37,9 @@ def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
             try:
                 answer = input("\nTests failed. Launch Claude to investigate? [y/N] ")
                 if answer.strip().lower() == "y":
-                    summary_path = PROJECT_ROOT / "testing" / "reports" / "failure_summary.md"
+                    summary_path = (
+                        PROJECT_ROOT / "testing" / "reports" / "failure_summary.md"
+                    )
                     subprocess.Popen(["claude", "--add-file", str(summary_path)])
             except (EOFError, KeyboardInterrupt):
                 pass
@@ -47,7 +50,9 @@ def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
                 "Run clean validation (delete + recreate all statements)? [y/N] "
             )
             if answer.strip().lower() == "y":
-                print("Re-run without PYTEST_RESUME=true to perform a full clean validation.")
+                print(
+                    "Re-run without PYTEST_RESUME=true to perform a full clean validation."
+                )
         except (EOFError, KeyboardInterrupt):
             pass
 
@@ -64,10 +69,7 @@ def _write_failure_summary(failures: List) -> None:
             lines.append(f"```\n{report.longrepr}\n```\n")
     path.write_text("\n".join(lines))
     print(f"\nFailure summary written to: {path}")
-    print(
-        "To investigate: claude 'investigate the test failures' "
-        f"--add-file {path}"
-    )
+    print(f"To investigate: claude 'investigate the test failures' --add-file {path}")
 
 
 def _is_interactive() -> bool:
@@ -102,9 +104,7 @@ def ensure_confluent_login(credentials: Dict[str, str]):
     """
     # Check if already logged in by trying to list environments
     result = subprocess.run(
-        ["confluent", "environment", "list"],
-        capture_output=True,
-        text=True
+        ["confluent", "environment", "list"], capture_output=True, text=True
     )
 
     # If command succeeds, we're already authenticated
@@ -128,7 +128,7 @@ def ensure_confluent_login(credentials: Dict[str, str]):
         ["confluent", "login", "--save"],
         input=f"{email}\n{password}\n",
         capture_output=True,
-        text=True
+        text=True,
     )
 
     if result.returncode != 0:
@@ -139,9 +139,7 @@ def ensure_confluent_login(credentials: Dict[str, str]):
 
     # Verify login succeeded
     result = subprocess.run(
-        ["confluent", "environment", "list"],
-        capture_output=True,
-        text=True
+        ["confluent", "environment", "list"], capture_output=True, text=True
     )
 
     if result.returncode != 0:

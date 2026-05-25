@@ -102,7 +102,9 @@ def extract_kafka_credentials(
     if project_root is None:
         project_root = Path(__file__).parent.parent.parent
 
-    logger.info(f"Extracting {cloud_provider.upper()} credentials from terraform state...")
+    logger.info(
+        f"Extracting {cloud_provider.upper()} credentials from terraform state..."
+    )
 
     # Find state files
     core_state, local_state = find_state_files(cloud_provider, project_root)
@@ -168,7 +170,9 @@ def extract_kafka_credentials(
     return credentials
 
 
-def validate_terraform_state(cloud_provider: str, project_root: Optional[Path] = None) -> bool:
+def validate_terraform_state(
+    cloud_provider: str, project_root: Optional[Path] = None
+) -> bool:
     """
     Validate that terraform state files exist and contain required outputs.
 

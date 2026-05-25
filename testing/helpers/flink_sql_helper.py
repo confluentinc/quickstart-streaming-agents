@@ -81,9 +81,7 @@ class FlinkSQLHelper:
         for k, v in (properties or {}).items():
             cmd.extend(["--property", f"{k}={v}"])
 
-        result = subprocess.run(
-            cmd, capture_output=True, text=True, check=True
-        )
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
 
         # Track for cleanup
         self.created_statements.append(name)
@@ -118,9 +116,7 @@ class FlinkSQLHelper:
             "json",
         ]
 
-        result = subprocess.run(
-            cmd, capture_output=True, text=True, check=True
-        )
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
 
         # CLI may prefix informational lines (e.g. "No Flink endpoint specified...")
         # before the JSON block — find the first '{' and parse from there.
@@ -174,9 +170,7 @@ class FlinkSQLHelper:
 
             time.sleep(interval)
 
-    def query_results(
-        self, sql: str, timeout: int = 300
-    ) -> List[Dict[str, Any]]:
+    def query_results(self, sql: str, timeout: int = 300) -> List[Dict[str, Any]]:
         """Execute a SELECT query and return parsed results.
 
         NOTE: Confluent CLI doesn't provide easy programmatic access to SELECT results.

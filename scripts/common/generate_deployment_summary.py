@@ -21,8 +21,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Any, Union, Optional
 
+from dotenv import dotenv_values
 
-def generate_credentials_markdown(cloud_provider: str, tf_outputs: Dict[str, Any], output_path: Path) -> None:
+
+def generate_credentials_markdown(
+    cloud_provider: str, tf_outputs: Dict[str, Any], output_path: Path
+) -> None:
     """
     Generate DEPLOYED_RESOURCES.md file from Terraform outputs.
 
@@ -39,14 +43,22 @@ def generate_credentials_markdown(cloud_provider: str, tf_outputs: Dict[str, Any
                 return default
             output = tf_outputs[key]
             # If it's a dict with 'value' key (terraform output format)
-            if isinstance(output, dict) and 'value' in output:
-                return str(output['value']) if output['value'] is not None else default
+            if isinstance(output, dict) and "value" in output:
+                return str(output["value"]) if output["value"] is not None else default
             return str(output) if output is not None else default
+
+        # Read owner_email from credentials.env (not from terraform outputs — variable removed)
+        try:
+            project_root = output_path.parent.parent.parent
+            env_creds = dotenv_values(str(project_root / "credentials.env"))
+            owner_email = env_creds.get("TF_VAR_owner_email", "") or "Not provided"
+        except Exception:
+            owner_email = "Not provided"
 
         # Build markdown sections
         sections = [
             _build_header(),
-            _build_account_section(tf_outputs, get_output),
+            _build_account_section(tf_outputs, get_output, owner_email),
             _build_cloud_details_section(cloud_provider, tf_outputs, get_output),
             _build_cloud_resources_section(cloud_provider, get_output),
             _build_credentials_section(tf_outputs, get_output),
@@ -77,9 +89,10 @@ def _build_header() -> str:
 ---"""
 
 
-def _build_account_section(tf_outputs: Dict[str, Any], get_output: callable) -> str:
+def _build_account_section(
+    tf_outputs: Dict[str, Any], get_output: callable, owner_email: str = "Not provided"
+) -> str:
     """Build the Account Information section."""
-    owner_email = get_output("owner_email", "Not provided")
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
     region = get_output("cloud_region")
     env_name = get_output("confluent_environment_display_name")
@@ -96,7 +109,9 @@ def _build_account_section(tf_outputs: Dict[str, Any], get_output: callable) -> 
 ---"""
 
 
-def _build_cloud_details_section(cloud_provider: str, tf_outputs: Dict[str, Any], get_output: callable) -> str:
+def _build_cloud_details_section(
+    cloud_provider: str, tf_outputs: Dict[str, Any], get_output: callable
+) -> str:
     """Build the Cloud Details section."""
     region = get_output("cloud_region")
 
@@ -203,7 +218,9 @@ def _build_credentials_section(tf_outputs: Dict[str, Any], get_output: callable)
 ---"""
 
 
-def _build_resource_inventory_section(tf_outputs: Dict[str, Any], get_output: callable) -> str:
+def _build_resource_inventory_section(
+    tf_outputs: Dict[str, Any], get_output: callable
+) -> str:
     """Build the Resource Inventory section."""
     env_id = get_output("confluent_environment_id")
     env_name = get_output("confluent_environment_display_name")
@@ -232,7 +249,9 @@ def _build_resource_inventory_section(tf_outputs: Dict[str, Any], get_output: ca
 ---"""
 
 
-def _build_llm_configuration_section(cloud_provider: str, tf_outputs: Dict[str, Any], get_output: callable) -> str:
+def _build_llm_configuration_section(
+    cloud_provider: str, tf_outputs: Dict[str, Any], get_output: callable
+) -> str:
     """Build the LLM Configuration section."""
     textgen_connection = get_output("llm_connection_name")
     embedding_connection = get_output("llm_embedding_connection_name")
@@ -332,7 +351,9 @@ def main():
         sys.exit(1)
 
     if not (terraform_dir / "main.tf").exists():
-        print(f"Error: Not a valid terraform directory (no main.tf found): {terraform_dir}")
+        print(
+            f"Error: Not a valid terraform directory (no main.tf found): {terraform_dir}"
+        )
         sys.exit(1)
 
     # Detect cloud provider from terraform state file
@@ -342,6 +363,7 @@ def main():
     if state_file.exists():
         try:
             import json
+
             with open(state_file) as f:
                 state = json.load(f)
                 outputs = state.get("outputs", {})
@@ -363,7 +385,7 @@ def main():
             cwd=terraform_dir,
             capture_output=True,
             text=True,
-            check=True
+            check=True,
         )
         tf_outputs = json.loads(result.stdout)
     except subprocess.CalledProcessError as e:
@@ -390,7 +412,7 @@ def generate_flink_sql_summary(
     output_path: Path,
     automated_commands: Optional[list] = None,
     manual_commands: Union[list, str, None] = None,
-    core_resources: Optional[list] = None
+    core_resources: Optional[list] = None,
 ) -> None:
     """
     Generate a Flink SQL command summary markdown file for a lab.
@@ -411,14 +433,14 @@ def generate_flink_sql_summary(
             if key not in tf_outputs:
                 return default
             output = tf_outputs[key]
-            if isinstance(output, dict) and 'value' in output:
-                return str(output['value']) if output['value'] is not None else default
+            if isinstance(output, dict) and "value" in output:
+                return str(output["value"]) if output["value"] is not None else default
             return str(output) if output is not None else default
 
         # Build markdown content
-        content = f"""# {lab_name.replace('-', ' ').title()} - Flink SQL Commands
+        content = f"""# {lab_name.replace("-", " ").title()} - Flink SQL Commands
 
-This file contains the Flink SQL commands used in {lab_name.replace('-', ' ').title()}.
+This file contains the Flink SQL commands used in {lab_name.replace("-", " ").title()}.
 
 **Environment**: {get_output("confluent_environment_display_name")}
 **Cluster**: {get_output("confluent_kafka_cluster_display_name")}

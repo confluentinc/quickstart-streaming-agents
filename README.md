@@ -81,10 +81,6 @@ uv run api-keys create
 
 3. **One command deployment:**
 
-> [!CAUTION]
->
-> You must be logged in to the Confluent CLI before running `uv run deploy`. Run `confluent login` first if you haven't already.
-
 ```bash
 uv run deploy
 ```

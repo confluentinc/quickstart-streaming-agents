@@ -26,11 +26,6 @@ variable "confluent_cloud_api_secret" {
   sensitive   = true
 }
 
-variable "owner_email" {
-  description = "Email address of the resource owner for tagging purposes"
-  type        = string
-  default     = ""
-}
 
 # AWS Bedrock credentials (used when cloud_provider == "aws")
 variable "aws_bedrock_access_key" {

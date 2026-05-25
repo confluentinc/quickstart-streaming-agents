@@ -51,7 +51,7 @@ winget install astral-sh.uv Git.Git Hashicorp.Terraform ConfluentInc.Confluent-C
 
 ## Deploy the Demo
 
-First, clone the repo:
+If you haven't already, clone the repo:
 
 ```bash
 git clone https://github.com/confluentinc/quickstart-streaming-agents.git
@@ -62,10 +62,6 @@ Be sure to pull in the latest changes:
 ```bash
 git pull
 ```
-
-> [!CAUTION]
->
-> You must be logged in to the Confluent CLI before running `uv run deploy`. Run `confluent login` first if you haven't already.
 
 Once you have your credentials ready, run the deployment script and choose **Lab3**:
 

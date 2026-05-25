@@ -42,10 +42,10 @@ def is_infrastructure_deployed(cloud: str, project_root: Path) -> bool:
 
         # Check all required outputs are present
         required_outputs = [
-            'confluent_environment_id',
-            'confluent_flink_compute_pool_id',
-            'confluent_kafka_cluster_display_name',
-            'app_manager_service_account_id',
+            "confluent_environment_id",
+            "confluent_flink_compute_pool_id",
+            "confluent_kafka_cluster_display_name",
+            "app_manager_service_account_id",
         ]
 
         missing = [k for k in required_outputs if k not in outputs]
@@ -74,11 +74,11 @@ def get_deployment_info(cloud: str, project_root: Path) -> Optional[Dict]:
         outputs = tf_helper.get_core_outputs()
 
         return {
-            'cloud': cloud,
-            'environment_id': outputs.get('confluent_environment_id'),
-            'compute_pool_id': outputs.get('confluent_flink_compute_pool_id'),
-            'kafka_cluster': outputs.get('confluent_kafka_cluster_display_name'),
-            'region': outputs.get('cloud_region', 'us-east-1'),
+            "cloud": cloud,
+            "environment_id": outputs.get("confluent_environment_id"),
+            "compute_pool_id": outputs.get("confluent_flink_compute_pool_id"),
+            "kafka_cluster": outputs.get("confluent_kafka_cluster_display_name"),
+            "region": outputs.get("cloud_region", "us-east-1"),
         }
     except Exception:
         return None

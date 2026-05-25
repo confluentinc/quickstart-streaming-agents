@@ -10,6 +10,7 @@ try:
     from confluent_kafka.schema_registry import SchemaRegistryClient
     from confluent_kafka.schema_registry.avro import AvroDeserializer
     from confluent_kafka.serialization import SerializationContext, MessageField
+
     _AVRO_AVAILABLE = True
 except ImportError:
     _AVRO_AVAILABLE = False
@@ -40,27 +41,29 @@ class KafkaHelper:
 
         # Build consumer config
         self.consumer_config = {
-            'bootstrap.servers': self.kafka_creds['bootstrap_servers'],
-            'security.protocol': 'SASL_SSL',
-            'sasl.mechanisms': 'PLAIN',
-            'sasl.username': self.kafka_creds['kafka_api_key'],
-            'sasl.password': self.kafka_creds['kafka_api_secret'],
-            'group.id': 'test-consumer-group',
-            'auto.offset.reset': 'earliest',
-            'enable.auto.commit': False,
+            "bootstrap.servers": self.kafka_creds["bootstrap_servers"],
+            "security.protocol": "SASL_SSL",
+            "sasl.mechanisms": "PLAIN",
+            "sasl.username": self.kafka_creds["kafka_api_key"],
+            "sasl.password": self.kafka_creds["kafka_api_secret"],
+            "group.id": "test-consumer-group",
+            "auto.offset.reset": "earliest",
+            "enable.auto.commit": False,
         }
 
         # Initialize Schema Registry client for Avro deserialization
         self._sr_client = None
         if _AVRO_AVAILABLE:
             try:
-                self._sr_client = SchemaRegistryClient({
-                    "url": self.kafka_creds["schema_registry_url"],
-                    "basic.auth.user.info": (
-                        f"{self.kafka_creds['schema_registry_api_key']}"
-                        f":{self.kafka_creds['schema_registry_api_secret']}"
-                    ),
-                })
+                self._sr_client = SchemaRegistryClient(
+                    {
+                        "url": self.kafka_creds["schema_registry_url"],
+                        "basic.auth.user.info": (
+                            f"{self.kafka_creds['schema_registry_api_key']}"
+                            f":{self.kafka_creds['schema_registry_api_secret']}"
+                        ),
+                    }
+                )
             except Exception:
                 pass  # Fall back to JSON-only deserialization
 
@@ -72,7 +75,9 @@ class KafkaHelper:
         if self._sr_client and msg_bytes[0] == 0:
             try:
                 deserializer = AvroDeserializer(self._sr_client)
-                return deserializer(msg_bytes, SerializationContext(topic, MessageField.VALUE))
+                return deserializer(
+                    msg_bytes, SerializationContext(topic, MessageField.VALUE)
+                )
             except Exception:
                 pass
         try:
@@ -133,6 +138,7 @@ class KafkaHelper:
             consumer.subscribe([topic])
 
             import time
+
             start_time = time.time()
 
             while len(messages) < max_messages:
