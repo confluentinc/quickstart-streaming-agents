@@ -826,12 +826,8 @@ def main():
                     print(
                         f"\nEnvironment name: {core_outputs['confluent_environment_display_name']}"
                     )
-
-                print(
-                    "\nRun `uv run setup-mcp` to connect Claude Code to this environment."
-                )
             except Exception as e:
-                print(f"\n⚠ Could not write MCP config: {e}")
+                print(f"\n⚠ Could not read Terraform outputs: {e}")
 
 
 if __name__ == "__main__":
