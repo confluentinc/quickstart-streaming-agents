@@ -34,8 +34,8 @@ winget install astral-sh.uv Git.Git Hashicorp.Terraform ConfluentInc.Confluent-C
 > **AWS Bedrock Users:** You must request access to Claude Sonnet 4.5 by filling out an Anthropic use case form. Visit the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog), select Claude Sonnet 4.5, open it in the Playground, and send a message - the form will appear automatically.
 
 - **Remote MCP server backend:** Lab 1 calls a remote MCP server for HTTP fetch and email send. `uv run deploy` will prompt you to choose:
-  - **AWS Lambda (Recommended)** — a Confluent-hosted endpoint. No setup on your end; obtain a token by asking your presenter, or, if you're a Confluent employee, see `go/lambda-keys` or `#help-tmm`.
-  - **Zapier** — a third-party MCP server. See [Zapier-Setup.md](./assets/pre-setup/Zapier-Setup.md) for setup. As of 2026-05-11 this path is broken pending a Confluent Cloud Flink runtime patch; prefer Lambda.
+  - **Confluent-hosted remote MCP server (Recommended)** — No setup on your end; obtain a token by asking your presenter, or, if you're a Confluent employee, see `go/lambda-keys` or `#help-tmm`.
+  - **Zapier** — a third-party MCP server. See [Zapier-Setup.md](./assets/pre-setup/Zapier-Setup.md) for setup. As of 2026-05-11 this path is broken pending a Confluent Cloud Flink runtime patch; prefer the Confluent-hosted remote MCP server.
 
   To switch backends after deploying, run `uv run destroy` first, then re-deploy.
 
@@ -277,7 +277,7 @@ Then check out your email for price matched orders:
 - **Not getting emails?**
   - Ensure you replaced `<<YOUR-EMAIL-ADDRESS-HERE>>` in both the test query and the `CREATE TABLE price_match_results` query with the email address where you want to receive the emails. Be sure to use single quotes around your email address ('your@email.com').
   - **Run the MCP test query** (Test Query 2) to confirm the `remote-mcp-connection` is working and able to send emails.
-  - **Check Lambda logs** in CloudWatch (`/aws/lambda/remote-mcp-server-MCPFunction-*`) for errors from the `send_email` tool.
+  - **Check remote MCP server logs** in CloudWatch (`/aws/lambda/remote-mcp-server-MCPFunction-*`) for errors from the `send_email` tool.
   - **Make sure to run `uv run lab1_datagen`** to begin producing orders data.
 - **Getting duplicate orders / duplicate price matching emails?**
   - Drop `orders`, `customers`, and `products` tables to start with a clean slate before re-running `uv run lab1_datagen`. The data generator randomly generates new customer information beginning with the same customer ID each time it is run, causing collisions if you do not clear the tables before restarting.
