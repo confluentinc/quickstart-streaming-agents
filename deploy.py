@@ -640,7 +640,7 @@ def main():
                 _save_env_safe(creds_file, "TF_VAR_zapier_token", zapier_token)
             else:
                 mcp_token = prompt_with_default(
-                    "Remote MCP Server Token (Confluent employees: see go/lambda-keys or #help-tmm; workshop participants: ask your presenter)",
+                    "Remote MCP Server Token (Confluent employees: see go/mcp-keys or #help-tmm; workshop participants: ask your presenter)",
                     creds.get("TF_VAR_mcp_token", ""),
                 )
                 _save_env_safe(creds_file, "TF_VAR_mcp_token", mcp_token)
