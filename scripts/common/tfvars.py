@@ -230,7 +230,8 @@ def write_tfvars_for_deployment(
             get_credential_value(creds, "aws_session_token") if cloud == "aws" else None
         )
         azure_openai_endpoint = (
-            get_credential_value(creds, "azure_openai_endpoint")
+            (get_credential_value(creds, "azure_openai_endpoint_raw") or
+             get_credential_value(creds, "azure_openai_endpoint"))
             if cloud == "azure"
             else None
         )
