@@ -347,7 +347,7 @@ def main():
         ):
             backend_choice = prompt_choice(
                 "Remote MCP server backend:",
-                ["AWS Lambda (Recommended) — Confluent-hosted", "Zapier"],
+                ["Confluent-hosted remote MCP server (Recommended)", "Zapier"],
             )
             mcp_backend = "zapier" if backend_choice == "Zapier" else "lambda"
 
@@ -564,7 +564,7 @@ def main():
                 _save_env_safe(creds_file, "TF_VAR_zapier_token", zapier_token)
             else:
                 mcp_token = prompt_with_default(
-                    "Remote MCP Lambda Token (Confluent employees: see go/lambda-keys or #help-tmm; workshop participants: ask your presenter)",
+                    "Remote MCP Server Token (Confluent employees: see go/mcp-keys or #help-tmm; workshop participants: ask your presenter)",
                     creds.get("TF_VAR_mcp_token", ""),
                 )
                 _save_env_safe(creds_file, "TF_VAR_mcp_token", mcp_token)
@@ -750,12 +750,8 @@ def main():
                     print(
                         f"\nEnvironment name: {core_outputs['confluent_environment_display_name']}"
                     )
-
-                print(
-                    "\nRun `uv run setup-mcp` to connect Claude Code to this environment."
-                )
             except Exception as e:
-                print(f"\n⚠ Could not write MCP config: {e}")
+                print(f"\n⚠ Could not read Terraform outputs: {e}")
 
 
 if __name__ == "__main__":
