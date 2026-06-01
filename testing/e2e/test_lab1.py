@@ -109,7 +109,7 @@ def _ensure_statement(
     if obj:
         obj_type, obj_name = obj
         try:
-            drop_name = f"pre-drop-{obj_name.lower().replace('_', '-')[:40]}"
+            drop_name = flink._unique_statement_name("pre-drop", obj_name)
             flink.execute_statement(
                 drop_name, f"DROP {obj_type} IF EXISTS `{obj_name}`", wait=True
             )
@@ -126,6 +126,14 @@ def _ensure_statement(
         # TimeoutError: statement stuck in transition — may still produce output.
         # In all cases, let the subsequent topic/data assertions determine success.
         pass
+
+    if obj and not flink.verify_sql_object_exists(*obj):
+        obj_type, obj_name = obj
+        status = flink.get_statement_status(name)
+        raise AssertionError(
+            f"{obj_type} {obj_name} was not created by statement {name} "
+            f"(status: {status})"
+        )
 
 
 @pytest.fixture(scope="class", params=["aws"])

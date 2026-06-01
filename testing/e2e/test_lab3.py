@@ -112,7 +112,7 @@ def _ensure_statement(
     if obj:
         obj_type, obj_name = obj
         try:
-            drop_name = f"pre-drop-{obj_name.lower().replace('_', '-')[:40]}"
+            drop_name = flink._unique_statement_name("pre-drop", obj_name)
             flink.execute_statement(
                 drop_name, f"DROP {obj_type} IF EXISTS `{obj_name}`", wait=True
             )
@@ -129,6 +129,14 @@ def _ensure_statement(
         # TimeoutError: statement stuck in transition — may still produce output.
         # In all cases, let the subsequent topic/data assertions determine success.
         pass
+
+    if obj and not flink.verify_sql_object_exists(*obj):
+        obj_type, obj_name = obj
+        status = flink.get_statement_status(name)
+        raise AssertionError(
+            f"{obj_type} {obj_name} was not created by statement {name} "
+            f"(status: {status})"
+        )
 
 
 @pytest.fixture(scope="class", params=["aws"])
@@ -172,7 +180,7 @@ class TestLab3FleetManagement:
         if not KEEP_STATEMENTS:
             flink_helper.cleanup_all()
 
-    @pytest.mark.order(1)
+    @pytest.mark.order(10)
     def test_ride_requests_datagen(self, env):
         """ride_requests topic has >= 28,000 messages; run datagen if under threshold."""
         kafka = env["kafka"]
@@ -213,7 +221,7 @@ class TestLab3FleetManagement:
             f"ride_requests has only {count} messages (expected >= 28,000)"
         )
 
-    @pytest.mark.order(2)
+    @pytest.mark.order(11)
     def test_anomalies_per_zone(self, env):
         """Create anomalies_per_zone and verify only French Quarter surges (max 2 anomalies)."""
         flink, kafka, sql = env["flink"], env["kafka"], env["sql"]
@@ -248,7 +256,7 @@ class TestLab3FleetManagement:
                 f"Check anomaly detection threshold or datagen."
             )
 
-    @pytest.mark.order(3)
+    @pytest.mark.order(12)
     def test_anomalies_enriched(self, env):
         """Create anomalies_enriched and verify top_chunk_content is populated."""
         flink, kafka, sql = env["flink"], env["kafka"], env["sql"]
@@ -286,13 +294,13 @@ class TestLab3FleetManagement:
             f"top_chunk_1/2 are null/empty in anomalies_enriched: {list(first.keys())}"
         )
 
-    @pytest.mark.order(4)
+    @pytest.mark.order(13)
     def test_boat_dispatch_tool(self, env):
         """Create the remote_mcp TOOL statement."""
         flink, sql = env["flink"], env["sql"]
         _ensure_statement(flink, f"{_PREFIX}-remote-mcp-tool", sql["create_tool"])
 
-    @pytest.mark.order(5)
+    @pytest.mark.order(14)
     def test_boat_dispatch_agent(self, env):
         """Create the boat_dispatch_agent AGENT statement."""
         flink, sql = env["flink"], env["sql"]
@@ -301,7 +309,7 @@ class TestLab3FleetManagement:
             "boat_dispatch_agent was not created — check Confluent Cloud for the statement failure"
         )
 
-    @pytest.mark.order(6)
+    @pytest.mark.order(15)
     def test_completed_actions(self, env):
         """Create completed_actions and verify dispatch summaries are valid."""
         flink, kafka, sql = env["flink"], env["kafka"], env["sql"]

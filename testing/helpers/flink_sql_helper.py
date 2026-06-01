@@ -4,6 +4,7 @@ import subprocess
 import json
 import re
 import time
+import uuid
 from typing import List, Dict, Any, Optional
 
 
@@ -265,9 +266,7 @@ class FlinkSQLHelper:
         Returns:
             True if the object exists, False if it does not or on error
         """
-        stmt_name = (
-            f"verify-{obj_type.lower()}-{obj_name.lower().replace('_', '-')[:35]}"
-        )
+        stmt_name = self._unique_statement_name(f"verify-{obj_type.lower()}", obj_name)
         cmd = [
             "confluent",
             "flink",
@@ -327,6 +326,12 @@ class FlinkSQLHelper:
                 pass
 
     @staticmethod
+    def _unique_statement_name(prefix: str, obj_name: str) -> str:
+        """Return a unique Flink statement name under the CLI's short-name limit."""
+        safe_name = obj_name.lower().replace("_", "-")
+        return f"{prefix}-{safe_name[:40]}-{uuid.uuid4().hex[:8]}"
+
+    @staticmethod
     def _extract_sql_object(sql: str):
         """Return (object_type, unqualified_name) for CREATE DDL, or None for DML."""
         for obj_type in ("TABLE", "AGENT", "TOOL", "MODEL"):
@@ -350,7 +355,7 @@ class FlinkSQLHelper:
         # Drop SQL objects first (while statements still exist for reference)
         for obj_type, obj_name in list(self.created_sql_objects):
             try:
-                drop_stmt_name = f"cleanup-drop-{obj_name.lower().replace('_', '-')}"
+                drop_stmt_name = self._unique_statement_name("cleanup-drop", obj_name)
                 self.execute_statement(
                     drop_stmt_name,
                     f"DROP {obj_type} IF EXISTS `{obj_name}`",

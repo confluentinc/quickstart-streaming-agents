@@ -135,7 +135,7 @@ def _ensure_statement(
     if obj:
         obj_type, obj_name = obj
         try:
-            drop_name = f"pre-drop-{obj_name.lower().replace('_', '-')[:40]}"
+            drop_name = flink._unique_statement_name("pre-drop", obj_name)
             flink.execute_statement(
                 drop_name, f"DROP {obj_type} IF EXISTS `{obj_name}`", wait=True
             )
@@ -152,6 +152,14 @@ def _ensure_statement(
         # TimeoutError: statement stuck in transition — may still produce output.
         # In all cases, let the subsequent topic/data assertions determine success.
         pass
+
+    if obj and not flink.verify_sql_object_exists(*obj):
+        obj_type, obj_name = obj
+        status = flink.get_statement_status(name)
+        raise AssertionError(
+            f"{obj_type} {obj_name} was not created by statement {name} "
+            f"(status: {status})"
+        )
 
 
 @pytest.fixture(scope="class", params=["aws"])
@@ -202,7 +210,7 @@ class TestLab4FraudDetection:
         if not KEEP_STATEMENTS:
             flink_helper.cleanup_all()
 
-    @pytest.mark.order(1)
+    @pytest.mark.order(16)
     def test_claims_datagen(self, env):
         """claims topic has >= 33,000 messages (datagen publishes ~33,984 FEMA claims)."""
         kafka = env["kafka"]
@@ -228,7 +236,7 @@ class TestLab4FraudDetection:
             f"claims topic has only {count} messages (expected >= 33,000) — was Lab 4 deployed?"
         )
 
-    @pytest.mark.order(2)
+    @pytest.mark.order(17)
     def test_claims_anomalies_by_city(self, env):
         """Create claims_anomalies_by_city and verify only Naples anomaly fires (max 2)."""
         flink, kafka, sql = env["flink"], env["kafka"], env["sql"]
@@ -265,7 +273,7 @@ class TestLab4FraudDetection:
                 f"Check anomaly detection parameters."
             )
 
-    @pytest.mark.order(3)
+    @pytest.mark.order(18)
     def test_claims_to_investigate(self, env):
         """Create claims_to_investigate and verify claims enter the investigation queue."""
         flink, kafka, sql = env["flink"], env["kafka"], env["sql"]
@@ -288,7 +296,7 @@ class TestLab4FraudDetection:
             "claims_to_investigate is empty — claims_anomalies_by_city may have no anomalies yet"
         )
 
-    @pytest.mark.order(4)
+    @pytest.mark.order(19)
     def test_claims_to_investigate_with_policies(self, env):
         """Create claims_to_investigate_with_policies (RAG enrichment with FEMA policy)."""
         flink, kafka, sql = env["flink"], env["kafka"], env["sql"]
@@ -310,7 +318,7 @@ class TestLab4FraudDetection:
                 "and topic has no messages — check Confluent Cloud for failure details"
             )
 
-    @pytest.mark.order(5)
+    @pytest.mark.order(20)
     def test_claims_fraud_investigation_agent(self, env):
         """Create the claims_fraud_investigation_agent AGENT statement."""
         flink, sql = env["flink"], env["sql"]
@@ -323,7 +331,7 @@ class TestLab4FraudDetection:
             "claims_fraud_investigation_agent was not created — check Confluent Cloud for the statement failure"
         )
 
-    @pytest.mark.order(6)
+    @pytest.mark.order(21)
     def test_claims_reviewed(self, env):
         """Create claims_reviewed and verify agent produces fraud verdicts."""
         flink, kafka, sql = env["flink"], env["kafka"], env["sql"]
