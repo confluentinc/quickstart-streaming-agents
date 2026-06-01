@@ -128,3 +128,5 @@ skills-lock.json
 
 # Ephemeral test output
 TEST_RESULTS.md
+/.codex/
+/AGENTS.md

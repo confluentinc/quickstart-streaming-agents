@@ -77,8 +77,10 @@ def _parse_lab3_sql(walkthrough_path: Path) -> Dict[str, str]:
         statements["create_agent"] = match.group(1).strip()
 
     # CREATE TABLE completed_actions
+    # NOTE: the SQL body contains embedded ``` (in REGEXP_EXTRACT patterns like (?:```json...)).
+    # Require \n before the closing fence so we don't stop at those embedded backticks.
     match = re.search(
-        r"```sql\s*(CREATE TABLE completed_actions\b.*?)```",
+        r"```sql\s*(CREATE TABLE completed_actions\b.*?)\n```",
         text,
         re.DOTALL | re.IGNORECASE,
     )
@@ -92,21 +94,38 @@ def _ensure_statement(
     flink: FlinkSQLHelper, name: str, sql: str, timeout: int = 300
 ) -> None:
     """Create statement; skip if already RUNNING or COMPLETED (e.g. DDL/TOOL)."""
+    obj = flink._extract_sql_object(sql)
     try:
         status = flink.get_statement_status(name)
         if status in ("RUNNING", "COMPLETED"):
-            return
+            if not obj or flink.verify_sql_object_exists(*obj):
+                return
+            flink.delete_statement(name)
         if status in ("FAILED", "STOPPED", "DEGRADED"):
             flink.delete_statement(name)
     except Exception:
         pass  # Statement doesn't exist yet
 
+    # Pre-drop any stale SQL object so DDL/CTAS can succeed on re-runs.
+    # DDL statements (CREATE AGENT/TOOL/TABLE) fail if the object already exists
+    # from a previous run whose cleanup silently failed.
+    if obj:
+        obj_type, obj_name = obj
+        try:
+            drop_name = f"pre-drop-{obj_name.lower().replace('_', '-')[:40]}"
+            flink.execute_statement(
+                drop_name, f"DROP {obj_type} IF EXISTS `{obj_name}`", wait=True
+            )
+            flink.delete_statement(drop_name)
+        except Exception:
+            pass
+
     try:
         flink.execute_statement(name, sql, wait=False)
         flink.wait_for_status(name, ["RUNNING", "COMPLETED"], timeout=timeout)
     except (subprocess.CalledProcessError, RuntimeError, TimeoutError):
-        # CalledProcessError: CLI rejected (table/tool already exists).
-        # RuntimeError: statement went to FAILED (e.g. duplicate table name).
+        # CalledProcessError: CLI rejected.
+        # RuntimeError: statement went to FAILED.
         # TimeoutError: statement stuck in transition — may still produce output.
         # In all cases, let the subsequent topic/data assertions determine success.
         pass
@@ -278,6 +297,9 @@ class TestLab3FleetManagement:
         """Create the boat_dispatch_agent AGENT statement."""
         flink, sql = env["flink"], env["sql"]
         _ensure_statement(flink, f"{_PREFIX}-boat-dispatch-agent", sql["create_agent"])
+        assert flink.verify_sql_object_exists("AGENT", "boat_dispatch_agent"), (
+            "boat_dispatch_agent was not created — check Confluent Cloud for the statement failure"
+        )
 
     @pytest.mark.order(6)
     def test_completed_actions(self, env):
