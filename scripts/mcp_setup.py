@@ -15,16 +15,50 @@ _KAFKA_JS_PREBUILT_ABIS = {115, 120, 127, 131, 137}
 _PREFERRED_ABI = 137  # Node 24 LTS
 
 
-def _check_node_version() -> None:
-    """Warn if the active Node has no prebuilt kafka-javascript binary."""
+def _get_node_abi(node_bin: str) -> int | None:
+    """Return the ABI version for the given node binary, or None on failure."""
     try:
-        abi_result = subprocess.run(
-            ["node", "-e", "process.stdout.write(process.versions.modules)"],
+        result = subprocess.run(
+            [node_bin, "-e", "process.stdout.write(process.versions.modules)"],
             capture_output=True,
             text=True,
             check=True,
             timeout=5,
         )
+        return int(result.stdout.strip())
+    except Exception:
+        return None
+
+
+def _candidate_npx_paths() -> list[Path]:
+    """Well-known locations where Node 24 LTS npx may be installed."""
+    candidates = [
+        # Homebrew on Apple Silicon
+        Path("/opt/homebrew/opt/node@24/bin/npx"),
+        # Homebrew on Intel Mac
+        Path("/usr/local/opt/node@24/bin/npx"),
+    ]
+    # nvm-managed versions
+    nvm_dir = Path.home() / ".nvm" / "versions" / "node"
+    if nvm_dir.is_dir():
+        for entry in sorted(nvm_dir.iterdir(), reverse=True):
+            if entry.name.startswith("v24."):
+                candidates.append(entry / "bin" / "npx")
+    return candidates
+
+
+def _resolve_npx() -> str:
+    """
+    Return the npx binary to use for the MCP server.
+
+    Prefers an absolute path to a Node 24 LTS npx so Claude Code uses the right
+    version regardless of the user's PATH configuration.  Falls back to bare
+    'npx' (PATH lookup) only when no prebuilt-ABI node is found anywhere.
+    """
+    # Check the node currently on PATH first.
+    path_node_abi: int | None = None
+    path_node_version = ""
+    try:
         ver_result = subprocess.run(
             ["node", "--version"],
             capture_output=True,
@@ -32,40 +66,57 @@ def _check_node_version() -> None:
             check=True,
             timeout=5,
         )
-    except (
-        FileNotFoundError,
-        subprocess.CalledProcessError,
-        subprocess.TimeoutExpired,
-    ):
-        print("Warning: 'node' not found on PATH.")
-        print("  Install Node 24 LTS before running this command:")
-        print("    With nvm:      nvm install 24 && nvm use 24")
-        print("    With Homebrew: brew install node@24")
-        print('                   export PATH="/opt/homebrew/opt/node@24/bin:$PATH"')
-        return
+        path_node_version = ver_result.stdout.strip().lstrip("v")
+        path_node_abi = _get_node_abi("node")
+    except (FileNotFoundError, subprocess.CalledProcessError, subprocess.TimeoutExpired):
+        pass  # node not on PATH — we'll search well-known locations below
 
-    version_str = ver_result.stdout.strip().lstrip("v")
-    abi = int(abi_result.stdout.strip())
+    if path_node_abi in _KAFKA_JS_PREBUILT_ABIS:
+        label = " (Node 24 LTS)" if path_node_abi == _PREFERRED_ABI else ""
+        print(f"Using Node {path_node_version}{label}")
+        return "npx"
 
-    if abi not in _KAFKA_JS_PREBUILT_ABIS:
+    # PATH node is wrong (or missing) — probe well-known locations for a compatible one.
+    for npx_path in _candidate_npx_paths():
+        if not npx_path.exists():
+            continue
+        node_bin = npx_path.parent / "node"
+        abi = _get_node_abi(str(node_bin))
+        if abi in _KAFKA_JS_PREBUILT_ABIS:
+            ver_result = subprocess.run(
+                [str(node_bin), "--version"],
+                capture_output=True,
+                text=True,
+                timeout=5,
+            )
+            version_str = ver_result.stdout.strip().lstrip("v")
+            label = " (Node 24 LTS)" if abi == _PREFERRED_ABI else ""
+            print(f"Using Node {version_str}{label} from {npx_path.parent}")
+            return str(npx_path)
+
+    # Nothing compatible found — warn and let the user decide.
+    if path_node_abi is not None:
         print(
-            f"Warning: Node {version_str} (ABI {abi}) has no prebuilt @confluentinc/kafka-javascript binary."
+            f"Warning: Node {path_node_version} (ABI {path_node_abi}) has no prebuilt "
+            f"@confluentinc/kafka-javascript binary."
         )
         print(
-            "  npx will compile it from source the first time the MCP server starts — this can take several minutes."
+            "  npx will compile it from source the first time the MCP server starts — "
+            "this can take several minutes."
         )
-        print("  To avoid the wait, switch to Node 24 LTS first:")
-        print("    With nvm:      nvm install 24 && nvm use 24")
-        print("    With Homebrew: brew install node@24")
-        print('                   export PATH="/opt/homebrew/opt/node@24/bin:$PATH"')
-        answer = (
-            input(f"  Continue anyway with Node {version_str}? [y/N] ").strip().lower()
-        )
+    else:
+        print("Warning: 'node' not found on PATH or in well-known locations.")
+    print("  To avoid the wait, install Node 24 LTS:")
+    print("    With nvm:      nvm install 24 && nvm use 24")
+    print("    With Homebrew: brew install node@24")
+    print("  Then re-run `uv run setup-mcp`.")
+    if path_node_abi is not None:
+        answer = input(f"  Continue anyway with Node {path_node_version}? [y/N] ").strip().lower()
         if answer != "y":
             sys.exit(0)
     else:
-        label = " (Node 24 LTS)" if abi == _PREFERRED_ABI else ""
-        print(f"Using Node {version_str}{label}")
+        sys.exit(1)
+    return "npx"
 
 
 # Maps terraform output names to MCP env var names.
@@ -92,11 +143,16 @@ _TF_TO_MCP = {
 }
 
 
-def _clear_broken_npx_cache() -> None:
-    """Remove stale npx cache entries where the kafka-javascript native binary is missing."""
+def _clear_broken_npx_cache(npx_bin: str) -> None:
+    """Remove stale npx cache entries with missing or ABI-mismatched kafka-javascript binaries."""
     npx_cache = Path.home() / ".npm" / "_npx"
     if not npx_cache.exists():
         return
+
+    # Determine the ABI of the npx we'll actually use.
+    node_bin = Path(npx_bin).parent / "node" if npx_bin != "npx" else Path("node")
+    active_abi = _get_node_abi(str(node_bin) if npx_bin != "npx" else "node")
+
     for entry in npx_cache.iterdir():
         if not entry.is_dir():
             continue
@@ -110,17 +166,36 @@ def _clear_broken_npx_cache() -> None:
             / "build"
             / "Release"
         )
-        if not any(build_release.glob("*.node")) if build_release.exists() else True:
-            print(f"  Clearing broken npx cache (missing native binary): {entry.name}")
-            shutil.rmtree(entry)
-            print(
-                "  npx will re-download @confluentinc/mcp-confluent on next MCP server start."
-            )
+        node_files = list(build_release.glob("*.node")) if build_release.exists() else []
+        if not node_files:
+            reason = "missing native binary"
+        elif active_abi is not None and not any(
+            # The .node filename embeds the ABI: e.g. "...node_modules_abi137_..."
+            f"_abi{active_abi}_" in f.name or f.stat().st_size > 0
+            for f in node_files
+        ):
+            # Simpler ABI check: try loading to see if it crashes.
+            try:
+                subprocess.run(
+                    [str(node_bin) if npx_bin != "npx" else "node",
+                     "-e", f"require('{node_files[0]}')"],
+                    capture_output=True,
+                    check=True,
+                    timeout=5,
+                )
+                continue  # loads fine — cache is good
+            except subprocess.CalledProcessError:
+                reason = f"native binary built for wrong ABI (active ABI {active_abi})"
+        else:
+            continue  # cache entry looks fine
+        print(f"  Clearing broken npx cache ({reason}): {entry.name}")
+        shutil.rmtree(entry)
+        print("  npx will re-download @confluentinc/mcp-confluent on next MCP server start.")
 
 
 def main():
-    _check_node_version()
-    _clear_broken_npx_cache()
+    npx_bin = _resolve_npx()
+    _clear_broken_npx_cache(npx_bin)
 
     project_root = get_project_root()
     state_path = project_root / "terraform" / "core" / "terraform.tfstate"
@@ -160,7 +235,7 @@ def main():
         .setdefault(project_key, {})
         .setdefault("mcpServers", {})
     )["confluent-cloud-mcp-server"] = {
-        "command": "npx",
+        "command": npx_bin,
         "args": ["-y", "@confluentinc/mcp-confluent"],
         "env": env_vars,
     }

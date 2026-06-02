@@ -70,7 +70,7 @@ class TestLab2VectorSearch:
         }
         # Lab 2 has no test-created statements to clean up
 
-    @pytest.mark.order(1)
+    @pytest.mark.order(6)
     def test_sample_query_inserted(self, env):
         """queries topic has >= 1 message (Terraform inserted sample on deploy)."""
         has_messages = env["kafka"].check_topic_has_messages(
@@ -78,25 +78,25 @@ class TestLab2VectorSearch:
         )
         assert has_messages, "queries topic has no messages — was Lab 2 deployed?"
 
-    @pytest.mark.order(2)
+    @pytest.mark.order(7)
     def test_embeddings_pipeline_running(self, env):
-        """Terraform-deployed embedding statements are in a healthy state."""
-        flink = env["flink"]
-        # create-table-queries-embed is a DDL statement (COMPLETED after table is created).
-        # queries-embed-insert-into is the continuous INSERT that stays RUNNING.
-        ddl_statements = ("create-table-queries-embed",)
-        dml_statements = ("queries-embed-insert-into",)
-        for name in ddl_statements:
-            status = flink.get_statement_status(name)
-            assert status in ("RUNNING", "COMPLETED"), (
-                f"Statement '{name}' is in unexpected state: {status}"
-            )
-        for name in dml_statements:
-            assert flink.check_statement_running(name), (
-                f"Statement '{name}' is not RUNNING — check Confluent Cloud UI"
-            )
+        """Embedding pipeline is active: continuous INSERT is RUNNING and queries_embed has data."""
+        flink, kafka = env["flink"], env["kafka"]
+        # queries-embed-insert-into is the continuous INSERT that must stay RUNNING.
+        assert flink.check_statement_running("queries-embed-insert-into"), (
+            "Statement 'queries-embed-insert-into' is not RUNNING — check Confluent Cloud UI"
+        )
+        # queries_embed topic having messages proves the DDL ran and embeddings are flowing.
+        # (The DDL statement 'create-table-queries-embed' completes and is GC'd by Confluent
+        # Cloud; checking its status is fragile. Checking the topic is the durable assertion.)
+        has_messages = kafka.check_topic_has_messages(
+            "queries_embed", min_count=1, timeout=30
+        )
+        assert has_messages, (
+            "queries_embed topic has no messages — embedding pipeline may not be running"
+        )
 
-    @pytest.mark.order(3)
+    @pytest.mark.order(8)
     def test_search_results(self, env):
         """search_results topic has >= 1 message within 10 minutes."""
         kafka = env["kafka"]
@@ -109,7 +109,7 @@ class TestLab2VectorSearch:
         )
         assert count >= 1
 
-    @pytest.mark.order(4)
+    @pytest.mark.order(9)
     def test_rag_response(self, env):
         """search_results_response has >= 1 message with non-empty response field."""
         kafka = env["kafka"]

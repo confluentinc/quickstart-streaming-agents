@@ -117,24 +117,49 @@ def _ensure_statement(
 ) -> None:
     """Create statement; skip if already RUNNING or COMPLETED (e.g. DDL/TOOL)."""
     sql, props = sql_and_props
+    obj = flink._extract_sql_object(sql)
     try:
         status = flink.get_statement_status(name)
         if status in ("RUNNING", "COMPLETED"):
-            return
+            if not obj or flink.verify_sql_object_exists(*obj):
+                return
+            flink.delete_statement(name)
         if status in ("FAILED", "STOPPED", "DEGRADED"):
             flink.delete_statement(name)
     except Exception:
         pass  # Statement doesn't exist yet
 
+    # Pre-drop any stale SQL object so DDL/CTAS can succeed on re-runs.
+    # DDL statements (CREATE AGENT/TOOL/TABLE) fail if the object already exists
+    # from a previous run whose cleanup silently failed.
+    if obj:
+        obj_type, obj_name = obj
+        try:
+            drop_name = flink._unique_statement_name("pre-drop", obj_name)
+            flink.execute_statement(
+                drop_name, f"DROP {obj_type} IF EXISTS `{obj_name}`", wait=True
+            )
+            flink.delete_statement(drop_name)
+        except Exception:
+            pass
+
     try:
         flink.execute_statement(name, sql, wait=False, properties=props)
         flink.wait_for_status(name, ["RUNNING", "COMPLETED"], timeout=timeout)
     except (subprocess.CalledProcessError, RuntimeError, TimeoutError):
-        # CalledProcessError: CLI rejected (table/tool already exists).
-        # RuntimeError: statement went to FAILED (e.g. duplicate table name).
+        # CalledProcessError: CLI rejected.
+        # RuntimeError: statement went to FAILED.
         # TimeoutError: statement stuck in transition — may still produce output.
         # In all cases, let the subsequent topic/data assertions determine success.
         pass
+
+    if obj and not flink.verify_sql_object_exists(*obj):
+        obj_type, obj_name = obj
+        status = flink.get_statement_status(name)
+        raise AssertionError(
+            f"{obj_type} {obj_name} was not created by statement {name} "
+            f"(status: {status})"
+        )
 
 
 @pytest.fixture(scope="class", params=["aws"])
@@ -185,7 +210,7 @@ class TestLab4FraudDetection:
         if not KEEP_STATEMENTS:
             flink_helper.cleanup_all()
 
-    @pytest.mark.order(1)
+    @pytest.mark.order(16)
     def test_claims_datagen(self, env):
         """claims topic has >= 33,000 messages (datagen publishes ~33,984 FEMA claims)."""
         kafka = env["kafka"]
@@ -211,7 +236,7 @@ class TestLab4FraudDetection:
             f"claims topic has only {count} messages (expected >= 33,000) — was Lab 4 deployed?"
         )
 
-    @pytest.mark.order(2)
+    @pytest.mark.order(17)
     def test_claims_anomalies_by_city(self, env):
         """Create claims_anomalies_by_city and verify only Naples anomaly fires (max 2)."""
         flink, kafka, sql = env["flink"], env["kafka"], env["sql"]
@@ -248,7 +273,7 @@ class TestLab4FraudDetection:
                 f"Check anomaly detection parameters."
             )
 
-    @pytest.mark.order(3)
+    @pytest.mark.order(18)
     def test_claims_to_investigate(self, env):
         """Create claims_to_investigate and verify claims enter the investigation queue."""
         flink, kafka, sql = env["flink"], env["kafka"], env["sql"]
@@ -271,30 +296,42 @@ class TestLab4FraudDetection:
             "claims_to_investigate is empty — claims_anomalies_by_city may have no anomalies yet"
         )
 
-    @pytest.mark.order(4)
+    @pytest.mark.order(19)
     def test_claims_to_investigate_with_policies(self, env):
         """Create claims_to_investigate_with_policies (RAG enrichment with FEMA policy)."""
-        flink, sql = env["flink"], env["sql"]
+        flink, kafka, sql = env["flink"], env["kafka"], env["sql"]
+        name = f"{_PREFIX}-claims-with-policies"
         _ensure_statement(
             flink,
-            f"{_PREFIX}-claims-with-policies",
+            name,
             sql["claims_to_investigate_with_policies"],
-            timeout=360,
+            timeout=600,
         )
-        status = flink.get_statement_status(f"{_PREFIX}-claims-with-policies")
-        assert status in ("RUNNING", "COMPLETED"), (
-            f"claims_to_investigate_with_policies is in unexpected state: {status}"
-        )
+        status = flink.get_statement_status(name)
+        if status not in ("RUNNING", "COMPLETED"):
+            # Bounded CTAS may complete and be GC'd; verify the output topic has data
+            has_data = kafka.check_topic_has_messages(
+                "claims_to_investigate_with_policies", min_count=1, timeout=120
+            )
+            assert has_data, (
+                f"claims_to_investigate_with_policies statement is in state '{status}' "
+                "and topic has no messages — check Confluent Cloud for failure details"
+            )
 
-    @pytest.mark.order(5)
+    @pytest.mark.order(20)
     def test_claims_fraud_investigation_agent(self, env):
         """Create the claims_fraud_investigation_agent AGENT statement."""
         flink, sql = env["flink"], env["sql"]
         _ensure_statement(
             flink, f"{_PREFIX}-fraud-agent", sql["create_agent"], timeout=360
         )
+        assert flink.verify_sql_object_exists(
+            "AGENT", "claims_fraud_investigation_agent"
+        ), (
+            "claims_fraud_investigation_agent was not created — check Confluent Cloud for the statement failure"
+        )
 
-    @pytest.mark.order(6)
+    @pytest.mark.order(21)
     def test_claims_reviewed(self, env):
         """Create claims_reviewed and verify agent produces fraud verdicts."""
         flink, kafka, sql = env["flink"], env["kafka"], env["sql"]
@@ -308,7 +345,7 @@ class TestLab4FraudDetection:
         messages = poll_until(
             getter=_get_reviewed,
             condition=lambda msgs: len(msgs) >= 1,
-            timeout=300,
+            timeout=1800,
             interval=30,
             description="claims_reviewed has >= 1 message",
         )

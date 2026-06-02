@@ -54,26 +54,25 @@ This installs test-specific dependencies (pytest, pytest-timeout, pytest-order) 
 
 ```bash
 # From project root
-cp credentials.template.json testing/credentials.json
+cp credentials.env.example credentials.env
 ```
 
-Edit `testing/credentials.json` and fill in your credentials:
+Edit `credentials.env` and fill in your credentials:
 
-```json
-{
-    "cloud": "aws",
-    "region": "us-east-1",
-    "confluent_cloud_api_key": "YOUR_CONFLUENT_API_KEY",
-    "confluent_cloud_api_secret": "YOUR_CONFLUENT_API_SECRET",
-    "aws_bedrock_access_key": "YOUR_AWS_KEY",
-    "aws_bedrock_secret_key": "YOUR_AWS_SECRET",
-    "azure_openai_endpoint": "YOUR_AZURE_ENDPOINT",
-    "azure_openai_api_key": "YOUR_AZURE_KEY",
-    "owner_email": "test@example.com"
-}
+```env
+TF_VAR_cloud_provider=aws
+TF_VAR_cloud_region=us-east-1
+TF_VAR_confluent_cloud_api_key=YOUR_CONFLUENT_API_KEY
+TF_VAR_confluent_cloud_api_secret=YOUR_CONFLUENT_API_SECRET
+TF_VAR_aws_bedrock_access_key=YOUR_AWS_KEY
+TF_VAR_aws_bedrock_secret_key=YOUR_AWS_SECRET
+TF_VAR_azure_openai_endpoint_raw=YOUR_AZURE_ENDPOINT
+TF_VAR_azure_openai_api_key=YOUR_AZURE_KEY
+CONFLUENT_EMAIL=test@example.com
+CONFLUENT_PASSWORD=YOUR_CONFLUENT_PASSWORD
 ```
 
-> **Security:** `testing/credentials.json` is gitignored. Never commit credentials to the repository.
+> **Security:** `credentials.env` is gitignored. Never commit credentials to the repository.
 
 ### 3. Ensure Confluent CLI is Authenticated
 
@@ -139,20 +138,16 @@ uv run pytest testing/e2e/test_lab3_workflow.py -v --timeout=5400
 ### Test Fails During Deployment
 
 ```bash
-# Emergency cleanup if test fails mid-deployment
-cd testing
-cp credentials.json ../credentials.json
-cd ..
+# Emergency cleanup if test fails mid-deployment (run from project root)
 uv run destroy --testing
 uv run workshop-keys destroy aws  # or azure
-rm credentials.json
 ```
 
 ### Confluent CLI Not Authenticated
 
 ```bash
 confluent login --save
-# Or the test will attempt auto-login using credentials.json
+# Or the test will attempt auto-login using CONFLUENT_EMAIL/CONFLUENT_PASSWORD from credentials.env
 ```
 
 ### Missing Terraform State
@@ -181,7 +176,6 @@ testing/
 ├── README.md              # This file
 ├── .gitignore             # Ignores credentials and test artifacts
 ├── conftest.py            # Pytest fixtures (credentials, deploy/teardown)
-├── credentials.json       # Your test credentials (gitignored)
 ├── helpers/
 │   ├── flink_sql_helper.py    # Flink SQL execution via confluent CLI
 │   ├── polling_helper.py      # Retry/polling utilities
@@ -194,8 +188,7 @@ testing/
 ### How Tests Work
 
 1. **Setup (deploy_and_teardown fixture):**
-   - Loads `testing/credentials.json`
-   - Copies to `credentials.json` in project root (where `deploy.py --testing` expects it)
+   - Loads `credentials.env` from project root
    - Ensures Confluent CLI is authenticated
    - Creates workshop keys (`uv run workshop-keys create <cloud>`)
    - Deploys infrastructure (`uv run deploy --testing`)
@@ -211,7 +204,6 @@ testing/
    - Cleans up Flink statements
    - Destroys infrastructure (`uv run destroy --testing`)
    - Destroys workshop keys
-   - Removes `credentials.json` from project root
 
 ### SQL Extraction
 

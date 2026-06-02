@@ -309,95 +309,18 @@ class TestDeployAutomatedLogin:
 
         mock_input.assert_not_called()
 
-
-# ---------------------------------------------------------------------------
-# --testing mode
-# ---------------------------------------------------------------------------
-
-
-class TestDeployTestingLogin:
-    """Tests for ensure_confluent_login behavior in --testing mode."""
-
-    def test_calls_ensure_login_with_json_email_password(self, tmp_path):
-        """When credentials.json has email + password, ensure_confluent_login receives them."""
+    def test_testing_mode_sets_enable_testing_sql(self, tmp_path):
+        """--testing adds TF_VAR_enable_testing_sql=true to the creds passed downstream."""
+        self._make_creds_file(tmp_path)
         mock_ensure = MagicMock(side_effect=_StopAfterLogin())
-
         with (
             patch("deploy.get_project_root", return_value=tmp_path),
-            patch("deploy.load_credentials_json", return_value=dict(_VALID_JSON_CREDS)),
             patch("deploy.ensure_confluent_login", mock_ensure),
-            patch("deploy.write_tfvars_for_deployment"),
             pytest.raises(_StopAfterLogin),
         ):
             _run_main(["--testing"])
-
-        mock_ensure.assert_called_once()
-        call_arg = mock_ensure.call_args[0][0]
-        assert call_arg is not None
-        assert call_arg.get("CONFLUENT_EMAIL") == "user@example.com"
-        assert call_arg.get("CONFLUENT_PASSWORD") == "password123"
-
-    def test_calls_ensure_login_with_none_when_no_email_in_json(self, tmp_path):
-        """When credentials.json lacks email/password, ensure_confluent_login(None) is called."""
-        creds_no_email = {
-            k: v
-            for k, v in _VALID_JSON_CREDS.items()
-            if k not in ("confluent_cloud_email", "confluent_cloud_password")
-        }
-        mock_ensure = MagicMock(side_effect=_StopAfterLogin())
-
-        with (
-            patch("deploy.get_project_root", return_value=tmp_path),
-            patch("deploy.load_credentials_json", return_value=creds_no_email),
-            patch("deploy.ensure_confluent_login", mock_ensure),
-            patch("deploy.write_tfvars_for_deployment"),
-            pytest.raises(_StopAfterLogin),
-        ):
-            _run_main(["--testing"])
-
-        mock_ensure.assert_called_once_with(None)
-
-    def test_calls_ensure_login_with_none_when_email_empty(self, tmp_path):
-        """Empty email string in json is treated the same as missing."""
-        creds_empty = dict(_VALID_JSON_CREDS)
-        creds_empty["confluent_cloud_email"] = ""
-        creds_empty["confluent_cloud_password"] = ""
-        mock_ensure = MagicMock(side_effect=_StopAfterLogin())
-
-        with (
-            patch("deploy.get_project_root", return_value=tmp_path),
-            patch("deploy.load_credentials_json", return_value=creds_empty),
-            patch("deploy.ensure_confluent_login", mock_ensure),
-            patch("deploy.write_tfvars_for_deployment"),
-            pytest.raises(_StopAfterLogin),
-        ):
-            _run_main(["--testing"])
-
-        mock_ensure.assert_called_once_with(None)
-
-    def test_exits_if_ensure_login_fails(self, tmp_path):
-        """SystemExit from ensure_confluent_login propagates in --testing mode."""
-        with (
-            patch("deploy.get_project_root", return_value=tmp_path),
-            patch("deploy.load_credentials_json", return_value=dict(_VALID_JSON_CREDS)),
-            patch("deploy.ensure_confluent_login", side_effect=SystemExit(1)),
-            patch("deploy.write_tfvars_for_deployment"),
-            pytest.raises(SystemExit) as exc_info,
-        ):
-            _run_main(["--testing"])
-
-        assert exc_info.value.code == 1
-
-    def test_does_not_prompt_user(self, tmp_path):
-        """--testing mode never calls input()."""
-        with (
-            patch("deploy.get_project_root", return_value=tmp_path),
-            patch("deploy.load_credentials_json", return_value=dict(_VALID_JSON_CREDS)),
-            patch("deploy.ensure_confluent_login", side_effect=_StopAfterLogin()),
-            patch("deploy.write_tfvars_for_deployment"),
-            patch("builtins.input") as mock_input,
-            pytest.raises(_StopAfterLogin),
-        ):
-            _run_main(["--testing"])
-
-        mock_input.assert_not_called()
+        # ensure_confluent_login (L242) fires before write_tfvars_for_deployment (L258),
+        # so _StopAfterLogin halts before the write call. Assert on the creds passed
+        # into ensure_confluent_login instead.
+        passed_creds = mock_ensure.call_args[0][0]
+        assert passed_creds.get("TF_VAR_enable_testing_sql") == "true"

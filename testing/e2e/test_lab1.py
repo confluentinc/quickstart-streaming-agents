@@ -91,24 +91,49 @@ def _ensure_statement(
     flink: FlinkSQLHelper, name: str, sql: str, timeout: int = 300
 ) -> None:
     """Create statement; skip if already RUNNING or COMPLETED (e.g. DDL/TOOL)."""
+    obj = flink._extract_sql_object(sql)
     try:
         status = flink.get_statement_status(name)
         if status in ("RUNNING", "COMPLETED"):
-            return
+            if not obj or flink.verify_sql_object_exists(*obj):
+                return
+            flink.delete_statement(name)
         if status in ("FAILED", "STOPPED", "DEGRADED"):
             flink.delete_statement(name)
     except Exception:
         pass  # Statement doesn't exist yet
 
+    # Pre-drop any stale SQL object so DDL/CTAS can succeed on re-runs.
+    # DDL statements (CREATE AGENT/TOOL/TABLE) fail if the object already exists
+    # from a previous run whose cleanup silently failed.
+    if obj:
+        obj_type, obj_name = obj
+        try:
+            drop_name = flink._unique_statement_name("pre-drop", obj_name)
+            flink.execute_statement(
+                drop_name, f"DROP {obj_type} IF EXISTS `{obj_name}`", wait=True
+            )
+            flink.delete_statement(drop_name)
+        except Exception:
+            pass
+
     try:
         flink.execute_statement(name, sql, wait=False)
         flink.wait_for_status(name, ["RUNNING", "COMPLETED"], timeout=timeout)
     except (subprocess.CalledProcessError, RuntimeError, TimeoutError):
-        # CalledProcessError: CLI rejected (table/tool already exists).
-        # RuntimeError: statement went to FAILED (e.g. duplicate table name).
+        # CalledProcessError: CLI rejected.
+        # RuntimeError: statement went to FAILED.
         # TimeoutError: statement stuck in transition — may still produce output.
         # In all cases, let the subsequent topic/data assertions determine success.
         pass
+
+    if obj and not flink.verify_sql_object_exists(*obj):
+        obj_type, obj_name = obj
+        status = flink.get_statement_status(name)
+        raise AssertionError(
+            f"{obj_type} {obj_name} was not created by statement {name} "
+            f"(status: {status})"
+        )
 
 
 @pytest.fixture(scope="class", params=["aws"])
@@ -219,12 +244,18 @@ class TestLab1PriceMatch:
         """Create the remote_mcp TOOL statement."""
         flink, sql = env["flink"], env["sql"]
         _ensure_statement(flink, f"{_PREFIX}-remote-mcp-tool", sql["create_tool"])
+        assert flink.verify_sql_object_exists("TOOL", "lab1_remote_mcp"), (
+            "lab1_remote_mcp was not created — check Confluent Cloud for the statement failure"
+        )
 
     @pytest.mark.order(4)
     def test_price_match_agent(self, env):
         """Create the price_match_agent AGENT statement."""
         flink, sql = env["flink"], env["sql"]
         _ensure_statement(flink, f"{_PREFIX}-price-match-agent", sql["create_agent"])
+        assert flink.verify_sql_object_exists("AGENT", "price_match_agent"), (
+            "price_match_agent was not created — check Confluent Cloud for the statement failure"
+        )
 
     @pytest.mark.order(5)
     def test_price_match_results(self, env):

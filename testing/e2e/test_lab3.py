@@ -77,8 +77,10 @@ def _parse_lab3_sql(walkthrough_path: Path) -> Dict[str, str]:
         statements["create_agent"] = match.group(1).strip()
 
     # CREATE TABLE completed_actions
+    # NOTE: the SQL body contains embedded ``` (in REGEXP_EXTRACT patterns like (?:```json...)).
+    # Require \n before the closing fence so we don't stop at those embedded backticks.
     match = re.search(
-        r"```sql\s*(CREATE TABLE completed_actions\b.*?)```",
+        r"```sql\s*(CREATE TABLE completed_actions\b.*?)\n```",
         text,
         re.DOTALL | re.IGNORECASE,
     )
@@ -92,24 +94,49 @@ def _ensure_statement(
     flink: FlinkSQLHelper, name: str, sql: str, timeout: int = 300
 ) -> None:
     """Create statement; skip if already RUNNING or COMPLETED (e.g. DDL/TOOL)."""
+    obj = flink._extract_sql_object(sql)
     try:
         status = flink.get_statement_status(name)
         if status in ("RUNNING", "COMPLETED"):
-            return
+            if not obj or flink.verify_sql_object_exists(*obj):
+                return
+            flink.delete_statement(name)
         if status in ("FAILED", "STOPPED", "DEGRADED"):
             flink.delete_statement(name)
     except Exception:
         pass  # Statement doesn't exist yet
 
+    # Pre-drop any stale SQL object so DDL/CTAS can succeed on re-runs.
+    # DDL statements (CREATE AGENT/TOOL/TABLE) fail if the object already exists
+    # from a previous run whose cleanup silently failed.
+    if obj:
+        obj_type, obj_name = obj
+        try:
+            drop_name = flink._unique_statement_name("pre-drop", obj_name)
+            flink.execute_statement(
+                drop_name, f"DROP {obj_type} IF EXISTS `{obj_name}`", wait=True
+            )
+            flink.delete_statement(drop_name)
+        except Exception:
+            pass
+
     try:
         flink.execute_statement(name, sql, wait=False)
         flink.wait_for_status(name, ["RUNNING", "COMPLETED"], timeout=timeout)
     except (subprocess.CalledProcessError, RuntimeError, TimeoutError):
-        # CalledProcessError: CLI rejected (table/tool already exists).
-        # RuntimeError: statement went to FAILED (e.g. duplicate table name).
+        # CalledProcessError: CLI rejected.
+        # RuntimeError: statement went to FAILED.
         # TimeoutError: statement stuck in transition — may still produce output.
         # In all cases, let the subsequent topic/data assertions determine success.
         pass
+
+    if obj and not flink.verify_sql_object_exists(*obj):
+        obj_type, obj_name = obj
+        status = flink.get_statement_status(name)
+        raise AssertionError(
+            f"{obj_type} {obj_name} was not created by statement {name} "
+            f"(status: {status})"
+        )
 
 
 @pytest.fixture(scope="class", params=["aws"])
@@ -153,7 +180,7 @@ class TestLab3FleetManagement:
         if not KEEP_STATEMENTS:
             flink_helper.cleanup_all()
 
-    @pytest.mark.order(1)
+    @pytest.mark.order(10)
     def test_ride_requests_datagen(self, env):
         """ride_requests topic has >= 28,000 messages; run datagen if under threshold."""
         kafka = env["kafka"]
@@ -194,7 +221,7 @@ class TestLab3FleetManagement:
             f"ride_requests has only {count} messages (expected >= 28,000)"
         )
 
-    @pytest.mark.order(2)
+    @pytest.mark.order(11)
     def test_anomalies_per_zone(self, env):
         """Create anomalies_per_zone and verify only French Quarter surges (max 2 anomalies)."""
         flink, kafka, sql = env["flink"], env["kafka"], env["sql"]
@@ -229,7 +256,7 @@ class TestLab3FleetManagement:
                 f"Check anomaly detection threshold or datagen."
             )
 
-    @pytest.mark.order(3)
+    @pytest.mark.order(12)
     def test_anomalies_enriched(self, env):
         """Create anomalies_enriched and verify top_chunk_content is populated."""
         flink, kafka, sql = env["flink"], env["kafka"], env["sql"]
@@ -267,19 +294,22 @@ class TestLab3FleetManagement:
             f"top_chunk_1/2 are null/empty in anomalies_enriched: {list(first.keys())}"
         )
 
-    @pytest.mark.order(4)
+    @pytest.mark.order(13)
     def test_boat_dispatch_tool(self, env):
         """Create the remote_mcp TOOL statement."""
         flink, sql = env["flink"], env["sql"]
         _ensure_statement(flink, f"{_PREFIX}-remote-mcp-tool", sql["create_tool"])
 
-    @pytest.mark.order(5)
+    @pytest.mark.order(14)
     def test_boat_dispatch_agent(self, env):
         """Create the boat_dispatch_agent AGENT statement."""
         flink, sql = env["flink"], env["sql"]
         _ensure_statement(flink, f"{_PREFIX}-boat-dispatch-agent", sql["create_agent"])
+        assert flink.verify_sql_object_exists("AGENT", "boat_dispatch_agent"), (
+            "boat_dispatch_agent was not created — check Confluent Cloud for the statement failure"
+        )
 
-    @pytest.mark.order(6)
+    @pytest.mark.order(15)
     def test_completed_actions(self, env):
         """Create completed_actions and verify dispatch summaries are valid."""
         flink, kafka, sql = env["flink"], env["kafka"], env["sql"]

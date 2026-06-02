@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 """
 Simple deployment script for Confluent streaming agents quickstart.
-Uses credentials from credentials.env or credentials.json and deploys via Terraform.
+Uses credentials from credentials.env and deploys via Terraform.
 
 IMPORTANT: Interactive mode always uses hardcoded regions:
 - AWS: us-east-1 (required for workshop mode MongoDB compatibility)
 - Azure: eastus2 (required for workshop mode MongoDB compatibility)
 
-Testing mode (--testing flag) respects the region in credentials.json,
-allowing developers to override the default regions if needed.
+Non-interactive modes (--automated, --testing) use the region in credentials.env.
 """
 
 import argparse
@@ -22,7 +21,6 @@ from dotenv import dotenv_values, set_key
 
 from scripts.common.credentials import (
     load_or_create_credentials_file,
-    load_credentials_json,
     generate_confluent_api_keys,
 )
 from scripts.common.login_checks import ensure_confluent_login, _attempt_login_quiet
@@ -144,7 +142,7 @@ def main():
     parser.add_argument(
         "--testing",
         action="store_true",
-        help="Non-interactive mode using credentials.json (for automated testing)",
+        help="Non-interactive mode: load from credentials.env and set TF_VAR_enable_testing_sql=true (for CI test runs)",
     )
     parser.add_argument(
         "--automated",
@@ -153,6 +151,9 @@ def main():
     )
     args = parser.parse_args()
 
+    if args.automated and args.testing:
+        parser.error("--automated and --testing are mutually exclusive")
+
     print("=== Simple Deployment Tool ===\n")
     if args.testing:
         print("Running in TESTING mode (non-interactive)\n")
@@ -160,18 +161,21 @@ def main():
     root = get_project_root()
     print(f"Project root: {root}")
 
-    # TESTING MODE: Load credentials from JSON and skip all prompts
-    if args.automated and not args.testing:
-        # Non-interactive mode: load from credentials.env, validate, bail out if incomplete.
+    # NON-INTERACTIVE MODE: Load credentials from credentials.env
+    if args.automated or args.testing:
         creds_file = root / "credentials.env"
         if not creds_file.exists():
             print("Error: credentials.env not found.")
             print(
-                "Run `uv run deploy` (without --automated) to be prompted for credentials."
+                "Run `uv run deploy` (without --automated/--testing) to be prompted for credentials."
             )
             sys.exit(1)
 
         creds = dotenv_values(str(creds_file))
+
+        if args.testing:
+            creds["TF_VAR_enable_testing_sql"] = "true"
+
         cloud = creds.get("TF_VAR_cloud_provider", "").lower()
         region = creds.get("TF_VAR_cloud_region", "")
         mcp_backend = (creds.get("TF_VAR_mcp_backend") or "lambda").lower()
@@ -210,7 +214,7 @@ def main():
             for label in missing:
                 print(f"  - {label}")
             print(
-                "\nRun `uv run deploy` (without --automated) to be prompted for missing values."
+                "\nRun `uv run deploy` (without --automated/--testing) to be prompted for missing values."
             )
             sys.exit(1)
 
@@ -235,86 +239,6 @@ def main():
         for key, value in creds.items():
             if value:
                 os.environ[key] = value
-
-    elif args.testing:
-        creds = load_credentials_json(root)
-
-        # Extract values from JSON (ensure cloud provider is lowercase)
-        cloud = creds["cloud"].lower()
-        region = creds["region"]
-        envs_to_deploy = [
-            "core",
-            "lab1-tool-calling",
-            "lab2-vector-search",
-            "lab3-agentic-fleet-management",
-            "lab4-pubsec-fraud-agents",
-        ]
-
-        # Build environment variables for Terraform
-        env_vars = {
-            "TF_VAR_confluent_cloud_api_key": creds["confluent_cloud_api_key"],
-            "TF_VAR_confluent_cloud_api_secret": creds["confluent_cloud_api_secret"],
-            "TF_VAR_cloud_region": region,
-            "TF_VAR_cloud_provider": cloud,
-            "TF_VAR_enable_testing_sql": "true",
-        }
-
-        # Optional fields
-        if "mcp_token" in creds and creds["mcp_token"]:
-            env_vars["TF_VAR_mcp_token"] = creds["mcp_token"]
-        if "mongodb_connection_string" in creds and creds["mongodb_connection_string"]:
-            env_vars["TF_VAR_mongodb_connection_string"] = creds[
-                "mongodb_connection_string"
-            ]
-        if "mongodb_username" in creds and creds["mongodb_username"]:
-            env_vars["TF_VAR_mongodb_username"] = creds["mongodb_username"]
-        if "mongodb_password" in creds and creds["mongodb_password"]:
-            env_vars["TF_VAR_mongodb_password"] = creds["mongodb_password"]
-
-        # Cloud-specific LLM credentials
-        if cloud == "aws":
-            if "aws_bedrock_access_key" in creds and creds["aws_bedrock_access_key"]:
-                env_vars["TF_VAR_aws_bedrock_access_key"] = creds[
-                    "aws_bedrock_access_key"
-                ]
-            if "aws_bedrock_secret_key" in creds and creds["aws_bedrock_secret_key"]:
-                env_vars["TF_VAR_aws_bedrock_secret_key"] = creds[
-                    "aws_bedrock_secret_key"
-                ]
-            if "aws_session_token" in creds and creds["aws_session_token"]:
-                env_vars["TF_VAR_aws_session_token"] = creds["aws_session_token"]
-        if cloud == "azure":
-            if "azure_openai_endpoint" in creds and creds["azure_openai_endpoint"]:
-                env_vars["TF_VAR_azure_openai_endpoint_raw"] = creds[
-                    "azure_openai_endpoint"
-                ]
-            if "azure_openai_api_key" in creds and creds["azure_openai_api_key"]:
-                env_vars["TF_VAR_azure_openai_api_key"] = creds["azure_openai_api_key"]
-
-        print(f"✓ Credentials loaded from credentials.json")
-        print(f"  Cloud: {cloud}")
-        print(f"  Region: {region}")
-        print(f"  Deploying: {', '.join(envs_to_deploy)}")
-        print()
-
-        # Write terraform.tfvars files
-        write_tfvars_for_deployment(root, cloud, region, creds, envs_to_deploy)
-
-        # Load into environment
-        for key, value in env_vars.items():
-            os.environ[key] = value
-
-        # Ensure CLI is logged in (testing mode may have json creds with email/password)
-        login_creds = {
-            "CONFLUENT_EMAIL": creds.get("confluent_cloud_email", ""),
-            "CONFLUENT_PASSWORD": creds.get("confluent_cloud_password", ""),
-        }
-        # Pass None if no email/password in json creds so ensure_confluent_login loads from credentials.env
-        ensure_confluent_login(
-            login_creds
-            if (login_creds["CONFLUENT_EMAIL"] and login_creds["CONFLUENT_PASSWORD"])
-            else None
-        )
 
     # INTERACTIVE MODE: Original flow
     else:
