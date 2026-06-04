@@ -73,20 +73,20 @@ class TestDestroyLogin:
 
     def test_testing_mode_skips_login(self, tmp_path):
         """--testing mode does not call ensure_confluent_login."""
-        test_creds = {
-            "cloud": "aws",
-            "region": "us-east-1",
-            "confluent_cloud_api_key": "key",
-            "confluent_cloud_api_secret": "secret",
+        test_creds_env = {
+            "TF_VAR_cloud_provider": "aws",
+            "TF_VAR_cloud_region": "us-east-1",
+            "TF_VAR_confluent_cloud_api_key": "key",
+            "TF_VAR_confluent_cloud_api_secret": "secret",
         }
+        (tmp_path / "credentials.env").write_text(
+            "\n".join(f"{k}={v}" for k, v in test_creds_env.items())
+        )
         mock_ensure = MagicMock()
-        # Make run_terraform_destroy raise to stop after login block
         with (
             patch.object(sys, "argv", ["destroy", "--testing"]),
             patch("scripts.common.destroy.get_project_root", return_value=tmp_path),
-            patch(
-                "scripts.common.destroy.load_credentials_json", return_value=test_creds
-            ),
+            patch("scripts.common.destroy.dotenv_values", return_value=test_creds_env),
             patch("scripts.common.destroy.ensure_confluent_login", mock_ensure),
             patch(
                 "scripts.common.destroy.run_terraform_destroy",

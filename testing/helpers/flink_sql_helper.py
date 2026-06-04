@@ -4,6 +4,7 @@ import subprocess
 import json
 import re
 import time
+import uuid
 from typing import List, Dict, Any, Optional
 
 
@@ -35,7 +36,8 @@ class FlinkSQLHelper:
         self.region = region
         self.database = database
         self.service_account_id = service_account_id
-        self.created_statements = []  # Track for cleanup
+        self.created_statements = []  # Track statement names for cleanup
+        self.created_sql_objects = []  # Track (type, unqualified_name) for DROP on cleanup
 
     def execute_statement(
         self, name: str, sql: str, wait: bool = True, properties: dict | None = None
@@ -83,8 +85,13 @@ class FlinkSQLHelper:
 
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
 
-        # Track for cleanup
+        # Track statement for cleanup
         self.created_statements.append(name)
+
+        # Track SQL object (TABLE, AGENT, TOOL, MODEL) so cleanup_all can DROP it
+        obj = self._extract_sql_object(sql)
+        if obj and obj not in self.created_sql_objects:
+            self.created_sql_objects.append(obj)
 
         return name
 
@@ -95,10 +102,8 @@ class FlinkSQLHelper:
             name: Statement name
 
         Returns:
-            Status string: PENDING, RUNNING, COMPLETED, FAILING, FAILED, STOPPED, DEGRADED
-
-        Raises:
-            subprocess.CalledProcessError: If confluent command fails
+            Status string: PENDING, RUNNING, COMPLETED, FAILING, FAILED, STOPPED, DEGRADED,
+            NOT_FOUND (statement doesn't exist), UNKNOWN (unexpected CLI output)
         """
         cmd = [
             "confluent",
@@ -116,7 +121,11 @@ class FlinkSQLHelper:
             "json",
         ]
 
-        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        result = subprocess.run(cmd, capture_output=True, text=True, check=False)
+
+        # Non-zero exit means the statement doesn't exist or CLI error.
+        if result.returncode != 0:
+            return "NOT_FOUND"
 
         # CLI may prefix informational lines (e.g. "No Flink endpoint specified...")
         # before the JSON block — find the first '{' and parse from there.
@@ -155,8 +164,8 @@ class FlinkSQLHelper:
             if status in target_statuses:
                 return status
 
-            # Check for failure states
-            if status in ["FAILED", "STOPPED"]:
+            # Check for failure states (NOT_FOUND = statement created but immediately failed and was deleted)
+            if status in ["FAILED", "STOPPED", "NOT_FOUND"]:
                 raise RuntimeError(
                     f"Statement {name} reached terminal failure state: {status}"
                 )
@@ -244,14 +253,121 @@ class FlinkSQLHelper:
         except Exception:
             return False
 
-    def cleanup_all(self):
-        """Delete all statements created by this helper (for teardown).
+    def verify_sql_object_exists(self, obj_type: str, obj_name: str) -> bool:
+        """Verify a SQL catalog object (AGENT, TOOL, TABLE, MODEL) exists via DESCRIBE.
 
-        Continues even if individual deletes fail.
+        The Confluent CLI exits 0 even for FAILED statements, so we parse the CLI
+        output to determine if the DESCRIBE completed (object exists) or failed.
+
+        Args:
+            obj_type: "AGENT", "TOOL", "TABLE", or "MODEL"
+            obj_name: Unqualified object name
+
+        Returns:
+            True if the object exists, False if it does not or on error
         """
+        stmt_name = self._unique_statement_name(f"verify-{obj_type.lower()}", obj_name)
+        cmd = [
+            "confluent",
+            "flink",
+            "statement",
+            "create",
+            stmt_name,
+            # DESCRIBE TABLE foo is invalid; for tables just use DESCRIBE foo
+            "--sql",
+            f"DESCRIBE {obj_name}"
+            if obj_type == "TABLE"
+            else f"DESCRIBE {obj_type} {obj_name}",
+            "--compute-pool",
+            self.compute_pool_id,
+            "--environment",
+            self.environment_id,
+            "--cloud",
+            self.cloud,
+            "--region",
+            self.region,
+            "--database",
+            self.database,
+            "--service-account",
+            self.service_account_id,
+            "--wait",
+        ]
+        try:
+            result = subprocess.run(cmd, capture_output=True, text=True, check=False)
+            combined = result.stdout + result.stderr
+            # CLI exits 0 for both COMPLETED and FAILED; parse the status from output
+            if "| COMPLETED" in combined:
+                return True
+            # FAILED means the object does not exist
+            return False
+        except Exception:
+            return False
+        finally:
+            try:
+                subprocess.run(
+                    [
+                        "confluent",
+                        "flink",
+                        "statement",
+                        "delete",
+                        stmt_name,
+                        "--environment",
+                        self.environment_id,
+                        "--cloud",
+                        self.cloud,
+                        "--region",
+                        self.region,
+                        "--force",
+                    ],
+                    capture_output=True,
+                    check=False,
+                )
+            except Exception:
+                pass
+
+    @staticmethod
+    def _unique_statement_name(prefix: str, obj_name: str) -> str:
+        """Return a unique Flink statement name under the CLI's short-name limit."""
+        safe_name = obj_name.lower().replace("_", "-")
+        return f"{prefix}-{safe_name[:40]}-{uuid.uuid4().hex[:8]}"
+
+    @staticmethod
+    def _extract_sql_object(sql: str):
+        """Return (object_type, unqualified_name) for CREATE DDL, or None for DML."""
+        for obj_type in ("TABLE", "AGENT", "TOOL", "MODEL"):
+            m = re.match(
+                rf"CREATE\s+{obj_type}\s+(?:IF\s+NOT\s+EXISTS\s+)?([`'\"]?[\w.]+[`'\"]?)",
+                sql.strip(),
+                re.IGNORECASE,
+            )
+            if m:
+                # Strip quotes and take the last segment of a qualified name
+                raw = m.group(1).strip("`'\"")
+                name = raw.split(".")[-1]
+                return obj_type, name
+        return None
+
+    def cleanup_all(self):
+        """Delete all statements and DROP all SQL objects created by this helper.
+
+        Continues even if individual operations fail.
+        """
+        # Drop SQL objects first (while statements still exist for reference)
+        for obj_type, obj_name in list(self.created_sql_objects):
+            try:
+                drop_stmt_name = self._unique_statement_name("cleanup-drop", obj_name)
+                self.execute_statement(
+                    drop_stmt_name,
+                    f"DROP {obj_type} IF EXISTS `{obj_name}`",
+                    wait=True,
+                )
+                self.delete_statement(drop_stmt_name)
+            except Exception:
+                pass
+
+        # Then delete the original statements
         for name in list(self.created_statements):
             try:
                 self.delete_statement(name)
             except Exception:
-                # Continue cleanup even if some fail
                 pass

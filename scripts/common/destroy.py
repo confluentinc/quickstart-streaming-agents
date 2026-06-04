@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Simple destruction script for Confluent streaming agents quickstart.
-Uses credentials from credentials.env or credentials.json for destruction via Terraform.
+Uses credentials from credentials.env for destruction via Terraform.
 """
 
 import argparse
@@ -14,7 +14,7 @@ from pathlib import Path
 
 from dotenv import dotenv_values
 
-from .credentials import load_or_create_credentials_file, load_credentials_json
+from .credentials import load_or_create_credentials_file
 from .login_checks import ensure_confluent_login
 from .terraform import get_project_root
 from .terraform_runner import run_terraform_destroy
@@ -250,7 +250,7 @@ def main():
     parser.add_argument(
         "--testing",
         action="store_true",
-        help="Non-interactive mode using credentials.json (for automated testing)",
+        help="Non-interactive mode: load from credentials.env, skip all prompts (for CI test runs)",
     )
     parser.add_argument(
         "--force",
@@ -266,10 +266,15 @@ def main():
     root = get_project_root()
     print(f"Project root: {root}")
 
-    # TESTING MODE: Load from JSON and skip prompts
+    # TESTING MODE: Load from credentials.env and skip prompts
     if args.testing:
-        creds = load_credentials_json(root)
-        cloud = creds["cloud"]
+        creds_file = root / "credentials.env"
+        if not creds_file.exists():
+            print("Error: credentials.env not found.")
+            sys.exit(1)
+
+        creds = dotenv_values(str(creds_file))
+        cloud = creds.get("TF_VAR_cloud_provider", "").lower()
         envs_to_destroy = [
             "lab5-insurance-fraud-watson",
             "lab4-pubsec-fraud-agents",
@@ -277,49 +282,11 @@ def main():
             "lab2-vector-search",
             "lab1-tool-calling",
             "core",
-        ]  # Reverse order
+        ]
 
-        # Build environment variables
-        env_vars = {
-            "TF_VAR_confluent_cloud_api_key": creds["confluent_cloud_api_key"],
-            "TF_VAR_confluent_cloud_api_secret": creds["confluent_cloud_api_secret"],
-            "TF_VAR_cloud_region": creds["region"],
-            "TF_VAR_cloud_provider": cloud,
-        }
-
-        # Load optional fields
-        if "mcp_token" in creds and creds["mcp_token"]:
-            env_vars["TF_VAR_mcp_token"] = creds["mcp_token"]
-        if "mongodb_connection_string" in creds and creds["mongodb_connection_string"]:
-            env_vars["TF_VAR_mongodb_connection_string"] = creds[
-                "mongodb_connection_string"
-            ]
-        if "mongodb_username" in creds and creds["mongodb_username"]:
-            env_vars["TF_VAR_mongodb_username"] = creds["mongodb_username"]
-        if "mongodb_password" in creds and creds["mongodb_password"]:
-            env_vars["TF_VAR_mongodb_password"] = creds["mongodb_password"]
-
-        # Cloud-specific LLM credentials
-        if cloud == "aws":
-            if "aws_bedrock_access_key" in creds and creds["aws_bedrock_access_key"]:
-                env_vars["TF_VAR_aws_bedrock_access_key"] = creds[
-                    "aws_bedrock_access_key"
-                ]
-            if "aws_bedrock_secret_key" in creds and creds["aws_bedrock_secret_key"]:
-                env_vars["TF_VAR_aws_bedrock_secret_key"] = creds[
-                    "aws_bedrock_secret_key"
-                ]
-        if cloud == "azure":
-            if "azure_openai_endpoint" in creds and creds["azure_openai_endpoint"]:
-                env_vars["TF_VAR_azure_openai_endpoint_raw"] = creds[
-                    "azure_openai_endpoint"
-                ]
-            if "azure_openai_api_key" in creds and creds["azure_openai_api_key"]:
-                env_vars["TF_VAR_azure_openai_api_key"] = creds["azure_openai_api_key"]
-
-        # Load into environment
-        for key, value in env_vars.items():
-            os.environ[key] = value
+        for key, value in creds.items():
+            if value:
+                os.environ[key] = value
 
         print(f"✓ Destroying all resources")
         print(f"  Cloud: {cloud}")

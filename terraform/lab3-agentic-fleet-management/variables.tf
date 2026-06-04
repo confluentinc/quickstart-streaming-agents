@@ -20,7 +20,7 @@ variable "mongodb_password_lab3" {
 }
 
 variable "mcp_backend" {
-  description = "Remote MCP server backend: 'lambda' (Confluent-hosted AWS Lambda) or 'zapier'"
+  description = "Remote MCP server backend: 'lambda' (Confluent-hosted remote MCP server) or 'zapier'"
   type        = string
   default     = "lambda"
 
@@ -31,7 +31,7 @@ variable "mcp_backend" {
 }
 
 variable "mcp_token" {
-  description = "Bearer token for the Lambda Remote MCP server"
+  description = "Bearer token for the Confluent-hosted remote MCP server"
   type        = string
   default     = ""
   sensitive   = true

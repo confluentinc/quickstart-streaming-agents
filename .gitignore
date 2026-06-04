@@ -116,7 +116,6 @@ env/
 
 # Testing infrastructure (contains sensitive credentials)
 tests/
-credentials.json
 
 # Node (used by setup-mcp script)
 node_modules/
@@ -132,3 +131,12 @@ CONTEXT.md
 PLAN.md
 docs/
 lambda-keys.html
+
+# Claude Code skill system (installed skills + lock file)
+.agents/
+skills-lock.json
+
+# Ephemeral test output
+TEST_RESULTS.md
+/.codex/
+/AGENTS.md

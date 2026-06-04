@@ -183,6 +183,7 @@ Dependencies (ShadowTraffic mode):
     parser.add_argument(
         "--local",
         action="store_true",
+        default=True,
         help="Use pre-generated local data instead of ShadowTraffic (no Docker required)",
     )
 
