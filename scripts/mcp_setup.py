@@ -1,5 +1,5 @@
 """
-Generate Claude Code MCP registration for Confluent Cloud from Terraform core outputs.
+Generate Confluent MCP server registration for Claude Code or Codex CLI from Terraform core outputs.
 """
 
 import json
@@ -51,7 +51,7 @@ def _resolve_npx() -> str:
     """
     Return the npx binary to use for the MCP server.
 
-    Prefers an absolute path to a Node 24 LTS npx so Claude Code uses the right
+    Prefers an absolute path to a Node 24 LTS npx so the MCP server uses the right
     version regardless of the user's PATH configuration.  Falls back to bare
     'npx' (PATH lookup) only when no prebuilt-ABI node is found anywhere.
     """
@@ -68,7 +68,11 @@ def _resolve_npx() -> str:
         )
         path_node_version = ver_result.stdout.strip().lstrip("v")
         path_node_abi = _get_node_abi("node")
-    except (FileNotFoundError, subprocess.CalledProcessError, subprocess.TimeoutExpired):
+    except (
+        FileNotFoundError,
+        subprocess.CalledProcessError,
+        subprocess.TimeoutExpired,
+    ):
         pass  # node not on PATH — we'll search well-known locations below
 
     if path_node_abi in _KAFKA_JS_PREBUILT_ABIS:
@@ -111,7 +115,11 @@ def _resolve_npx() -> str:
     print("    With Homebrew: brew install node@24")
     print("  Then re-run `uv run setup-mcp`.")
     if path_node_abi is not None:
-        answer = input(f"  Continue anyway with Node {path_node_version}? [y/N] ").strip().lower()
+        answer = (
+            input(f"  Continue anyway with Node {path_node_version}? [y/N] ")
+            .strip()
+            .lower()
+        )
         if answer != "y":
             sys.exit(0)
     else:
@@ -166,7 +174,9 @@ def _clear_broken_npx_cache(npx_bin: str) -> None:
             / "build"
             / "Release"
         )
-        node_files = list(build_release.glob("*.node")) if build_release.exists() else []
+        node_files = (
+            list(build_release.glob("*.node")) if build_release.exists() else []
+        )
         if not node_files:
             reason = "missing native binary"
         elif active_abi is not None and not any(
@@ -177,8 +187,11 @@ def _clear_broken_npx_cache(npx_bin: str) -> None:
             # Simpler ABI check: try loading to see if it crashes.
             try:
                 subprocess.run(
-                    [str(node_bin) if npx_bin != "npx" else "node",
-                     "-e", f"require('{node_files[0]}')"],
+                    [
+                        str(node_bin) if npx_bin != "npx" else "node",
+                        "-e",
+                        f"require('{node_files[0]}')",
+                    ],
                     capture_output=True,
                     check=True,
                     timeout=5,
@@ -190,25 +203,14 @@ def _clear_broken_npx_cache(npx_bin: str) -> None:
             continue  # cache entry looks fine
         print(f"  Clearing broken npx cache ({reason}): {entry.name}")
         shutil.rmtree(entry)
-        print("  npx will re-download @confluentinc/mcp-confluent on next MCP server start.")
-
-
-def main():
-    npx_bin = _resolve_npx()
-    _clear_broken_npx_cache(npx_bin)
-
-    project_root = get_project_root()
-    state_path = project_root / "terraform" / "core" / "terraform.tfstate"
-
-    if not state_path.exists():
         print(
-            "Error: terraform/core/terraform.tfstate not found. Run `uv run deploy` first."
+            "  npx will re-download @confluentinc/mcp-confluent on next MCP server start."
         )
-        sys.exit(1)
 
-    core_outputs = run_terraform_output(state_path)
 
-    env_vars = {}
+def _build_env_vars(core_outputs: dict) -> dict:
+    """Map Terraform output values to MCP server environment variable names."""
+    env_vars: dict = {}
     for tf_key, mcp_vars in _TF_TO_MCP.items():
         value = core_outputs.get(tf_key, "")
         for var in mcp_vars:
@@ -217,10 +219,30 @@ def main():
             if var == "BOOTSTRAP_SERVERS" and "://" in value:
                 value = value.split("://", 1)[1]
             env_vars[var] = value
+    return env_vars
 
-    # Write MCP config directly to ~/.claude.json, mirroring what `claude mcp add
-    # --scope local` does. `claude mcp add` is blocked by the enterprise JAMF
-    # allowlist; settings.json/settings.local.json don't support mcpServers.
+
+def _pick_agent() -> str:
+    """Ask which coding agent to register the MCP server with. Returns 'claude' or 'codex'."""
+    print()
+    print("Which coding agent should the MCP server be registered with?")
+    print("  1. Claude Code")
+    print("  2. OpenAI Codex")
+    raw = input("Enter 1 or 2 [1]: ").strip()
+    if raw == "2":
+        return "codex"
+    return "claude"
+
+
+def _register_with_claude_code(
+    env_vars: dict, npx_bin: str, project_root: Path
+) -> None:
+    """Write the MCP server entry into ~/.claude.json under the current project key.
+
+    Mirrors what `claude mcp add --scope local` does. `claude mcp add` is blocked
+    by the enterprise JAMF allowlist; settings.json/settings.local.json don't support
+    mcpServers.
+    """
     claude_json_path = Path.home() / ".claude.json"
     if claude_json_path.exists():
         with claude_json_path.open() as f:
@@ -230,8 +252,7 @@ def main():
 
     project_key = str(project_root)
     (
-        claude_data
-        .setdefault("projects", {})
+        claude_data.setdefault("projects", {})
         .setdefault(project_key, {})
         .setdefault("mcpServers", {})
     )["confluent-cloud-mcp-server"] = {
@@ -248,6 +269,95 @@ def main():
         "✓ Confluent MCP server registered as 'confluent-cloud-mcp-server' (local scope)"
     )
     print("  Restart Claude Code to activate.")
+
+
+def _write_codex_config(config_path: Path, env_vars: dict, npx_bin: str) -> None:
+    """Write the MCP server entry into one Codex config file."""
+    import tomli_w
+
+    try:
+        import tomllib  # stdlib 3.11+
+    except ImportError:
+        import tomli as tomllib  # type: ignore[no-redef]  # 3.10 backport
+
+    config: dict = {}
+    if config_path.exists():
+        try:
+            with config_path.open("rb") as f:
+                config = tomllib.load(f)
+        except Exception as exc:
+            print(
+                f"  Warning: could not parse existing config.toml ({exc}); preserving as .bak"
+            )
+            config_path.rename(config_path.with_suffix(".toml.bak"))
+
+    config.setdefault("mcp_servers", {})["confluent-cloud-mcp-server"] = {
+        "command": npx_bin,
+        "args": ["-y", "@confluentinc/mcp-confluent"],
+        "env": env_vars,
+    }
+
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    with config_path.open("wb") as f:
+        tomli_w.dump(config, f)
+
+
+def _codex_config_paths(project_root: Path) -> list[Path]:
+    """Return Codex config files that can affect this project."""
+    home_config_path = Path.home() / ".codex" / "config.toml"
+    paths = [home_config_path]
+
+    project_config_path = project_root / ".codex" / "config.toml"
+    if project_config_path.exists() and (
+        project_config_path.resolve() != home_config_path.resolve()
+    ):
+        paths.append(project_config_path)
+
+    return paths
+
+
+def _register_with_codex(env_vars: dict, npx_bin: str, project_root: Path) -> None:
+    """Write the MCP server entry into Codex config.
+
+    Codex reads MCP servers from [mcp_servers.<name>] TOML tables; nested dicts
+    become sub-tables, so {"env": {...}} serialises as [mcp_servers.<name>.env].
+
+    A project-local .codex/config.toml shadows the home config for that repo, so
+    refresh it too when it already exists.
+    """
+    config_paths = _codex_config_paths(project_root)
+    for codex_config_path in config_paths:
+        _write_codex_config(codex_config_path, env_vars, npx_bin)
+
+    print(
+        f"✓ Confluent MCP server registered as 'confluent-cloud-mcp-server' in {config_paths[0]}"
+    )
+    for shadow_config_path in config_paths[1:]:
+        print(f"✓ Updated project-local Codex config at {shadow_config_path}")
+    print("  Restart Codex CLI to activate.")
+
+
+def main():
+    npx_bin = _resolve_npx()
+    _clear_broken_npx_cache(npx_bin)
+
+    project_root = get_project_root()
+    state_path = project_root / "terraform" / "core" / "terraform.tfstate"
+
+    if not state_path.exists():
+        print(
+            "Error: terraform/core/terraform.tfstate not found. Run `uv run deploy` first."
+        )
+        sys.exit(1)
+
+    core_outputs = run_terraform_output(state_path)
+    env_vars = _build_env_vars(core_outputs)
+
+    agent = _pick_agent()
+    if agent == "codex":
+        _register_with_codex(env_vars, npx_bin, project_root)
+    else:
+        _register_with_claude_code(env_vars, npx_bin, project_root)
 
 
 if __name__ == "__main__":
