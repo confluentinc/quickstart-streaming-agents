@@ -157,6 +157,35 @@ resource "confluent_api_key" "app-manager-flink-api-key" {
 
 data "confluent_organization" "main" {}
 
+# RTCE MCP server — read-only service account + Global (Cloud-scoped) API key.
+# This key is used by setup_rtce.py to register the RTCE MCP server.
+# RTCE is AWS-only but these org-level resources are always created; setup_rtce.py
+# gates Azure deployments before the key is used.
+
+resource "confluent_service_account" "rtce-reader" {
+  display_name = "${local.prefix}-rtce-reader-${random_id.resource_suffix.hex}"
+  description  = "Service account for RTCE MCP server (DeveloperRead + SchemaRegistryRead)"
+}
+
+resource "confluent_role_binding" "rtce-reader-developer-read" {
+  principal   = "User:${confluent_service_account.rtce-reader.id}"
+  role_name   = "DeveloperRead"
+  # DeveloperRead must target a resource type (topic=*), not the cluster root CRN.
+  crn_pattern = "${confluent_kafka_cluster.standard.rbac_crn}/kafka=${confluent_kafka_cluster.standard.id}/topic=*"
+}
+
+resource "confluent_role_binding" "rtce-reader-schema-registry-read" {
+  principal   = "User:${confluent_service_account.rtce-reader.id}"
+  role_name   = "DeveloperRead"
+  # SchemaRegistryRead is not a valid role; DeveloperRead on subject=* is the SR equivalent.
+  crn_pattern = "${data.confluent_schema_registry_cluster.sr-cluster.resource_name}/subject=*"
+}
+
+# Note: The Confluent Terraform provider creates Cloud-scoped (CRM) keys when
+# managed_resource is omitted — not Global-scoped keys. RTCE requires a Global key
+# (--resource global). setup_rtce.py auto-creates the Global key via Confluent CLI
+# using the service account ID output below.
+
 resource "confluent_kafka_acl" "app-manager-read-on-topic" {
   kafka_cluster {
     id = confluent_kafka_cluster.standard.id
