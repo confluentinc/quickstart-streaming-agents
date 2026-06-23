@@ -113,3 +113,8 @@ output "random_id" {
   description = "Random ID suffix used for resource naming"
 }
 
+output "confluent_rtce_service_account_id" {
+  value       = confluent_service_account.rtce-reader.id
+  description = "Service account ID for the RTCE MCP server — used by setup_rtce.py to auto-create a Global API key via CLI"
+}
+

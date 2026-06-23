@@ -130,3 +130,6 @@ skills-lock.json
 TEST_RESULTS.md
 /.codex/
 /AGENTS.md
+
+# Local Claude Code project-scoped MCP config (may contain deployment IDs/tokens)
+.mcp.json
