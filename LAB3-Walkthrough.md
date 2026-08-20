@@ -376,58 +376,14 @@ FROM (
 
 ### 3. Agent Definition: Run `CREATE TOOL` and `CREATE AGENT` to define agent tools, prompt, and capabilities
 
-<details>
-<summary><strong><big>🖱️ Prefer clicking over writing SQL? Build the agent and tool using the Streaming Agents UI instead</big></strong></summary>
-
-Confluent Cloud also offers a [Streaming Agents](https://docs.confluent.io/cloud/current/ai/streaming-agents/overview.html) console that builds the same tool and agent as steps 3 and 4 below, entirely through a form — no SQL required. This is an alternative path through those two steps only; everything else in this lab is unchanged. See the [manage agents in the console](https://docs.confluent.io/cloud/current/ai/streaming-agents/manage-agents-console.html) documentation for the full reference.
-
-<table>
-<tr><th width="45%">Steps</th><th width="55%">Screenshot</th></tr>
-<tr>
-<td>1. From your environment, open <b>Streaming Agents</b> and click <b>Create Streaming Agent</b>.</td>
-<td><img src="./assets/lab3/streaming-agents-ui/01-landing-page.png" alt="Streaming Agents landing page" width="450"></td>
-</tr>
-<tr>
-<td>2. Fill in the agent form: pick the catalog/database, name the agent (e.g. <code>boat_dispatch_agent</code>), and paste in the same description, instructions, and model used in the SQL <code>CREATE AGENT</code> statement below.</td>
-<td><img src="./assets/lab3/streaming-agents-ui/02-create-agent-form.png" alt="Create Streaming Agent form" width="450"></td>
-</tr>
-<tr>
-<td>3. Expand <b>Advanced configuration</b> to set tools, exception handling, and max iterations. Click <b>+ Add new tool</b>.</td>
-<td><img src="./assets/lab3/streaming-agents-ui/03-advanced-config.png" alt="Advanced configuration panel" width="450"></td>
-</tr>
-<tr>
-<td>4. Choose <b>Custom MCP server</b> as the tool type (instead of a user-defined function), then select the <code>remote-mcp-connection</code> connection and name the tool <code>lab3_remote_mcp</code>. <b>The UI auto-discovers the MCP server's available tools</b> (<code>send_email</code>, <code>http_get</code>, <code>http_post</code>) and lists them as checkboxes — no need to hand-type <code>'allowed_tools' = '...'</code> like in the SQL <code>CREATE TOOL</code> statement below.</td>
-<td><img src="./assets/lab3/streaming-agents-ui/04-create-tool-mcp.png" alt="Create tool from MCP server with auto-discovered tools" width="450"></td>
-</tr>
-<tr>
-<td>5. Confirm the tool was created, then add it to the agent.</td>
-<td><img src="./assets/lab3/streaming-agents-ui/05-tool-added.png" alt="Agent tool created successfully" width="450"></td>
-</tr>
-<tr>
-<td>6. Review the agent's tools and settings, then click <b>Create agent</b>.</td>
-<td><img src="./assets/lab3/streaming-agents-ui/06-review-before-create.png" alt="Review agent before creation" width="450"></td>
-</tr>
-<tr>
-<td>7. Once created, open the agent's <b>Run</b> panel. It scaffolds generic placeholder SQL — replace it entirely with the real <code>AI_RUN_AGENT</code> query from <a href="#4-invoke-the-agent-with-ai_run_agent">step 4 below</a>, which reads from <code>anomalies_enriched</code> and writes to <code>completed_actions</code>.</td>
-<td><img src="./assets/lab3/streaming-agents-ui/07-run-agent-panel.png" alt="Run Streaming Agent panel with scaffold SQL" width="450"></td>
-</tr>
-<tr>
-<td>8. Run the statement in the <b>SQL Workspace</b>. You can confirm it's healthy from the Flink statement's Activity tab.</td>
-<td><img src="./assets/lab3/streaming-agents-ui/08-flink-statement-running.png" alt="Flink statement running the real agent query" width="450"></td>
-</tr>
-<tr>
-<td>9. Back on the agent's overview page, <b>Recent deployments</b> shows the deployment as <b>Running</b>.</td>
-<td><img src="./assets/lab3/streaming-agents-ui/09-agent-running.png" alt="Agent deployment running" width="450"></td>
-</tr>
-</table>
-
-Once the agent is running, continue with `SELECT * FROM completed_actions;` as shown at the end of step 4 below.
-
-</details>
-
 Once anomalies have been detected and enriched with context, the system can act on them automatically using Streaming Agents. We can trigger specific operational workflows — for example, dispatching idle vessels from nearby docks to high-demand zones.
 
 These agents leverage tool calling to interact directly with external systems or APIs, enabling closed-loop automation — all running natively within Confluent Cloud for Apache Flink.
+
+Choose whichever path you prefer — both produce the same tool and agent, and step 4 below applies to either one.
+
+<details>
+<summary><strong><big>⌨️ Option A: Prefer writing SQL? Run <code>CREATE TOOL</code> and <code>CREATE AGENT</code></big></strong></summary>
 
 See [CREATE TOOL documentation](https://docs.confluent.io/cloud/current/flink/reference/statements/create-tool.html).
 ```sql
@@ -495,6 +451,58 @@ WITH (
   'max_iterations' = '10'
 );
 ```
+
+</details>
+
+<details>
+<summary><strong><big>🖱️ Option B: Prefer clicking? Build the agent and tool using the Streaming Agents UI instead</big></strong></summary>
+
+Confluent Cloud also offers a [Streaming Agents](https://docs.confluent.io/cloud/current/ai/streaming-agents/overview.html) console that builds the same tool and agent as the SQL path above, entirely through a form — no SQL required. See the [manage agents in the console](https://docs.confluent.io/cloud/current/ai/streaming-agents/manage-agents-console.html) documentation for the full reference.
+
+<table>
+<tr><th width="45%">Steps</th><th width="55%">Screenshot</th></tr>
+<tr>
+<td>1. From your environment, open <b>Streaming Agents</b> and click <b>Create Streaming Agent</b>.</td>
+<td><img src="./assets/lab3/streaming-agents-ui/01-landing-page.png" alt="Streaming Agents landing page" width="450"></td>
+</tr>
+<tr>
+<td>2. Fill in the agent form: pick the catalog/database, name the agent (e.g. <code>boat_dispatch_agent</code>), and paste in the same description, instructions, and model used in the SQL <code>CREATE AGENT</code> statement below.</td>
+<td><img src="./assets/lab3/streaming-agents-ui/02-create-agent-form.png" alt="Create Streaming Agent form" width="450"></td>
+</tr>
+<tr>
+<td>3. Expand <b>Advanced configuration</b> to set tools, exception handling, and max iterations. Click <b>+ Add new tool</b>.</td>
+<td><img src="./assets/lab3/streaming-agents-ui/03-advanced-config.png" alt="Advanced configuration panel" width="450"></td>
+</tr>
+<tr>
+<td>4. Choose <b>Custom MCP server</b> as the tool type (instead of a user-defined function), then select the <code>remote-mcp-connection</code> connection and name the tool <code>lab3_remote_mcp</code>. <b>The UI auto-discovers the MCP server's available tools</b> (<code>send_email</code>, <code>http_get</code>, <code>http_post</code>) and lists them as checkboxes — no need to hand-type <code>'allowed_tools' = '...'</code> like in the SQL <code>CREATE TOOL</code> statement below.</td>
+<td><img src="./assets/lab3/streaming-agents-ui/04-create-tool-mcp.png" alt="Create tool from MCP server with auto-discovered tools" width="450"></td>
+</tr>
+<tr>
+<td>5. Confirm the tool was created, then add it to the agent.</td>
+<td><img src="./assets/lab3/streaming-agents-ui/05-tool-added.png" alt="Agent tool created successfully" width="450"></td>
+</tr>
+<tr>
+<td>6. Review the agent's tools and settings, then click <b>Create agent</b>.</td>
+<td><img src="./assets/lab3/streaming-agents-ui/06-review-before-create.png" alt="Review agent before creation" width="450"></td>
+</tr>
+<tr>
+<td>7. Once created, open the agent's <b>Run</b> panel. It scaffolds generic placeholder SQL — replace it entirely with the real <code>AI_RUN_AGENT</code> query from <a href="#4-invoke-the-agent-with-ai_run_agent">step 4 below</a>, which reads from <code>anomalies_enriched</code> and writes to <code>completed_actions</code>.</td>
+<td><img src="./assets/lab3/streaming-agents-ui/07-run-agent-panel.png" alt="Run Streaming Agent panel with scaffold SQL" width="450"></td>
+</tr>
+<tr>
+<td>8. Run the statement in the <b>SQL Workspace</b>. You can confirm it's healthy from the Flink statement's Activity tab.</td>
+<td><img src="./assets/lab3/streaming-agents-ui/08-flink-statement-running.png" alt="Flink statement running the real agent query" width="450"></td>
+</tr>
+<tr>
+<td>9. Back on the agent's overview page, <b>Recent deployments</b> shows the deployment as <b>Running</b>.</td>
+<td><img src="./assets/lab3/streaming-agents-ui/09-agent-running.png" alt="Agent deployment running" width="450"></td>
+</tr>
+</table>
+
+Once the agent is running, continue with `SELECT * FROM completed_actions;` as shown at the end of step 4 below.
+
+</details>
+
 ### 4. Invoke the agent with `AI_RUN_AGENT`
 
 Start the agent with the `AI_RUN_AGENT` command to start taking action on any anomalies the moment that Flink detects them.See [AI_RUN_AGENT documentation](https://docs.confluent.io/cloud/current/flink/reference/functions/model-inference-functions.html#flink-sql-ai-run-agent-function).
