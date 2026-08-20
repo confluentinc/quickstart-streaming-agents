@@ -383,7 +383,7 @@ These agents leverage tool calling to interact directly with external systems or
 Choose whichever path you prefer — both produce the same tool and agent, and step 4 below applies to either one.
 
 <details>
-<summary><strong><big>⌨️ Option A: Prefer writing SQL? Run <code>CREATE TOOL</code> and <code>CREATE AGENT</code></big></strong></summary>
+<summary><strong><big>Option A: Prefer writing SQL? Run <code>CREATE TOOL</code> and <code>CREATE AGENT</code></big></strong></summary>
 
 See [CREATE TOOL documentation](https://docs.confluent.io/cloud/current/flink/reference/statements/create-tool.html).
 ```sql
@@ -455,7 +455,7 @@ WITH (
 </details>
 
 <details>
-<summary><strong><big>🖱️ Option B: Prefer clicking? Build the agent and tool using the Streaming Agents UI instead</big></strong></summary>
+<summary><strong><big>Option B: Prefer clicking? Build the agent and tool using the Streaming Agents UI instead</big></strong></summary>
 
 Confluent Cloud also offers a [Streaming Agents](https://docs.confluent.io/cloud/current/ai/streaming-agents/overview.html) console that builds the same tool and agent as the SQL path above, entirely through a form — no SQL required. See the [manage agents in the console](https://docs.confluent.io/cloud/current/ai/streaming-agents/manage-agents-console.html) documentation for the full reference.
 
