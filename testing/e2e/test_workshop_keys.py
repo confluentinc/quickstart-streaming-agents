@@ -21,7 +21,9 @@ def test_workshop_keys_create_and_destroy():
     # Check if credentials exist with AWS keys
     if creds_file.exists():
         creds = dict(dotenv_values(str(creds_file)))
-        if creds.get("TF_VAR_aws_bedrock_access_key") and creds.get("TF_VAR_aws_bedrock_secret_key"):
+        if creds.get("TF_VAR_aws_bedrock_access_key") and creds.get(
+            "TF_VAR_aws_bedrock_secret_key"
+        ):
             print(f"\n✅ AWS Bedrock keys found in credentials.env")
             print(f"   Access Key: {creds['TF_VAR_aws_bedrock_access_key'][:10]}...")
             return
