@@ -68,6 +68,8 @@ API-KEYS-AWS.md
 .workshop-keys-state-aws.json
 API-KEYS-AZURE.md
 .workshop-keys-state-azure.json
+scripts/mcp_keys.py
+scripts/mcp_keys_tags.json
 
 
 # Python (if scripts are added)

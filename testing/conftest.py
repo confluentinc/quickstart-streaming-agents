@@ -185,15 +185,19 @@ def load_test_credentials(cloud: str) -> Dict[str, Any]:
         "TF_VAR_confluent_cloud_api_secret",
     ]
     if cloud == "aws":
-        required_fields.extend([
-            "TF_VAR_aws_bedrock_access_key",
-            "TF_VAR_aws_bedrock_secret_key",
-        ])
+        required_fields.extend(
+            [
+                "TF_VAR_aws_bedrock_access_key",
+                "TF_VAR_aws_bedrock_secret_key",
+            ]
+        )
     elif cloud == "azure":
-        required_fields.extend([
-            "TF_VAR_azure_openai_endpoint_raw",
-            "TF_VAR_azure_openai_api_key",
-        ])
+        required_fields.extend(
+            [
+                "TF_VAR_azure_openai_endpoint_raw",
+                "TF_VAR_azure_openai_api_key",
+            ]
+        )
 
     missing = [f for f in required_fields if not credentials.get(f)]
     if missing:
@@ -201,8 +205,12 @@ def load_test_credentials(cloud: str) -> Dict[str, Any]:
             f"Missing required credentials for {cloud}: {', '.join(missing)}"
         )
 
-    if not credentials.get("TF_VAR_owner_email") and not credentials.get("CONFLUENT_EMAIL"):
-        raise ValueError("Missing required field: TF_VAR_owner_email or CONFLUENT_EMAIL")
+    if not credentials.get("TF_VAR_owner_email") and not credentials.get(
+        "CONFLUENT_EMAIL"
+    ):
+        raise ValueError(
+            "Missing required field: TF_VAR_owner_email or CONFLUENT_EMAIL"
+        )
 
     return credentials
 

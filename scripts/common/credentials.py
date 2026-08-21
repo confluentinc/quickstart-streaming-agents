@@ -43,7 +43,6 @@ def load_or_create_credentials_file(root: Path) -> Tuple[Path, Dict[str, str]]:
     return creds_file, {}
 
 
-
 def generate_confluent_api_keys(
     prefix: str = "streaming-agents",
 ) -> Tuple[Optional[str], Optional[str]]:
