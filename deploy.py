@@ -11,7 +11,6 @@ Non-interactive modes (--automated, --testing) use the region in credentials.env
 """
 
 import argparse
-import getpass
 import os
 import subprocess
 import sys
@@ -27,7 +26,7 @@ from scripts.common.login_checks import ensure_confluent_login, _attempt_login_q
 from scripts.common.terraform import get_project_root, run_terraform_output
 from scripts.common.terraform_runner import run_terraform
 from scripts.common.tfvars import write_tfvars_for_deployment
-from scripts.common.ui import prompt_choice, prompt_with_default
+from scripts.common.ui import display_value, prompt_choice, prompt_secret, prompt_with_default
 from scripts.common.validate import (
     validate_aws_bedrock_credentials,
     validate_azure_openai_credentials,
@@ -259,7 +258,7 @@ def main():
                         "  Skipped. You'll need to run `confluent login` manually if your session expires."
                     )
                     break
-                password = getpass.getpass("  Password: ")
+                password = prompt_secret("  Password: ")
                 if _attempt_login_quiet(email, password):
                     _save_env_safe(creds_file, "CONFLUENT_EMAIL", email)
                     _save_env_safe(creds_file, "CONFLUENT_PASSWORD", password)
@@ -313,7 +312,7 @@ def main():
         # Step 4: Select what to deploy
         envs_to_deploy = []
         deploy_options = [
-            "Lab 1: MCP Tool Calling",
+            "Lab 1: Price matching",
             "Lab 2: Vector Search / RAG",
             "Lab 3: Agentic Fleet Management",
             "Lab 4: FEMA Fraud Detection",
@@ -322,7 +321,7 @@ def main():
         env_choice = prompt_choice("What would you like to deploy?", deploy_options)
 
         # Map user-friendly choice to deployment targets (core auto-included for labs)
-        if env_choice == "Lab 1: MCP Tool Calling":
+        if env_choice == "Lab 1: Price matching":
             envs_to_deploy = ["core", "lab1-tool-calling"]
         elif env_choice == "Lab 2: Vector Search / RAG":
             envs_to_deploy = ["core", "lab2-vector-search"]
@@ -361,6 +360,7 @@ def main():
         api_secret = prompt_with_default(
             "Confluent Cloud API Secret",
             creds.get("TF_VAR_confluent_cloud_api_secret", ""),
+            secret=True,
         )
         _save_env_safe(creds_file, "TF_VAR_confluent_cloud_api_key", api_key)
         _save_env_safe(creds_file, "TF_VAR_confluent_cloud_api_secret", api_secret)
@@ -371,7 +371,9 @@ def main():
                 "AWS Bedrock Access Key", creds.get("TF_VAR_aws_bedrock_access_key", "")
             )
             aws_bedrock_secret = prompt_with_default(
-                "AWS Bedrock Secret Key", creds.get("TF_VAR_aws_bedrock_secret_key", "")
+                "AWS Bedrock Secret Key",
+                creds.get("TF_VAR_aws_bedrock_secret_key", ""),
+                secret=True,
             )
             _save_env_safe(creds_file, "TF_VAR_aws_bedrock_access_key", aws_bedrock_key)
             _save_env_safe(
@@ -384,6 +386,7 @@ def main():
                 aws_session_token = prompt_with_default(
                     "AWS Session Token (required for temporary credentials)",
                     creds.get("TF_VAR_aws_session_token", ""),
+                    secret=True,
                 )
                 if aws_session_token:
                     _save_env_safe(
@@ -479,7 +482,9 @@ def main():
                 creds.get("TF_VAR_azure_openai_endpoint_raw", ""),
             )
             azure_openai_key = prompt_with_default(
-                "Azure OpenAI API Key", creds.get("TF_VAR_azure_openai_api_key", "")
+                "Azure OpenAI API Key",
+                creds.get("TF_VAR_azure_openai_api_key", ""),
+                secret=True,
             )
             _save_env_safe(
                 creds_file, "TF_VAR_azure_openai_endpoint_raw", azure_openai_endpoint
@@ -560,12 +565,14 @@ def main():
                 zapier_token = prompt_with_default(
                     "Zapier MCP Server Token (Lab 1 and Lab 3) — see assets/pre-setup/Zapier-Setup.md",
                     creds.get("TF_VAR_zapier_token", ""),
+                    secret=True,
                 )
                 _save_env_safe(creds_file, "TF_VAR_zapier_token", zapier_token)
             else:
                 mcp_token = prompt_with_default(
                     "Remote MCP Server Token (Confluent employees: see go/mcp-keys or #help-tmm; workshop participants: ask your presenter)",
                     creds.get("TF_VAR_mcp_token", ""),
+                    secret=True,
                 )
                 _save_env_safe(creds_file, "TF_VAR_mcp_token", mcp_token)
 
@@ -705,7 +712,7 @@ def main():
         final_creds = dotenv_values(creds_file)
         for key, value in sorted(final_creds.items()):
             if value:
-                print(f"{key}: {value}")
+                print(f"{key}: {display_value(key, value)}")
 
         print(f"\nCloud: {cloud}")
         print(f"Region: {region}")

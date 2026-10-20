@@ -6,6 +6,25 @@ In this lab, we'll use Apache Flink for Confluent Cloud's MCP tool calling featu
 
 ## Prerequisites
 
+> [!TIP]
+> **TechXChange attendee, or provided a workstation by the workshop host?** Skip the local dependencies and API keys below — they're already set up for you. Start with **Add a payment method or promo code**, then continue to [Deploy the Demo](#deploy-the-demo).
+
+### Add a payment method or promo code
+
+A payment method or promo code is required in Confluent Cloud so Terraform can create your cluster. Free credit is used first, so you typically won't be charged during the workshop.
+
+1. Go directly to **[Billing & payment](https://confluent.cloud/settings/billing/payment)**.
+2. Open the **Payment details and contacts** tab.
+3. Choose **one** of the two options:
+
+   - **Option A — Credit card:** click **Add credit card / bank account**, enter your **card details**, then **Save**.
+   - **Option B — Promo code (provided by the workshop host):** scroll down to **Promos**, click **+ Promo code**, enter the code you were given, then **Apply**. No credit card is needed.
+
+   <img src="./assets/lab1/billing-promo-code.png" alt="Billing and payment — Promos, + Promo code" width="500">
+
+<details>
+<summary><strong>Prerequisites for your own machine</strong> — skip if you are a TechXChange attendee or were given a workstation (click to expand)</summary>
+
 ### Local dependencies
 
 **Installation instructions:**
@@ -39,20 +58,51 @@ winget install astral-sh.uv Git.Git Hashicorp.Terraform ConfluentInc.Confluent-C
 
   To switch backends after deploying, run `uv run destroy` first, then re-deploy.
 
+</details>
+
 ## Deploy the Demo
 
-If you haven't already, clone the repo:
+1. Open a **Terminal** on your machine — click **Activities** (top-left), then the **Terminal** icon in the dock.
 
-```bash
-git clone https://github.com/confluentinc/quickstart-streaming-agents.git
-cd quickstart-streaming-agents
-```
+   <img src="./assets/lab1/open-terminal.png" alt="Open Terminal from the dock" width="500">
 
-Once you have these credentials ready, run the following command and choose **Lab1** (see [main README](./README.md)):
+2. Go to the workshop folder and pull the latest changes:
 
-  ```bash
-  uv run deploy
-  ```
+   ```bash
+   cd workshop/4547/
+   git pull
+   ```
+
+   <details>
+   <summary><strong>Using your own machine?</strong> Clone the repo instead</summary>
+
+   ```bash
+   git clone https://github.com/confluentinc/quickstart-streaming-agents.git
+   cd quickstart-streaming-agents
+   ```
+
+   </details>
+
+3. Run the following command and choose **Lab1** (see [main README](./README.md)):
+
+   ```bash
+   uv run deploy
+   ```
+
+   <img src="./assets/lab1/uv-run-deploy.png" alt="uv run deploy — cloud provider, Confluent API key generation, and lab selection prompts" width="600">
+
+   `uv run deploy` prompts for the following:
+
+   | Prompt | Where to get it |
+   |---|---|
+   | Confluent Cloud email / password | The **email and password you used to sign up** (press Enter to skip if you use SSO, then run `confluent login --sso`) |
+   | Select cloud provider | `aws` |
+   | Generate new Confluent Cloud API keys? | Answer `y` — `uv` creates the API key and secret for you |
+   | What would you like to deploy? | **Lab 1: Price matching** |
+   | Remote MCP server backend | **Confluent-hosted remote MCP server (Recommended)** |
+   | Confluent Cloud API Key / Secret | Press **Enter** to confirm the key and secret `uv` just created |
+   | AWS Bedrock Access Key / Secret Key | The AWS Bedrock key your instructor gave you (or one from `uv run api-keys create`) |
+   | MCP token | The token your presenter gave you |
 
 # Getting Started
 
