@@ -379,3 +379,11 @@ class TestWalkthroughInjection:
 
         _restore_lab1_walkthrough_placeholders(tmp_path)
         assert walkthrough.read_text(encoding="utf-8") == sample
+
+    def test_inject_returns_false_when_nothing_matches(self, tmp_path):
+        (tmp_path / "LAB1-Walkthrough.md").write_text("no placeholders here\n", encoding="utf-8")
+
+        assert not deploy.inject_lab1_email_into_walkthrough(tmp_path, "alice@example.com")
+        assert not deploy.inject_flink_url_into_walkthrough(
+            tmp_path, "https://confluent.cloud/environments/env-abc123/flink"
+        )

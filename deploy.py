@@ -29,7 +29,7 @@ from scripts.common.terraform import get_project_root, run_terraform_output
 from scripts.common.terraform_runner import run_terraform
 from scripts.common.tfvars import write_tfvars_for_deployment
 from scripts.common.ui import display_value, prompt_choice, prompt_secret, prompt_with_default
-from scripts.common.walkthrough import replace_email
+from scripts.common.walkthrough import EMAIL_PATTERNS, replace_email
 from scripts.common.validate import (
     validate_aws_bedrock_credentials,
     validate_azure_openai_credentials,
@@ -149,6 +149,8 @@ def inject_lab1_email_into_walkthrough(root: Path, email: str) -> bool:
     email = email.strip()
     try:
         content = walkthrough_path.read_text(encoding="utf-8")
+        if not any(p.search(content) for p in EMAIL_PATTERNS):
+            return False
         updated = replace_email(content, email)
         if updated != content:
             walkthrough_path.write_text(updated, encoding="utf-8")
@@ -166,11 +168,10 @@ def inject_flink_url_into_walkthrough(root: Path, flink_url: str) -> bool:
 
     try:
         content = walkthrough_path.read_text(encoding="utf-8")
-        updated = re.sub(
-            r"\[SQL Workspace\]\(https://confluent\.cloud/(?:go/flink|environments/[^)]+/flink)\)",
-            f"[SQL Workspace]({flink_url})",
-            content,
-        )
+        pattern = r"\[SQL Workspace\]\(https://confluent\.cloud/(?:go/flink|environments/[^)]+/flink)\)"
+        if not re.search(pattern, content):
+            return False
+        updated = re.sub(pattern, f"[SQL Workspace]({flink_url})", content)
         if updated != content:
             walkthrough_path.write_text(updated, encoding="utf-8")
         return True
