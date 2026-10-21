@@ -12,9 +12,11 @@ Non-interactive modes (--automated, --testing) use the region in credentials.env
 
 import argparse
 import os
+import re
 import subprocess
 import sys
 import time
+from pathlib import Path
 
 from dotenv import dotenv_values, set_key
 
@@ -27,6 +29,7 @@ from scripts.common.terraform import get_project_root, run_terraform_output
 from scripts.common.terraform_runner import run_terraform
 from scripts.common.tfvars import write_tfvars_for_deployment
 from scripts.common.ui import display_value, prompt_choice, prompt_secret, prompt_with_default
+from scripts.common.walkthrough import replace_email
 from scripts.common.validate import (
     validate_aws_bedrock_credentials,
     validate_azure_openai_credentials,
@@ -130,6 +133,50 @@ def _print_write_error(exc) -> None:
         "  • Running from a network drive — run from a local drive instead\n",
         file=sys.stderr,
     )
+
+
+def inject_lab1_email_into_walkthrough(root: Path, email: str) -> bool:
+    """Inject the user's notification email into LAB1-Walkthrough.md SQL queries.
+
+    Matches both the initial <<YOUR-EMAIL-ADDRESS-HERE>> placeholder and any
+    previously injected email so re-running `uv run deploy` with a different
+    address updates cleanly.
+    """
+    walkthrough_path = root / "LAB1-Walkthrough.md"
+    if not walkthrough_path.exists() or not email.strip():
+        return False
+
+    email = email.strip()
+    try:
+        content = walkthrough_path.read_text(encoding="utf-8")
+        updated = replace_email(content, email)
+        if updated != content:
+            walkthrough_path.write_text(updated, encoding="utf-8")
+        return True
+    except Exception as e:
+        print(f"⚠ Could not update email in LAB1-Walkthrough.md: {e}")
+        return False
+
+
+def inject_flink_url_into_walkthrough(root: Path, flink_url: str) -> bool:
+    """Update the SQL Workspace link in LAB1-Walkthrough.md to point directly to the deployed environment."""
+    walkthrough_path = root / "LAB1-Walkthrough.md"
+    if not walkthrough_path.exists() or not flink_url.strip():
+        return False
+
+    try:
+        content = walkthrough_path.read_text(encoding="utf-8")
+        updated = re.sub(
+            r"\[SQL Workspace\]\(https://confluent\.cloud/(?:go/flink|environments/[^)]+/flink)\)",
+            f"[SQL Workspace]({flink_url})",
+            content,
+        )
+        if updated != content:
+            walkthrough_path.write_text(updated, encoding="utf-8")
+        return True
+    except Exception as e:
+        print(f"⚠ Could not update Flink URL in LAB1-Walkthrough.md: {e}")
+        return False
 
 
 def main():
@@ -421,6 +468,15 @@ def main():
                     test_titan_embeddings,
                 )
 
+                needs_embeddings = any(
+                    lab in envs_to_deploy
+                    for lab in (
+                        "lab2-vector-search",
+                        "lab3-agentic-fleet-management",
+                        "lab4-pubsec-fraud-agents",
+                    )
+                )
+
                 _log = logging.getLogger("deploy.bedrock")
                 _log.setLevel(logging.CRITICAL)
                 print("\nChecking AWS Bedrock model access...")
@@ -433,20 +489,24 @@ def main():
                     max_retries=1,
                     session_token=aws_session_token or None,
                 )
-                titan_ok, titan_err = test_titan_embeddings(
-                    aws_bedrock_key,
-                    aws_bedrock_secret,
-                    _region,
-                    logger=_log,
-                    max_retries=1,
-                    session_token=aws_session_token or None,
-                )
                 print(
                     f"  {'✓' if sonnet_ok else '✗'} Claude Sonnet 4.5 accessible ({_region}){'' if sonnet_ok else f' [{sonnet_err}]'}"
                 )
-                print(
-                    f"  {'✓' if titan_ok else '✗'} Titan Embeddings accessible ({_region}){'' if titan_ok else f' [{titan_err}]'}"
-                )
+
+                titan_ok, titan_err = True, None
+                if needs_embeddings:
+                    titan_ok, titan_err = test_titan_embeddings(
+                        aws_bedrock_key,
+                        aws_bedrock_secret,
+                        _region,
+                        logger=_log,
+                        max_retries=1,
+                        session_token=aws_session_token or None,
+                    )
+                    print(
+                        f"  {'✓' if titan_ok else '✗'} Titan Embeddings accessible ({_region}){'' if titan_ok else f' [{titan_err}]'}"
+                    )
+
                 if not sonnet_ok or not titan_ok:
                     print()
                     if sonnet_err == "invalid_keys" or titan_err == "invalid_keys":
@@ -519,17 +579,35 @@ def main():
                     test_azure_openai_embeddings,
                 )
 
+                needs_embeddings = any(
+                    lab in envs_to_deploy
+                    for lab in (
+                        "lab2-vector-search",
+                        "lab3-agentic-fleet-management",
+                        "lab4-pubsec-fraud-agents",
+                    )
+                )
+
                 _log = logging.getLogger("deploy.azure_openai")
                 _log.setLevel(logging.CRITICAL)
                 print("\nChecking Azure OpenAI model access...")
                 chat_ok, chat_err = test_azure_openai_chat(
                     azure_openai_endpoint, azure_openai_key, logger=_log, max_retries=1
                 )
-                emb_ok, emb_err = test_azure_openai_embeddings(
-                    azure_openai_endpoint, azure_openai_key, logger=_log, max_retries=1
-                )
                 print(f"  {'✓' if chat_ok else '✗'} gpt-5-mini accessible")
-                print(f"  {'✓' if emb_ok else '✗'} text-embedding-ada-002 accessible")
+
+                emb_ok, emb_err = True, None
+                if needs_embeddings:
+                    emb_ok, emb_err = test_azure_openai_embeddings(
+                        azure_openai_endpoint,
+                        azure_openai_key,
+                        logger=_log,
+                        max_retries=1,
+                    )
+                    print(
+                        f"  {'✓' if emb_ok else '✗'} text-embedding-ada-002 accessible"
+                    )
+
                 if not chat_ok or not emb_ok:
                     print()
                     if (
@@ -556,6 +634,7 @@ def main():
                         sys.exit(1)
 
         # Lab-specific credentials
+        lab1_email = ""
         if (
             "lab1-tool-calling" in envs_to_deploy
             or "lab3-agentic-fleet-management" in envs_to_deploy
@@ -575,6 +654,18 @@ def main():
                     secret=True,
                 )
                 _save_env_safe(creds_file, "TF_VAR_mcp_token", mcp_token)
+
+        if "lab1-tool-calling" in envs_to_deploy:
+            default_lab1_email = (
+                creds.get("LAB1_EMAIL")
+                or creds.get("CONFLUENT_EMAIL")
+                or ""
+            )
+            lab1_email = prompt_with_default(
+                "Email address for Lab 1 price-match notifications",
+                default_lab1_email,
+            )
+            _save_env_safe(creds_file, "LAB1_EMAIL", lab1_email)
 
         # Set cloud region and cloud provider
         _save_env_safe(creds_file, "TF_VAR_cloud_region", region)
@@ -723,8 +814,11 @@ def main():
             print("Deployment cancelled.")
             sys.exit(0)
 
-        # Step 6.5: Write terraform.tfvars files
+        # Step 6.5: Write terraform.tfvars files (and inject Lab 1 email into walkthrough)
         print()
+        if "lab1-tool-calling" in envs_to_deploy and lab1_email:
+            if inject_lab1_email_into_walkthrough(root, lab1_email):
+                print(f"✓ Injected {lab1_email} into LAB1-Walkthrough.md")
         write_tfvars_for_deployment(root, cloud, region, final_creds, envs_to_deploy)
 
         # Step 7: Load credentials into environment and deploy
@@ -745,7 +839,7 @@ def main():
 
     print("\n✓ All deployments completed successfully!")
 
-    # Display the environment name and generate MCP config
+    # Display the environment name, direct Flink URL, and generate MCP config
     core_state_path = root / "terraform" / "core" / "terraform.tfstate"
     if core_state_path.exists():
         if args.automated:
@@ -753,10 +847,17 @@ def main():
         else:
             try:
                 core_outputs = run_terraform_output(core_state_path)
-                if "confluent_environment_display_name" in core_outputs:
-                    print(
-                        f"\nEnvironment name: {core_outputs['confluent_environment_display_name']}"
+                env_name = core_outputs.get("confluent_environment_display_name", "")
+                env_id = core_outputs.get("confluent_environment_id", "")
+                if env_name:
+                    print(f"\nEnvironment name: {env_name}")
+                if env_id:
+                    flink_url = (
+                        f"https://confluent.cloud/environments/{env_id}/flink"
                     )
+                    print(f"Flink SQL Workspace: {flink_url}")
+                    if "lab1-tool-calling" in envs_to_deploy and not args.testing:
+                        inject_flink_url_into_walkthrough(root, flink_url)
             except Exception as e:
                 print(f"\n⚠ Could not read Terraform outputs: {e}")
 

@@ -458,7 +458,7 @@ resource "confluent_flink_statement" "llm_textgen_model_aws" {
     secret = confluent_api_key.app-manager-flink-api-key.secret
   }
 
-  statement = "CREATE MODEL `${confluent_environment.staging.display_name}`.`${confluent_kafka_cluster.standard.display_name}`.`llm_textgen_model` INPUT (prompt STRING) OUTPUT (response STRING) WITH ( 'provider' = 'bedrock', 'task' = 'text_generation', 'bedrock.connection' = '${confluent_flink_connection.bedrock_connection[0].display_name}', 'bedrock.params.max_tokens' = '50000' );"
+  statement = "CREATE MODEL IF NOT EXISTS `${confluent_environment.staging.display_name}`.`${confluent_kafka_cluster.standard.display_name}`.`llm_textgen_model` INPUT (prompt STRING) OUTPUT (response STRING) WITH ( 'provider' = 'bedrock', 'task' = 'text_generation', 'bedrock.connection' = '${confluent_flink_connection.bedrock_connection[0].display_name}', 'bedrock.params.max_tokens' = '50000' );"
 
   properties = {
     "sql.current-catalog"  = confluent_environment.staging.display_name
@@ -492,7 +492,7 @@ resource "confluent_flink_statement" "llm_textgen_model_azure" {
     secret = confluent_api_key.app-manager-flink-api-key.secret
   }
 
-  statement = "CREATE MODEL `${confluent_environment.staging.display_name}`.`${confluent_kafka_cluster.standard.display_name}`.`llm_textgen_model` INPUT (prompt STRING) OUTPUT (response STRING) WITH( 'provider' = 'azureopenai', 'task' = 'text_generation', 'azureopenai.connection' = '${confluent_flink_connection.azureopenai_connection[0].display_name}', 'azureopenai.model_version' = '2025-08-07', 'azureopenai.PARAMS.max_completion_tokens' = '16384' );"
+  statement = "CREATE MODEL IF NOT EXISTS `${confluent_environment.staging.display_name}`.`${confluent_kafka_cluster.standard.display_name}`.`llm_textgen_model` INPUT (prompt STRING) OUTPUT (response STRING) WITH( 'provider' = 'azureopenai', 'task' = 'text_generation', 'azureopenai.connection' = '${confluent_flink_connection.azureopenai_connection[0].display_name}', 'azureopenai.model_version' = '2025-08-07', 'azureopenai.PARAMS.max_completion_tokens' = '16384' );"
 
   properties = {
     "sql.current-catalog"  = confluent_environment.staging.display_name
@@ -526,7 +526,7 @@ resource "confluent_flink_statement" "llm_embedding_model_aws" {
     secret = confluent_api_key.app-manager-flink-api-key.secret
   }
 
-  statement = "CREATE MODEL `${confluent_environment.staging.display_name}`.`${confluent_kafka_cluster.standard.display_name}`.`llm_embedding_model` INPUT (text STRING) OUTPUT (embedding ARRAY<FLOAT>) WITH ( 'provider' = 'bedrock', 'task' = 'embedding', 'bedrock.connection' = '${confluent_flink_connection.bedrock_embedding_connection[0].display_name}' );"
+  statement = "CREATE MODEL IF NOT EXISTS `${confluent_environment.staging.display_name}`.`${confluent_kafka_cluster.standard.display_name}`.`llm_embedding_model` INPUT (text STRING) OUTPUT (embedding ARRAY<FLOAT>) WITH ( 'provider' = 'bedrock', 'task' = 'embedding', 'bedrock.connection' = '${confluent_flink_connection.bedrock_embedding_connection[0].display_name}' );"
 
   properties = {
     "sql.current-catalog"  = confluent_environment.staging.display_name
@@ -560,7 +560,7 @@ resource "confluent_flink_statement" "llm_embedding_model_azure" {
     secret = confluent_api_key.app-manager-flink-api-key.secret
   }
 
-  statement = "CREATE MODEL `${confluent_environment.staging.display_name}`.`${confluent_kafka_cluster.standard.display_name}`.`llm_embedding_model` INPUT (text STRING) OUTPUT (embedding ARRAY<FLOAT>) WITH( 'provider' = 'azureopenai', 'task' = 'embedding', 'azureopenai.connection' = '${confluent_flink_connection.azureopenai_embedding_connection[0].display_name}', 'azureopenai.PARAMS.max_tokens' = '16384' );"
+  statement = "CREATE MODEL IF NOT EXISTS `${confluent_environment.staging.display_name}`.`${confluent_kafka_cluster.standard.display_name}`.`llm_embedding_model` INPUT (text STRING) OUTPUT (embedding ARRAY<FLOAT>) WITH( 'provider' = 'azureopenai', 'task' = 'embedding', 'azureopenai.connection' = '${confluent_flink_connection.azureopenai_embedding_connection[0].display_name}', 'azureopenai.PARAMS.max_tokens' = '16384' );"
 
   properties = {
     "sql.current-catalog"  = confluent_environment.staging.display_name

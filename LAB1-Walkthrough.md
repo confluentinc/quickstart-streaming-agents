@@ -103,6 +103,7 @@ winget install astral-sh.uv Git.Git Hashicorp.Terraform ConfluentInc.Confluent-C
    | Confluent Cloud API Key / Secret | Press **Enter** to confirm the key and secret `uv` just created |
    | AWS Bedrock Access Key / Secret Key | The AWS Bedrock key your instructor gave you (or one from `uv run api-keys create`) |
    | MCP token | The token your presenter gave you |
+   | Email address for Lab 1 price-match notifications | Press **Enter** to use your Confluent Cloud email (or enter another email where you can check your inbox during the lab) — `uv` automatically fills it into the SQL queries below |
 
 # Getting Started
 
@@ -122,9 +123,9 @@ LATERAL TABLE(ML_PREDICT('llm_textgen_model', question, MAP['debug', 'true'])) a
 
 #### Test Query 2: LLM Tool Calling Model
 
-> [!WARNING]
+> [!NOTE]
 >
-> Don't forget to add the email address where you want to receive the test email, to the query below.
+> `uv run deploy` automatically fills your email address into the query below. If you still see `<<YOUR-EMAIL-ADDRESS-HERE>>`, replace it with your email address (do **not** add extra single quotes around it).
 
 ```sql
  SELECT
@@ -161,7 +162,7 @@ The data generator creates three typical ecommerce data streams:
 
 ## Run SQL Queries
 
-## 3. Create `orders_enriched` table for the agent to use
+## 3. Create `enriched_orders` table for the agent to use
 
 Enrich the incoming orders stream with customer and product details.
 We’ll use regular joins for this step and configure a state TTL to prevent the state from growing indefinitely.
@@ -232,13 +233,13 @@ WITH (
 
 ## 5. Run the Agent
 
-The agent will take `orders_enriched` as input and process each order in real time as it is generated.  
+The agent will take `enriched_orders` as input and process each order in real time as it is generated.  
 To run the agent continuously, we’ll execute it as part of a **Flink job**.  
 Provide a **user prompt** to guide how the agent processes each incoming enriched order, and create a new table named `price_match_results` to store the agent’s evaluation results.
 
-> [!WARNING]
+> [!NOTE]
 >
-> Don't forget to modify the line beginning with `EMAIL RECIPIENT:` in the query below to include the email address where you want the price matching emails sent! If you don't, you will not receive the price matching emails.
+> `uv run deploy` automatically fills your email address into the `EMAIL RECIPIENT:` line below. If you still see `<<YOUR-EMAIL-ADDRESS-HERE>>`, replace it with your email address (do **not** add extra single quotes around it).
 
 
 ```sql
@@ -325,19 +326,19 @@ Then check out your email for price matched orders:
 <summary>Click to expand</summary>
 
 - **Not getting emails?**
-  - Ensure you replaced `<<YOUR-EMAIL-ADDRESS-HERE>>` in both the test query and the `CREATE TABLE price_match_results` query with the email address where you want to receive the emails. Be sure to use single quotes around your email address ('your@email.com').
+  - Ensure `<<YOUR-EMAIL-ADDRESS-HERE>>` in both Test Query 2 and the `CREATE TABLE price_match_results` query has been replaced with your email address (`uv run deploy` does this automatically). Do **not** wrap the email address in extra single quotes, as it is already inside a single-quoted SQL string.
   - **Run the MCP test query** (Test Query 2) to confirm the `remote-mcp-connection` is working and able to send emails.
   - **Check remote MCP server logs** in CloudWatch (`/aws/lambda/remote-mcp-server-MCPFunction-*`) for errors from the `send_email` tool.
-  - **Make sure to run `uv run lab1_datagen`** to begin producing orders data.
-- **Getting duplicate orders / duplicate price matching emails?**
-  - Drop `orders`, `customers`, and `products` tables to start with a clean slate before re-running `uv run lab1_datagen`. The data generator randomly generates new customer information beginning with the same customer ID each time it is run, causing collisions if you do not clear the tables before restarting.
+  - **Make sure to run `uv run lab1_datagen --local`** to begin producing orders data.
+- **Need to restart data generation?**
+  - Simply re-run `uv run lab1_datagen --local`. It automatically purges any existing records in `customers`, `products`, and `orders` before publishing fresh data (do **not** drop the `orders`, `customers`, or `products` tables in Flink, as those tables were created by Terraform).
 
 - `Runtime received bad response code 403. Please also double check if your model has multiple versions.` error?
   - **AWS?** Ensure you've activated Claude Sonnet 4.5 in your AWS account. See: [Prerequisites](#prerequisites)
   - **Azure?** Increase the tokens per minute quota for your GPT-4 model. Quota is low by default.
 
 - `MCP error -32602: Invalid arguments for tool send_email` error?
-  - Be sure to use single quotes around your email address ('your@email.com').
+  - Make sure your email address is plain text inside the prompt (a plain address after `EMAIL RECIPIENT:`, without extra quotes or brackets).
   - Modify the model prompt to be more prescriptive about what format you need the email in (string, not array).
 
 - **`remote-mcp-connection` not found after `terraform apply`?**

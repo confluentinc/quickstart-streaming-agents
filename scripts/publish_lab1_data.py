@@ -346,7 +346,7 @@ def main():
         f = data_dir / f"{topic}.csv"
         if not f.exists():
             logger.error(
-                f"Data file not found: {f} — ensure you are on the mcp-lambda branch and files are present in assets/lab1/data/"
+                f"Data file not found: {f} — ensure files are present in assets/lab1/data/"
             )
             return 1
 
