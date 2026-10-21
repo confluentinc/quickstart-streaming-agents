@@ -11,11 +11,12 @@ Non-interactive modes (--automated, --testing) use the region in credentials.env
 """
 
 import argparse
-import getpass
 import os
+import re
 import subprocess
 import sys
 import time
+from pathlib import Path
 
 from dotenv import dotenv_values, set_key
 
@@ -27,7 +28,8 @@ from scripts.common.login_checks import ensure_confluent_login, _attempt_login_q
 from scripts.common.terraform import get_project_root, run_terraform_output
 from scripts.common.terraform_runner import run_terraform
 from scripts.common.tfvars import write_tfvars_for_deployment
-from scripts.common.ui import prompt_choice, prompt_with_default
+from scripts.common.ui import display_value, prompt_choice, prompt_secret, prompt_with_default
+from scripts.common.walkthrough import EMAIL_PATTERNS, replace_email
 from scripts.common.validate import (
     validate_aws_bedrock_credentials,
     validate_azure_openai_credentials,
@@ -131,6 +133,51 @@ def _print_write_error(exc) -> None:
         "  • Running from a network drive — run from a local drive instead\n",
         file=sys.stderr,
     )
+
+
+def inject_lab1_email_into_walkthrough(root: Path, email: str) -> bool:
+    """Inject the user's notification email into LAB1-Walkthrough.md SQL queries.
+
+    Matches both the initial <<YOUR-EMAIL-ADDRESS-HERE>> placeholder and any
+    previously injected email so re-running `uv run deploy` with a different
+    address updates cleanly.
+    """
+    walkthrough_path = root / "LAB1-Walkthrough.md"
+    if not walkthrough_path.exists() or not email.strip():
+        return False
+
+    email = email.strip()
+    try:
+        content = walkthrough_path.read_text(encoding="utf-8")
+        if not any(p.search(content) for p in EMAIL_PATTERNS):
+            return False
+        updated = replace_email(content, email)
+        if updated != content:
+            walkthrough_path.write_text(updated, encoding="utf-8")
+        return True
+    except Exception as e:
+        print(f"⚠ Could not update email in LAB1-Walkthrough.md: {e}")
+        return False
+
+
+def inject_flink_url_into_walkthrough(root: Path, flink_url: str) -> bool:
+    """Update the SQL Workspace link in LAB1-Walkthrough.md to point directly to the deployed environment."""
+    walkthrough_path = root / "LAB1-Walkthrough.md"
+    if not walkthrough_path.exists() or not flink_url.strip():
+        return False
+
+    try:
+        content = walkthrough_path.read_text(encoding="utf-8")
+        pattern = r"\[SQL Workspace\]\(https://confluent\.cloud/(?:go/flink|environments/[^)]+/flink)\)"
+        if not re.search(pattern, content):
+            return False
+        updated = re.sub(pattern, f"[SQL Workspace]({flink_url})", content)
+        if updated != content:
+            walkthrough_path.write_text(updated, encoding="utf-8")
+        return True
+    except Exception as e:
+        print(f"⚠ Could not update Flink URL in LAB1-Walkthrough.md: {e}")
+        return False
 
 
 def main():
@@ -259,7 +306,7 @@ def main():
                         "  Skipped. You'll need to run `confluent login` manually if your session expires."
                     )
                     break
-                password = getpass.getpass("  Password: ")
+                password = prompt_secret("  Password: ")
                 if _attempt_login_quiet(email, password):
                     _save_env_safe(creds_file, "CONFLUENT_EMAIL", email)
                     _save_env_safe(creds_file, "CONFLUENT_PASSWORD", password)
@@ -313,7 +360,7 @@ def main():
         # Step 4: Select what to deploy
         envs_to_deploy = []
         deploy_options = [
-            "Lab 1: MCP Tool Calling",
+            "Lab 1: Price matching",
             "Lab 2: Vector Search / RAG",
             "Lab 3: Agentic Fleet Management",
             "Lab 4: FEMA Fraud Detection",
@@ -322,7 +369,7 @@ def main():
         env_choice = prompt_choice("What would you like to deploy?", deploy_options)
 
         # Map user-friendly choice to deployment targets (core auto-included for labs)
-        if env_choice == "Lab 1: MCP Tool Calling":
+        if env_choice == "Lab 1: Price matching":
             envs_to_deploy = ["core", "lab1-tool-calling"]
         elif env_choice == "Lab 2: Vector Search / RAG":
             envs_to_deploy = ["core", "lab2-vector-search"]
@@ -361,6 +408,7 @@ def main():
         api_secret = prompt_with_default(
             "Confluent Cloud API Secret",
             creds.get("TF_VAR_confluent_cloud_api_secret", ""),
+            secret=True,
         )
         _save_env_safe(creds_file, "TF_VAR_confluent_cloud_api_key", api_key)
         _save_env_safe(creds_file, "TF_VAR_confluent_cloud_api_secret", api_secret)
@@ -371,7 +419,9 @@ def main():
                 "AWS Bedrock Access Key", creds.get("TF_VAR_aws_bedrock_access_key", "")
             )
             aws_bedrock_secret = prompt_with_default(
-                "AWS Bedrock Secret Key", creds.get("TF_VAR_aws_bedrock_secret_key", "")
+                "AWS Bedrock Secret Key",
+                creds.get("TF_VAR_aws_bedrock_secret_key", ""),
+                secret=True,
             )
             _save_env_safe(creds_file, "TF_VAR_aws_bedrock_access_key", aws_bedrock_key)
             _save_env_safe(
@@ -384,6 +434,7 @@ def main():
                 aws_session_token = prompt_with_default(
                     "AWS Session Token (required for temporary credentials)",
                     creds.get("TF_VAR_aws_session_token", ""),
+                    secret=True,
                 )
                 if aws_session_token:
                     _save_env_safe(
@@ -418,6 +469,15 @@ def main():
                     test_titan_embeddings,
                 )
 
+                needs_embeddings = any(
+                    lab in envs_to_deploy
+                    for lab in (
+                        "lab2-vector-search",
+                        "lab3-agentic-fleet-management",
+                        "lab4-pubsec-fraud-agents",
+                    )
+                )
+
                 _log = logging.getLogger("deploy.bedrock")
                 _log.setLevel(logging.CRITICAL)
                 print("\nChecking AWS Bedrock model access...")
@@ -430,20 +490,24 @@ def main():
                     max_retries=1,
                     session_token=aws_session_token or None,
                 )
-                titan_ok, titan_err = test_titan_embeddings(
-                    aws_bedrock_key,
-                    aws_bedrock_secret,
-                    _region,
-                    logger=_log,
-                    max_retries=1,
-                    session_token=aws_session_token or None,
-                )
                 print(
                     f"  {'✓' if sonnet_ok else '✗'} Claude Sonnet 4.5 accessible ({_region}){'' if sonnet_ok else f' [{sonnet_err}]'}"
                 )
-                print(
-                    f"  {'✓' if titan_ok else '✗'} Titan Embeddings accessible ({_region}){'' if titan_ok else f' [{titan_err}]'}"
-                )
+
+                titan_ok, titan_err = True, None
+                if needs_embeddings:
+                    titan_ok, titan_err = test_titan_embeddings(
+                        aws_bedrock_key,
+                        aws_bedrock_secret,
+                        _region,
+                        logger=_log,
+                        max_retries=1,
+                        session_token=aws_session_token or None,
+                    )
+                    print(
+                        f"  {'✓' if titan_ok else '✗'} Titan Embeddings accessible ({_region}){'' if titan_ok else f' [{titan_err}]'}"
+                    )
+
                 if not sonnet_ok or not titan_ok:
                     print()
                     if sonnet_err == "invalid_keys" or titan_err == "invalid_keys":
@@ -479,7 +543,9 @@ def main():
                 creds.get("TF_VAR_azure_openai_endpoint_raw", ""),
             )
             azure_openai_key = prompt_with_default(
-                "Azure OpenAI API Key", creds.get("TF_VAR_azure_openai_api_key", "")
+                "Azure OpenAI API Key",
+                creds.get("TF_VAR_azure_openai_api_key", ""),
+                secret=True,
             )
             _save_env_safe(
                 creds_file, "TF_VAR_azure_openai_endpoint_raw", azure_openai_endpoint
@@ -514,17 +580,35 @@ def main():
                     test_azure_openai_embeddings,
                 )
 
+                needs_embeddings = any(
+                    lab in envs_to_deploy
+                    for lab in (
+                        "lab2-vector-search",
+                        "lab3-agentic-fleet-management",
+                        "lab4-pubsec-fraud-agents",
+                    )
+                )
+
                 _log = logging.getLogger("deploy.azure_openai")
                 _log.setLevel(logging.CRITICAL)
                 print("\nChecking Azure OpenAI model access...")
                 chat_ok, chat_err = test_azure_openai_chat(
                     azure_openai_endpoint, azure_openai_key, logger=_log, max_retries=1
                 )
-                emb_ok, emb_err = test_azure_openai_embeddings(
-                    azure_openai_endpoint, azure_openai_key, logger=_log, max_retries=1
-                )
                 print(f"  {'✓' if chat_ok else '✗'} gpt-5-mini accessible")
-                print(f"  {'✓' if emb_ok else '✗'} text-embedding-ada-002 accessible")
+
+                emb_ok, emb_err = True, None
+                if needs_embeddings:
+                    emb_ok, emb_err = test_azure_openai_embeddings(
+                        azure_openai_endpoint,
+                        azure_openai_key,
+                        logger=_log,
+                        max_retries=1,
+                    )
+                    print(
+                        f"  {'✓' if emb_ok else '✗'} text-embedding-ada-002 accessible"
+                    )
+
                 if not chat_ok or not emb_ok:
                     print()
                     if (
@@ -551,6 +635,7 @@ def main():
                         sys.exit(1)
 
         # Lab-specific credentials
+        lab1_email = ""
         if (
             "lab1-tool-calling" in envs_to_deploy
             or "lab3-agentic-fleet-management" in envs_to_deploy
@@ -560,14 +645,28 @@ def main():
                 zapier_token = prompt_with_default(
                     "Zapier MCP Server Token (Lab 1 and Lab 3) — see assets/pre-setup/Zapier-Setup.md",
                     creds.get("TF_VAR_zapier_token", ""),
+                    secret=True,
                 )
                 _save_env_safe(creds_file, "TF_VAR_zapier_token", zapier_token)
             else:
                 mcp_token = prompt_with_default(
                     "Remote MCP Server Token (Confluent employees: see go/mcp-keys or #help-tmm; workshop participants: ask your presenter)",
                     creds.get("TF_VAR_mcp_token", ""),
+                    secret=True,
                 )
                 _save_env_safe(creds_file, "TF_VAR_mcp_token", mcp_token)
+
+        if "lab1-tool-calling" in envs_to_deploy:
+            default_lab1_email = (
+                creds.get("LAB1_EMAIL")
+                or creds.get("CONFLUENT_EMAIL")
+                or ""
+            )
+            lab1_email = prompt_with_default(
+                "Email address for Lab 1 price-match notifications",
+                default_lab1_email,
+            )
+            _save_env_safe(creds_file, "LAB1_EMAIL", lab1_email)
 
         # Set cloud region and cloud provider
         _save_env_safe(creds_file, "TF_VAR_cloud_region", region)
@@ -705,7 +804,7 @@ def main():
         final_creds = dotenv_values(creds_file)
         for key, value in sorted(final_creds.items()):
             if value:
-                print(f"{key}: {value}")
+                print(f"{key}: {display_value(key, value)}")
 
         print(f"\nCloud: {cloud}")
         print(f"Region: {region}")
@@ -716,8 +815,11 @@ def main():
             print("Deployment cancelled.")
             sys.exit(0)
 
-        # Step 6.5: Write terraform.tfvars files
+        # Step 6.5: Write terraform.tfvars files (and inject Lab 1 email into walkthrough)
         print()
+        if "lab1-tool-calling" in envs_to_deploy and lab1_email:
+            if inject_lab1_email_into_walkthrough(root, lab1_email):
+                print(f"✓ Injected {lab1_email} into LAB1-Walkthrough.md")
         write_tfvars_for_deployment(root, cloud, region, final_creds, envs_to_deploy)
 
         # Step 7: Load credentials into environment and deploy
@@ -738,7 +840,7 @@ def main():
 
     print("\n✓ All deployments completed successfully!")
 
-    # Display the environment name and generate MCP config
+    # Display the environment name, direct Flink URL, and generate MCP config
     core_state_path = root / "terraform" / "core" / "terraform.tfstate"
     if core_state_path.exists():
         if args.automated:
@@ -746,10 +848,17 @@ def main():
         else:
             try:
                 core_outputs = run_terraform_output(core_state_path)
-                if "confluent_environment_display_name" in core_outputs:
-                    print(
-                        f"\nEnvironment name: {core_outputs['confluent_environment_display_name']}"
+                env_name = core_outputs.get("confluent_environment_display_name", "")
+                env_id = core_outputs.get("confluent_environment_id", "")
+                if env_name:
+                    print(f"\nEnvironment name: {env_name}")
+                if env_id:
+                    flink_url = (
+                        f"https://confluent.cloud/environments/{env_id}/flink"
                     )
+                    print(f"Flink SQL Workspace: {flink_url}")
+                    if "lab1-tool-calling" in envs_to_deploy and not args.testing:
+                        inject_flink_url_into_walkthrough(root, flink_url)
             except Exception as e:
                 print(f"\n⚠ Could not read Terraform outputs: {e}")
 

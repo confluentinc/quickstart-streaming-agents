@@ -80,8 +80,12 @@ def _parse_lab1_sql(walkthrough_path: Path) -> Dict[str, str]:
     )
     if match:
         sql = match.group(1).strip()
-        # Substitute the email placeholder with the test email
-        sql = sql.replace("<<YOUR-EMAIL-ADDRESS-HERE>>", _TEST_EMAIL)
+        # Substitute the email placeholder (or any previously injected email) with the test email
+        sql = re.sub(
+            r"(EMAIL RECIPIENT:\s*)(\S+)",
+            rf"\g<1>{_TEST_EMAIL}",
+            sql,
+        )
         statements["price_match_results"] = sql
 
     return statements

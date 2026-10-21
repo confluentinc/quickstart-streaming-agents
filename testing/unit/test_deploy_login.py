@@ -131,11 +131,10 @@ class TestDeployInteractiveStep0:
         with (
             patch.multiple("deploy", **patches),
             patch("builtins.input", return_value="user@example.com"),
-            patch("deploy.getpass") as mock_gp,
+            patch("deploy.prompt_secret", return_value="secret"),
             patch("deploy._attempt_login_quiet", return_value=True),
             pytest.raises(_StopAfterLogin),
         ):
-            mock_gp.getpass.return_value = "secret"
             _run_main([])
 
         assert any(
@@ -172,11 +171,10 @@ class TestDeployInteractiveStep0:
         with (
             patch.multiple("deploy", **patches),
             patch("builtins.input", return_value="user@example.com"),
-            patch("deploy.getpass") as mock_gp,
+            patch("deploy.prompt_secret", return_value="secret"),
             patch("deploy._attempt_login_quiet", side_effect=attempt_results),
             pytest.raises(_StopAfterLogin),
         ):
-            mock_gp.getpass.return_value = "secret"
             _run_main([])
 
         # Saved only on the successful 3rd attempt
@@ -190,11 +188,10 @@ class TestDeployInteractiveStep0:
         with (
             patch.multiple("deploy", **patches),
             patch("builtins.input", return_value="user@example.com"),
-            patch("deploy.getpass") as mock_gp,
+            patch("deploy.prompt_secret", return_value="secret"),
             patch("deploy._attempt_login_quiet", return_value=False),
             pytest.raises(_StopAfterLogin),
         ):
-            mock_gp.getpass.return_value = "secret"
             _run_main([])
 
         mock_save.assert_not_called()
@@ -207,11 +204,10 @@ class TestDeployInteractiveStep0:
         with (
             patch.multiple("deploy", **patches),
             patch("builtins.input", return_value="user@example.com"),
-            patch("deploy.getpass") as mock_gp,
+            patch("deploy.prompt_secret", return_value="secret"),
             patch("deploy._attempt_login_quiet", return_value=False),
             pytest.raises(_StopAfterLogin),
         ):
-            mock_gp.getpass.return_value = "secret"
             _run_main([])
 
         out = capsys.readouterr().out
@@ -324,3 +320,70 @@ class TestDeployAutomatedLogin:
         # into ensure_confluent_login instead.
         passed_creds = mock_ensure.call_args[0][0]
         assert passed_creds.get("TF_VAR_enable_testing_sql") == "true"
+
+
+class TestWalkthroughInjection:
+    """Tests for injecting and restoring Lab 1 email and Flink URL in LAB1-Walkthrough.md."""
+
+    def test_inject_and_reinject_email_and_restore(self, tmp_path):
+        from scripts.common.destroy import _restore_lab1_walkthrough_placeholders
+
+        sample = (
+            "Open the [SQL Workspace](https://confluent.cloud/go/flink)\n"
+            'The "to" parameter must be a single string value: <<YOUR-EMAIL-ADDRESS-HERE>>\n'
+            "          EMAIL RECIPIENT: <<YOUR-EMAIL-ADDRESS-HERE>>\n"
+        )
+        walkthrough = tmp_path / "LAB1-Walkthrough.md"
+        walkthrough.write_text(sample, encoding="utf-8")
+
+        assert deploy.inject_lab1_email_into_walkthrough(tmp_path, "alice@example.com")
+        text1 = walkthrough.read_text(encoding="utf-8")
+        assert "single string value: alice@example.com" in text1
+        assert "EMAIL RECIPIENT: alice@example.com" in text1
+        assert "<<YOUR-EMAIL-ADDRESS-HERE>>" not in text1
+
+        # Re-injecting a different email updates cleanly
+        assert deploy.inject_lab1_email_into_walkthrough(tmp_path, "bob@example.com")
+        text2 = walkthrough.read_text(encoding="utf-8")
+        assert "single string value: bob@example.com" in text2
+        assert "EMAIL RECIPIENT: bob@example.com" in text2
+        assert "alice@example.com" not in text2
+
+        # Inject Flink URL
+        flink_url = "https://confluent.cloud/environments/env-abc123/flink"
+        assert deploy.inject_flink_url_into_walkthrough(tmp_path, flink_url)
+        text3 = walkthrough.read_text(encoding="utf-8")
+        assert f"[SQL Workspace]({flink_url})" in text3
+
+        # Restore placeholders on destroy
+        _restore_lab1_walkthrough_placeholders(tmp_path)
+        assert walkthrough.read_text(encoding="utf-8") == sample
+
+
+    def test_prose_with_backticks_is_not_mangled(self, tmp_path):
+        from scripts.common.destroy import _restore_lab1_walkthrough_placeholders
+
+        sample = (
+            "> fills your email into the `EMAIL RECIPIENT:` line below.\n"
+            "> Use a plain address after `EMAIL RECIPIENT: <<YOUR-EMAIL-ADDRESS-HERE>>` here.\n"
+            "          EMAIL RECIPIENT: <<YOUR-EMAIL-ADDRESS-HERE>>\n"
+        )
+        walkthrough = tmp_path / "LAB1-Walkthrough.md"
+        walkthrough.write_text(sample, encoding="utf-8")
+
+        assert deploy.inject_lab1_email_into_walkthrough(tmp_path, "alice+tag@example.com")
+        text = walkthrough.read_text(encoding="utf-8")
+        assert "the `EMAIL RECIPIENT:` line below." in text
+        assert "`EMAIL RECIPIENT: alice+tag@example.com` here." in text
+        assert "          EMAIL RECIPIENT: alice+tag@example.com\n" in text
+
+        _restore_lab1_walkthrough_placeholders(tmp_path)
+        assert walkthrough.read_text(encoding="utf-8") == sample
+
+    def test_inject_returns_false_when_nothing_matches(self, tmp_path):
+        (tmp_path / "LAB1-Walkthrough.md").write_text("no placeholders here\n", encoding="utf-8")
+
+        assert not deploy.inject_lab1_email_into_walkthrough(tmp_path, "alice@example.com")
+        assert not deploy.inject_flink_url_into_walkthrough(
+            tmp_path, "https://confluent.cloud/environments/env-abc123/flink"
+        )

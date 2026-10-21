@@ -6,6 +6,7 @@ Uses credentials from credentials.env for destruction via Terraform.
 
 import argparse
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -18,6 +19,7 @@ from .login_checks import ensure_confluent_login
 from .terraform import get_project_root
 from .terraform_runner import run_terraform_destroy
 from .ui import prompt_choice
+from .walkthrough import EMAIL_PLACEHOLDER, replace_email
 
 
 def cleanup_terraform_artifacts(env_path: Path) -> None:
@@ -101,6 +103,26 @@ def _cleanup_mcp(root: Path) -> None:
         print("✓ Removed MCP server config and registration")
     except Exception as e:
         print(f"⚠ MCP cleanup failed: {e}")
+
+
+def _restore_lab1_walkthrough_placeholders(root: Path) -> None:
+    """Restore LAB1-Walkthrough.md email and Flink URL placeholders on destroy."""
+    walkthrough_path = root / "LAB1-Walkthrough.md"
+    if not walkthrough_path.exists():
+        return
+    try:
+        content = walkthrough_path.read_text(encoding="utf-8")
+        updated = replace_email(content, EMAIL_PLACEHOLDER)
+        updated = re.sub(
+            r"\[SQL Workspace\]\(https://confluent\.cloud/environments/[^)]+/flink\)",
+            "[SQL Workspace](https://confluent.cloud/go/flink)",
+            updated,
+        )
+        if updated != content:
+            walkthrough_path.write_text(updated, encoding="utf-8")
+            print("✓ Restored placeholders in LAB1-Walkthrough.md")
+    except Exception:
+        pass
 
 
 def main():
@@ -221,6 +243,7 @@ def main():
             )
 
     _cleanup_mcp(root)
+    _restore_lab1_walkthrough_placeholders(root)
 
     print("\n✓ Destroy process completed!")
 

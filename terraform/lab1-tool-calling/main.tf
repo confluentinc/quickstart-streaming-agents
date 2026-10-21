@@ -231,7 +231,7 @@ resource "confluent_flink_statement" "orders_table" {
   statement_name = "orders-create-table"
 
   statement = <<-EOT
-    CREATE TABLE `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`orders` (
+    CREATE TABLE IF NOT EXISTS `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`orders` (
       `order_id` STRING NOT NULL,
       `customer_id` STRING NOT NULL,
       `product_id` STRING NOT NULL,
@@ -274,7 +274,7 @@ resource "confluent_flink_statement" "products_table" {
   statement_name = "products-create-table"
 
   statement = <<-EOT
-    CREATE TABLE `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`products` (
+    CREATE TABLE IF NOT EXISTS `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`products` (
       `product_id` STRING NOT NULL,
       `product_name` STRING NOT NULL,
       `price` DOUBLE NOT NULL,
@@ -317,7 +317,7 @@ resource "confluent_flink_statement" "customers_table" {
   statement_name = "customers-create-table"
 
   statement = <<-EOT
-    CREATE TABLE `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`customers` (
+    CREATE TABLE IF NOT EXISTS `${data.terraform_remote_state.core.outputs.confluent_environment_display_name}`.`${data.terraform_remote_state.core.outputs.confluent_kafka_cluster_display_name}`.`customers` (
       `customer_id` STRING NOT NULL,
       `customer_email` STRING NOT NULL,
       `customer_name` STRING NOT NULL,
