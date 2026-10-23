@@ -61,6 +61,13 @@ AZURE_REGIONS = [
     "centralindia",
 ]
 
+# Labs whose walkthrough has the user start a data generator right after deploy.
+# Lab 2 (interactive publish_queries) and Lab 4 (Terraform publishes claims) have none.
+LAB_DATAGENS = {
+    "lab1-tool-calling": ("Lab 1", "lab1_datagen"),
+    "lab3-agentic-fleet-management": ("Lab 3", "lab3_datagen"),
+}
+
 # Module-level buffer for Plan B fallback when set_key() fails on Windows
 _pending_writes: dict = {}
 _write_failed: bool = False
@@ -178,6 +185,36 @@ def inject_flink_url_into_walkthrough(root: Path, flink_url: str) -> bool:
     except Exception as e:
         print(f"⚠ Could not update Flink URL in LAB1-Walkthrough.md: {e}")
         return False
+
+
+def _start_datagen(root: Path, script: str) -> None:
+    """Run a lab data generator in the background, logging to logs/<script>.log."""
+    log = root / "logs" / f"{script}.log"
+    log.parent.mkdir(exist_ok=True)
+    with open(log, "a", encoding="utf-8") as out:
+        proc = subprocess.Popen(
+            ["uv", "run", script, "--local"],
+            cwd=root,
+            stdin=subprocess.DEVNULL,
+            stdout=out,
+            stderr=subprocess.STDOUT,
+            start_new_session=True,
+            env={**os.environ, "PYTHONUNBUFFERED": "1"},
+        )
+    # The datagen spawns publish_*_data as a child, so stop the whole process group
+    stop = f"taskkill /PID {proc.pid} /T /F" if os.name == "nt" else f"kill -- -{proc.pid}"
+    print(f"✓ {script} running in the background (log: {log.relative_to(root)}; stop with `{stop}`)")
+
+
+def offer_datagens(root: Path, envs_to_deploy: list) -> None:
+    """Print each deployed lab's datagen command and offer to start it now."""
+    for env, (lab, script) in LAB_DATAGENS.items():
+        if env not in envs_to_deploy:
+            continue
+        print(f"\nNext step for {lab}: uv run {script} --local")
+        answer = input(f"Start {lab} data generator in the background now? (Y/n): ")
+        if answer.strip().lower() in ("", "y", "yes"):
+            _start_datagen(root, script)
 
 
 def main():
@@ -861,6 +898,9 @@ def main():
                         inject_flink_url_into_walkthrough(root, flink_url)
             except Exception as e:
                 print(f"\n⚠ Could not read Terraform outputs: {e}")
+
+    if not args.automated and not args.testing:
+        offer_datagens(root, envs_to_deploy)
 
 
 if __name__ == "__main__":
