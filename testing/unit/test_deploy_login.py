@@ -67,6 +67,7 @@ class TestDeployInteractiveStep0:
                 return_value=(creds_file, dict(env_creds))
             ),
             "_save_env_safe": MagicMock(),
+            "check_confluent_login": MagicMock(return_value=False),
             # Raise sentinel after login block completes to stop the rest of deploy
             "ensure_confluent_login": MagicMock(side_effect=_StopAfterLogin()),
         }
@@ -211,7 +212,21 @@ class TestDeployInteractiveStep0:
             _run_main([])
 
         out = capsys.readouterr().out
-        assert "--sso" in out
+        assert "--no-browser" in out
+
+    def test_skips_prompt_when_cli_session_active(self, tmp_path):
+        """An active CLI session (e.g. SSO) needs no email/password prompt."""
+        patches = self._base_patches({}, tmp_path)
+        patches["check_confluent_login"] = MagicMock(return_value=True)
+
+        with (
+            patch.multiple("deploy", **patches),
+            patch("builtins.input", MagicMock()) as mock_input,
+            pytest.raises(_StopAfterLogin),
+        ):
+            _run_main([])
+
+        mock_input.assert_not_called()
 
     def test_ensure_login_propagates_system_exit(self, tmp_path):
         """If ensure_confluent_login exits (not logged in), SystemExit propagates."""

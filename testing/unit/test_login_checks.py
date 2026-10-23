@@ -353,6 +353,22 @@ class TestEnsureConfluentLogin:
         out = capsys.readouterr().out
         assert "uv run deploy" in out
 
+    def test_interactive_offers_sso_login(self):
+        with (
+            patch(
+                "scripts.common.login_checks.check_confluent_login", return_value=False
+            ),
+            patch(
+                "scripts.common.login_checks.attempt_confluent_auto_login",
+                return_value=False,
+            ),
+            patch("scripts.common.login_checks.sys.stdin.isatty", return_value=True),
+            patch("builtins.input", return_value=""),
+            patch("scripts.common.login_checks.sso_login", return_value=True) as sso,
+        ):
+            ensure_confluent_login({}, interactive=True)
+        sso.assert_called_once()
+
     def test_error_message_contains_sso_hint(self, capsys):
         with (
             patch(
@@ -366,7 +382,7 @@ class TestEnsureConfluentLogin:
         ):
             ensure_confluent_login({})
         out = capsys.readouterr().out
-        assert "--sso" in out
+        assert "--no-browser" in out
 
 
 # ---------------------------------------------------------------------------

@@ -34,6 +34,25 @@ def check_confluent_login() -> bool:
         return False
 
 
+SSO_NOTE = "If you use single sign-on (SSO) to log into Confluent Cloud, log into the Confluent CLI first."
+
+
+def sso_login() -> bool:
+    """Interactive Confluent CLI login for single sign-on accounts.
+
+    `--no-browser` prints a URL to open on any machine and prompts for the code
+    it returns, so it also works on a headless VM. `--save` stores the SSO refresh
+    token so later runs re-authenticate without asking again. Output is not
+    captured: the CLI needs the terminal to show the URL and read the code.
+    """
+    try:
+        subprocess.run(["confluent", "login", "--no-browser", "--save"], check=False)
+    except FileNotFoundError:
+        print("  The Confluent CLI is not installed.")
+        return False
+    return check_confluent_login()
+
+
 def attempt_confluent_auto_login(creds: dict) -> bool:
     """Try to log into Confluent Cloud using a credentials dict.
 
@@ -73,8 +92,8 @@ def _attempt_login_quiet(email: str, password: str) -> bool:
     return check_confluent_login()
 
 
-def ensure_confluent_login(creds: Optional[dict] = None) -> None:
-    """Check CLI login → attempt auto-login from creds → exit(1) with clear instructions."""
+def ensure_confluent_login(creds: Optional[dict] = None, interactive: bool = False) -> None:
+    """Check CLI login → attempt auto-login from creds → (interactive) offer SSO login → exit(1)."""
     if check_confluent_login():
         return
     if creds is None:
@@ -83,10 +102,15 @@ def ensure_confluent_login(creds: Optional[dict] = None) -> None:
         )
     if attempt_confluent_auto_login(creds):
         return
+    if interactive and sys.stdin.isatty():
+        print(f"\n{SSO_NOTE}")
+        answer = input("Log in with single sign-on now? (y/n) [y]: ").strip().lower()
+        if answer in ("", "y", "yes") and sso_login():
+            return
     print("\nError: Not logged into Confluent Cloud.")
     print("Please run: confluent login")
     print("  (or rerun `uv run deploy` to save credentials for auto-login)")
-    print("  (SSO accounts: run `confluent login --sso`)")
+    print("  (SSO accounts: run `confluent login --no-browser`)")
     print(
         "  (or delete CONFLUENT_EMAIL/CONFLUENT_PASSWORD from credentials.env to re-prompt)"
     )

@@ -95,7 +95,7 @@ winget install astral-sh.uv Git.Git Hashicorp.Terraform ConfluentInc.Confluent-C
 
    | Prompt | Where to get it |
    |---|---|
-   | Confluent Cloud email / password | The **email and password you used to sign up** (press Enter to skip if you use SSO, then run `confluent login --sso`) |
+   | Confluent Cloud email / password | The **email and password you used to sign up** (**single sign-on?** Log into the Confluent CLI first with `confluent login --no-browser`, then press Enter at this prompt. If you skip that, `deploy` offers to run the SSO login for you) |
    | Select cloud provider | `aws` |
    | Generate new Confluent Cloud API keys? | Answer `y` — `uv` creates the API key and secret for you |
    | What would you like to deploy? | **Lab 1: Price matching** |

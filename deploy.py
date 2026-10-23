@@ -24,7 +24,12 @@ from scripts.common.credentials import (
     load_or_create_credentials_file,
     generate_confluent_api_keys,
 )
-from scripts.common.login_checks import ensure_confluent_login, _attempt_login_quiet
+from scripts.common.login_checks import (
+    SSO_NOTE,
+    _attempt_login_quiet,
+    check_confluent_login,
+    ensure_confluent_login,
+)
 from scripts.common.terraform import get_project_root, run_terraform_output
 from scripts.common.terraform_runner import run_terraform
 from scripts.common.tfvars import write_tfvars_for_deployment
@@ -330,17 +335,19 @@ def main():
         creds_file, env_creds = load_or_create_credentials_file(root)
 
         # 0a. Prompt for credentials only if NOT already saved
+        # (A live CLI session, e.g. from SSO, needs no prompt.)
         if not (
             env_creds.get("CONFLUENT_EMAIL") and env_creds.get("CONFLUENT_PASSWORD")
-        ):
+        ) and not check_confluent_login():
             print(
                 "\nConfluent Cloud login (credentials will be saved to credentials.env for auto-login):"
             )
+            print(f"  {SSO_NOTE}")
             for attempt in range(3):
-                email = input("  Email (press Enter to skip): ").strip()
+                email = input("  Email (press Enter if you use SSO or want to skip): ").strip()
                 if not email:
                     print(
-                        "  Skipped. You'll need to run `confluent login` manually if your session expires."
+                        "  Skipped. SSO users will be offered a single sign-on login next."
                     )
                     break
                 password = prompt_secret("  Password: ")
@@ -362,11 +369,11 @@ def main():
                             "  Login failed. Skipping. You'll need to run `confluent login` manually."
                         )
                         print(
-                            "  (If your account uses SSO, run `confluent login --sso` instead.)"
+                            "  (If your account uses SSO, run `confluent login --no-browser` instead.)"
                         )
 
         # 0b. Final assurance — works whether just authenticated, already logged in, or has saved creds
-        ensure_confluent_login(env_creds)
+        ensure_confluent_login(env_creds, interactive=True)
         print("✓ Confluent CLI logged in")
 
         # Step 1: Select cloud provider
