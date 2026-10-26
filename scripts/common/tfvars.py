@@ -67,6 +67,7 @@ def generate_core_tfvars_content(
     aws_session_token: Optional[str] = None,
     azure_openai_endpoint: Optional[str] = None,
     azure_openai_api_key: Optional[str] = None,
+    llm_provider: Optional[str] = None,
 ) -> str:
     """
     Generate terraform.tfvars content for Core module.
@@ -81,6 +82,7 @@ def generate_core_tfvars_content(
         aws_bedrock_secret_key: AWS Bedrock secret key
         azure_openai_endpoint: Azure OpenAI endpoint URL
         azure_openai_api_key: Azure OpenAI API key
+        llm_provider: What backs the AWS models: 'confluent' (CSP Hosted, no keys) or 'bedrock'
 
     Returns:
         Formatted terraform.tfvars content
@@ -94,8 +96,17 @@ confluent_cloud_api_secret = "{api_secret}"
 cloud_provider = "{provider}"
 """
 
-    # AWS Bedrock credentials
-    if cloud == "aws" and aws_bedrock_access_key and aws_bedrock_secret_key:
+    # LLM provider (AWS only). Written explicitly: tfvars outrank TF_VAR_* env vars.
+    if cloud == "aws" and llm_provider:
+        content += f'llm_provider = "{llm_provider}"\n'
+
+    # AWS Bedrock credentials (unused by CSP Hosted inference, so not written for it)
+    if (
+        cloud == "aws"
+        and llm_provider != "confluent"
+        and aws_bedrock_access_key
+        and aws_bedrock_secret_key
+    ):
         content += f'aws_bedrock_access_key = "{aws_bedrock_access_key}"\n'
         content += f'aws_bedrock_secret_key = "{aws_bedrock_secret_key}"\n'
         if aws_session_token:
@@ -242,6 +253,9 @@ def write_tfvars_for_deployment(
             if cloud == "azure"
             else None
         )
+        llm_provider = (
+            get_credential_value(creds, "llm_provider") if cloud == "aws" else None
+        )
 
         if api_key and api_secret:
             core_tfvars_path = root / "terraform" / "core" / "terraform.tfvars"
@@ -256,6 +270,7 @@ def write_tfvars_for_deployment(
                 aws_session_token=aws_session_token,
                 azure_openai_endpoint=azure_openai_endpoint,
                 azure_openai_api_key=azure_openai_api_key,
+                llm_provider=llm_provider,
             )
             if write_tfvars_file(core_tfvars_path, content):
                 print(f"✓ Wrote {core_tfvars_path}")

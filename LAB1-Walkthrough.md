@@ -44,13 +44,12 @@ winget install astral-sh.uv Git.Git Hashicorp.Terraform ConfluentInc.Confluent-C
 >
 > The credentials below are not required in instructor-led workshops — they will be provided for you.
 
-- **LLM Access:** AWS Bedrock API keys **OR** Azure OpenAI endpoint + API key
-  - No AWS/Azure account required - just the LLM API credentials!
-  - **Easy key creation:** Run `uv run api-keys create` to quickly generate ready-to-use credentials
+- **LLM Access:** None needed by default — `uv run deploy` uses **CSP Hosted model inference**, so Confluent runs Claude Sonnet 4.6 for you with no AWS account or keys.
+  - **Prefer your own AWS Bedrock keys?** Run `uv run deploy --bedrock` instead. `uv run api-keys create` generates ready-to-use credentials.
 
 > [!WARNING]
 >
-> **AWS Bedrock Users:** You must request access to Claude Sonnet 4.5 by filling out an Anthropic use case form. Visit the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog), select Claude Sonnet 4.5, open it in the Playground, and send a message - the form will appear automatically.
+> **`--bedrock` users:** You must request access to Claude Sonnet 4.5 by filling out an Anthropic use case form. Visit the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog), select Claude Sonnet 4.5, open it in the Playground, and send a message - the form will appear automatically.
 
 - **Remote MCP server backend:** Lab 1 calls a remote MCP server for HTTP fetch and email send. `uv run deploy` will prompt you to choose:
   - **Confluent-hosted remote MCP server (Recommended)** — No setup on your end; obtain a token by asking your presenter, or, if you're a Confluent employee, see `go/mcp-keys` or `#help-tmm`.
@@ -83,27 +82,25 @@ winget install astral-sh.uv Git.Git Hashicorp.Terraform ConfluentInc.Confluent-C
 
    </details>
 
-3. Run the following command and choose **Lab1** (see [main README](./README.md)):
+3. Run the following command to deploy Lab 1:
 
    ```bash
    uv run deploy
    ```
 
-   <img src="./assets/lab1/uv-run-deploy.png" alt="uv run deploy — cloud provider, Confluent API key generation, and lab selection prompts" width="600">
-
    `uv run deploy` prompts for the following:
 
    | Prompt | Where to get it |
    |---|---|
-   | Confluent Cloud email / password | The **email and password you used to sign up** (press Enter to skip if you use SSO, then run `confluent login --sso`) |
-   | Select cloud provider | `aws` |
+   | Confluent Cloud email / password | The **email and password you used to sign up** (**single sign-on?** Log into the Confluent CLI first with `confluent login --no-browser`, then press Enter at this prompt. If you skip that, `deploy` offers to run the SSO login for you) |
    | Generate new Confluent Cloud API keys? | Answer `y` — `uv` creates the API key and secret for you |
-   | What would you like to deploy? | **Lab 1: Price matching** |
    | Remote MCP server backend | **Confluent-hosted remote MCP server (Recommended)** |
    | Confluent Cloud API Key / Secret | Press **Enter** to confirm the key and secret `uv` just created |
-   | AWS Bedrock Access Key / Secret Key | The AWS Bedrock key your instructor gave you (or one from `uv run api-keys create`) |
+   | AWS Bedrock Access Key / Secret Key | **`--bedrock` only** — your AWS Bedrock key (or one from `uv run api-keys create`). The default CSP Hosted models skip this prompt |
    | MCP token | The token your presenter gave you |
    | Email address for Lab 1 price-match notifications | Press **Enter** to use your Confluent Cloud email (or enter another email where you can check your inbox during the lab) — `uv` automatically fills it into the SQL queries below |
+   | Ready to deploy? | Answer `y` — deployment takes about 10 minutes |
+   | Start Lab 1 data generator in the background now? | Answer `n` — you'll start it yourself in [step 2](#2-generate-data) |
 
 # Getting Started
 
@@ -152,15 +149,13 @@ uv run lab1_datagen --local
 
 > [!NOTE]
 >
-> Keep this command running in your terminal — it produces one order every 2 minutes. Proceed with the lab while it runs.
+> Leave this command running in your terminal and proceed with the lab — it publishes 10 orders, one every 2 minutes (~20 minutes total), then exits.
 
 The data generator creates three typical ecommerce data streams:
 
-- **`customers`**: 100 customer records with realistic names, emails, addresses, and state information
+- **`customers`**: 50 customer records with realistic names, emails, addresses, and state information
 - **`products`**: 17 product records including electronics, games, sports equipment, and household items with prices ranging from $5-$365
-- **`orders`**: Continuous stream of orders linking customers to products with timestamps
-
-## Run SQL Queries
+- **`orders`**: 10 orders linking customers to products with timestamps
 
 ## 3. Create `enriched_orders` table for the agent to use
 
@@ -183,7 +178,7 @@ JOIN products p ON o.product_id = p.product_id;
 
 > NOTE: Leave the query running so that it runs continously.
 
-### 4. Run  `CREATE TOOL` and `CREATE AGENT`
+## 4. Run `CREATE TOOL` and `CREATE AGENT`
 
 The agent will use the [Tool Calling](https://docs.confluent.io/cloud/current/ai/builtin-functions/invoke-tool-ai-workflow.html) feature to scrape competitors’ websites, extract the price of the same product, and send an email when a price match is found.
 Create a new tool that leverages the remote MCP connection:
@@ -213,7 +208,7 @@ USING PROMPT 'You are a price matching assistant that performs the following ste
 
 3. COMPARE AND NOTIFY: Compare the extracted competitor price with our order price. If the competitor price is lower than our price, use the send_email tool to send a price match notification email. Use the exact format provided in the prompt for the email subject and body.
 
-Return your results in this exact format:
+Return your results in this exact format, as plain text with no markdown, bold, or emoji:
 
 Competitor Price:
 [price as XX.XX, or "Not found"]
@@ -250,8 +245,8 @@ SELECT
     pmi.customer_email,
     CAST(CAST(pmi.order_price AS DECIMAL(10, 2)) AS STRING) as order_price,
     agent_result.status as agent_status,
-    TRIM(REGEXP_EXTRACT(CAST(agent_result.response AS STRING), '\*{0,2}Competitor Price:\*{0,2}\s*\n?([\s\S]+?)(?=\n\*{0,2}(?:Decision|Summary):|$)', 1)) AS competitor_price,
-    TRIM(REGEXP_EXTRACT(CAST(agent_result.response AS STRING), '\*{0,2}Decision:\*{0,2}\s*\n?([A-Z_]+)', 1)) AS decision,
+    TRIM(REGEXP_EXTRACT(CAST(agent_result.response AS STRING), '\*{0,2}Competitor Price:\*{0,2}\s*\**([\s\S]+?)\**\s*(?=\n\*{0,2}(?:Decision|Summary):|$)', 1)) AS competitor_price,
+    TRIM(REGEXP_EXTRACT(CAST(agent_result.response AS STRING), '\*{0,2}Decision:\*{0,2}\s*\**([A-Z_]+)', 1)) AS decision,
     TRIM(REGEXP_EXTRACT(CAST(agent_result.response AS STRING), '\*{0,2}Summary:\*{0,2}\s*\n?([\s\S]+?)$', 1)) AS summary,
     CAST(agent_result.response AS STRING) AS raw_response
 FROM enriched_orders pmi,
@@ -328,21 +323,19 @@ Then check out your email for price matched orders:
 - **Not getting emails?**
   - Ensure `<<YOUR-EMAIL-ADDRESS-HERE>>` in both Test Query 2 and the `CREATE TABLE price_match_results` query has been replaced with your email address (`uv run deploy` does this automatically). Do **not** wrap the email address in extra single quotes, as it is already inside a single-quoted SQL string.
   - **Run the MCP test query** (Test Query 2) to confirm the `remote-mcp-connection` is working and able to send emails.
-  - **Check remote MCP server logs** in CloudWatch (`/aws/lambda/remote-mcp-server-MCPFunction-*`) for errors from the `send_email` tool.
   - **Make sure to run `uv run lab1_datagen --local`** to begin producing orders data.
 - **Need to restart data generation?**
   - Simply re-run `uv run lab1_datagen --local`. It automatically purges any existing records in `customers`, `products`, and `orders` before publishing fresh data (do **not** drop the `orders`, `customers`, or `products` tables in Flink, as those tables were created by Terraform).
 
 - `Runtime received bad response code 403. Please also double check if your model has multiple versions.` error?
-  - **AWS?** Ensure you've activated Claude Sonnet 4.5 in your AWS account. See: [Prerequisites](#prerequisites)
-  - **Azure?** Increase the tokens per minute quota for your GPT-4 model. Quota is low by default.
+  - **Deployed with `--bedrock`?** Ensure you've activated Claude Sonnet 4.5 in your AWS account. See: [Prerequisites](#prerequisites)
 
 - `MCP error -32602: Invalid arguments for tool send_email` error?
   - Make sure your email address is plain text inside the prompt (a plain address after `EMAIL RECIPIENT:`, without extra quotes or brackets).
   - Modify the model prompt to be more prescriptive about what format you need the email in (string, not array).
 
-- **`remote-mcp-connection` not found after `terraform apply`?**
-  - The connection is created via Confluent CLI in a `local-exec` provisioner. Check that `confluent` CLI is installed and `CONFLUENT_CLOUD_API_KEY`/`CONFLUENT_CLOUD_API_SECRET` are set, then re-run `terraform apply`.
+- **`remote-mcp-connection` not found after `uv run deploy`?**
+  - Deploy creates it with a Flink `CREATE CONNECTION` statement. Run `SHOW CONNECTIONS;` in the SQL Workspace; if `remote-mcp-connection` is missing, re-run `uv run deploy`.
   </details>
 
 ## Navigation

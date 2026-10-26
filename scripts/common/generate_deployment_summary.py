@@ -258,6 +258,35 @@ def _build_llm_configuration_section(
     env_name = get_output("confluent_environment_display_name")
     cluster_name = get_output("confluent_kafka_cluster_display_name")
 
+    # CSP Hosted inference has no connections — the model id goes in the WITH clause
+    if get_output("llm_provider") == "confluent":
+        return f"""## LLM Configuration
+
+### Flink Models
+
+The following Flink AI models use CSP Hosted model inference (Confluent-hosted, no connection or AWS keys):
+
+```sql
+CREATE MODEL `{env_name}`.`{cluster_name}`.`llm_textgen_model`
+INPUT (prompt STRING)
+OUTPUT (response STRING)
+WITH(
+  'provider' = 'confluent',
+  'task' = 'text_generation',
+  'confluent.model' = '{get_output("csp_textgen_model")}',
+  'confluent.params.max_tokens' = '50000'
+);
+
+CREATE MODEL `{env_name}`.`{cluster_name}`.`llm_embedding_model`
+INPUT (text STRING)
+OUTPUT (embedding ARRAY<FLOAT>)
+WITH(
+  'provider' = 'confluent',
+  'task' = 'embedding',
+  'confluent.model' = '{get_output("csp_embedding_model")}'
+);
+```"""
+
     # Determine provider-specific details
     if cloud_provider == "azure":
         provider = "azureopenai"

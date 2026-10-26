@@ -23,10 +23,25 @@ locals {
 
   # Remote MCP backend selection. Endpoints are hard-coded so users can't point
   # Flink at an arbitrary MCP server via tfvars.
-  mcp_lambda_endpoint     = "https://z04yuqut2a.execute-api.us-east-1.amazonaws.com/mcp"
-  mcp_zapier_endpoint     = "https://mcp.zapier.com/api/v1/connect"
-  effective_mcp_endpoint  = var.mcp_backend == "zapier" ? local.mcp_zapier_endpoint : local.mcp_lambda_endpoint
-  effective_mcp_token     = var.mcp_backend == "zapier" ? var.zapier_token : var.mcp_token
+  mcp_lambda_endpoint    = "https://z04yuqut2a.execute-api.us-east-1.amazonaws.com/mcp"
+  mcp_zapier_endpoint    = "https://mcp.zapier.com/api/v1/connect"
+  effective_mcp_endpoint = var.mcp_backend == "zapier" ? local.mcp_zapier_endpoint : local.mcp_lambda_endpoint
+  effective_mcp_token    = var.mcp_backend == "zapier" ? var.zapier_token : var.mcp_token
+
+  # Core's llm_provider: "confluent" (CSP Hosted, no connection) or "bedrock" on
+  # AWS. Core state from before the output existed was always Bedrock.
+  llm_provider = try(data.terraform_remote_state.core.outputs.llm_provider, "bedrock")
+  aws_mcp_model_with = local.llm_provider == "confluent" ? join(",\n      ", [
+    "'provider' = 'confluent'",
+    "'task' = 'text_generation'",
+    "'confluent.model' = '${try(data.terraform_remote_state.core.outputs.csp_textgen_model, "anthropic.claude-sonnet-4-6")}'",
+    "'confluent.params.max_tokens' = '50000'",
+    ]) : join(",\n      ", [
+    "'provider' = 'bedrock'",
+    "'task' = 'text_generation'",
+    "'bedrock.connection' = '${data.terraform_remote_state.core.outputs.llm_connection_name}'",
+    "'bedrock.params.max_tokens' = '50000'",
+  ])
 }
 
 # Get organization data
@@ -183,7 +198,7 @@ resource "confluent_flink_statement" "remote_mcp_connection_lab3" {
   ]
 }
 
-# Remote MCP model for Lab3 (AWS/Bedrock)
+# Remote MCP model for Lab3 (AWS: CSP Hosted or Bedrock)
 resource "confluent_flink_statement" "remote_mcp_model_lab3_aws" {
   count = local.cloud_provider == "aws" ? 1 : 0
 
@@ -212,10 +227,7 @@ resource "confluent_flink_statement" "remote_mcp_model_lab3_aws" {
     INPUT (prompt STRING)
     OUTPUT (response STRING)
     WITH (
-      'provider' = 'bedrock',
-      'task' = 'text_generation',
-      'bedrock.connection' = '${data.terraform_remote_state.core.outputs.llm_connection_name}',
-      'bedrock.params.max_tokens' = '50000',
+      ${local.aws_mcp_model_with},
       'mcp.connection' = 'remote-mcp-connection'
     );
   EOT
@@ -329,10 +341,10 @@ resource "confluent_flink_statement" "ride_requests_table" {
 resource "null_resource" "generate_flink_sql_summary" {
   # Trigger regeneration when key resources change
   triggers = {
-    remote_mcp_connection = confluent_flink_statement.remote_mcp_connection_lab3.id
-    remote_mcp_model_aws  = local.cloud_provider == "aws" ? confluent_flink_statement.remote_mcp_model_lab3_aws[0].id : ""
+    remote_mcp_connection  = confluent_flink_statement.remote_mcp_connection_lab3.id
+    remote_mcp_model_aws   = local.cloud_provider == "aws" ? confluent_flink_statement.remote_mcp_model_lab3_aws[0].id : ""
     remote_mcp_model_azure = local.cloud_provider == "azure" ? confluent_flink_statement.remote_mcp_model_lab3_azure[0].id : ""
-    ride_requests_table   = confluent_flink_statement.ride_requests_table.id
+    ride_requests_table    = confluent_flink_statement.ride_requests_table.id
   }
 
   provisioner "local-exec" {

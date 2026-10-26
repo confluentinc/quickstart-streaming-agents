@@ -17,6 +17,21 @@ locals {
   mcp_zapier_endpoint    = "https://mcp.zapier.com/api/v1/connect"
   effective_mcp_endpoint = var.mcp_backend == "zapier" ? local.mcp_zapier_endpoint : local.mcp_lambda_endpoint
   effective_mcp_token    = var.mcp_backend == "zapier" ? var.zapier_token : var.mcp_token
+
+  # Core's llm_provider: "confluent" (CSP Hosted, no connection) or "bedrock" on
+  # AWS. Core state from before the output existed was always Bedrock.
+  llm_provider = try(data.terraform_remote_state.core.outputs.llm_provider, "bedrock")
+  aws_mcp_model_with = local.llm_provider == "confluent" ? join(",\n      ", [
+    "'provider' = 'confluent'",
+    "'task' = 'text_generation'",
+    "'confluent.model' = '${try(data.terraform_remote_state.core.outputs.csp_textgen_model, "anthropic.claude-sonnet-4-6")}'",
+    "'confluent.params.max_tokens' = '50000'",
+    ]) : join(",\n      ", [
+    "'provider' = 'bedrock'",
+    "'task' = 'text_generation'",
+    "'bedrock.connection' = '${data.terraform_remote_state.core.outputs.llm_connection_name}'",
+    "'bedrock.params.max_tokens' = '50000'",
+  ])
 }
 
 # Random ID for unique resource names for this lab
@@ -86,7 +101,7 @@ resource "confluent_flink_statement" "remote_mcp_connection" {
   ]
 }
 
-# Create the remote MCP Model via Flink SQL (AWS/Bedrock)
+# Create the remote MCP Model via Flink SQL (AWS: CSP Hosted or Bedrock)
 resource "confluent_flink_statement" "remote_mcp_model_aws" {
   count = local.cloud_provider == "aws" ? 1 : 0
 
@@ -115,10 +130,7 @@ resource "confluent_flink_statement" "remote_mcp_model_aws" {
     INPUT (prompt STRING)
     OUTPUT (response STRING)
     WITH (
-      'provider' = 'bedrock',
-      'task' = 'text_generation',
-      'bedrock.connection' = '${data.terraform_remote_state.core.outputs.llm_connection_name}',
-      'bedrock.params.max_tokens' = '50000',
+      ${local.aws_mcp_model_with},
       'mcp.connection' = 'remote-mcp-connection'
     );
   EOT
@@ -184,8 +196,8 @@ resource "confluent_flink_statement" "remote_mcp_model_azure" {
 resource "null_resource" "generate_flink_sql_summary" {
   # Trigger regeneration when key resources change
   triggers = {
-    mcp_connection = confluent_flink_statement.remote_mcp_connection.id
-    mcp_model_aws  = local.cloud_provider == "aws" ? confluent_flink_statement.remote_mcp_model_aws[0].id : ""
+    mcp_connection  = confluent_flink_statement.remote_mcp_connection.id
+    mcp_model_aws   = local.cloud_provider == "aws" ? confluent_flink_statement.remote_mcp_model_aws[0].id : ""
     mcp_model_azure = local.cloud_provider == "azure" ? confluent_flink_statement.remote_mcp_model_azure[0].id : ""
   }
 

@@ -168,15 +168,15 @@ resource "confluent_service_account" "rtce-reader" {
 }
 
 resource "confluent_role_binding" "rtce-reader-developer-read" {
-  principal   = "User:${confluent_service_account.rtce-reader.id}"
-  role_name   = "DeveloperRead"
+  principal = "User:${confluent_service_account.rtce-reader.id}"
+  role_name = "DeveloperRead"
   # DeveloperRead must target a resource type (topic=*), not the cluster root CRN.
   crn_pattern = "${confluent_kafka_cluster.standard.rbac_crn}/kafka=${confluent_kafka_cluster.standard.id}/topic=*"
 }
 
 resource "confluent_role_binding" "rtce-reader-schema-registry-read" {
-  principal   = "User:${confluent_service_account.rtce-reader.id}"
-  role_name   = "DeveloperRead"
+  principal = "User:${confluent_service_account.rtce-reader.id}"
+  role_name = "DeveloperRead"
   # SchemaRegistryRead is not a valid role; DeveloperRead on subject=* is the SR equivalent.
   crn_pattern = "${data.confluent_schema_registry_cluster.sr-cluster.resource_name}/subject=*"
 }
@@ -280,10 +280,44 @@ resource "confluent_kafka_acl" "app-manager-read-on-group" {
 # LLM INFRASTRUCTURE — CONDITIONAL PER CLOUD PROVIDER
 # ------------------------------------------------------
 
-# --- AWS Bedrock Connections (only when cloud_provider == "aws") ---
+# llm_provider = "confluent" swaps the Bedrock connections for CSP Hosted Flink
+# Model Inference: Confluent runs the models in its own AWS account, so there is
+# no connection and no AWS key. Same model names either way, so the lab SQL
+# doesn't change. Switching an already-applied deployment re-runs CREATE MODEL
+# IF NOT EXISTS against an existing name (a no-op) — tear down first.
+locals {
+  use_bedrock = var.cloud_provider == "aws" && var.llm_provider == "bedrock"
+
+  # "azureopenai" on Azure regardless of llm_provider; labs branch on this output.
+  effective_llm_provider = var.cloud_provider == "azure" ? "azureopenai" : var.llm_provider
+
+  aws_textgen_with = local.use_bedrock ? join(", ", [
+    "'provider' = 'bedrock'",
+    "'task' = 'text_generation'",
+    "'bedrock.connection' = '${one(confluent_flink_connection.bedrock_connection[*].display_name)}'",
+    "'bedrock.params.max_tokens' = '50000'",
+    ]) : join(", ", [
+    "'provider' = 'confluent'",
+    "'task' = 'text_generation'",
+    "'confluent.model' = '${var.csp_textgen_model}'",
+    "'confluent.params.max_tokens' = '50000'",
+  ])
+
+  aws_embedding_with = local.use_bedrock ? join(", ", [
+    "'provider' = 'bedrock'",
+    "'task' = 'embedding'",
+    "'bedrock.connection' = '${one(confluent_flink_connection.bedrock_embedding_connection[*].display_name)}'",
+    ]) : join(", ", [
+    "'provider' = 'confluent'",
+    "'task' = 'embedding'",
+    "'confluent.model' = '${var.csp_embedding_model}'",
+  ])
+}
+
+# --- AWS Bedrock Connections (only when cloud_provider == "aws" and llm_provider == "bedrock") ---
 
 resource "confluent_flink_connection" "bedrock_connection" {
-  count = var.cloud_provider == "aws" ? 1 : 0
+  count = local.use_bedrock ? 1 : 0
 
   organization {
     id = data.confluent_organization.main.id
@@ -321,7 +355,7 @@ resource "confluent_flink_connection" "bedrock_connection" {
 }
 
 resource "confluent_flink_connection" "bedrock_embedding_connection" {
-  count = var.cloud_provider == "aws" ? 1 : 0
+  count = local.use_bedrock ? 1 : 0
 
   organization {
     id = data.confluent_organization.main.id
@@ -436,7 +470,7 @@ resource "confluent_flink_connection" "azureopenai_embedding_connection" {
 
 # --- LLM Models (conditional per cloud) ---
 
-# Text Generation Model — AWS (Bedrock)
+# Text Generation Model — AWS (CSP Hosted or Bedrock, per llm_provider)
 resource "confluent_flink_statement" "llm_textgen_model_aws" {
   count = var.cloud_provider == "aws" ? 1 : 0
 
@@ -458,7 +492,7 @@ resource "confluent_flink_statement" "llm_textgen_model_aws" {
     secret = confluent_api_key.app-manager-flink-api-key.secret
   }
 
-  statement = "CREATE MODEL IF NOT EXISTS `${confluent_environment.staging.display_name}`.`${confluent_kafka_cluster.standard.display_name}`.`llm_textgen_model` INPUT (prompt STRING) OUTPUT (response STRING) WITH ( 'provider' = 'bedrock', 'task' = 'text_generation', 'bedrock.connection' = '${confluent_flink_connection.bedrock_connection[0].display_name}', 'bedrock.params.max_tokens' = '50000' );"
+  statement = "CREATE MODEL IF NOT EXISTS `${confluent_environment.staging.display_name}`.`${confluent_kafka_cluster.standard.display_name}`.`llm_textgen_model` INPUT (prompt STRING) OUTPUT (response STRING) WITH ( ${local.aws_textgen_with} );"
 
   properties = {
     "sql.current-catalog"  = confluent_environment.staging.display_name
@@ -504,7 +538,7 @@ resource "confluent_flink_statement" "llm_textgen_model_azure" {
   ]
 }
 
-# Embedding Model — AWS (Bedrock)
+# Embedding Model — AWS (CSP Hosted or Bedrock, per llm_provider)
 resource "confluent_flink_statement" "llm_embedding_model_aws" {
   count = var.cloud_provider == "aws" ? 1 : 0
 
@@ -526,7 +560,7 @@ resource "confluent_flink_statement" "llm_embedding_model_aws" {
     secret = confluent_api_key.app-manager-flink-api-key.secret
   }
 
-  statement = "CREATE MODEL IF NOT EXISTS `${confluent_environment.staging.display_name}`.`${confluent_kafka_cluster.standard.display_name}`.`llm_embedding_model` INPUT (text STRING) OUTPUT (embedding ARRAY<FLOAT>) WITH ( 'provider' = 'bedrock', 'task' = 'embedding', 'bedrock.connection' = '${confluent_flink_connection.bedrock_embedding_connection[0].display_name}' );"
+  statement = "CREATE MODEL IF NOT EXISTS `${confluent_environment.staging.display_name}`.`${confluent_kafka_cluster.standard.display_name}`.`llm_embedding_model` INPUT (text STRING) OUTPUT (embedding ARRAY<FLOAT>) WITH ( ${local.aws_embedding_with} );"
 
   properties = {
     "sql.current-catalog"  = confluent_environment.staging.display_name

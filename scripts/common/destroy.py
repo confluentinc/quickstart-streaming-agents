@@ -180,7 +180,7 @@ def main():
     else:
         # Step 0: Ensure Confluent CLI login
         env_creds = dotenv_values(str(root / "credentials.env"))
-        ensure_confluent_login(env_creds)
+        ensure_confluent_login(env_creds, interactive=True)
         print("✓ Confluent CLI logged in")
 
         # Step 1: Select cloud provider

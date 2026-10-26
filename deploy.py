@@ -24,7 +24,17 @@ from scripts.common.credentials import (
     load_or_create_credentials_file,
     generate_confluent_api_keys,
 )
-from scripts.common.login_checks import ensure_confluent_login, _attempt_login_quiet
+from scripts.common.llm_provider import (
+    LLM_PROVIDER_KEY,
+    LLM_PROVIDERS,
+    llm_provider_for,
+)
+from scripts.common.login_checks import (
+    SSO_NOTE,
+    _attempt_login_quiet,
+    check_confluent_login,
+    ensure_confluent_login,
+)
 from scripts.common.terraform import get_project_root, run_terraform_output
 from scripts.common.terraform_runner import run_terraform
 from scripts.common.tfvars import write_tfvars_for_deployment
@@ -60,6 +70,24 @@ AZURE_REGIONS = [
     "eastasia",
     "centralindia",
 ]
+
+# TEMPORARY: skip the "Select cloud provider" prompt and deploy to AWS, the only
+# cloud wired up for CSP Hosted inference. The Azure flow is untouched — set
+# PROMPT_FOR_CLOUD = True to offer it again.
+PROMPT_FOR_CLOUD = False
+DEFAULT_CLOUD = "aws"
+
+# TEMPORARY: skip the "What would you like to deploy?" prompt and deploy Lab 1, the
+# only lab in the current workshop. Set PROMPT_FOR_LAB = True to offer every lab again.
+PROMPT_FOR_LAB = False
+DEFAULT_LAB = "Lab 1: Price matching"
+
+# Labs whose walkthrough has the user start a data generator right after deploy.
+# Lab 2 (interactive publish_queries) and Lab 4 (Terraform publishes claims) have none.
+LAB_DATAGENS = {
+    "lab1-tool-calling": ("Lab 1", "lab1_datagen"),
+    "lab3-agentic-fleet-management": ("Lab 3", "lab3_datagen"),
+}
 
 # Module-level buffer for Plan B fallback when set_key() fails on Windows
 _pending_writes: dict = {}
@@ -180,6 +208,36 @@ def inject_flink_url_into_walkthrough(root: Path, flink_url: str) -> bool:
         return False
 
 
+def _start_datagen(root: Path, script: str) -> None:
+    """Run a lab data generator in the background, logging to logs/<script>.log."""
+    log = root / "logs" / f"{script}.log"
+    log.parent.mkdir(exist_ok=True)
+    with open(log, "a", encoding="utf-8") as out:
+        proc = subprocess.Popen(
+            ["uv", "run", script, "--local"],
+            cwd=root,
+            stdin=subprocess.DEVNULL,
+            stdout=out,
+            stderr=subprocess.STDOUT,
+            start_new_session=True,
+            env={**os.environ, "PYTHONUNBUFFERED": "1"},
+        )
+    # The datagen spawns publish_*_data as a child, so stop the whole process group
+    stop = f"taskkill /PID {proc.pid} /T /F" if os.name == "nt" else f"kill -- -{proc.pid}"
+    print(f"✓ {script} running in the background (log: {log.relative_to(root)}; stop with `{stop}`)")
+
+
+def offer_datagens(root: Path, envs_to_deploy: list) -> None:
+    """Print each deployed lab's datagen command and offer to start it now."""
+    for env, (lab, script) in LAB_DATAGENS.items():
+        if env not in envs_to_deploy:
+            continue
+        print(f"\nNext step for {lab}: uv run {script} --local")
+        answer = input(f"Start {lab} data generator in the background now? (Y/n): ")
+        if answer.strip().lower() in ("", "y", "yes"):
+            _start_datagen(root, script)
+
+
 def main():
     """Main entry point for deploy."""
     # Parse command-line arguments
@@ -196,10 +254,17 @@ def main():
         action="store_true",
         help="Non-interactive mode: load credentials from credentials.env, skip all prompts, and run MCP setup automatically after deploy",
     )
+    parser.add_argument(
+        "--bedrock",
+        action="store_true",
+        help="Back the AWS LLM models with AWS Bedrock (your own AWS keys) instead of CSP Hosted inference",
+    )
     args = parser.parse_args()
 
     if args.automated and args.testing:
         parser.error("--automated and --testing are mutually exclusive")
+    if args.bedrock:
+        os.environ[LLM_PROVIDER_KEY] = "bedrock"
 
     print("=== Simple Deployment Tool ===\n")
     if args.testing:
@@ -225,6 +290,9 @@ def main():
 
         cloud = creds.get("TF_VAR_cloud_provider", "").lower()
         region = creds.get("TF_VAR_cloud_region", "")
+        llm_provider = llm_provider_for(root, creds) if cloud == "aws" else ""
+        if llm_provider:
+            creds[LLM_PROVIDER_KEY] = llm_provider
         mcp_backend = (creds.get("TF_VAR_mcp_backend") or "lambda").lower()
         if mcp_backend not in ("lambda", "zapier"):
             print(
@@ -239,7 +307,7 @@ def main():
             "TF_VAR_cloud_provider": "Cloud Provider (aws or azure)",
             "TF_VAR_cloud_region": "Cloud Region",
         }
-        if cloud == "aws":
+        if cloud == "aws" and llm_provider == "bedrock":
             required["TF_VAR_aws_bedrock_access_key"] = "AWS Bedrock Access Key"
             required["TF_VAR_aws_bedrock_secret_key"] = "AWS Bedrock Secret Key"
         elif cloud == "azure":
@@ -278,6 +346,8 @@ def main():
         print(f"✓ Credentials loaded from credentials.env")
         print(f"  Cloud: {cloud}")
         print(f"  Region: {region}")
+        if llm_provider:
+            print(f"  LLM: {LLM_PROVIDERS[llm_provider]}")
         print(f"  Deploying: {', '.join(envs_to_deploy)}")
         print()
 
@@ -293,17 +363,19 @@ def main():
         creds_file, env_creds = load_or_create_credentials_file(root)
 
         # 0a. Prompt for credentials only if NOT already saved
+        # (A live CLI session, e.g. from SSO, needs no prompt.)
         if not (
             env_creds.get("CONFLUENT_EMAIL") and env_creds.get("CONFLUENT_PASSWORD")
-        ):
+        ) and not check_confluent_login():
             print(
                 "\nConfluent Cloud login (credentials will be saved to credentials.env for auto-login):"
             )
+            print(f"  {SSO_NOTE}")
             for attempt in range(3):
-                email = input("  Email (press Enter to skip): ").strip()
+                email = input("  Email (press Enter if you use SSO or want to skip): ").strip()
                 if not email:
                     print(
-                        "  Skipped. You'll need to run `confluent login` manually if your session expires."
+                        "  Skipped. SSO users will be offered a single sign-on login next."
                     )
                     break
                 password = prompt_secret("  Password: ")
@@ -325,15 +397,19 @@ def main():
                             "  Login failed. Skipping. You'll need to run `confluent login` manually."
                         )
                         print(
-                            "  (If your account uses SSO, run `confluent login --sso` instead.)"
+                            "  (If your account uses SSO, run `confluent login --no-browser` instead.)"
                         )
 
         # 0b. Final assurance — works whether just authenticated, already logged in, or has saved creds
-        ensure_confluent_login(env_creds)
+        ensure_confluent_login(env_creds, interactive=True)
         print("✓ Confluent CLI logged in")
 
-        # Step 1: Select cloud provider
-        cloud = prompt_choice("Select cloud provider:", ["aws", "azure"])
+        # Step 1: Select cloud provider (temporarily fixed to AWS — see PROMPT_FOR_CLOUD)
+        if PROMPT_FOR_CLOUD:
+            cloud = prompt_choice("Select cloud provider:", ["aws", "azure"])
+        else:
+            cloud = DEFAULT_CLOUD
+            print(f"\nCloud provider: {cloud}")
 
         # Step 2: Set cloud region (hardcoded for simplicity)
         # Note: AWS MUST use us-east-1, Azure MUST use eastus2 for workshop mode compatibility
@@ -342,6 +418,11 @@ def main():
 
         # Use the credentials loaded in Step 0
         creds = env_creds
+
+        # LLM provider (AWS only): CSP Hosted by default, Bedrock with --bedrock
+        llm_provider = llm_provider_for(root, creds) if cloud == "aws" else ""
+        if llm_provider:
+            print(f"LLM: {LLM_PROVIDERS[llm_provider]}")
 
         # Step 3: Generate Confluent API keys (optional)
         generate = (
@@ -366,7 +447,11 @@ def main():
             "Lab 4: FEMA Fraud Detection",
             "All Labs (Labs 1, 2, 3, and 4)",
         ]
-        env_choice = prompt_choice("What would you like to deploy?", deploy_options)
+        if PROMPT_FOR_LAB:
+            env_choice = prompt_choice("What would you like to deploy?", deploy_options)
+        else:
+            env_choice = DEFAULT_LAB
+            print(f"\nDeploying: {env_choice}")
 
         # Map user-friendly choice to deployment targets (core auto-included for labs)
         if env_choice == "Lab 1: Price matching":
@@ -413,8 +498,8 @@ def main():
         _save_env_safe(creds_file, "TF_VAR_confluent_cloud_api_key", api_key)
         _save_env_safe(creds_file, "TF_VAR_confluent_cloud_api_secret", api_secret)
 
-        # AWS Bedrock credentials
-        if cloud == "aws":
+        # AWS Bedrock credentials (--bedrock only; CSP Hosted inference needs none)
+        if cloud == "aws" and llm_provider == "bedrock":
             aws_bedrock_key = prompt_with_default(
                 "AWS Bedrock Access Key", creds.get("TF_VAR_aws_bedrock_access_key", "")
             )
@@ -671,6 +756,8 @@ def main():
         # Set cloud region and cloud provider
         _save_env_safe(creds_file, "TF_VAR_cloud_region", region)
         _save_env_safe(creds_file, "TF_VAR_cloud_provider", cloud)
+        if llm_provider:
+            _save_env_safe(creds_file, LLM_PROVIDER_KEY, llm_provider)
 
         # Step 5.5: Validate configurations (advisory only, never blocks deployment)
         needs_mcp = (
@@ -808,6 +895,8 @@ def main():
 
         print(f"\nCloud: {cloud}")
         print(f"Region: {region}")
+        if llm_provider:
+            print(f"LLM: {LLM_PROVIDERS[llm_provider]}")
         print(f"Deploying: {', '.join(envs_to_deploy)}")
 
         confirm = input("\nReady to deploy? (y/n): ").strip().lower()
@@ -861,6 +950,9 @@ def main():
                         inject_flink_url_into_walkthrough(root, flink_url)
             except Exception as e:
                 print(f"\n⚠ Could not read Terraform outputs: {e}")
+
+    if not args.automated and not args.testing:
+        offer_datagens(root, envs_to_deploy)
 
 
 if __name__ == "__main__":
