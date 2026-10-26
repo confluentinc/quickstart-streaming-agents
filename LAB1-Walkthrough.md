@@ -211,7 +211,7 @@ USING PROMPT 'You are a price matching assistant that performs the following ste
 
 3. COMPARE AND NOTIFY: Compare the extracted competitor price with our order price. If the competitor price is lower than our price, use the send_email tool to send a price match notification email. Use the exact format provided in the prompt for the email subject and body.
 
-Return your results in this exact format:
+Return your results in this exact format, as plain text with no markdown, bold, or emoji:
 
 Competitor Price:
 [price as XX.XX, or "Not found"]
@@ -248,8 +248,8 @@ SELECT
     pmi.customer_email,
     CAST(CAST(pmi.order_price AS DECIMAL(10, 2)) AS STRING) as order_price,
     agent_result.status as agent_status,
-    TRIM(REGEXP_EXTRACT(CAST(agent_result.response AS STRING), '\*{0,2}Competitor Price:\*{0,2}\s*\n?([\s\S]+?)(?=\n\*{0,2}(?:Decision|Summary):|$)', 1)) AS competitor_price,
-    TRIM(REGEXP_EXTRACT(CAST(agent_result.response AS STRING), '\*{0,2}Decision:\*{0,2}\s*\n?([A-Z_]+)', 1)) AS decision,
+    TRIM(REGEXP_EXTRACT(CAST(agent_result.response AS STRING), '\*{0,2}Competitor Price:\*{0,2}\s*\**([\s\S]+?)\**\s*(?=\n\*{0,2}(?:Decision|Summary):|$)', 1)) AS competitor_price,
+    TRIM(REGEXP_EXTRACT(CAST(agent_result.response AS STRING), '\*{0,2}Decision:\*{0,2}\s*\**([A-Z_]+)', 1)) AS decision,
     TRIM(REGEXP_EXTRACT(CAST(agent_result.response AS STRING), '\*{0,2}Summary:\*{0,2}\s*\n?([\s\S]+?)$', 1)) AS summary,
     CAST(agent_result.response AS STRING) AS raw_response
 FROM enriched_orders pmi,
