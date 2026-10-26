@@ -77,6 +77,11 @@ AZURE_REGIONS = [
 PROMPT_FOR_CLOUD = False
 DEFAULT_CLOUD = "aws"
 
+# TEMPORARY: skip the "What would you like to deploy?" prompt and deploy Lab 1, the
+# only lab in the current workshop. Set PROMPT_FOR_LAB = True to offer every lab again.
+PROMPT_FOR_LAB = False
+DEFAULT_LAB = "Lab 1: Price matching"
+
 # Labs whose walkthrough has the user start a data generator right after deploy.
 # Lab 2 (interactive publish_queries) and Lab 4 (Terraform publishes claims) have none.
 LAB_DATAGENS = {
@@ -442,7 +447,11 @@ def main():
             "Lab 4: FEMA Fraud Detection",
             "All Labs (Labs 1, 2, 3, and 4)",
         ]
-        env_choice = prompt_choice("What would you like to deploy?", deploy_options)
+        if PROMPT_FOR_LAB:
+            env_choice = prompt_choice("What would you like to deploy?", deploy_options)
+        else:
+            env_choice = DEFAULT_LAB
+            print(f"\nDeploying: {env_choice}")
 
         # Map user-friendly choice to deployment targets (core auto-included for labs)
         if env_choice == "Lab 1: Price matching":
