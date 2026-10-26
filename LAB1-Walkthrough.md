@@ -44,13 +44,12 @@ winget install astral-sh.uv Git.Git Hashicorp.Terraform ConfluentInc.Confluent-C
 >
 > The credentials below are not required in instructor-led workshops — they will be provided for you.
 
-- **LLM Access:** AWS Bedrock API keys **OR** Azure OpenAI endpoint + API key
-  - No AWS/Azure account required - just the LLM API credentials!
-  - **Easy key creation:** Run `uv run api-keys create` to quickly generate ready-to-use credentials
+- **LLM Access:** None needed by default — `uv run deploy` uses **CSP Hosted model inference**, so Confluent runs Claude Sonnet 4.6 for you with no AWS account or keys.
+  - **Prefer your own AWS Bedrock keys?** Run `uv run deploy --bedrock` instead. `uv run api-keys create` generates ready-to-use credentials.
 
 > [!WARNING]
 >
-> **AWS Bedrock Users:** You must request access to Claude Sonnet 4.5 by filling out an Anthropic use case form. Visit the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog), select Claude Sonnet 4.5, open it in the Playground, and send a message - the form will appear automatically.
+> **`--bedrock` users:** You must request access to Claude Sonnet 4.5 by filling out an Anthropic use case form. Visit the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog), select Claude Sonnet 4.5, open it in the Playground, and send a message - the form will appear automatically.
 
 - **Remote MCP server backend:** Lab 1 calls a remote MCP server for HTTP fetch and email send. `uv run deploy` will prompt you to choose:
   - **Confluent-hosted remote MCP server (Recommended)** — No setup on your end; obtain a token by asking your presenter, or, if you're a Confluent employee, see `go/mcp-keys` or `#help-tmm`.
@@ -96,12 +95,11 @@ winget install astral-sh.uv Git.Git Hashicorp.Terraform ConfluentInc.Confluent-C
    | Prompt | Where to get it |
    |---|---|
    | Confluent Cloud email / password | The **email and password you used to sign up** (**single sign-on?** Log into the Confluent CLI first with `confluent login --no-browser`, then press Enter at this prompt. If you skip that, `deploy` offers to run the SSO login for you) |
-   | Select cloud provider | `aws` |
    | Generate new Confluent Cloud API keys? | Answer `y` — `uv` creates the API key and secret for you |
    | What would you like to deploy? | **Lab 1: Price matching** |
    | Remote MCP server backend | **Confluent-hosted remote MCP server (Recommended)** |
    | Confluent Cloud API Key / Secret | Press **Enter** to confirm the key and secret `uv` just created |
-   | AWS Bedrock Access Key / Secret Key | The AWS Bedrock key your instructor gave you (or one from `uv run api-keys create`) |
+   | AWS Bedrock Access Key / Secret Key | **`--bedrock` only** — your AWS Bedrock key (or one from `uv run api-keys create`). The default CSP Hosted models skip this prompt |
    | MCP token | The token your presenter gave you |
    | Email address for Lab 1 price-match notifications | Press **Enter** to use your Confluent Cloud email (or enter another email where you can check your inbox during the lab) — `uv` automatically fills it into the SQL queries below |
 
@@ -334,7 +332,7 @@ Then check out your email for price matched orders:
   - Simply re-run `uv run lab1_datagen --local`. It automatically purges any existing records in `customers`, `products`, and `orders` before publishing fresh data (do **not** drop the `orders`, `customers`, or `products` tables in Flink, as those tables were created by Terraform).
 
 - `Runtime received bad response code 403. Please also double check if your model has multiple versions.` error?
-  - **AWS?** Ensure you've activated Claude Sonnet 4.5 in your AWS account. See: [Prerequisites](#prerequisites)
+  - **Deployed with `--bedrock`?** Ensure you've activated Claude Sonnet 4.5 in your AWS account. See: [Prerequisites](#prerequisites)
   - **Azure?** Increase the tokens per minute quota for your GPT-4 model. Quota is low by default.
 
 - `MCP error -32602: Invalid arguments for tool send_email` error?

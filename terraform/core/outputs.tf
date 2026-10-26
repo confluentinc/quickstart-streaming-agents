@@ -83,14 +83,29 @@ output "cloud_provider" {
   description = "The cloud provider used for deployment (aws or azure)"
 }
 
+output "llm_provider" {
+  value       = local.effective_llm_provider
+  description = "What backs the LLM models: confluent (CSP Hosted), bedrock, or azureopenai"
+}
+
+output "csp_textgen_model" {
+  value       = var.csp_textgen_model
+  description = "CSP Hosted text-generation model id (used when llm_provider == confluent)"
+}
+
+output "csp_embedding_model" {
+  value       = var.csp_embedding_model
+  description = "CSP Hosted embedding model id (used when llm_provider == confluent)"
+}
+
 output "llm_connection_name" {
-  value       = var.cloud_provider == "aws" ? confluent_flink_connection.bedrock_connection[0].display_name : confluent_flink_connection.azureopenai_connection[0].display_name
-  description = "The name of the LLM connection (llm-textgen-connection)"
+  value       = concat(confluent_flink_connection.bedrock_connection[*].display_name, confluent_flink_connection.azureopenai_connection[*].display_name, [""])[0]
+  description = "The name of the LLM connection (llm-textgen-connection); empty for CSP Hosted, which has no connection"
 }
 
 output "llm_embedding_connection_name" {
-  value       = var.cloud_provider == "aws" ? confluent_flink_connection.bedrock_embedding_connection[0].display_name : confluent_flink_connection.azureopenai_embedding_connection[0].display_name
-  description = "The name of the LLM embedding connection (llm-embedding-connection)"
+  value       = concat(confluent_flink_connection.bedrock_embedding_connection[*].display_name, confluent_flink_connection.azureopenai_embedding_connection[*].display_name, [""])[0]
+  description = "The name of the LLM embedding connection (llm-embedding-connection); empty for CSP Hosted"
 }
 
 output "confluent_environment_display_name" {

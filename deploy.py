@@ -24,6 +24,11 @@ from scripts.common.credentials import (
     load_or_create_credentials_file,
     generate_confluent_api_keys,
 )
+from scripts.common.llm_provider import (
+    LLM_PROVIDER_KEY,
+    LLM_PROVIDERS,
+    llm_provider_for,
+)
 from scripts.common.login_checks import (
     SSO_NOTE,
     _attempt_login_quiet,
@@ -65,6 +70,12 @@ AZURE_REGIONS = [
     "eastasia",
     "centralindia",
 ]
+
+# TEMPORARY: skip the "Select cloud provider" prompt and deploy to AWS, the only
+# cloud wired up for CSP Hosted inference. The Azure flow is untouched — set
+# PROMPT_FOR_CLOUD = True to offer it again.
+PROMPT_FOR_CLOUD = False
+DEFAULT_CLOUD = "aws"
 
 # Labs whose walkthrough has the user start a data generator right after deploy.
 # Lab 2 (interactive publish_queries) and Lab 4 (Terraform publishes claims) have none.
@@ -238,10 +249,17 @@ def main():
         action="store_true",
         help="Non-interactive mode: load credentials from credentials.env, skip all prompts, and run MCP setup automatically after deploy",
     )
+    parser.add_argument(
+        "--bedrock",
+        action="store_true",
+        help="Back the AWS LLM models with AWS Bedrock (your own AWS keys) instead of CSP Hosted inference",
+    )
     args = parser.parse_args()
 
     if args.automated and args.testing:
         parser.error("--automated and --testing are mutually exclusive")
+    if args.bedrock:
+        os.environ[LLM_PROVIDER_KEY] = "bedrock"
 
     print("=== Simple Deployment Tool ===\n")
     if args.testing:
@@ -267,6 +285,9 @@ def main():
 
         cloud = creds.get("TF_VAR_cloud_provider", "").lower()
         region = creds.get("TF_VAR_cloud_region", "")
+        llm_provider = llm_provider_for(root, creds) if cloud == "aws" else ""
+        if llm_provider:
+            creds[LLM_PROVIDER_KEY] = llm_provider
         mcp_backend = (creds.get("TF_VAR_mcp_backend") or "lambda").lower()
         if mcp_backend not in ("lambda", "zapier"):
             print(
@@ -281,7 +302,7 @@ def main():
             "TF_VAR_cloud_provider": "Cloud Provider (aws or azure)",
             "TF_VAR_cloud_region": "Cloud Region",
         }
-        if cloud == "aws":
+        if cloud == "aws" and llm_provider == "bedrock":
             required["TF_VAR_aws_bedrock_access_key"] = "AWS Bedrock Access Key"
             required["TF_VAR_aws_bedrock_secret_key"] = "AWS Bedrock Secret Key"
         elif cloud == "azure":
@@ -320,6 +341,8 @@ def main():
         print(f"✓ Credentials loaded from credentials.env")
         print(f"  Cloud: {cloud}")
         print(f"  Region: {region}")
+        if llm_provider:
+            print(f"  LLM: {LLM_PROVIDERS[llm_provider]}")
         print(f"  Deploying: {', '.join(envs_to_deploy)}")
         print()
 
@@ -376,8 +399,12 @@ def main():
         ensure_confluent_login(env_creds, interactive=True)
         print("✓ Confluent CLI logged in")
 
-        # Step 1: Select cloud provider
-        cloud = prompt_choice("Select cloud provider:", ["aws", "azure"])
+        # Step 1: Select cloud provider (temporarily fixed to AWS — see PROMPT_FOR_CLOUD)
+        if PROMPT_FOR_CLOUD:
+            cloud = prompt_choice("Select cloud provider:", ["aws", "azure"])
+        else:
+            cloud = DEFAULT_CLOUD
+            print(f"\nCloud provider: {cloud}")
 
         # Step 2: Set cloud region (hardcoded for simplicity)
         # Note: AWS MUST use us-east-1, Azure MUST use eastus2 for workshop mode compatibility
@@ -386,6 +413,11 @@ def main():
 
         # Use the credentials loaded in Step 0
         creds = env_creds
+
+        # LLM provider (AWS only): CSP Hosted by default, Bedrock with --bedrock
+        llm_provider = llm_provider_for(root, creds) if cloud == "aws" else ""
+        if llm_provider:
+            print(f"LLM: {LLM_PROVIDERS[llm_provider]}")
 
         # Step 3: Generate Confluent API keys (optional)
         generate = (
@@ -457,8 +489,8 @@ def main():
         _save_env_safe(creds_file, "TF_VAR_confluent_cloud_api_key", api_key)
         _save_env_safe(creds_file, "TF_VAR_confluent_cloud_api_secret", api_secret)
 
-        # AWS Bedrock credentials
-        if cloud == "aws":
+        # AWS Bedrock credentials (--bedrock only; CSP Hosted inference needs none)
+        if cloud == "aws" and llm_provider == "bedrock":
             aws_bedrock_key = prompt_with_default(
                 "AWS Bedrock Access Key", creds.get("TF_VAR_aws_bedrock_access_key", "")
             )
@@ -715,6 +747,8 @@ def main():
         # Set cloud region and cloud provider
         _save_env_safe(creds_file, "TF_VAR_cloud_region", region)
         _save_env_safe(creds_file, "TF_VAR_cloud_provider", cloud)
+        if llm_provider:
+            _save_env_safe(creds_file, LLM_PROVIDER_KEY, llm_provider)
 
         # Step 5.5: Validate configurations (advisory only, never blocks deployment)
         needs_mcp = (
@@ -852,6 +886,8 @@ def main():
 
         print(f"\nCloud: {cloud}")
         print(f"Region: {region}")
+        if llm_provider:
+            print(f"LLM: {LLM_PROVIDERS[llm_provider]}")
         print(f"Deploying: {', '.join(envs_to_deploy)}")
 
         confirm = input("\nReady to deploy? (y/n): ").strip().lower()
