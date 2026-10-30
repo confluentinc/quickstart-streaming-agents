@@ -18,9 +18,10 @@ locals {
   effective_mcp_endpoint = var.mcp_backend == "zapier" ? local.mcp_zapier_endpoint : local.mcp_lambda_endpoint
   effective_mcp_token    = var.mcp_backend == "zapier" ? var.zapier_token : var.mcp_token
 
-  # Core's llm_provider: "confluent" (CSP Hosted, no connection) or "bedrock" on
-  # AWS. Core state from before the output existed was always Bedrock.
-  llm_provider = try(data.terraform_remote_state.core.outputs.llm_provider, "bedrock")
+  # Core's llm_provider: "confluent" (CSP Hosted, no connection) on either cloud,
+  # "bedrock" on AWS or "azureopenai" on Azure. Core state from before the output
+  # existed was always Bedrock (AWS) / Azure OpenAI (Azure).
+  llm_provider = try(data.terraform_remote_state.core.outputs.llm_provider, local.cloud_provider == "azure" ? "azureopenai" : "bedrock")
   aws_mcp_model_with = local.llm_provider == "confluent" ? join(",\n      ", [
     "'provider' = 'confluent'",
     "'task' = 'text_generation'",
@@ -31,6 +32,15 @@ locals {
     "'task' = 'text_generation'",
     "'bedrock.connection' = '${data.terraform_remote_state.core.outputs.llm_connection_name}'",
     "'bedrock.params.max_tokens' = '50000'",
+  ])
+  azure_mcp_model_with = local.llm_provider == "confluent" ? join(",\n      ", [
+    "'provider' = 'confluent'",
+    "'task' = 'text_generation'",
+    "'confluent.model' = '${try(data.terraform_remote_state.core.outputs.csp_textgen_model, "openai.gpt-5.4-mini")}'",
+    ]) : join(",\n      ", [
+    "'provider' = 'azureopenai'",
+    "'task' = 'text_generation'",
+    "'azureopenai.connection' = '${data.terraform_remote_state.core.outputs.llm_connection_name}'",
   ])
 }
 
@@ -145,7 +155,7 @@ resource "confluent_flink_statement" "remote_mcp_model_aws" {
   ]
 }
 
-# Create the remote MCP Model via Flink SQL (Azure/OpenAI)
+# Create the remote MCP Model via Flink SQL (Azure: CSP Hosted or Azure OpenAI, per core's llm_provider)
 resource "confluent_flink_statement" "remote_mcp_model_azure" {
   count = local.cloud_provider == "azure" ? 1 : 0
 
@@ -174,9 +184,7 @@ resource "confluent_flink_statement" "remote_mcp_model_azure" {
     INPUT (prompt STRING)
     OUTPUT (response STRING)
     WITH (
-      'provider' = 'azureopenai',
-      'task' = 'text_generation',
-      'azureopenai.connection' = '${data.terraform_remote_state.core.outputs.llm_connection_name}',
+      ${local.azure_mcp_model_with},
       'mcp.connection' = 'remote-mcp-connection'
     );
   EOT

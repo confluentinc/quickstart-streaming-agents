@@ -36,12 +36,12 @@ winget install astral-sh.uv Git.Git Hashicorp.Terraform ConfluentInc.Confluent-C
 >
 > The credentials below are not required in instructor-led workshops — they will be provided for you.
 
-- **LLM Access:** AWS Bedrock API keys **OR** Azure OpenAI endpoint + API key
-  - **Easy key creation:** Run `uv run api-keys create` to quickly auto-generate credentials
+- **LLM Access:** None needed by default — `uv run deploy` uses **CSP Hosted model inference**, so Confluent runs the text generation and embedding models for you (AWS: Claude Sonnet 4.6 and Titan Text Embeddings v2; Azure: GPT-5.4 mini and text-embedding-3-small) with no cloud account or LLM keys.
+  - **Prefer your own keys?** Run `uv run deploy --bedrock` (AWS Bedrock) or `uv run deploy --azure-openai` (Azure OpenAI) instead. `uv run api-keys create` generates ready-to-use credentials.
 
 > [!WARNING]
 >
-> **AWS Bedrock Users:** You must request access to Claude Sonnet 4.5 by filling out an Anthropic use case form. Visit the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog), select Claude Sonnet 4.5, open it in the Playground, and send a message - the form will appear automatically.
+> **`--bedrock` users:** You must request access to Claude Sonnet 4.5 by filling out an Anthropic use case form. Visit the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog), select Claude Sonnet 4.5, open it in the Playground, and send a message - the form will appear automatically.
 
 - **Remote MCP server backend:** Lab 3 calls a remote MCP server for HTTP fetch and HTTP post (vessel catalog lookup + dispatch). `uv run deploy` will prompt you to choose:
   - **Confluent-hosted remote MCP server (Recommended)** — No setup on your end; obtain a token by asking your workshop presenter, or, if you're a Confluent employee, see `go/mcp-keys` or `#help-tmm`.
@@ -69,9 +69,7 @@ Once you have your credentials ready, run the deployment script and choose **Lab
 uv run deploy
 ```
 
-The deployment script will prompt you for your:
-- Cloud provider (AWS/Azure)
-- LLM API keys (Bedrock keys or Azure OpenAI endpoint/key - run `uv run api-keys create` beforehand or see [Workshop Mode Setup Guide](./assets/pre-setup/Workshop-Mode-Setup.md) for more info)
+The deployment script uses CSP Hosted models by default, so it doesn't ask for LLM keys. With `uv run deploy --bedrock` (AWS) or `uv run deploy --azure-openai` (Azure), it prompts for your AWS Bedrock or Azure OpenAI keys (run `uv run api-keys create` beforehand or see [Workshop Mode Setup Guide](./assets/pre-setup/Workshop-Mode-Setup.md) for more info).
 
 ## Usecase Walkthrough
 
@@ -555,8 +553,8 @@ MODIFY (WATERMARK FOR request_ts AS request_ts - INTERVAL '5' SECOND);
   - Press "Stop" on the running `CREATE TABLE anomalies_per_zone` statement in the SQL Workspace. The anomaly detection algorithm expects data to be flowing through it and will go degraded if data generation is stopped. It will automatically resume once data begins flowing again.
 
 - `Runtime received bad response code 403. Please also double check if your model has multiple versions.` error?
-  - **AWS?** Ensure you've activated Claude Sonnet 4.5 in your AWS account. See: [Prerequisites](#prerequisites)
-  - **Azure?** Increase the tokens per minute quota for your GPT-4 model. Quota is low by default.
+  - **Deployed with `--bedrock`?** Ensure you've activated Claude Sonnet 4.5 in your AWS account. See: [Prerequisites](#prerequisites)
+  - **Deployed with `--azure-openai`?** Increase the tokens per minute quota for your `gpt-5-mini` deployment. Quota is low by default.
   </details>
 
 ## 🧹 Clean-up

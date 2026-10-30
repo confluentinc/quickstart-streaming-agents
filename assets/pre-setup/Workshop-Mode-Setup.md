@@ -2,9 +2,13 @@
 
 Workshop mode allows participants to deploy the Streaming Agents quickstart using shared cloud AI credentials without requiring an AWS account or Azure subscription.
 
+> [!NOTE]
+>
+> By default `uv run deploy` uses **CSP Hosted model inference** (Confluent-hosted models, no LLM keys) on both AWS and Azure, so no shared credentials are needed. This guide applies only if you deploy with `uv run deploy --bedrock` (AWS) or `uv run deploy --azure-openai` (Azure).
+
 **Workflow:**
 1. **Before Workshop**: Organizer creates cloud AI credentials with `uv run api-keys create`
-2. **During Workshop**: Participants run `uv run deploy`, select their cloud provider, and enter LLM credentials
+2. **During Workshop**: Participants run `uv run deploy --bedrock` (AWS) or `uv run deploy --azure-openai` (Azure), select their cloud provider, and enter LLM credentials
 3. **After Workshop**: Organizer immediately revokes credentials with `uv run api-keys destroy`
 
 ---
@@ -79,7 +83,7 @@ This creates:
 2. **Run deployment**
 
    ```bash
-   uv run deploy
+   uv run deploy --bedrock
    ```
 
 3. **Enter credentials when prompted**
@@ -174,7 +178,7 @@ This creates:
 
 2. **Run deployment**
    ```bash
-   uv run deploy
+   uv run deploy --azure-openai
    ```
 
 3. **Enter credentials when prompted**

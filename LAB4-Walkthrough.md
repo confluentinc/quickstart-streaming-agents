@@ -25,8 +25,8 @@ winget install astral-sh.uv Git.Git Hashicorp.Terraform ConfluentInc.Confluent-C
 >
 > The credentials below are not required in instructor-led workshops — they will be provided for you.
 
-- **LLM API keys:** AWS Bedrock API keys **OR** Azure OpenAI endpoint + API key
-  - **Easy key creation:** Run `uv run api-keys create` to quickly auto-generate credentials
+- **LLM Access:** None needed by default — `uv run deploy` uses **CSP Hosted model inference**, so Confluent runs the text generation and embedding models for you (AWS: Claude Sonnet 4.6 and Titan Text Embeddings v2; Azure: GPT-5.4 mini and text-embedding-3-small) with no cloud account or LLM keys.
+  - **Prefer your own keys?** Run `uv run deploy --bedrock` (AWS Bedrock) or `uv run deploy --azure-openai` (Azure OpenAI) instead. `uv run api-keys create` generates ready-to-use credentials.
 
 ---
 
@@ -46,9 +46,8 @@ uv run deploy
 ```
 
 The deployment script will prompt you for your:
-- Cloud provider (AWS/Azure)
-- LLM API keys (Bedrock keys or Azure OpenAI endpoint/key)
 - Confluent Cloud credentials
+- AWS Bedrock keys (only with `uv run deploy --bedrock`) or Azure OpenAI endpoint and key (only with `uv run deploy --azure-openai`) — the default CSP Hosted models need none
 
 Select **"Lab 4: FEMA Fraud Detection"** from the menu.
 

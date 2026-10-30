@@ -1,6 +1,6 @@
 # Streaming Agents on Confluent Cloud Quickstart
 
-[![Sign up for Confluent Cloud](https://img.shields.io/badge/Sign%20up%20for%20Confluent%20Cloud-007BFF?style=for-the-badge&logo=apachekafka&logoColor=white)](https://www.confluent.io/confluent-cloud/tryfree/?utm_campaign=tm.plg_cd.techxchange2026&utm_source=lab&utm_medium=github)
+[![Sign up for Confluent Cloud](https://img.shields.io/badge/Sign%20up%20for%20Confluent%20Cloud-007BFF?style=for-the-badge&logo=apachekafka&logoColor=white)](https://www.confluent.io/get-started/?utm_campaign=tm.pmm_cd.q4fy25-quickstart-streaming-agents&utm_source=github&utm_medium=demo)
 
 <div align="center">
   <a href="https://www.youtube.com/watch?v=3fWMD3qqBR8">
@@ -37,8 +37,8 @@ Build real-time AI agents with [Confluent Cloud Streaming Agents](https://docs.c
 
 **Required accounts & credentials:**
 
-- [![Sign up for Confluent Cloud](https://img.shields.io/badge/Sign%20up%20for%20Confluent%20Cloud-007BFF?style=for-the-badge&logo=apachekafka&logoColor=white)](https://www.confluent.io/confluent-cloud/tryfree/?utm_campaign=tm.plg_cd.techxchange2026&utm_source=lab&utm_medium=github)
-- **LLM Provider:** None by default — `uv run deploy` uses CSP Hosted model inference (Confluent-hosted, no AWS keys). Pass `--bedrock` to use your own AWS Bedrock keys instead
+- [![Sign up for Confluent Cloud](https://img.shields.io/badge/Sign%20up%20for%20Confluent%20Cloud-007BFF?style=for-the-badge&logo=apachekafka&logoColor=white)](https://www.confluent.io/get-started/?utm_campaign=tm.pmm_cd.q4fy25-quickstart-streaming-agents&utm_source=github&utm_medium=demo)
+- **LLM Provider:** None by default — `uv run deploy` uses CSP Hosted model inference (Confluent-hosted, no LLM keys) on AWS and Azure. Pass `--bedrock` (AWS) or `--azure-openai` (Azure) to use your own AWS Bedrock or Azure OpenAI keys instead
 
 **Required tools:**
 
@@ -72,7 +72,7 @@ winget install astral-sh.uv Git.Git Docker.DockerDesktop Hashicorp.Terraform Con
 git clone https://github.com/confluentinc/quickstart-streaming-agents.git
 cd quickstart-streaming-agents
 ```
-**2. (Only for `--bedrock`) Auto-generate AWS Bedrock keys:**
+**2. (Only for `--bedrock` / `--azure-openai`) Auto-generate AWS Bedrock or Azure OpenAI keys:**
 
 ```bash
 # Creates API-KEYS-[AWS|AZURE].md and auto-populates them in next step
@@ -82,8 +82,9 @@ uv run api-keys create
 3. **One command deployment:**
 
 ```bash
-uv run deploy            # CSP Hosted models — no AWS keys
-uv run deploy --bedrock  # or: your own AWS Bedrock keys
+uv run deploy                 # CSP Hosted models — no LLM keys (AWS or Azure)
+uv run deploy --bedrock       # or: your own AWS Bedrock keys (AWS)
+uv run deploy --azure-openai  # or: your own Azure OpenAI endpoint and key (Azure)
 ```
 
 That's it! The script will autofill generated credentials and guide you through setup and deployment of your chosen lab(s).

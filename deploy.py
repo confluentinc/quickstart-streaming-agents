@@ -38,7 +38,12 @@ from scripts.common.login_checks import (
 from scripts.common.terraform import get_project_root, run_terraform_output
 from scripts.common.terraform_runner import run_terraform
 from scripts.common.tfvars import write_tfvars_for_deployment
-from scripts.common.ui import display_value, prompt_choice, prompt_secret, prompt_with_default
+from scripts.common.ui import (
+    display_value,
+    prompt_choice,
+    prompt_secret,
+    prompt_with_default,
+)
 from scripts.common.walkthrough import EMAIL_PATTERNS, replace_email
 from scripts.common.validate import (
     validate_aws_bedrock_credentials,
@@ -70,17 +75,6 @@ AZURE_REGIONS = [
     "eastasia",
     "centralindia",
 ]
-
-# TEMPORARY: skip the "Select cloud provider" prompt and deploy to AWS, the only
-# cloud wired up for CSP Hosted inference. The Azure flow is untouched — set
-# PROMPT_FOR_CLOUD = True to offer it again.
-PROMPT_FOR_CLOUD = False
-DEFAULT_CLOUD = "aws"
-
-# TEMPORARY: skip the "What would you like to deploy?" prompt and deploy Lab 1, the
-# only lab in the current workshop. Set PROMPT_FOR_LAB = True to offer every lab again.
-PROMPT_FOR_LAB = False
-DEFAULT_LAB = "Lab 1: Price matching"
 
 # Labs whose walkthrough has the user start a data generator right after deploy.
 # Lab 2 (interactive publish_queries) and Lab 4 (Terraform publishes claims) have none.
@@ -223,8 +217,12 @@ def _start_datagen(root: Path, script: str) -> None:
             env={**os.environ, "PYTHONUNBUFFERED": "1"},
         )
     # The datagen spawns publish_*_data as a child, so stop the whole process group
-    stop = f"taskkill /PID {proc.pid} /T /F" if os.name == "nt" else f"kill -- -{proc.pid}"
-    print(f"✓ {script} running in the background (log: {log.relative_to(root)}; stop with `{stop}`)")
+    stop = (
+        f"taskkill /PID {proc.pid} /T /F" if os.name == "nt" else f"kill -- -{proc.pid}"
+    )
+    print(
+        f"✓ {script} running in the background (log: {log.relative_to(root)}; stop with `{stop}`)"
+    )
 
 
 def offer_datagens(root: Path, envs_to_deploy: list) -> None:
@@ -257,14 +255,23 @@ def main():
     parser.add_argument(
         "--bedrock",
         action="store_true",
-        help="Back the AWS LLM models with AWS Bedrock (your own AWS keys) instead of CSP Hosted inference",
+        help="AWS only: back the LLM models with AWS Bedrock (your own AWS keys) instead of CSP Hosted inference",
+    )
+    parser.add_argument(
+        "--azure-openai",
+        action="store_true",
+        help="Azure only: back the LLM models with Azure OpenAI (your own endpoint and key) instead of CSP Hosted inference",
     )
     args = parser.parse_args()
 
     if args.automated and args.testing:
         parser.error("--automated and --testing are mutually exclusive")
+    if args.bedrock and args.azure_openai:
+        parser.error("--bedrock and --azure-openai are mutually exclusive")
     if args.bedrock:
         os.environ[LLM_PROVIDER_KEY] = "bedrock"
+    elif args.azure_openai:
+        os.environ[LLM_PROVIDER_KEY] = "azureopenai"
 
     print("=== Simple Deployment Tool ===\n")
     if args.testing:
@@ -290,7 +297,9 @@ def main():
 
         cloud = creds.get("TF_VAR_cloud_provider", "").lower()
         region = creds.get("TF_VAR_cloud_region", "")
-        llm_provider = llm_provider_for(root, creds) if cloud == "aws" else ""
+        llm_provider = (
+            llm_provider_for(root, creds, cloud) if cloud in ("aws", "azure") else ""
+        )
         if llm_provider:
             creds[LLM_PROVIDER_KEY] = llm_provider
         mcp_backend = (creds.get("TF_VAR_mcp_backend") or "lambda").lower()
@@ -310,7 +319,7 @@ def main():
         if cloud == "aws" and llm_provider == "bedrock":
             required["TF_VAR_aws_bedrock_access_key"] = "AWS Bedrock Access Key"
             required["TF_VAR_aws_bedrock_secret_key"] = "AWS Bedrock Secret Key"
-        elif cloud == "azure":
+        elif cloud == "azure" and llm_provider == "azureopenai":
             required["TF_VAR_azure_openai_endpoint_raw"] = "Azure OpenAI Endpoint"
             required["TF_VAR_azure_openai_api_key"] = "Azure OpenAI API Key"
 
@@ -364,15 +373,20 @@ def main():
 
         # 0a. Prompt for credentials only if NOT already saved
         # (A live CLI session, e.g. from SSO, needs no prompt.)
-        if not (
-            env_creds.get("CONFLUENT_EMAIL") and env_creds.get("CONFLUENT_PASSWORD")
-        ) and not check_confluent_login():
+        if (
+            not (
+                env_creds.get("CONFLUENT_EMAIL") and env_creds.get("CONFLUENT_PASSWORD")
+            )
+            and not check_confluent_login()
+        ):
             print(
                 "\nConfluent Cloud login (credentials will be saved to credentials.env for auto-login):"
             )
             print(f"  {SSO_NOTE}")
             for attempt in range(3):
-                email = input("  Email (press Enter if you use SSO or want to skip): ").strip()
+                email = input(
+                    "  Email (press Enter if you use SSO or want to skip): "
+                ).strip()
                 if not email:
                     print(
                         "  Skipped. SSO users will be offered a single sign-on login next."
@@ -404,12 +418,8 @@ def main():
         ensure_confluent_login(env_creds, interactive=True)
         print("✓ Confluent CLI logged in")
 
-        # Step 1: Select cloud provider (temporarily fixed to AWS — see PROMPT_FOR_CLOUD)
-        if PROMPT_FOR_CLOUD:
-            cloud = prompt_choice("Select cloud provider:", ["aws", "azure"])
-        else:
-            cloud = DEFAULT_CLOUD
-            print(f"\nCloud provider: {cloud}")
+        # Step 1: Select cloud provider
+        cloud = prompt_choice("Select cloud provider:", ["aws", "azure"])
 
         # Step 2: Set cloud region (hardcoded for simplicity)
         # Note: AWS MUST use us-east-1, Azure MUST use eastus2 for workshop mode compatibility
@@ -419,8 +429,8 @@ def main():
         # Use the credentials loaded in Step 0
         creds = env_creds
 
-        # LLM provider (AWS only): CSP Hosted by default, Bedrock with --bedrock
-        llm_provider = llm_provider_for(root, creds) if cloud == "aws" else ""
+        # LLM provider: CSP Hosted by default; --bedrock (AWS) / --azure-openai (Azure)
+        llm_provider = llm_provider_for(root, creds, cloud)
         if llm_provider:
             print(f"LLM: {LLM_PROVIDERS[llm_provider]}")
 
@@ -447,11 +457,7 @@ def main():
             "Lab 4: FEMA Fraud Detection",
             "All Labs (Labs 1, 2, 3, and 4)",
         ]
-        if PROMPT_FOR_LAB:
-            env_choice = prompt_choice("What would you like to deploy?", deploy_options)
-        else:
-            env_choice = DEFAULT_LAB
-            print(f"\nDeploying: {env_choice}")
+        env_choice = prompt_choice("What would you like to deploy?", deploy_options)
 
         # Map user-friendly choice to deployment targets (core auto-included for labs)
         if env_choice == "Lab 1: Price matching":
@@ -621,8 +627,8 @@ def main():
                         print("Deployment cancelled.")
                         sys.exit(1)
 
-        # Azure OpenAI credentials
-        if cloud == "azure":
+        # Azure OpenAI credentials (--azure-openai only; CSP Hosted inference needs none)
+        if cloud == "azure" and llm_provider == "azureopenai":
             azure_openai_endpoint = prompt_with_default(
                 "Azure OpenAI Endpoint",
                 creds.get("TF_VAR_azure_openai_endpoint_raw", ""),
@@ -743,9 +749,7 @@ def main():
 
         if "lab1-tool-calling" in envs_to_deploy:
             default_lab1_email = (
-                creds.get("LAB1_EMAIL")
-                or creds.get("CONFLUENT_EMAIL")
-                or ""
+                creds.get("LAB1_EMAIL") or creds.get("CONFLUENT_EMAIL") or ""
             )
             lab1_email = prompt_with_default(
                 "Email address for Lab 1 price-match notifications",
@@ -942,9 +946,7 @@ def main():
                 if env_name:
                     print(f"\nEnvironment name: {env_name}")
                 if env_id:
-                    flink_url = (
-                        f"https://confluent.cloud/environments/{env_id}/flink"
-                    )
+                    flink_url = f"https://confluent.cloud/environments/{env_id}/flink"
                     print(f"Flink SQL Workspace: {flink_url}")
                     if "lab1-tool-calling" in envs_to_deploy and not args.testing:
                         inject_flink_url_into_walkthrough(root, flink_url)

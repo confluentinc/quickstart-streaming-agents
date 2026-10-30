@@ -26,28 +26,28 @@ variable "confluent_cloud_api_secret" {
   sensitive   = true
 }
 
-# --- LLM provider (AWS only; Azure always uses its Azure OpenAI connections) ---
+# --- LLM provider ---
 
 variable "llm_provider" {
-  description = "Backs llm_textgen_model, llm_embedding_model and remote_mcp_model on AWS: 'confluent' (CSP Hosted Flink Model Inference — no keys, the default) or 'bedrock' (your AWS Bedrock keys)"
+  description = "Backs llm_textgen_model, llm_embedding_model and remote_mcp_model: 'confluent' (CSP Hosted Flink Model Inference — no keys, the default on both clouds), 'bedrock' (AWS only, your AWS Bedrock keys) or 'azureopenai' (Azure only, your Azure OpenAI endpoint and key)"
   type        = string
   default     = "confluent"
   validation {
-    condition     = contains(["bedrock", "confluent"], var.llm_provider)
-    error_message = "llm_provider must be 'bedrock' or 'confluent'."
+    condition     = contains(["bedrock", "azureopenai", "confluent"], var.llm_provider)
+    error_message = "llm_provider must be 'confluent', 'bedrock' (AWS) or 'azureopenai' (Azure)."
   }
 }
 
 variable "csp_textgen_model" {
-  description = "Text-generation model id for llm_provider = 'confluent'. Case-sensitive: SHOW MODELS lists it as system.<id>."
+  description = "Text-generation model id for llm_provider = 'confluent'. Empty picks the per-cloud default (AWS: anthropic.claude-sonnet-4-6, Azure: openai.gpt-5.4-mini). Case-sensitive: SHOW MODELS lists it as system.<id>."
   type        = string
-  default     = "anthropic.claude-sonnet-4-6"
+  default     = ""
 }
 
 variable "csp_embedding_model" {
-  description = "Embedding model id for llm_provider = 'confluent'. Case-sensitive: SHOW MODELS lists it as system.<id>."
+  description = "Embedding model id for llm_provider = 'confluent'. Empty picks the per-cloud default (AWS: amazon.titan-embed-text-v2, Azure: openai.text-embedding-3-small). Case-sensitive: SHOW MODELS lists it as system.<id>."
   type        = string
-  default     = "amazon.titan-embed-text-v2"
+  default     = ""
 }
 
 # AWS Bedrock credentials (used when cloud_provider == "aws" and llm_provider == "bedrock")
@@ -72,7 +72,7 @@ variable "aws_session_token" {
   default     = ""
 }
 
-# Azure OpenAI credentials (used when cloud_provider == "azure")
+# Azure OpenAI credentials (used when cloud_provider == "azure" and llm_provider == "azureopenai")
 variable "azure_openai_api_key" {
   description = "Azure OpenAI API Key"
   type        = string

@@ -86,15 +86,22 @@ output "cloud_provider" {
 output "llm_provider" {
   value       = local.effective_llm_provider
   description = "What backs the LLM models: confluent (CSP Hosted), bedrock, or azureopenai"
+
+  precondition {
+    condition = (var.llm_provider == "confluent"
+      || (var.llm_provider == "bedrock" && var.cloud_provider == "aws")
+    || (var.llm_provider == "azureopenai" && var.cloud_provider == "azure"))
+    error_message = "llm_provider '${var.llm_provider}' doesn't match cloud_provider '${var.cloud_provider}': use 'confluent' or 'bedrock' on AWS, 'confluent' or 'azureopenai' on Azure."
+  }
 }
 
 output "csp_textgen_model" {
-  value       = var.csp_textgen_model
+  value       = local.csp_textgen_model
   description = "CSP Hosted text-generation model id (used when llm_provider == confluent)"
 }
 
 output "csp_embedding_model" {
-  value       = var.csp_embedding_model
+  value       = local.csp_embedding_model
   description = "CSP Hosted embedding model id (used when llm_provider == confluent)"
 }
 

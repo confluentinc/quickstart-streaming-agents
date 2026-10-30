@@ -75,12 +75,14 @@ If running Lab2 or Lab3, set up a free MongoDB Atlas account and cluster. First 
        {
          "type": "vector",
          "path": "embedding",
-         "numDimensions": 1536,
+         "numDimensions": 1024,
          "similarity": "cosine"
        }
      ]
    }
    ```
+
+   `1024` matches the default CSP Hosted Titan Text Embeddings v2 model on AWS. If you deploy with `--bedrock` (Titan Text Embeddings v1) or on Azure (CSP Hosted text-embedding-3-small, or ada-002 with `--azure-openai`), use `1536` instead.
 
 <img src="./mongodb-screenshots/08_json_editor_config.png" alt="JSON Config" width="50%" />
 

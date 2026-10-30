@@ -10,13 +10,13 @@ In this lab, we'll create a Retrieval-Augmented Generation (RAG) pipeline using 
 >
 > These prerequisites are not required in instructor-led workshops — credentials will be provided for you.
 
-- **LLM Access:** AWS Bedrock API keys **OR** Azure OpenAI endpoint + API key
-  - **Easy key creation:** Run `uv run api-keys create` to quickly generate ready-to-use credentials
+- **LLM Access:** None needed by default — `uv run deploy` uses **CSP Hosted model inference**, so Confluent runs the text generation and embedding models for you (AWS: Claude Sonnet 4.6 and Titan Text Embeddings v2; Azure: GPT-5.4 mini and text-embedding-3-small) with no cloud account or LLM keys.
+  - **Prefer your own keys?** Run `uv run deploy --bedrock` (AWS Bedrock) or `uv run deploy --azure-openai` (Azure OpenAI) instead. `uv run api-keys create` generates ready-to-use credentials.
 - **MongoDB vector database:** Pre-configured and managed for you - no setup required.
 
 > [!WARNING]
 >
-> **AWS Bedrock Users:** You must request access to Claude Sonnet 4.5 by filling out an Anthropic use case form. Visit the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog), select Claude Sonnet 4.5, open it in the Playground, and send a message - the form will appear automatically.
+> **`--bedrock` users:** You must request access to Claude Sonnet 4.5 by filling out an Anthropic use case form. Visit the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog), select Claude Sonnet 4.5, open it in the Playground, and send a message - the form will appear automatically.
 
 ## Deployment
 
@@ -34,8 +34,7 @@ uv run deploy
 ```
 
 The deployment script will:
-- Prompt you to choose AWS or Azure for your LLM provider
-- Ask for your LLM API credentials (Bedrock keys or Azure OpenAI endpoint/key)
+- Use CSP Hosted models by default (with `--bedrock` / `--azure-openai`, ask for your AWS Bedrock / Azure OpenAI keys instead)
 - Automatically configure MongoDB connection (pre-configured, no setup needed!)
 - Deploy the complete RAG pipeline:
 - **6 Flink tables** for the document-to-response flow (intentionally in alphabetical order from beginning to end of pipeline, to keep things tidy!):
@@ -104,7 +103,7 @@ SELECT query, response FROM search_results_response LIMIT 5;
 1. **Pipeline not processing**: Wait 30-60 seconds after publishing documents for initial processing
 2. **No query responses**: Check that LLM models are deployed. [Run test query #1](./LAB1-Walkthrough.md#test-query-1-base-llm-model) to verify `llm_textgen_model` is working
 3. **Empty results**: Verify MongoDB sink connector status in Confluent Cloud UI
-4. **Deployment failed**: Ensure you have valid LLM credentials (Bedrock keys or Azure OpenAI endpoint/key)
+4. **Deployment failed**: If you deployed with `--bedrock` / `--azure-openai`, ensure your AWS Bedrock / Azure OpenAI keys are valid
 
 </details>
 

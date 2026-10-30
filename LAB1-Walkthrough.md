@@ -6,9 +6,6 @@ In this lab, we'll use Apache Flink for Confluent Cloud's MCP tool calling featu
 
 ## Prerequisites
 
-> [!TIP]
-> **TechXChange attendee, or provided a workstation by the workshop host?** Skip the local dependencies and API keys below — they're already set up for you. Start with **Add a payment method or promo code**, then continue to [Deploy the Demo](#deploy-the-demo).
-
 ### Add a payment method or promo code
 
 A payment method or promo code is required in Confluent Cloud so Terraform can create your cluster. Free credit is used first, so you typically won't be charged during the workshop.
@@ -21,9 +18,6 @@ A payment method or promo code is required in Confluent Cloud so Terraform can c
    - **Option B — Promo code (provided by the workshop host):** scroll down to **Promos**, click **+ Promo code**, enter the code you were given, then **Apply**. No credit card is needed.
 
    <img src="./assets/lab1/billing-promo-code.png" alt="Billing and payment — Promos, + Promo code" width="500">
-
-<details>
-<summary><strong>Prerequisites for your own machine</strong> — skip if you are a TechXChange attendee or were given a workstation (click to expand)</summary>
 
 ### Local dependencies
 
@@ -44,8 +38,8 @@ winget install astral-sh.uv Git.Git Hashicorp.Terraform ConfluentInc.Confluent-C
 >
 > The credentials below are not required in instructor-led workshops — they will be provided for you.
 
-- **LLM Access:** None needed by default — `uv run deploy` uses **CSP Hosted model inference**, so Confluent runs Claude Sonnet 4.6 for you with no AWS account or keys.
-  - **Prefer your own AWS Bedrock keys?** Run `uv run deploy --bedrock` instead. `uv run api-keys create` generates ready-to-use credentials.
+- **LLM Access:** None needed by default — `uv run deploy` uses **CSP Hosted model inference**, so Confluent runs the model for you (Claude Sonnet 4.6 on AWS, GPT-5.4 mini on Azure) with no cloud account or LLM keys.
+  - **Prefer your own keys?** Run `uv run deploy --bedrock` (AWS Bedrock) or `uv run deploy --azure-openai` (Azure OpenAI) instead. `uv run api-keys create` generates ready-to-use credentials.
 
 > [!WARNING]
 >
@@ -57,32 +51,16 @@ winget install astral-sh.uv Git.Git Hashicorp.Terraform ConfluentInc.Confluent-C
 
   To switch backends after deploying, run `uv run destroy` first, then re-deploy.
 
-</details>
-
 ## Deploy the Demo
 
-1. Open a **Terminal** on your machine — click **Activities** (top-left), then the **Terminal** icon in the dock.
-
-   <img src="./assets/lab1/open-terminal.png" alt="Open Terminal from the dock" width="500">
-
-2. Go to the workshop folder and pull the latest changes:
-
-   ```bash
-   cd workshop/4547/
-   git pull
-   ```
-
-   <details>
-   <summary><strong>Using your own machine?</strong> Clone the repo instead</summary>
+1. If you haven't already, clone the repo:
 
    ```bash
    git clone https://github.com/confluentinc/quickstart-streaming-agents.git
    cd quickstart-streaming-agents
    ```
 
-   </details>
-
-3. Run the following command to deploy Lab 1:
+2. Run the following command and choose **Lab 1: Price matching** (see [main README](./README.md)):
 
    ```bash
    uv run deploy
@@ -94,9 +72,10 @@ winget install astral-sh.uv Git.Git Hashicorp.Terraform ConfluentInc.Confluent-C
    |---|---|
    | Confluent Cloud email / password | The **email and password you used to sign up** (**single sign-on?** Log into the Confluent CLI first with `confluent login --no-browser`, then press Enter at this prompt. If you skip that, `deploy` offers to run the SSO login for you) |
    | Generate new Confluent Cloud API keys? | Answer `y` — `uv` creates the API key and secret for you |
+   | What would you like to deploy? | **Lab 1: Price matching** |
    | Remote MCP server backend | **Confluent-hosted remote MCP server (Recommended)** |
    | Confluent Cloud API Key / Secret | Press **Enter** to confirm the key and secret `uv` just created |
-   | AWS Bedrock Access Key / Secret Key | **`--bedrock` only** — your AWS Bedrock key (or one from `uv run api-keys create`). The default CSP Hosted models skip this prompt |
+   | AWS Bedrock Access Key / Secret Key (AWS) or Azure OpenAI Endpoint / API Key (Azure) | **`--bedrock` / `--azure-openai` only** — your own key (or one from `uv run api-keys create`). The default CSP Hosted models skip this prompt |
    | MCP token | The token your presenter gave you |
    | Email address for Lab 1 price-match notifications | Press **Enter** to use your Confluent Cloud email (or enter another email where you can check your inbox during the lab) — `uv` automatically fills it into the SQL queries below |
    | Ready to deploy? | Answer `y` — deployment takes about 10 minutes |
@@ -329,6 +308,7 @@ Then check out your email for price matched orders:
 
 - `Runtime received bad response code 403. Please also double check if your model has multiple versions.` error?
   - **Deployed with `--bedrock`?** Ensure you've activated Claude Sonnet 4.5 in your AWS account. See: [Prerequisites](#prerequisites)
+  - **Deployed with `--azure-openai`?** Ensure the `gpt-5-mini` deployment exists in your Azure OpenAI resource.
 
 - `MCP error -32602: Invalid arguments for tool send_email` error?
   - Make sure your email address is plain text inside the prompt (a plain address after `EMAIL RECIPIENT:`, without extra quotes or brackets).

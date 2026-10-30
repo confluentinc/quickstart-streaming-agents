@@ -337,6 +337,70 @@ class TestDeployAutomatedLogin:
         assert passed_creds.get("TF_VAR_enable_testing_sql") == "true"
 
 
+class TestDeployLlmProviderFlags:
+    """--bedrock / --azure-openai flag handling and Azure CSP Hosted defaults."""
+
+    @pytest.fixture(autouse=True)
+    def _clean_env(self, monkeypatch):
+        monkeypatch.delenv("TF_VAR_llm_provider", raising=False)
+
+    def _make_azure_creds_file(self, tmp_path, extra=None):
+        creds = {
+            "TF_VAR_confluent_cloud_api_key": "key123",
+            "TF_VAR_confluent_cloud_api_secret": "secret123",
+            "TF_VAR_cloud_provider": "azure",
+            "TF_VAR_cloud_region": "eastus2",
+            "TF_VAR_mcp_token": "tok123",
+            "CONFLUENT_EMAIL": "user@example.com",
+            "CONFLUENT_PASSWORD": "password123",
+        }
+        creds.update(extra or {})
+        (tmp_path / "credentials.env").write_text(
+            "\n".join(f"{k}={v}" for k, v in creds.items())
+        )
+
+    def test_bedrock_and_azure_openai_are_mutually_exclusive(self, tmp_path):
+        with (
+            patch("deploy.get_project_root", return_value=tmp_path),
+            pytest.raises(SystemExit) as exc_info,
+        ):
+            _run_main(["--automated", "--bedrock", "--azure-openai"])
+        assert exc_info.value.code == 2
+
+    def test_azure_default_needs_no_azure_openai_creds(self, tmp_path):
+        """Azure CSP Hosted (the default) deploys without an Azure OpenAI endpoint/key."""
+        self._make_azure_creds_file(tmp_path)
+        mock_ensure = MagicMock(side_effect=_StopAfterLogin())
+        with (
+            patch("deploy.get_project_root", return_value=tmp_path),
+            patch("deploy.ensure_confluent_login", mock_ensure),
+            pytest.raises(_StopAfterLogin),
+        ):
+            _run_main(["--automated"])
+        assert mock_ensure.call_args[0][0]["TF_VAR_llm_provider"] == "confluent"
+
+    def test_azure_openai_flag_requires_azure_openai_creds(self, tmp_path, capsys):
+        self._make_azure_creds_file(tmp_path)
+        with (
+            patch("deploy.get_project_root", return_value=tmp_path),
+            patch("deploy.ensure_confluent_login", side_effect=_StopAfterLogin()),
+            pytest.raises(SystemExit) as exc_info,
+        ):
+            _run_main(["--automated", "--azure-openai"])
+        assert exc_info.value.code == 1
+        assert "Azure OpenAI API Key" in capsys.readouterr().out
+
+    def test_bedrock_flag_on_azure_exits(self, tmp_path, capsys):
+        self._make_azure_creds_file(tmp_path)
+        with (
+            patch("deploy.get_project_root", return_value=tmp_path),
+            pytest.raises(SystemExit) as exc_info,
+        ):
+            _run_main(["--automated", "--bedrock"])
+        assert exc_info.value.code == 1
+        assert "isn't available on azure" in capsys.readouterr().out
+
+
 class TestWalkthroughInjection:
     """Tests for injecting and restoring Lab 1 email and Flink URL in LAB1-Walkthrough.md."""
 
@@ -374,7 +438,6 @@ class TestWalkthroughInjection:
         _restore_lab1_walkthrough_placeholders(tmp_path)
         assert walkthrough.read_text(encoding="utf-8") == sample
 
-
     def test_prose_with_backticks_is_not_mangled(self, tmp_path):
         from scripts.common.destroy import _restore_lab1_walkthrough_placeholders
 
@@ -386,7 +449,9 @@ class TestWalkthroughInjection:
         walkthrough = tmp_path / "LAB1-Walkthrough.md"
         walkthrough.write_text(sample, encoding="utf-8")
 
-        assert deploy.inject_lab1_email_into_walkthrough(tmp_path, "alice+tag@example.com")
+        assert deploy.inject_lab1_email_into_walkthrough(
+            tmp_path, "alice+tag@example.com"
+        )
         text = walkthrough.read_text(encoding="utf-8")
         assert "the `EMAIL RECIPIENT:` line below." in text
         assert "`EMAIL RECIPIENT: alice+tag@example.com` here." in text
@@ -396,9 +461,13 @@ class TestWalkthroughInjection:
         assert walkthrough.read_text(encoding="utf-8") == sample
 
     def test_inject_returns_false_when_nothing_matches(self, tmp_path):
-        (tmp_path / "LAB1-Walkthrough.md").write_text("no placeholders here\n", encoding="utf-8")
+        (tmp_path / "LAB1-Walkthrough.md").write_text(
+            "no placeholders here\n", encoding="utf-8"
+        )
 
-        assert not deploy.inject_lab1_email_into_walkthrough(tmp_path, "alice@example.com")
+        assert not deploy.inject_lab1_email_into_walkthrough(
+            tmp_path, "alice@example.com"
+        )
         assert not deploy.inject_flink_url_into_walkthrough(
             tmp_path, "https://confluent.cloud/environments/env-abc123/flink"
         )
