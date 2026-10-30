@@ -1,115 +1,122 @@
-# Lab2: Vector Search / RAG Walkthrough
+# Lab 2: Vector Search / RAG
 
-In this lab, we'll create a Retrieval-Augmented Generation (RAG) pipeline using Confluent Cloud for Apache Flink's vector search capabilities. The pipeline processes documents, creates embeddings, and enables semantic search to power intelligent responses through retrieval of relevant context.
+Ask questions against a preloaded knowledge base of Confluent Flink documentation. Flink embeds each question, retrieves matching passages from MongoDB Atlas, and uses a text-generation model to answer from those passages.
 
 <img src="./assets/lab2/00_lab2_architecture.png" alt="Lab2 Architecture Diagram"/>
 
+> [!TIP]
+> **Already deployed Lab 2?** Skip to [Using the RAG Pipeline](#using-the-rag-pipeline). The documents and vector index are already loaded; you do not need to publish documents or configure a sink connector.
+
 ## Prerequisites
 
-> [!NOTE]
->
-> These prerequisites are not required in instructor-led workshops — credentials will be provided for you.
-
-- **LLM Access:** None needed by default — `uv run deploy` uses **CSP Hosted model inference**, so Confluent runs the text generation and embedding models for you (AWS: Claude Sonnet 4.6 and Titan Text Embeddings v2; Azure: GPT-5.4 mini and text-embedding-3-small) with no cloud account or LLM keys.
-  - **Prefer your own keys?** Run `uv run deploy --bedrock` (AWS Bedrock) or `uv run deploy --azure-openai` (Azure OpenAI) instead. `uv run api-keys create` generates ready-to-use credentials.
-- **MongoDB vector database:** Pre-configured and managed for you - no setup required.
-
-> [!WARNING]
->
-> **`--bedrock` users:** You must request access to Claude Sonnet 4.5 by filling out an Anthropic use case form. Visit the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog), select Claude Sonnet 4.5, open it in the Playground, and send a message - the form will appear automatically.
+- **Models:** `uv run deploy` uses Confluent-hosted inference by default: Claude Sonnet 4.6 and Titan Text Embeddings v2 on AWS; GPT-5.4 mini and text-embedding-3-small on Azure. No separate cloud account or LLM API key is needed.
+- **Optional model credentials:** Use `uv run deploy --bedrock` or `uv run deploy --azure-openai` to bring your own credentials. See the [Workshop Mode Setup Guide](./assets/pre-setup/Workshop-Mode-Setup.md). For Bedrock, complete the Claude Sonnet 4.5 use-case form in the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog) by opening its Playground and sending a test message.
+- **MongoDB Atlas:** The shared corpus and vector index are preconfigured. Deployment connects the lab to them.
 
 ## Deployment
 
-If you haven't already, clone the repo:
+If needed, clone the repository and deploy **Lab 2**:
 
 ```bash
 git clone https://github.com/confluentinc/quickstart-streaming-agents.git
 cd quickstart-streaming-agents
-```
-
-Use the setup script and select "Lab2" when prompted to automatically deploy Lab2 infrastructure:
-
-```bash
 uv run deploy
 ```
 
-The deployment script will:
-- Use CSP Hosted models by default (with `--bedrock` / `--azure-openai`, ask for your AWS Bedrock / Azure OpenAI keys instead)
-- Automatically configure MongoDB connection (pre-configured, no setup needed!)
-- Deploy the complete RAG pipeline:
-- **6 Flink tables** for the document-to-response flow (intentionally in alphabetical order from beginning to end of pipeline, to keep things tidy!):
-  - `documents`
-  - `documents_embed`
-  - `documents_vectordb_lab2`
-  - `queries`
-  - `queries_embed`
-  - `search_results`
-  - `search_results_response`
+Deployment creates the query pipeline using these five tables:
 
-- **LLM models** for embeddings and text generation: `llm_textgen_model` and `llm_embedding_model`
-- **MongoDB sink connector** to stream embeddings from `documents_embed` to Atlas
+| Table | Purpose |
+|---|---|
+| `queries` | Questions published from your terminal |
+| `queries_embed` | Questions with vector embeddings |
+| `documents_vectordb_lab2` | External table over the preloaded MongoDB vector index |
+| `search_results` | Retrieved document chunks and similarity scores |
+| `search_results_response` | Questions, retrieved sources, and generated answers |
+
+The two shared models are `llm_embedding_model` and `llm_textgen_model`. The deployed pipeline does not create `documents`, `documents_embed`, or a MongoDB sink connector.
 
 ## Using the RAG Pipeline
 
-### Load Confluent Flink Documentation
+### 1. Check the workspace and background jobs
 
-The lab uses real Confluent Flink documentation as the knowledge base. These pre-populated documents have been:
+Open [Flink](https://confluent.cloud/go/flink). Select the **environment/catalog**, **Kafka cluster/database**, and **compute pool** from your deployment summary before opening a SQL workspace.
 
-1. **Embedded** using an LLM embedding model
-2. **Stored** in a MongoDB Atlas cluster with vector search index
-3. **Made searchable** for semantic queries
+In the statement list, confirm these background writers are `RUNNING`:
 
-### Query the RAG System
+- `queries-embed-insert-into`
+- `search-results-create-table`
+- `search-results-response-create-table`
+
+They perform embedding, vector retrieval, and answer generation. Deployment also publishes a sample question, so existing rows alone do not prove your new question completed.
+
+### 2. Publish a question
+
+From your terminal:
 
 ```bash
-uv run publish_queries # starts interactive mode (recommended), or:
 uv run publish_queries "How do window functions work in Flink SQL?"
 ```
 
-Your queries land in the `queries` topic, which immediately feeds into `queries_embed`, where we instantly create and save embeddings for each query.
+Or prompt for one question:
 
-The vector search results can be found in the `search_results` table, and the RAG (retrieval-augmented generation) results can be found in the  `search_results_response` table. They contain:
+```bash
+uv run publish_queries
+```
 
-- Source document snippets with similarity scores comparing query to document text
-- Document ID
-- AI-generated RAG response to your question based on retrieved documents from the vector store / knowledge base
+The prompt accepts one question, publishes it, and exits. Run the command again to ask another. If cloud-provider detection is ambiguous, supply it explicitly:
 
-### View Results in Confluent Cloud
+```bash
+uv run publish_queries aws "How do window functions work in Flink SQL?"
+```
 
-Monitor the pipeline in Confluent Cloud SQL workspace:
+Use `azure` instead of `aws` for an Azure deployment. Questions move asynchronously through `queries` → `queries_embed` → `search_results` → `search_results_response`; model latency and shared compute affect how soon the answer appears.
+
+### 3. Inspect the retrieved evidence
+
+Run each SQL block in a separate cell. Match the filter to the exact question you published; double any apostrophe inside the SQL string.
 
 ```sql
--- Check data flow through pipeline
-SELECT
-  (SELECT COUNT(*) FROM queries) AS queries_count,                                    -- Your questions
-  (SELECT COUNT(*) FROM queries_embed) AS queries_embed_count,                        -- Your questions in vector form
-  (SELECT COUNT(*) FROM search_results) AS search_results_count,                      -- Vector search results
-  (SELECT COUNT(*) FROM search_results_response) AS search_results_response_count;    -- RAG based on vector search results
-
--- See vector search results
-SELECT * FROM search_results LIMIT 5;
-
--- View final RAG responses
-SELECT query, response FROM search_results_response LIMIT 5;
+SELECT query, document_id_1, chunk_1, score_1
+FROM search_results
+WHERE query = 'How do window functions work in Flink SQL?';
 ```
+
+Expect a document ID, a nonempty passage, and a similarity score. The table also contains the second and third matches (`document_id_2` / `chunk_2` / `score_2` and corresponding `_3` fields). Open the passage to check that it supports the answer.
+
+**Stop this SELECT after inspection**, then open the next cell. Preview queries hold compute while they remain running.
+
+### 4. Read the answer
+
+```sql
+SELECT query, response
+FROM search_results_response
+WHERE query = 'How do window functions work in Flink SQL?';
+```
+
+Confirm that your exact question has a nonempty answer and compare it with the retrieved passages. Answers may cite “Document 1/2/3”; use the corresponding `document_id` and chunk columns in `search_results` to verify the underlying passage.
+
+
+*Audited example, not a console screenshot. Generated answers and retrieval scores can vary.*
+
+**Stop the answer SELECT when finished.** Leave the three deployed writer statements running if you plan to ask more questions.
 
 ## Troubleshooting
 
-<details>
-<summary>Click to expand</summary>
+- **No answer yet:** Check that the question reached `queries`, then inspect `queries_embed` and `search_results` to find the stage that has not produced output. Allow time for inference and check all three background writers.
+- **`PENDING` / `POOL_EXHAUSTED`:** Stop preview SELECTs and completed-lab jobs you no longer need. Check the statement's capacity status before treating a blank results pane as missing data.
+- **Embedding or text-generation errors:** Run `SHOW MODELS;` in the selected database and inspect the failed writer's exceptions. [Lab 1 Test Query 1](./LAB1-Walkthrough.md#test-query-1-base-llm-model) tests text generation. For native hosted inference, follow the reported model-access/quota error; optional Bedrock/Azure credentials apply only when you deployed with those modes.
+- **Retrieval empty or failing:** Inspect the external table and MongoDB connection/index error on `search-results-create-table`. There is no MongoDB sink connector to restart in this lab.
+- **Published successfully, but seeing an old answer:** Filter by the exact question instead of reading the first five rows. Repeating identical question text can produce multiple rows; this lab has no per-request correlation ID.
 
-### Common Issues
+## Moving on and cleanup
 
-1. **Pipeline not processing**: Wait 30-60 seconds after publishing documents for initial processing
-2. **No query responses**: Check that LLM models are deployed. [Run test query #1](./LAB1-Walkthrough.md#test-query-1-base-llm-model) to verify `llm_textgen_model` is working
-3. **Empty results**: Verify MongoDB sink connector status in Confluent Cloud UI
-4. **Deployment failed**: If you deployed with `--bedrock` / `--azure-openai`, ensure your AWS Bedrock / Azure OpenAI keys are valid
+Stop your preview SELECTs. If you no longer need Lab 2 processing, stop its three writer statements too; retained tables and results remain available. Resume those writers before publishing more questions.
 
-</details>
+`uv run destroy` removes **all deployed labs and shared core resources**. Run it only after finishing all chosen labs.
 
 ## Navigation
 
-- **← Back to Overview**: [Main README](./README.md)
-- **← Previous Lab**: [Lab1: Tool Calling Agent](./LAB1-Walkthrough.md)
-- **→ Next Lab**: [Lab3: Agentic Fleet Management](./LAB3-Walkthrough.md)
-- **🧹 Cleanup**: [Cleanup Instructions](./README.md#cleanup)
+- [Back to overview](./README.md)
+- [Previous: Lab 1 — Tool Calling](./LAB1-Walkthrough.md)
+- [Next: Lab 3 — Agentic Fleet Management](./LAB3-Walkthrough.md)
+- [Full quickstart cleanup](./README.md#cleanup)

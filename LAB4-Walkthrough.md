@@ -1,78 +1,110 @@
-# Lab4: Public Sector Insurance Claims Fraud Detection Using Confluent Intelligence
+# Lab 4: Public Sector Disaster Claim Screening Using Confluent Intelligence
 
 ![FEMA Fraud Detection](./assets/lab4/lab4-architecture.png)
 
-This demo showcases an intelligent, real-time fraud detection system that autonomously identifies suspicious claim patterns in FEMA disaster assistance applications. Built on [Confluent Intelligence](https://www.confluent.io/product/confluent-intelligence/), the system combines stream processing, anomaly detection, and AI-powered analysis to detect organized fraud rings and policy violations in real-time.
+Use [Confluent Intelligence](https://www.confluent.io/product/confluent-intelligence/) to screen synthetic FEMA Individuals and Households Program (IHP) applications. Detect city-level surges in claim dollars, retrieve policy passages with vector search, and ask a Flink SQL agent to review a sample of individual claims.
+
+The output is a proposed review of each sampled claim. Use the retrieved passages and original claim to assess the agent’s reasoning.
+
+---
 
 ## Prerequisites
 
+> [!TIP]
+> **Already deployed?** If you are in an instructor-led workshop or already ran `uv run deploy` for Lab 4, skip to [Open the Flink Workspace and Verify Resources](#open-the-flink-workspace-and-verify-resources).
+
 ### Local dependencies
 
-**Installation instructions:**
+**macOS:**
 
 ```bash
 brew install uv git python && brew tap hashicorp/tap && brew install hashicorp/tap/terraform && brew install --cask confluent-cli
 ```
 
 **Windows:**
+
 ```powershell
 winget install astral-sh.uv Git.Git Hashicorp.Terraform ConfluentInc.Confluent-CLI Python.Python
 ```
 
-### API keys & access
+### API keys and model access
 
 > [!NOTE]
->
-> The credentials below are not required in instructor-led workshops — they will be provided for you.
+> Credentials are provided for you in instructor-led workshops.
 
-- **LLM Access:** None needed by default — `uv run deploy` uses **CSP Hosted model inference**, so Confluent runs the text generation and embedding models for you (AWS: Claude Sonnet 4.6 and Titan Text Embeddings v2; Azure: GPT-5.4 mini and text-embedding-3-small) with no cloud account or LLM keys.
-  - **Prefer your own keys?** Run `uv run deploy --bedrock` (AWS Bedrock) or `uv run deploy --azure-openai` (Azure OpenAI) instead. `uv run api-keys create` generates ready-to-use credentials.
+- **Default LLM access (no keys required):** `uv run deploy` configures **CSP Hosted model inference** by default (AWS: Claude Sonnet 4.6 and Titan Text Embeddings v2; Azure: GPT-5.4 mini and text-embedding-3-small) without external cloud or LLM API keys.
+- **Optional custom model providers:** Run `uv run deploy --bedrock` (AWS Bedrock) or `uv run deploy --azure-openai` (Azure OpenAI) to use your own model credentials.
 
 ---
 
-## Deploy the Demo
+## Deploy Lab 4
 
-If you haven't already, clone the repo:
+Clone the repository if needed:
 
 ```bash
 git clone https://github.com/confluentinc/quickstart-streaming-agents.git
 cd quickstart-streaming-agents
 ```
 
-Once you have your credentials ready, run the deployment script and choose **Lab4**:
+Run the deployment script and select **Lab 4: FEMA Fraud Detection**:
 
 ```bash
 uv run deploy
 ```
 
-The deployment script will prompt you for your:
-- Confluent Cloud credentials
-- AWS Bedrock keys (only with `uv run deploy --bedrock`) or Azure OpenAI endpoint and key (only with `uv run deploy --azure-openai`) — the default CSP Hosted models need none
+The script prompts for Confluent Cloud credentials, plus AWS Bedrock or Azure OpenAI credentials only if you passed `--bedrock` or `--azure-openai`.
 
-Select **"Lab 4: FEMA Fraud Detection"** from the menu.
+---
+
+## Open the Flink Workspace and Verify Resources
+
+1. Generate the core deployment summary to view your Confluent Cloud selector names and IDs:
+
+```bash
+uv run deployment-summary core
+```
+
+2. Open the [Confluent Cloud Flink UI](https://confluent.cloud/go/flink) and select the **Environment**, **Database (Kafka cluster)**, and **Compute Pool** shown in your `uv run deployment-summary core` output.
+3. In a SQL cell, verify the provisioned base tables:
+
+```sql
+SHOW TABLES;
+```
+
+Confirm both tables exist: `claims` and `fema_policies_vectordb`.
+
+4. In another SQL cell, verify the AI models:
+
+```sql
+SHOW MODELS;
+```
+
+Confirm both models exist: `llm_textgen_model` and `llm_embedding_model`.
+
+### How to manage Flink statements in this lab
+
+- **Keep streaming writers running while active:** Each `CREATE TABLE ... AS SELECT` statement is a streaming job. Note that `claims_to_investigate` uses `LIMIT 10` on a finite dataset and may transition to **Completed** once its sample is written.
+- **Stop read-only `SELECT` queries after inspection:** Interactive `SELECT` queries consume shared compute pool capacity while open. Click **Stop** on each `SELECT` cell once you verify its output.
+- **Keep `SET` and `CREATE TABLE` in the same cell:** In the Confluent Cloud Flink UI, `SET` cannot run as a standalone cell, so run `SET 'sql.state-ttl' = '14 d';` and the following `CREATE TABLE` statement together in the same cell (REST API and CLI users pass `'sql.state-ttl' = '14 d'` as a statement property).
+
+---
+
+## Understand the Synthetic Dataset
+
+During deployment, the Lab 4 data generator publishes a finite backfill of **33,984** (`~34,000`) synthetic claims across **8 Florida cities** into `claims`. Meanwhile, `fema_policies_vectordb` is a pre-populated external table containing FEMA Individual Assistance Program and Policy Guide (IAPPG) policy chunks and embeddings.
+
+- **Timestamp rebasing:** The generator rebases `claim_timestamp` across the **trailing 14 days** up to deployment time so time-windowed Flink queries run immediately. Other fields (`disaster_date`, `assessment_date`, and Hurricane Helene references) remain static synthetic context and do not imply a storm occurred 14 days ago.
+- **City-level pattern:** Seven cities follow a post-disaster exponential decay across the 14 days. **Naples** follows the same decay for 12 days before surging during the **final 2 days (Days 13–14)** with claims containing ineligible expenses, policy violations, and fraud indicators.
 
 ---
 
 ## Use Case Walkthrough
 
-### Data Generation
+### Step 0: Visualize Claim Volume and Dollars by City
 
-The Lab4 Terraform automatically publishes ~36,000 synthetic claims across 8 Florida cities. The hurricane claims begin 14 days before the current date (the day of the hurricane), and continue through today.
+Aggregate `claims` into **1-hour tumbling windows** to compare the 14-day city trends in the [Flink UI](https://confluent.cloud/go/flink).
 
-The data includes:
-- **`claims`** table – synthetic disaster assistance claims with applicant info, damage assessments, claim amounts, and detailed narratives
-
-**Data Pattern:**
-- **7 cities** show normal exponential decay (claims decrease over time)
-- **1 city (Naples)** shows an anomalous spike in the final 2 days (Days 13-14), containing a mix of claims: some with fraud indicators, others with policy violations, and others still with fully legitimate claims.
-
----
-
-### 0. Visualize the Anomaly
-
-Before running anomaly detection, you can view the raw claim patterns for yourself by running these two queries in the [Flink UI](https://confluent.cloud/go/flink):
-
-**All other regions (normal decay):**
+Run this query for all cities except Naples:
 
 ```sql
 SELECT
@@ -87,7 +119,7 @@ WHERE city <> 'Naples'
 GROUP BY window_start, window_end, city;
 ```
 
-**Anomaly region — Naples only (claims actually *increasing* on days 8-9):**
+In a second cell, query Naples alone:
 
 ```sql
 SELECT
@@ -101,23 +133,30 @@ WHERE city = 'Naples'
 GROUP BY window_start, window_end;
 ```
 
-After running each query, click the **Switch to Time Series** chart in the UI to visualize the results:
+Click **Switch to Time Series** in each result pane. Set the time axis to `window_start`, the value to `total_claims_amount`, and group the first chart by `city`. Zoom to the final two days to inspect the Naples surge. The one-hour charts show detail; the six-hour detector below uses a smoother baseline.
 
 <img src="./assets/lab4/switch_to_time_series.png" width="40%" alt="Switch to Time Series view" />
 
-All other regions show a steady downward slope as claims taper off post-disaster. Naples follows the same pattern initially, then spikes sharply upward — the anomaly:
-
 ![All regions vs anomaly region](./assets/lab4/all_regions_vs_anomaly_region.png)
+
+*Illustrative output: Seven cities decaying steadily versus the late surge in Naples.*
+
+Stop both `SELECT` queries when finished.
 
 ---
 
-### 1. Detect Fraud Spikes Using `ML_DETECT_ANOMALIES`
+### Step 1: Detect City-Level Claim Spikes Using `ML_DETECT_ANOMALIES`
 
-This step identifies unexpected surges in claim amounts for each city in real time using Flink's built-in anomaly detection function. We analyze claim amounts over 6-hour windows and compare them against expected baselines derived from historical trends.
+The automated detector aggregates claims into **6-hour tumbling windows** per city and runs `ML_DETECT_ANOMALIES` over summed claim dollars (`SUM(claim_amount)` as `total_claim_amount`) rather than claim count alone.
 
-Read the [blog post](https://docs.confluent.io/cloud/current/ai/builtin-functions/detect-anomalies.html) and view the [documentation](https://docs.confluent.io/cloud/current/flink/reference/functions/model-inference-functions.html#flink-sql-ml-anomaly-detect-function) on Flink anomaly detection for more details.
+Key settings:
+- **`minTrainingSize: 8`** requires 8 six-hour windows (**2 days of event-time history**) per city before scoring. Because `claims` already holds a 14-day event-time backfill, Flink can process that history without a two-day wall-clock wait.
+- **`maxTrainingSize: 50`** limits the training history to 50 windows per city.
+- **`confidencePercentage: 95.0`** and **`enableStl: FALSE`** flag windows where `total_claim_amount` exceeds the 95% confidence upper bound without seasonal decomposition.
 
-**Run this query in the [Flink UI](https://confluent.cloud/go/flink) to create the anomaly detection table:**
+See the [anomaly detection guide](https://docs.confluent.io/cloud/current/ai/builtin-functions/detect-anomalies.html) and [Flink SQL `ML_DETECT_ANOMALIES` reference](https://docs.confluent.io/cloud/current/flink/reference/functions/model-inference-functions.html#flink-sql-ml-anomaly-detect-function).
+
+Run this writer statement:
 
 ```sql
 SET 'sql.state-ttl' = '14 d';
@@ -178,29 +217,29 @@ WHERE anomaly_result.is_anomaly = true
   AND total_claim_amount > anomaly_result.upper_bound;
 ```
 
-**What it does:**
-1. **Sets state TTL** to 14 days to prevent infinite state growth
-2. **Aggregates** claims into 6-hour tumbling windows per city
-3. **Applies ML_DETECT_ANOMALIES** using ARIMA time-series forecasting:
-   - `minTrainingSize: 8` – Needs 2 days (8 × 6-hour windows) of baseline before detecting
-   - `maxTrainingSize: 50` – Caps training data; prevents memory issues
-   - `confidencePercentage: 95.0` – Detects significant deviations
-   - `enableStl: FALSE` – No seasonal decomposition (disaster claims lack seasonality)
-4. **Filters** to only anomalous spikes (above upper confidence bound)
+#### Checkpoint: Inspect detected anomaly windows
 
-**View the results:**
+In a separate cell, query the anomaly table:
 
 ```sql
 SELECT * FROM claims_anomalies_by_city;
 ```
 
+Confirm that at least one Naples window appears where `total_claim_amount` exceeds `upper_bound` (exact window counts can vary slightly with timestamp alignment):
+
 ![claims_anomalies_by_city](./assets/lab4/claims_anomalies_by_city.png)
+
+Stop the `SELECT` query after verifying.
 
 ---
 
-### 2. Investigate Fraudulent Claims
+### Step 2: Isolate Narrative Claims and Retrieve FEMA Policy Context
 
-Once anomalies are detected, use this query to create a table with claims from the anomaly window for investigation:
+#### 2a. Shortlist claims from the anomaly window
+
+`claims_to_investigate` joins claims to their city’s flagged six-hour window and selects **up to 10 claims with narratives**. The limit bounds inference costs; there is no guaranteed row order. A verified AWS run found **6 matching claims**, so fewer than 10 rows is normal. This is a bounded workshop sample.
+
+Run this writer statement:
 
 ```sql
 SET 'sql.state-ttl' = '14 d';
@@ -236,17 +275,27 @@ WHERE c.claim_narrative <> ''
 LIMIT 10;
 ```
 
-This creates a table with all claims from the Naples anomaly window. Now query it to see what was flagged:
+#### Checkpoint: Inspect the shortlisted claims
+
+Query the shortlisted claims in a separate cell:
 
 ```sql
-SELECT * FROM claims_to_investigate;
+SELECT claim_id, city, claim_amount, claim_narrative FROM claims_to_investigate;
 ```
 
 ![claims_to_investigate](./assets/lab4/claims_to_investigate.png)
 
+Stop the `SELECT` query once rows appear.
+
+#### 2b. Retrieve FEMA policy context with vector search
+
+`claims_to_investigate_with_policies` embeds each narrative and retrieves the three closest FEMA policy passages with their source metadata and similarity scores.
+
+Run this writer statement:
+
 ```sql
- SET 'sql.state-ttl' = '14 d';
-                                    
+SET 'sql.state-ttl' = '14 d';
+
   CREATE TABLE claims_to_investigate_with_policies AS                 
   WITH embedded AS (                                                   
       SELECT
@@ -308,22 +357,25 @@ SELECT * FROM claims_to_investigate;
   ) vs;
 ```
 
-Then view the results:
+#### Checkpoint: Inspect retrieved policy chunks
+
+Verify that policy metadata and chunks are populated for each shortlisted claim:
+
 ```sql
-SELECT * FROM `claims_to_investigate_with_policies`;
+SELECT claim_id, policy_title_1, policy_section_1, policy_score_1, policy_chunk_1 FROM claims_to_investigate_with_policies;
 ```
 
 ![claims_to_investigate_with_policies](./assets/lab4/claims_to_investigate_with_policies.png)
 
+Stop the `SELECT` query after verifying.
+
 ---
 
-### 3. Define the Fraud Detection Agent
+### Step 3: Define the Claim Screening Agent
 
-With each claim enriched with FEMA policy context, the next step is to define an AI agent that analyzes every claim holistically — checking the arithmetic, cross-referencing the narrative against structured fields, and citing specific FEMA IAPPG policy sections to justify each verdict.
+The agent compares claim and insurance amounts, checks narrative consistency and cites retrieved policy passages. Its prompt specifies a nine-point checklist and four output labels for parsing. See the [CREATE AGENT documentation](https://docs.confluent.io/cloud/current/flink/reference/statements/create-agent.html).
 
-Unlike the anomaly detection and RAG steps, which are pure SQL transforms, this agent performs multi-step reasoning: it evaluates each claim against a checklist of policy violations in sequence, weighs competing signals, and produces a structured verdict.
-
-See [CREATE AGENT documentation](https://docs.confluent.io/cloud/current/flink/reference/statements/create-agent.html).
+Run this statement in a new cell:
 
 ```sql
 CREATE AGENT `claims_fraud_investigation_agent`
@@ -384,13 +436,11 @@ WITH (
 
 ---
 
-### 4. Run the Agent on All Flagged Claims
+### Step 4: Run the Agent on Shortlisted Claims
 
-Now invoke the agent continuously against every claim in `claims_to_investigate_with_policies`. As each claim streams through, the agent receives the full structured data plus the three most relevant FEMA policy chunks, performs its checklist analysis, and writes a structured verdict to the output table.
+Invoke the agent on the policy-enriched shortlist and parse its labeled response into columns, retaining `raw_response` for inspection. See the [`AI_RUN_AGENT` documentation](https://docs.confluent.io/cloud/current/flink/reference/functions/model-inference-functions.html#flink-sql-ai-run-agent-function).
 
-The `REGEXP_EXTRACT` calls parse the four labeled sections from the agent's free-text response into typed columns.
-
-See [AI_RUN_AGENT documentation](https://docs.confluent.io/cloud/current/flink/reference/functions/model-inference-functions.html#flink-sql-ai-run-agent-function).
+Run this writer statement:
 
 ```sql
 SET 'sql.state-ttl' = '14 d';
@@ -444,73 +494,123 @@ LATERAL TABLE(AI_RUN_AGENT(
 ));
 ```
 
+#### Checkpoint: Inspect verdicts and summaries
+
+LLM inference runs asynchronously per row. Query `claims_reviewed` to view the results as they arrive:
+
 ```sql
-SELECT * FROM `claims_reviewed`;
+SELECT claim_id, verdict, summary FROM claims_reviewed;
 ```
 
-![claims_reviewed](./assets/lab4/claims_reviewed.png)
+The verified AWS sample produced four `APPROVE_PARTIAL` and two `DENY_INELIGIBLE` verdicts. Outputs can vary by model and run:
 
-## Conclusion
+![Illustrative output from an earlier run](./assets/lab4/claims_reviewed.png)
 
-By chaining these streaming components together, we've built an always-on, real-time fraud detection pipeline that:
+*This earlier screenshot shows different rows and verdicts. Your sample may contain fewer rows. Click a truncated cell to read its full text.*
 
-1. **Detects** anomalous claim spikes in 6-hour windows across cities using `ML_DETECT_ANOMALIES`
-2. **Isolates** the suspicious window and enriches every claim with relevant FEMA IAPPG policy sections using vector search
-3. **Investigates** each claim autonomously using an AI agent that checks claim credibility, cross-references the claim narrative against structured fields, and cites specific policy violations
+#### Validate parsed agent fields
 
-The result is a deep, autonomous investigation of every flagged claim resulting in a proposed verdict — approve, request documentation, deny for policy violation, or deny for fraud — delivered in real time as claims arrive, with specific FEMA policy citations to support each decision.
+A **Running** statement status does not guarantee every LLM response matched the regex headers. Run this validation query once `claims_reviewed` populates:
+
+```sql
+SELECT claim_id, verdict, raw_response
+FROM claims_reviewed
+WHERE verdict IS NULL
+   OR verdict NOT IN ('APPROVE', 'APPROVE_PARTIAL', 'REQUEST_DOCS', 'DENY_INELIGIBLE', 'DENY_FRAUD')
+   OR COALESCE(TRIM(summary), '') = ''
+   OR COALESCE(TRIM(issues_found), '') = ''
+   OR COALESCE(TRIM(policy_basis), '') = '';
+```
+
+- **Expected result:** **0 rows**, confirming every row has a valid verdict code and non-empty parsed fields.
+- **If rows appear:** Inspect `raw_response` for that `claim_id` to see how the model output deviated from the prompt format.
+
+#### Worked example: Inspecting claim `34102-03732`
+
+Inspect synthetic claim `34102-03732` (Sarah Williams):
+
+```sql
+SELECT claim_id, issues_found, policy_basis, raw_response FROM claims_reviewed WHERE claim_id = '34102-03732';
+```
+
+
+*Observed synthetic example (`34102-03732`): The applicant claimed `$93,000` (`$75,000` pool damage + `$18,000` roof damage); the agent flagged the `$75,000` pool expense as ineligible (`$93,000 - $75,000 = $18,000`) and proposed `APPROVE_PARTIAL` for the remaining `$18,000`. This illustrates agent output on synthetic data, not an independent legal adjudication of FEMA eligibility.*
+
+Stop your open `SELECT` queries once you finish inspecting the results.
+
+---
+
+## Lab Completion Checklist
+
+- [ ] `claims_anomalies_by_city` is **Running** and outputs at least one Naples anomaly row (`total_claim_amount > upper_bound`).
+- [ ] `claims_to_investigate` is **Running** (or **Completed** after reaching its finite limit) and contains up to 10 shortlisted narrative claims (6 in the verified AWS run).
+- [ ] `claims_to_investigate_with_policies` is **Running** and populates `policy_title_1`, `policy_section_1`, `policy_score_1`, and `policy_chunk_1`.
+- [ ] `claims_reviewed` is **Running** and populates `verdict`, `summary`, `issues_found`, `policy_basis`, and `raw_response`, with the validation query returning 0 rows.
 
 ---
 
 ## Troubleshooting
 
 <details>
-<summary>Click to expand</summary>
+<summary>Click to expand troubleshooting checks</summary>
 
-### No anomalies detected?
+### 1. Check base tables and Terraform outputs
 
-**Check:**
-1. Re-publish : `uv run lab4_datagen`
-2. Claims published to topic: `SELECT COUNT(*) FROM claims;` (should be ~36,000)
-3. Wait for baseline: ARIMA needs 16 windows (2 days with 3-hour windows) before detecting
+Only `claims` and `fema_policies_vectordb` are provisioned by Terraform; all downstream tables are created in the Flink UI.
 
-The anomaly should appear after data publishing completes and Flink processes all windows up to Day 3.
+Verify `claims` holds its finite backfill (`33,984` rows, or `~34,000`), then stop the query:
 
-### Error: Table `claims_anomalies_by_city` does not exist?
+```sql
+SELECT COUNT(*) FROM claims;
+```
 
-**Solution:**
+Check the Lab 4 Terraform outputs from your terminal:
 
-Run the CREATE TABLE query in the Flink UI (see Step 1 above). The anomaly detection table is created manually, not via Terraform.
+```bash
+terraform -chdir=terraform/lab4-pubsec-fraud-agents output
+```
 
-### Query returns 0 rows?
+Confirm that `claims_table_statement_id`, `claims_table_name`, and `lab4_deployment_status` are present.
 
-**Check:**
-1. Terraform deployed: `terraform output` should show table IDs
-2. Data exists: `SELECT * FROM claims LIMIT 10;`
-3. Wait for processing: Flink may take 1-2 minutes to process all windows
+### 2. Table or Agent already exists (or does not exist)
 
-### Too many or too few anomalies?
+- **`Table '...' does not exist`:** Confirm the upstream `CREATE TABLE` statement was executed in the same environment/database and is running (or completed for `claims_to_investigate`).
+- **`Table '...' already exists` or `Agent '...' already exists`:** Do not drop `claims` or `fema_policies_vectordb` or blindly re-run `CREATE TABLE`. Check **Statements** in the Flink UI—existing table data remains retained in Kafka, so you can resume or query existing tables directly.
 
-The ARIMA parameters are tuned to detect exactly 1 anomaly (Naples, Day 3).
+### 3. Compute pool exhausted or statements stuck in `PENDING`
 
-If you see different results:
-- **0 anomalies:** Decrease `confidencePercentage` to 90.0
-- **>3 anomalies:** Increase `confidencePercentage` to 99.0
-- **Wrong timing:** Re-publish data: `uv run lab4_datagen`
+- Open **Statements** in the Flink UI and **Stop** any open `SELECT` queries from earlier steps or labs.
+- Do not alter `ML_DETECT_ANOMALIES` parameters or model definitions to work around compute pool capacity.
+
+### 4. Model inference errors on `claims_to_investigate_with_policies` or `claims_reviewed`
+
+- Check the statement's **Exceptions** tab in the Flink UI and run `SHOW MODELS;` to confirm `llm_embedding_model` and `llm_textgen_model` exist.
+- **Default CSP Hosted models:** No external LLM keys are used; if you hit regional quota or throttling errors, wait briefly or contact your instructor.
+- **Custom `--bedrock` or `--azure-openai` deployments:** Verify the cloud credentials or endpoint provided during `uv run deploy`.
+
+### 5. Resuming work vs. resetting data
+
+Resume existing statements to continue with retained data; do not re-publish as a routine recovery step. `uv run lab4_datagen` deletes retained records from `claims`, `claims_anomalies_by_city`, `claims_to_investigate`, `claims_to_investigate_with_policies`, and `claims_reviewed`. It does not reset the state already held by Flink jobs. For a deliberate clean repeat, save needed results, stop the affected statements, and coordinate the input and state reset with your instructor.
 
 </details>
 
 ---
 
-## 🧹 Clean-up
+## Clean Up
 
-When you're done with the lab:
+### Routine per-lab finish (keep your environment for other labs)
+
+1. In the Flink UI, **Stop** your open `SELECT` queries and Lab 4 `CREATE TABLE` writer statements to free compute pool capacity.
+2. Leave the tables and agent in place (stopping statements halts compute but leaves existing table data intact).
+
+### Full environment teardown (only after finishing all labs)
+
+> [!WARNING]
+> `uv run destroy` tears down **all 4 labs and shared core Confluent Cloud infrastructure**. Run this command **only** after finishing all labs in this environment.
 
 ```bash
 uv run destroy
 ```
-
-Choose your cloud provider when prompted to remove all lab-related resources.
 
 ---
 

@@ -135,3 +135,13 @@ TEST_RESULTS.md
 
 # Local Claude Code project-scoped MCP config (may contain deployment IDs/tokens)
 .mcp.json
+
+# Draft diagrams/illustrations pending review
+assets/lab*/*.excalidraw
+assets/lab1/lab1-architecture.svg
+assets/lab1/price-match-example.svg
+assets/lab2/lab2-architecture.svg
+assets/lab2/rag-example.svg
+assets/lab3/lab3-architecture.svg
+assets/lab3/enrichment-example.svg
+assets/lab4/reviewed-claim-example.svg

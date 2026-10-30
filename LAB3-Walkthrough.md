@@ -1,17 +1,11 @@
 # Lab3: Agentic Fleet Management Using Confluent Intelligence
 ![River Robotaxi Logo](./assets/lab3/lab3-river-robotaxi-logo.png)
 
-This demo showcases an intelligent, real-time fleet management system that autonomously detects demand surges, identifies their causes using AI-powered reasoning, and automatically dispatches vessels to meet increased demand. Built on [Confluent Intelligence](https://www.confluent.io/product/confluent-intelligence/), the system combines stream processing, anomaly detection, retrieval-augmented generation (RAG), and AI agent workflows to create a fully autonomous operations pipeline.
-### What This System Does
+This lab builds an event-driven fleet management pipeline on [Confluent Intelligence](https://www.confluent.io/product/confluent-intelligence/) and **Confluent Cloud for Apache Flink** with no external orchestration:
 
-The system continuously monitors ride request streams in real time and performs three key automated operations:
-
-1. **Anomaly Detection** – Detects unusual spikes in ride requests across different zones using Flink’s [built-in ML functions](https://docs.confluent.io/cloud/current/ai/builtin-functions/overview.html).  
-2. **Contextual Understanding** – Leverages [vector search](https://docs.confluent.io/cloud/current/ai/external-tables/vector-search.html) and RAG to uncover the reasons behind demand surges (e.g., events, conferences, festivals) by querying a knowledge base.  
-3. **Autonomous Action** – Automatically dispatches docked vessels or repositions available ones to high-demand zones using [Streaming Agents](https://docs.confluent.io/cloud/current/ai/streaming-agents/overview.html) with tool calling.  
-
-All of this runs in real time on **Confluent Cloud for Apache Flink**, with no external orchestration required.
-
+1. **Anomaly Detection** – Detects pickup-zone ride demand spikes in 5-minute windows with Flink's [built-in ML functions](https://docs.confluent.io/cloud/current/ai/builtin-functions/overview.html).
+2. **Contextual Understanding** – Uses [vector search](https://docs.confluent.io/cloud/current/ai/external-tables/vector-search.html) and RAG over local event data to suggest a likely cause or state that the cause is uncertain.
+3. **Autonomous Action** – Uses [Streaming Agents](https://docs.confluent.io/cloud/current/ai/streaming-agents/overview.html) with MCP tool calling to inspect fleet status and dispatch vessels.
 
 ![Architecture Diagram](./assets/lab3/lab3-architecture.png)
 
@@ -19,11 +13,12 @@ All of this runs in real time on **Confluent Cloud for Apache Flink**, with no e
 
 ### Local dependencies
 
-**Installation instructions:**
+**macOS:**
 
 ```bash
 brew install uv git python && brew tap hashicorp/tap && brew install hashicorp/tap/terraform && brew install --cask confluent-cli
 ```
+
 **Windows:**
 
 ```powershell
@@ -33,67 +28,82 @@ winget install astral-sh.uv Git.Git Hashicorp.Terraform ConfluentInc.Confluent-C
 ### API keys & access
 
 > [!NOTE]
->
-> The credentials below are not required in instructor-led workshops — they will be provided for you.
+> Workshop attendees do not need cloud LLM credentials—instructor-led environments provide required access.
 
-- **LLM Access:** None needed by default — `uv run deploy` uses **CSP Hosted model inference**, so Confluent runs the text generation and embedding models for you (AWS: Claude Sonnet 4.6 and Titan Text Embeddings v2; Azure: GPT-5.4 mini and text-embedding-3-small) with no cloud account or LLM keys.
-  - **Prefer your own keys?** Run `uv run deploy --bedrock` (AWS Bedrock) or `uv run deploy --azure-openai` (Azure OpenAI) instead. `uv run api-keys create` generates ready-to-use credentials.
+- **LLM Access (No keys required by default):** `uv run deploy` uses **CSP Hosted model inference** (AWS: Claude Sonnet 4.6 + Titan Text Embeddings v2; Azure: GPT-5.4 mini + text-embedding-3-small).
+  - **Optional self-managed keys:** Run `uv run deploy --bedrock` or `uv run deploy --azure-openai` (use `uv run api-keys create` or see [Workshop Mode Setup Guide](./assets/pre-setup/Workshop-Mode-Setup.md)).
+  - **`--bedrock` users:** Before running queries, enable **Claude Sonnet 4.5** in the [AWS Bedrock Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog) by opening it in the Playground and submitting the Anthropic use-case form.
+- **Remote MCP server backend:** Lab 3 uses a remote MCP server for HTTP vessel catalog lookups and dispatch calls. Choose your backend **before** deploying (if you need to change backends on an existing environment, contact your instructor rather than running a full destroy):
+  - **Confluent-hosted remote MCP server (Recommended):** Obtain a token from your presenter (Confluent staff: see `go/mcp-keys` or `#help-tmm`).
+  - **Zapier:** Third-party option; see [Zapier-Setup.md](./assets/pre-setup/Zapier-Setup.md).
 
-> [!WARNING]
->
-> **`--bedrock` users:** You must request access to Claude Sonnet 4.5 by filling out an Anthropic use case form. Visit the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog), select Claude Sonnet 4.5, open it in the Playground, and send a message - the form will appear automatically.
+## Deploy and Data Generation
 
-- **Remote MCP server backend:** Lab 3 calls a remote MCP server for HTTP fetch and HTTP post (vessel catalog lookup + dispatch). `uv run deploy` will prompt you to choose:
-  - **Confluent-hosted remote MCP server (Recommended)** — No setup on your end; obtain a token by asking your workshop presenter, or, if you're a Confluent employee, see `go/mcp-keys` or `#help-tmm`.
-  - **Zapier** — a third-party MCP server. See [Zapier-Setup.md](./assets/pre-setup/Zapier-Setup.md) for setup. For workshops, prefer the Confluent-hosted remote MCP server.
+> [!TIP]
+> **Already deployed?** If you deployed earlier (for example in Lab 1/Lab 2) and your Lab 3 data replay is already running or completed, **skip this section** and go straight to [Step 1](#1-detect-surges-with-ml_detect_anomalies).
 
-  To switch backends after deploying, run `uv run destroy` first, then re-deploy.
-
-## Deploy the Demo
-
-If you haven't already, clone the repo:
+Clone and update the repository:
 
 ```bash
 git clone https://github.com/confluentinc/quickstart-streaming-agents.git
 cd quickstart-streaming-agents
 ```
 
-Be sure to pull in the latest changes:
 ```bash
 git pull
 ```
 
-Once you have your credentials ready, run the deployment script and choose **Lab3**:
+Deploy and select **Lab3**:
 
 ```bash
 uv run deploy
 ```
 
-The deployment script uses CSP Hosted models by default, so it doesn't ask for LLM keys. With `uv run deploy --bedrock` (AWS) or `uv run deploy --azure-openai` (Azure), it prompts for your AWS Bedrock or Azure OpenAI keys (run `uv run api-keys create` beforehand or see [Workshop Mode Setup Guide](./assets/pre-setup/Workshop-Mode-Setup.md) for more info).
+### Load `ride_requests` data
 
-## Usecase Walkthrough
-
-### Data Generation
-
-Begin generating data with the following command:
+Run the local replay publisher once:
 
 ```bash
 uv run lab3_datagen --local
 ```
 
-The data generator produces the following data stream:
+- **How `--local` works:** It purges `ride_requests`, replays about 24 hours of historical ride requests (30,729 records in the audited dataset), advances the event-time watermark, and then exits. You do **not** wait 24 wall-clock hours.
+- **Do not re-run casually:** Because `--local` purges `ride_requests` before replaying, re-running it while downstream agents are active can re-trigger dispatches. To resume normal work, reuse your existing Flink tables and statements. If you ever need a full state reset, stop the three Lab 3 continuous writers (`completed_actions`, `anomalies_enriched`, `anomalies_per_zone`) first and check with your instructor.
 
-- **`ride_requests`** – Represents incoming boat ride requests. Each request includes a **pickup zone** and a **drop-off zone**.
+## Walkthrough
 
-### 1. Visualize surge in `ride_requests` using `ML_DETECT_ANOMALIES`
+Allow several minutes for the replay, anomaly training and inference. Continue only after each output checkpoint succeeds; a RUNNING status alone does not confirm output.
 
-This step identifies unexpected surges in ride requests for each pickup zone in real time using Flink's built-in anomaly detection function. We analyze ride request counts over 5-minute windows and compare them against expected baselines derived from historical trends.
+### Open the Flink SQL Workspace
 
-Read the [documentation](https://docs.confluent.io/cloud/current/ai/builtin-functions/detect-anomalies.html) and view the [documentation](https://docs.confluent.io/cloud/current/flink/reference/functions/model-inference-functions.html#flink-sql-ml-anomaly-detect-function) on Flink anomaly detection for more details about how it works.
+1. Open [Confluent Cloud Flink](https://confluent.cloud/go/flink), select the **environment** from your deployment summary, and open a **SQL Workspace**.
+2. In the workspace selectors, choose the exact **Catalog** (environment), **Database** (Kafka cluster), and **Compute Pool** printed by `uv run deploy` (never hardcode someone else's suffix).
+3. Run a preflight check:
 
-In the [Flink UI](https://confluent.cloud/go/flink), select your new environment and open a SQL workspace. Then, visualize the anomaly detection in action by running this query:
+Run each check in its own cell:
 
 ```sql
+SHOW TABLES;
+```
+
+```sql
+SHOW MODELS;
+```
+
+Confirm tables `ride_requests` and `documents_vectordb_lab3` and models `llm_textgen_model`, `llm_embedding_model`, and `remote_mcp_model` exist.
+
+> [!IMPORTANT]
+> **`SET` statements in Flink Console:** A `SET` statement cannot execute by itself in a cell. Always keep any leading `SET 'sql.local-time-zone' = 'America/Chicago';` in the **same cell** as the `SELECT` or `CREATE TABLE` query beneath it.
+
+### 1. Detect surges with `ML_DETECT_ANOMALIES`
+
+Flink's [anomaly detection function](https://docs.confluent.io/cloud/current/ai/builtin-functions/detect-anomalies.html) ([SQL reference](https://docs.confluent.io/cloud/current/flink/reference/functions/model-inference-functions.html#flink-sql-ml-anomaly-detect-function)) groups `ride_requests` into 5-minute tumbling windows per `pickup_zone`. With `minTrainingSize = 286` (~23h 50m of 5-minute buckets per zone) and `confidencePercentage = 99.9`, the preloaded replay supplies the training history. Allow time for Flink to process it; you do not need to wait a day for new observations.
+
+First, run this **disposable preview query** to inspect the anomaly chart:
+
+```sql
+SET 'sql.local-time-zone' = 'America/Chicago';
+
 WITH windowed_traffic AS (
     SELECT
         window_start,
@@ -120,7 +130,7 @@ SELECT
         JSON_OBJECT(
             'minTrainingSize' VALUE 286,
             'maxTrainingSize' VALUE 7000,
-            'confidencePercentage' VALUE 99.999,
+            'confidencePercentage' VALUE 99.9,
             'enableStl' VALUE FALSE
         )
     ) OVER (
@@ -131,17 +141,19 @@ SELECT
 FROM windowed_traffic;
 ```
 
-Click on the **anomaly_result** graph.
+Click **anomaly_result** in the results pane to view the chart:
 
-![Anomaly Screenshot](./assets/lab3/lab3-anomaly-graph1.png)
+![Anomaly Graph](./assets/lab3/lab3-anomaly-graph1.png)
 
-You will notice that there was an anomaly detected in one of the zones.
+![Anomaly Spike](./assets/lab3/lab3-anomaly-graph2.png)
 
-![Anomaly Screenshot](./assets/lab3/lab3-anomaly-graph2.png)
+**Stop this preview query** once you have inspected the chart so it does not hold compute resources.
 
-Now let's turn this into a continuous Flink job that filters for only the anomalies:
+Next, start the **persistent continuous job** that writes detected surges to `anomalies_per_zone` (also using `99.9` confidence):
 
 ```sql
+SET 'sql.local-time-zone' = 'America/Chicago';
+
 CREATE TABLE anomalies_per_zone AS
 WITH windowed_traffic AS (
     SELECT
@@ -195,195 +207,116 @@ WHERE anomaly_result.is_anomaly = true
   AND request_count > anomaly_result.upper_bound;
 ```
 
-> [!NOTE]
->
-> Leave the query above running. Flink will typically take around five minutes to detect an anomaly. The reason for this is that we're detecting anomalies in 5-minute "windows", and we need to wait for the first window to close before Flink can detect one.
+**Keep `CREATE TABLE anomalies_per_zone` running** through the rest of Lab 3.
 
-In a new cell, run the following to view the results.
+In a new cell, preview the output table:
 
 ```sql
+SET 'sql.local-time-zone' = 'America/Chicago';
+
 SELECT * FROM anomalies_per_zone
 ```
 
-You should see an anomaly in the `French Quarter` zone.
+You should see a `French Quarter` surge (for example, `61` actual requests vs. `~12` expected; exact rows can vary dynamically). **Stop the `SELECT` preview** after verifying.
 
-![Anomaly Screenshot](./assets/lab3/lab3-anomaly-results.png)
+![Anomaly Results](./assets/lab3/lab3-anomaly-results.png)
 
-These detected surges are then used as triggers for the next steps — contextual understanding and agentic vessel movement.
+### 2. Enrich `anomalies_per_zone` with vector search & RAG
 
-### 2. Anomaly detection: Enrich `anomalies_per_zone` with possible causes of the anomaly using vector search
+Next, enrich each surge with likely causes. Using named CTEs, the query formats a single local-dated search string (`America/Chicago`), embeds it with `llm_embedding_model`, retrieves the top 3 matching chunks from `documents_vectordb_lab3`, and prompts `llm_textgen_model` to summarize the cause—or state uncertainty rather than fabricating details if no overlapping event exists.
 
-Once a surge is detected, we want to **understand why** it happened. This step enriches detected anomalies with real-world context using **Vector Search** and **LLM-based reasoning**. These detected surges are then used as triggers for the next steps — contextual understanding and agentic vessel movement.
-
-The query takes each detected surge and formulates a natural language query describing the anomaly (e.g., *"Transportation demand surge in French Quarter zone at 8:00 PM…"*). It then embeds that query using an **LLM embedding model** and searches a **vector database** of local event data (e.g., concerts, conferences, or sports games) to find the most relevant documents.
-
-Finally, it uses an **LLM text generation model** to summarize the results into a concise, human-readable explanation of the likely cause for the surge.
+Run and **keep this continuous `CREATE TABLE anomalies_enriched` job running**:
 
 ```sql
+SET 'sql.local-time-zone' = 'America/Chicago';
+
 CREATE TABLE anomalies_enriched
-WITH ('changelog.mode' = 'append')
-AS SELECT
-    pickup_zone,
-    window_time,
-    request_count,
-    expected_requests,
-    anomaly_reason,
-    top_chunk_1,
-    top_chunk_2,
-    top_chunk_3
-FROM (
+WITH ('changelog.mode' = 'append') AS
+WITH surge_queries AS (
     SELECT
-        rad_with_rag.pickup_zone,
-        rad_with_rag.window_time,
-        rad_with_rag.request_count,
-        rad_with_rag.expected_requests,
-        rad_with_rag.is_surge,
-        TRIM(llm_response.response) AS anomaly_reason,
-        rad_with_rag.top_chunk_1,
-        rad_with_rag.top_chunk_2,
-        rad_with_rag.top_chunk_3
-    FROM (
-        SELECT
-            rad.pickup_zone,
-            rad.window_time,
-            rad.request_count,
-            rad.expected_requests,
-            rad.is_surge,
-            rad.query,
-            vs.search_results[1].document_id AS top_document_1,
-            vs.search_results[1].chunk AS top_chunk_1,
-            vs.search_results[1].score AS top_score_1,
-            vs.search_results[2].document_id AS top_document_2,
-            vs.search_results[2].chunk AS top_chunk_2,
-            vs.search_results[2].score AS top_score_2,
-            vs.search_results[3].document_id AS top_document_3,
-            vs.search_results[3].chunk AS top_chunk_3,
-            vs.search_results[3].score AS top_score_3
-        FROM (
-            SELECT
-                pickup_zone,
-                window_time,
-                request_count,
-                expected_requests,
-                is_surge,
-                CONCAT(
-                    'Transportation demand surge in ',
-                    pickup_zone,
-                    ' at ',
-                    DATE_FORMAT(window_time, 'h:mm a'),
-                    ' (',
-                    DATE_FORMAT(window_time, 'HH:mm'),
-                    ') during ',
-                    CASE
-                        WHEN HOUR(window_time) >= 0 AND HOUR(window_time) < 4 THEN 'late night hours (12:00 AM - 4:00 AM)'
-                        WHEN HOUR(window_time) >= 4 AND HOUR(window_time) < 7 THEN 'early morning setup period (4:00 AM - 7:00 AM)'
-                        WHEN HOUR(window_time) >= 7 AND HOUR(window_time) < 9 THEN 'morning rush hours (7:00 AM - 9:00 AM)'
-                        WHEN HOUR(window_time) >= 9 AND HOUR(window_time) < 12 THEN 'late morning period (9:00 AM - 12:00 PM)'
-                        WHEN HOUR(window_time) >= 12 AND HOUR(window_time) < 14 THEN 'lunch service peak (12:00 PM - 2:00 PM)'
-                        WHEN HOUR(window_time) >= 14 AND HOUR(window_time) < 17 THEN 'afternoon hours (2:00 PM - 5:00 PM)'
-                        WHEN HOUR(window_time) >= 17 AND HOUR(window_time) < 20 THEN 'evening dinner period (5:00 PM - 8:00 PM)'
-                        WHEN HOUR(window_time) >= 20 AND HOUR(window_time) < 23 THEN 'nightlife hours (8:00 PM - 11:00 PM)'
-                        ELSE 'late night period (11:00 PM - 12:00 AM)'
-                    END,
-                    '. Looking for HIGH demand events occurring between ',
-                    DATE_FORMAT(window_time - INTERVAL '1' HOUR, 'h:mm a'),
-                    ' and ',
-                    DATE_FORMAT(window_time + INTERVAL '1' HOUR, 'h:mm a'),
-                    '. Expected: ',
-                    CAST(expected_requests AS STRING),
-                    ', Actual: ',
-                    CAST(request_count AS STRING),
-                    ' (+',
-                    CAST(ROUND(((request_count - expected_requests) / expected_requests) * 100, 1) AS STRING),
-                    '%). What HIGH impact events, festivals, or gatherings are active in ',
-                    pickup_zone,
-                    ' during this time?'
-                ) AS query,
-                emb.embedding
-            FROM anomalies_per_zone,
-            LATERAL TABLE(ML_PREDICT('llm_embedding_model',
-                CONCAT(
-                    'Transportation demand surge in ',
-                    pickup_zone,
-                    ' at ',
-                    DATE_FORMAT(window_time, 'h:mm a'),
-                    ' (',
-                    DATE_FORMAT(window_time, 'HH:mm'),
-                    ') during ',
-                    CASE
-                        WHEN HOUR(window_time) >= 0 AND HOUR(window_time) < 4 THEN 'late night hours (12:00 AM - 4:00 AM)'
-                        WHEN HOUR(window_time) >= 4 AND HOUR(window_time) < 7 THEN 'early morning setup period (4:00 AM - 7:00 AM)'
-                        WHEN HOUR(window_time) >= 7 AND HOUR(window_time) < 9 THEN 'morning rush hours (7:00 AM - 9:00 AM)'
-                        WHEN HOUR(window_time) >= 9 AND HOUR(window_time) < 12 THEN 'late morning period (9:00 AM - 12:00 PM)'
-                        WHEN HOUR(window_time) >= 12 AND HOUR(window_time) < 14 THEN 'lunch service peak (12:00 PM - 2:00 PM)'
-                        WHEN HOUR(window_time) >= 14 AND HOUR(window_time) < 17 THEN 'afternoon hours (2:00 PM - 5:00 PM)'
-                        WHEN HOUR(window_time) >= 17 AND HOUR(window_time) < 20 THEN 'evening dinner period (5:00 PM - 8:00 PM)'
-                        WHEN HOUR(window_time) >= 20 AND HOUR(window_time) < 23 THEN 'nightlife hours (8:00 PM - 11:00 PM)'
-                        ELSE 'late night period (11:00 PM - 12:00 AM)'
-                    END,
-                    '. Looking for HIGH demand events occurring between ',
-                    DATE_FORMAT(window_time - INTERVAL '1' HOUR, 'h:mm a'),
-                    ' and ',
-                    DATE_FORMAT(window_time + INTERVAL '1' HOUR, 'h:mm a'),
-                    '. Expected: ',
-                    CAST(expected_requests AS STRING),
-                    ', Actual: ',
-                    CAST(request_count AS STRING),
-                    ' (+',
-                    CAST(ROUND(((request_count - expected_requests) / expected_requests) * 100, 1) AS STRING),
-                    '%). What HIGH impact events, festivals, or gatherings are active in ',
-                    pickup_zone,
-                    ' during this time?'
-                )
-            )) AS emb
-            WHERE is_surge = true
-        ) AS rad,
-        LATERAL TABLE(
-            VECTOR_SEARCH_AGG(
-                documents_vectordb_lab3,
-                DESCRIPTOR(embedding),
-                rad.embedding,
-                3
-            )
-        ) AS vs
-    ) AS rad_with_rag,
-    LATERAL TABLE(
-        ML_PREDICT(
-            'llm_textgen_model',
-            CONCAT(
-                'Analyze the retrieved event documents and identify the most likely cause of this transportation demand surge. If a retrieved document describes an event with time ranges that overlap the surge time, cite it by name, attendance, and time. If no document is a strong match, describe the surge itself: the zone, the time of day, and the magnitude. Always provide a concise 1-2 sentence answer that gives the dispatch agent enough context to act. Do not say "no events found" — always produce a reason.\n\n',
-                'USER QUERY: ', rad_with_rag.query, '\n\n',
-                'RETRIEVED DOCUMENTS:\n',
-                'Document 1 (Score: ', CAST(rad_with_rag.top_score_1 AS STRING), '):\n',
-                'Source: ', rad_with_rag.top_document_1, '\n',
-                rad_with_rag.top_chunk_1, '\n\n',
-                'Document 2 (Score: ', CAST(rad_with_rag.top_score_2 AS STRING), '):\n',
-                'Source: ', rad_with_rag.top_document_2, '\n',
-                rad_with_rag.top_chunk_2, '\n\n',
-                'Document 3 (Score: ', CAST(rad_with_rag.top_score_3 AS STRING), '):\n',
-                'Source: ', rad_with_rag.top_document_3, '\n',
-                rad_with_rag.top_chunk_3, '\n\n',
-                'Provide only the reason, no additional text.'
-            )
-        )
-    ) AS llm_response
-);
+        pickup_zone, window_time, request_count, expected_requests,
+        CONCAT(
+            'Transportation demand surge in ', pickup_zone,
+            ' on ', DATE_FORMAT(window_time, 'yyyy-MM-dd h:mm a'),
+            ' America/Chicago. Expected: ', CAST(expected_requests AS STRING),
+            ', actual: ', CAST(request_count AS STRING), ' (increase: ',
+            COALESCE(CAST(ROUND(
+                (CAST(request_count AS DOUBLE) - expected_requests)
+                / NULLIF(CAST(expected_requests AS DOUBLE), 0.0) * 100.0,
+                1
+            ) AS STRING), 'unknown'), '%). Find events active between ',
+            DATE_FORMAT(window_time - INTERVAL '1' HOUR, 'yyyy-MM-dd h:mm a'),
+            ' and ', DATE_FORMAT(window_time + INTERVAL '1' HOUR, 'yyyy-MM-dd h:mm a'),
+            ' America/Chicago that could explain demand in ', pickup_zone, '.'
+        ) AS query
+    FROM anomalies_per_zone
+    WHERE is_surge = TRUE
+), embedded_surges AS (
+    SELECT sq.*, emb.embedding
+    FROM surge_queries AS sq,
+    LATERAL TABLE(ML_PREDICT('llm_embedding_model', sq.query)) AS emb
+), retrieved_events AS (
+    SELECT
+        es.pickup_zone, es.window_time, es.request_count, es.expected_requests,
+        es.query,
+        vs.search_results[1].document_id AS top_document_1,
+        vs.search_results[1].chunk AS top_chunk_1,
+        vs.search_results[1].score AS top_score_1,
+        vs.search_results[2].document_id AS top_document_2,
+        vs.search_results[2].chunk AS top_chunk_2,
+        vs.search_results[2].score AS top_score_2,
+        vs.search_results[3].document_id AS top_document_3,
+        vs.search_results[3].chunk AS top_chunk_3,
+        vs.search_results[3].score AS top_score_3
+    FROM embedded_surges AS es,
+    LATERAL TABLE(VECTOR_SEARCH_AGG(
+        documents_vectordb_lab3, DESCRIPTOR(embedding), es.embedding, 3
+    )) AS vs
+)
+SELECT
+    re.pickup_zone, re.window_time, re.request_count, re.expected_requests,
+    TRIM(llm.response) AS anomaly_reason,
+    re.top_chunk_1, re.top_chunk_2, re.top_chunk_3
+FROM retrieved_events AS re,
+LATERAL TABLE(ML_PREDICT(
+    'llm_textgen_model',
+    CONCAT(
+        'Explain this demand surge in 1-2 sentences for a boat dispatcher. ',
+        'All query times are local America/Chicago time. Cite an event by name, ',
+        'attendance and time only if its documented hours overlap the surge. ',
+        'Otherwise state that the cause is uncertain and summarize the zone, ',
+        'time and counts. Do not invent an event or require a known cause to dispatch.\n\n',
+        'SURGE: ', re.query, '\n\n',
+        'SOURCE 1: ', re.top_document_1, ' (score ', CAST(re.top_score_1 AS STRING), ')\n',
+        re.top_chunk_1, '\n\n',
+        'SOURCE 2: ', re.top_document_2, ' (score ', CAST(re.top_score_2 AS STRING), ')\n',
+        re.top_chunk_2, '\n\n',
+        'SOURCE 3: ', re.top_document_3, ' (score ', CAST(re.top_score_3 AS STRING), ')\n',
+        re.top_chunk_3
+    )
+)) AS llm;
 ```
 
-> NOTE: Leave the query running so that it runs continously.
+In a new cell, inspect the enriched result, then **stop the `SELECT` preview**:
 
-### 3. Agent Definition: Run `CREATE TOOL` and `CREATE AGENT` to define agent tools, prompt, and capabilities
+```sql
+SELECT pickup_zone, request_count, expected_requests, anomaly_reason,
+       top_chunk_1, top_chunk_2, top_chunk_3
+FROM anomalies_enriched;
+```
 
-Once anomalies have been detected and enriched with context, the system can act on them automatically using Streaming Agents. We can trigger specific operational workflows — for example, dispatching idle vessels from nearby docks to high-demand zones.
+*Audited context example, not a screenshot of your running statement. Event matches and explanations depend on the local surge time.*
 
-These agents leverage tool calling to interact directly with external systems or APIs, enabling closed-loop automation — all running natively within Confluent Cloud for Apache Flink.
+### 3. Define the tool and agent (`CREATE TOOL` & `CREATE AGENT`)
 
-Choose whichever path you prefer — both produce the same tool and agent, and step 4 below applies to either one.
+Define the MCP tool and dispatch agent using either SQL (Option A) or the Console UI (Option B). Both create `lab3_remote_mcp` and `boat_dispatch_agent` using `remote_mcp_model`.
 
+<a id="agent-sql"></a>
 <details>
-<summary><strong><big>Option A: Prefer writing SQL? Run <code>CREATE TOOL</code> and <code>CREATE AGENT</code></big></strong></summary>
+<summary><strong><big>Option A: Define with SQL (<code>CREATE TOOL</code> and <code>CREATE AGENT</code>)</big></strong></summary>
 
-See [CREATE TOOL documentation](https://docs.confluent.io/cloud/current/flink/reference/statements/create-tool.html).
+Register the MCP tool ([CREATE TOOL docs](https://docs.confluent.io/cloud/current/flink/reference/statements/create-tool.html)), exposing only `http_get` and `http_post` with a 30-second timeout:
+
 ```sql
 CREATE TOOL lab3_remote_mcp
 USING CONNECTION `remote-mcp-connection`
@@ -394,7 +327,8 @@ WITH (
 );
 ```
 
-See [CREATE AGENT documentation](https://docs.confluent.io/cloud/current/flink/reference/statements/create-agent.html#flink-sql-create-agent).
+Create the agent ([CREATE AGENT docs](https://docs.confluent.io/cloud/current/flink/reference/statements/create-agent.html#flink-sql-create-agent)) with `max_iterations = '10'`:
+
 ```sql
 CREATE AGENT `boat_dispatch_agent`
 USING MODEL `remote_mcp_model`
@@ -424,7 +358,7 @@ Your workflow:
    URL: https://p8jrtzaj78.execute-api.us-east-1.amazonaws.com/prod/api/dispatch
    Body: <your generated JSON>
 
-6. FORMAT your final response with these THREE sections:
+6. FORMAT your final response as plain text with the following sections. Do not add Markdown fences, bold headings, or separators:
 
 Dispatch Summary:
 Due to the surge in demand in [zone] as a result of [event], we dispatched [n] additional boats from [list of zones].
@@ -453,58 +387,57 @@ WITH (
 </details>
 
 <details>
-<summary><strong><big>Option B: Prefer clicking? Build the agent and tool using the Streaming Agents UI instead</big></strong></summary>
+<summary><strong><big>Option B: Build in the Streaming Agents UI</big></strong></summary>
 
-Confluent Cloud also offers a [Streaming Agents](https://docs.confluent.io/cloud/current/ai/streaming-agents/overview.html) console that builds the same tool and agent as the SQL path above, entirely through a form — no SQL required. See the [manage agents in the console](https://docs.confluent.io/cloud/current/ai/streaming-agents/manage-agents-console.html) documentation for the full reference.
+Use the [Streaming Agents console](https://docs.confluent.io/cloud/current/ai/streaming-agents/manage-agents-console.html) with the exact settings below so your agent matches Option A. Expand [Option A](#agent-sql) above and copy only the text inside `USING PROMPT`, without the surrounding SQL quotes.
+
+| Setting | Exact Value |
+| :--- | :--- |
+| **Catalog / Database** | Your deployment environment and Kafka cluster |
+| **Agent Name** | `boat_dispatch_agent` |
+| **Model** | `remote_mcp_model` |
+| **Instructions** | Copy the `USING PROMPT` text from [Option A](#agent-sql) |
+| **Tool Type / Name / Connection** | Custom MCP server / `lab3_remote_mcp` / `remote-mcp-connection` |
+| **Allowed Tools** | Select **only** `http_get` and `http_post` (leave `send_email` unchecked) |
+| **Max iterations (`max_iterations`)** | `10` |
 
 <table>
 <tr><th width="45%">Steps</th><th width="55%">Screenshot</th></tr>
 <tr>
-<td>1. From your environment, open <b>Streaming Agents</b> and click <b>Create Streaming Agent</b>.</td>
+<td>1. Open <b>Streaming Agents</b> in your environment and click <b>Create Streaming Agent</b>. Fill in the form using the table above and the prompt from <a href="#agent-sql">Option A</a>.</td>
 <td><img src="./assets/lab3/streaming-agents-ui/01-landing-page.png" alt="Streaming Agents landing page" width="450"></td>
 </tr>
 <tr>
-<td>2. Fill in the agent form: pick the catalog/database, name the agent (e.g. <code>boat_dispatch_agent</code>), and paste in the same description, instructions, and model used in the SQL <code>CREATE AGENT</code> statement below.</td>
-<td><img src="./assets/lab3/streaming-agents-ui/02-create-agent-form.png" alt="Create Streaming Agent form" width="450"></td>
-</tr>
-<tr>
-<td>3. Expand <b>Advanced configuration</b> to set tools, exception handling, and max iterations. Click <b>+ Add new tool</b>.</td>
+<td>2. Open <b>Advanced configuration</b>, set Max iterations to <code>10</code>, and click <b>+ Add new tool</b>. Configure <code>lab3_remote_mcp</code> with <code>remote-mcp-connection</code> and enable only <code>http_get</code> and <code>http_post</code>.</td>
 <td><img src="./assets/lab3/streaming-agents-ui/03-advanced-config.png" alt="Advanced configuration panel" width="450"></td>
 </tr>
 <tr>
-<td>4. Choose <b>Custom MCP server</b> as the tool type (instead of a user-defined function), then select the <code>remote-mcp-connection</code> connection and name the tool <code>lab3_remote_mcp</code>. <b>The UI auto-discovers the MCP server's available tools</b> (<code>send_email</code>, <code>http_get</code>, <code>http_post</code>) and lists them as checkboxes — no need to hand-type <code>'allowed_tools' = '...'</code> like in the SQL <code>CREATE TOOL</code> statement below.</td>
-<td><img src="./assets/lab3/streaming-agents-ui/04-create-tool-mcp.png" alt="Create tool from MCP server with auto-discovered tools" width="450"></td>
-</tr>
-<tr>
-<td>5. Confirm the tool was created, then add it to the agent.</td>
+<td>3. Confirm the tool was created and attach it to the agent.</td>
 <td><img src="./assets/lab3/streaming-agents-ui/05-tool-added.png" alt="Agent tool created successfully" width="450"></td>
 </tr>
 <tr>
-<td>6. Review the agent's tools and settings, then click <b>Create agent</b>.</td>
+<td>4. Review the configuration and click <b>Create agent</b>.</td>
 <td><img src="./assets/lab3/streaming-agents-ui/06-review-before-create.png" alt="Review agent before creation" width="450"></td>
 </tr>
 <tr>
-<td>7. Once created, open the agent's <b>Run</b> panel. It scaffolds generic placeholder SQL — replace it entirely with the real <code>AI_RUN_AGENT</code> query from <a href="#4-invoke-the-agent-with-ai_run_agent">step 4 below</a>, which reads from <code>anomalies_enriched</code> and writes to <code>completed_actions</code>.</td>
+<td>5. In the <b>Run</b> panel, replace the scaffolded SQL with the real <code>AI_RUN_AGENT</code> query from <a href="#4-invoke-the-agent-with-ai_run_agent">Step 4</a>.</td>
 <td><img src="./assets/lab3/streaming-agents-ui/07-run-agent-panel.png" alt="Run Streaming Agent panel with scaffold SQL" width="450"></td>
 </tr>
 <tr>
-<td>8. Run the statement in the <b>SQL Workspace</b>. You can confirm it's healthy from the Flink statement's Activity tab.</td>
-<td><img src="./assets/lab3/streaming-agents-ui/08-flink-statement-running.png" alt="Flink statement running the real agent query" width="450"></td>
-</tr>
-<tr>
-<td>9. Back on the agent's overview page, <b>Recent deployments</b> shows the deployment as <b>Running</b>.</td>
-<td><img src="./assets/lab3/streaming-agents-ui/09-agent-running.png" alt="Agent deployment running" width="450"></td>
+<td>6. Run the statement in the <b>SQL Workspace</b> and confirm it is <b>Running</b> in the Activity tab and agent overview.</td>
+<td><img src="./assets/lab3/streaming-agents-ui/08-flink-statement-running.png" alt="Flink statement running" width="450"><br><img src="./assets/lab3/streaming-agents-ui/09-agent-running.png" alt="Agent deployment running" width="450"></td>
 </tr>
 </table>
-
-Once the agent is running, continue with `SELECT * FROM completed_actions;` as shown at the end of step 4 below.
 
 </details>
 
 ### 4. Invoke the agent with `AI_RUN_AGENT`
 
-Start the agent with the `AI_RUN_AGENT` command to start taking action on any anomalies the moment that Flink detects them.See [AI_RUN_AGENT documentation](https://docs.confluent.io/cloud/current/flink/reference/functions/model-inference-functions.html#flink-sql-ai-run-agent-function).
+Run `CREATE TABLE completed_actions` using [`AI_RUN_AGENT`](https://docs.confluent.io/cloud/current/flink/reference/functions/model-inference-functions.html#flink-sql-ai-run-agent-function). The query passes a deterministic JSON payload (`zone`, `surge_time`, `request_count`, `expected_requests`, `anomaly_reason`) to the agent, parses the three labeled response sections using brace-aware JSON regexes, and retains `raw_response` as a fallback. The append table declares `pickup_zone` as a non-enforced key; it does not provide a unique ID for each dispatch or prevent repeated actions.
+
 ```sql
+SET 'sql.local-time-zone' = 'America/Chicago';
+
 CREATE TABLE completed_actions (
     PRIMARY KEY (pickup_zone) NOT ENFORCED
 )
@@ -514,63 +447,76 @@ AS SELECT
     window_time,
     request_count,
     anomaly_reason,
-    TRIM(REGEXP_EXTRACT(CAST(response AS STRING), '\*{0,2}Dispatch Summary:\*{0,2}\s*\n([\s\S]+?)(?=\n\n\*{0,2}Dispatch JSON:\*{0,2})', 1)) AS dispatch_summary,
-    TRIM(REGEXP_EXTRACT(CAST(response AS STRING), '\*{0,2}Dispatch JSON:\*{0,2}\s*\n(?:```json\s*)?([\s\S]+?)(?:```)?(?=\n\n\*{0,2}API Response:\*{0,2})', 1)) AS dispatch_json,
-    TRIM(REGEXP_EXTRACT(CAST(response AS STRING), '\*{0,2}API Response:\*{0,2}\s*\n(?:```json\s*)?([\s\S]+?)(?:```)?$', 1)) AS api_response,
+    TRIM(REGEXP_EXTRACT(CAST(response AS STRING), '(?s)Dispatch Summary:\*{0,2}\s*(.*?)(?=\s*(?:---\s*)?\*{0,2}Dispatch JSON:)', 1)) AS dispatch_summary,
+    REGEXP_EXTRACT(CAST(response AS STRING), '(?s)Dispatch JSON:\*{0,2}\s*(?:```(?:json)?\s*)?(\{.*\})(?=\s*(?:```)?\s*(?:---\s*)?\*{0,2}API Response:)', 1) AS dispatch_json,
+    REGEXP_EXTRACT(CAST(response AS STRING), '(?s)API Response:\*{0,2}\s*(?:```(?:json)?\s*)?(\{.*\})', 1) AS api_response,
     CAST(response AS STRING) AS raw_response
 FROM anomalies_enriched,
 LATERAL TABLE(AI_RUN_AGENT(
     `boat_dispatch_agent`,
-    `anomaly_reason`,
+    JSON_OBJECT(
+        'zone' VALUE pickup_zone,
+        'surge_time' VALUE CONCAT(
+            DATE_FORMAT(window_time, 'yyyy-MM-dd h:mm a'), ' America/Chicago'
+        ),
+        'request_count' VALUE request_count,
+        'expected_requests' VALUE expected_requests,
+        'anomaly_reason' VALUE anomaly_reason
+    ),
     `pickup_zone`
 ));
 ```
 
-Then view the `dispatch_summary`, `dispatch_json`, `api_response`, and `raw_response` columns from the streaming agent's output.
+Inspect the agent output in a new cell:
+
 ```sql
-SELECT * FROM `completed_actions`;
+SELECT pickup_zone, dispatch_summary, dispatch_json, api_response,
+       dispatch_json IS JSON OBJECT AS valid_dispatch_json,
+       api_response IS JSON OBJECT AS valid_api_json
+FROM completed_actions;
 ```
 
 ![Agent results](./assets/lab3/lab3-completed-actions.png)
 
-## Conclusion
+Because the remote fleet backend is shared across workshop participants, the exact vessels selected and remaining availability will vary. Before concluding that vessels were dispatched, verify that `dispatch_summary`, `dispatch_json`, and `api_response` are non-empty, `dispatch_json IS JSON OBJECT`, `api_response IS JSON OBJECT`, and `api_response` reports `"status":"SUCCESS"`. If a model formats sections unexpectedly, inspect `raw_response` rather than re-running the query (which would issue duplicate `http_post` dispatches).
 
-By chaining these intelligent streaming components together, we’ve built an always-on, real-time, context-aware agentic pipeline that detects ride request demand surges, explains their causes, and takes autonomous action — all within seconds.
+### Stop Lab 3 statements before Lab 4
+
+Once you have verified `completed_actions`, **stop** your preview `SELECT` queries and the three continuous writers (`completed_actions`, `anomalies_enriched`, `anomalies_per_zone`) in the SQL Workspace to release compute pool capacity for Lab 4.
 
 ## Troubleshooting
 <details>
 <summary>Click to expand</summary>
 
-- **No anomalies detected?** Check that your data generation is running. The first anomaly should be detected after both data generation (run `uv run lab3_datagen`) and the anomaly detection query **(Query #1)** have been running for about 5 minutes. This is because the anomaly detection query uses 5-minute windows, and we have to wait for the first window to close before the detection algorithm can identify an anomaly.
-
-- **Error when running Query #1?:** `The window function requires the timecol is a time attribute type, but is TIMESTAMP_WITH_LOCAL_TIME_ZONE(3).`
-  - Run the query below and try again. This can occur if you drop the pre-created `ride_requests` table and then re-run data generation, because neither Flink nor the data generator know we want to use `request_ts` as our watermark column until we tell them.
+- **No rows appearing or query stuck in `PENDING` / `POOL_EXHAUSTED`?**
+  - Check **Flink Statements → Exceptions / Activity** and your compute pool capacity. Stop any finished or unused `SELECT` preview queries so the three continuous `CREATE TABLE` jobs have CFU slots. Also ensure `uv run lab3_datagen --local` ran once.
+- **Error on Query #1:** `The window function requires the timecol is a time attribute type, but is TIMESTAMP_WITH_LOCAL_TIME_ZONE(3).`
+  - Happens if `ride_requests` was recreated without a watermark definition. Restore the watermark and retry:
 ```sql no-parse
 ALTER TABLE ride_requests
 MODIFY (WATERMARK FOR request_ts AS request_ts - INTERVAL '5' SECOND);
 ```
-- **Degraded Flink statement email?**
-  - Press "Stop" on the running `CREATE TABLE anomalies_per_zone` statement in the SQL Workspace. The anomaly detection algorithm expects data to be flowing through it and will go degraded if data generation is stopped. It will automatically resume once data begins flowing again.
+- **Degraded or Stopped Flink statement?**
+  - An active anomaly detection job may show degraded when idle and recover when data flows, whereas a statement that was manually **Stopped** must be explicitly **Resumed** in the UI.
+- **`Runtime received bad response code 403` error?**
+  - Check statement exceptions for the failing endpoint or model. If you deployed with `--bedrock`, ensure Claude Sonnet 4.5 is enabled in AWS Bedrock ([Prerequisites](#prerequisites)). If you deployed with `--azure-openai`, increase the TPM quota on your `gpt-5-mini` deployment.
 
-- `Runtime received bad response code 403. Please also double check if your model has multiple versions.` error?
-  - **Deployed with `--bedrock`?** Ensure you've activated Claude Sonnet 4.5 in your AWS account. See: [Prerequisites](#prerequisites)
-  - **Deployed with `--azure-openai`?** Increase the tokens per minute quota for your `gpt-5-mini` deployment. Quota is low by default.
-  </details>
+</details>
 
 ## 🧹 Clean-up
 
-When you’re done with the lab, make sure to clean up your resources to avoid unnecessary costs and keep your environment tidy.
+> [!WARNING]
+> **Continuing to Lab 4?** Do **not** run `uv run destroy` yet. It tears down **all four labs and shared core infrastructure**. Only stop your Lab 3 Flink statements above, then proceed to Lab 4.
 
-Run the following command:
+When you have finished **all** labs in the workshop, remove all cloud resources with:
 
 ```bash
 uv run destroy
 ```
-Then, choose your cloud provider when prompted. This will remove all lab-related resources safely.
-
 
 ## Navigation
 
 - **← Back to Overview**: [Main README](./README.md)
 - **← Previous Lab**: [Lab2: Vector Search & RAG](./LAB2-Walkthrough.md)
+- **→ Next Lab**: [Lab4: Disaster Relief Claim Review](./LAB4-Walkthrough.md)
 - **🧹 Cleanup**: [Cleanup Instructions](./README.md#cleanup)

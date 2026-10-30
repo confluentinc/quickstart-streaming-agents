@@ -1,93 +1,80 @@
-# Lab1: Price Matching Orders with MCP Tool Calling Agent Walkthrough
+# Lab 1: Price Matching Orders with MCP Tool Calling
 
-In this lab, we'll use Apache Flink for Confluent Cloud's MCP tool calling feature to "price match" customer orders in real-time. Flink, through tool calling, uses a remote MCP server to retrieve competitor prices, and if a competitor offers a better price, the agent automatically applies a price match and uses tool calling again to email the customer a summary.
+Build a price-matching pipeline in Confluent Cloud for Apache Flink. Flink joins orders with customer and product data, then runs an agent that fetches competitor prices and emails your configured test address when it finds a lower price. The demo does not process refunds.
 
 ![Architecture Diagram](./assets/lab1/lab1-architecture.png)
 
+> [!TIP]
+> **Already deployed Lab 1?** Skip to [Getting Started](#getting-started). If its data generator is already running, do not start another copy.
+
 ## Prerequisites
 
-### Add a payment method or promo code
+### Payment method or promo code
 
-A payment method or promo code is required in Confluent Cloud so Terraform can create your cluster. Free credit is used first, so you typically won't be charged during the workshop.
+Confluent Cloud requires a payment method or promo code before Terraform can create a cluster. Free credits are applied first.
 
-1. Go directly to **[Billing & payment](https://confluent.cloud/settings/billing/payment)**.
-2. Open the **Payment details and contacts** tab.
-3. Choose **one** of the two options:
+1. Open **[Billing & payment](https://confluent.cloud/settings/billing/payment)** and select **Payment details and contacts**.
+2. Add a credit card or bank account, or scroll to **Promos**, choose **+ Promo code**, and apply the code from your workshop host.
 
-   - **Option A — Credit card:** click **Add credit card / bank account**, enter your **card details**, then **Save**.
-   - **Option B — Promo code (provided by the workshop host):** scroll down to **Promos**, click **+ Promo code**, enter the code you were given, then **Apply**. No credit card is needed.
-
-   <img src="./assets/lab1/billing-promo-code.png" alt="Billing and payment — Promos, + Promo code" width="500">
+<img src="./assets/lab1/billing-promo-code.png" alt="Billing and payment: add a promo code" width="500">
 
 ### Local dependencies
 
-**Installation instructions:**
+**macOS:**
 
 ```bash
 brew install uv git python && brew tap hashicorp/tap && brew install hashicorp/tap/terraform && brew install --cask confluent-cli
 ```
+
 **Windows:**
 
 ```powershell
 winget install astral-sh.uv Git.Git Hashicorp.Terraform ConfluentInc.Confluent-CLI Python.Python
 ```
 
-### API keys & access
+### Models and MCP access
+
+- **Default models:** `uv run deploy` uses Confluent-hosted inference (Claude Sonnet 4.6 on AWS, GPT-5.4 mini on Azure). No separate cloud account or LLM API key is needed.
+- **Optional model credentials:** Use `uv run deploy --bedrock` or `uv run deploy --azure-openai` to use your own model credentials. See the [Workshop Mode Setup Guide](./assets/pre-setup/Workshop-Mode-Setup.md); `uv run api-keys create` can generate workshop credentials.
+- **Remote MCP server:** Choose **Confluent-hosted remote MCP server (Recommended)** and enter the token from your presenter. Confluent staff can see `go/mcp-keys` or `#help-tmm`. [Zapier](./assets/pre-setup/Zapier-Setup.md) is an alternative backend.
 
 > [!NOTE]
->
-> The credentials below are not required in instructor-led workshops — they will be provided for you.
-
-- **LLM Access:** None needed by default — `uv run deploy` uses **CSP Hosted model inference**, so Confluent runs the model for you (Claude Sonnet 4.6 on AWS, GPT-5.4 mini on Azure) with no cloud account or LLM keys.
-  - **Prefer your own keys?** Run `uv run deploy --bedrock` (AWS Bedrock) or `uv run deploy --azure-openai` (Azure OpenAI) instead. `uv run api-keys create` generates ready-to-use credentials.
-
-> [!WARNING]
->
-> **`--bedrock` users:** You must request access to Claude Sonnet 4.5 by filling out an Anthropic use case form. Visit the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog), select Claude Sonnet 4.5, open it in the Playground, and send a message - the form will appear automatically.
-
-- **Remote MCP server backend:** Lab 1 calls a remote MCP server for HTTP fetch and email send. `uv run deploy` will prompt you to choose:
-  - **Confluent-hosted remote MCP server (Recommended)** — No setup on your end; obtain a token by asking your presenter, or, if you're a Confluent employee, see `go/mcp-keys` or `#help-tmm`.
-  - **Zapier** — a third-party MCP server. See [Zapier-Setup.md](./assets/pre-setup/Zapier-Setup.md) for setup. Prefer the Confluent-hosted remote MCP server for workshops.
-
-  To switch backends after deploying, run `uv run destroy` first, then re-deploy.
+> **Bedrock only:** Complete the Anthropic use-case form for Claude Sonnet 4.5 in the [AWS Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog). Open the model in the Playground and send a test message to display the form.
 
 ## Deploy the Demo
 
-1. If you haven't already, clone the repo:
+If needed, clone the repository:
 
-   ```bash
-   git clone https://github.com/confluentinc/quickstart-streaming-agents.git
-   cd quickstart-streaming-agents
-   ```
+```bash
+git clone https://github.com/confluentinc/quickstart-streaming-agents.git
+cd quickstart-streaming-agents
+```
 
-2. Run the following command and choose **Lab 1: Price matching** (see [main README](./README.md)):
+Run the deployer and select **Lab 1: Price matching**:
 
-   ```bash
-   uv run deploy
-   ```
+```bash
+uv run deploy
+```
 
-   `uv run deploy` prompts for the following:
+Use your Confluent Cloud login, accept generated API keys, and select the recommended MCP backend. For SSO, first run `confluent login --no-browser`. Native hosted models skip the AWS/Azure model-key prompts.
 
-   | Prompt | Where to get it |
-   |---|---|
-   | Confluent Cloud email / password | The **email and password you used to sign up** (**single sign-on?** Log into the Confluent CLI first with `confluent login --no-browser`, then press Enter at this prompt. If you skip that, `deploy` offers to run the SSO login for you) |
-   | Generate new Confluent Cloud API keys? | Answer `y` — `uv` creates the API key and secret for you |
-   | What would you like to deploy? | **Lab 1: Price matching** |
-   | Remote MCP server backend | **Confluent-hosted remote MCP server (Recommended)** |
-   | Confluent Cloud API Key / Secret | Press **Enter** to confirm the key and secret `uv` just created |
-   | AWS Bedrock Access Key / Secret Key (AWS) or Azure OpenAI Endpoint / API Key (Azure) | **`--bedrock` / `--azure-openai` only** — your own key (or one from `uv run api-keys create`). The default CSP Hosted models skip this prompt |
-   | MCP token | The token your presenter gave you |
-   | Email address for Lab 1 price-match notifications | Press **Enter** to use your Confluent Cloud email (or enter another email where you can check your inbox during the lab) — `uv` automatically fills it into the SQL queries below |
-   | Ready to deploy? | Answer `y` — deployment takes about 10 minutes |
-   | Start Lab 1 data generator in the background now? | Answer `n` — you'll start it yourself in [step 2](#2-generate-data) |
+Enter an email address you can check during the workshop. Deployment fills it into both SQL prompts below. If asked to start data generation in the background, choose **n**; step 2 starts it manually. Allow about ten minutes for deployment.
 
-# Getting Started
+## Getting Started
+
+### Workspace setup
+
+Open the [SQL Workspace](https://confluent.cloud/environments/env-2kz1g1/flink) and select the **environment/catalog**, **Kafka cluster/database**, and **compute pool** shown in your deployment summary. Deployment updates this link for your environment. If you copied it from another attendee, open [Flink](https://confluent.cloud/go/flink) and select your own resources.
+
+Confirm `customers`, `products`, and `orders` appear in the catalog. Run each SQL block in its own cell. Keep `SET` and its following query together when shown in the same block.
+
+**Already created a table, tool, or agent?** Inspect the existing object and statement before rerunning `CREATE`. Resume a stopped writer instead of starting a second copy. Do not drop the Terraform-managed input tables.
 
 ## 1. Test the LLM models before continuing
 
-Once you've deployed Lab1, open the [SQL Workspace](https://confluent.cloud/go/flink), select your Confluent Cloud environment, and run the following queries to make sure your models are working as expected:
-
 #### Test Query 1: Base LLM model
+
+Run this bounded query and confirm a nonempty response appears. Stop the reader if it remains open.
 
 ```sql
 SELECT
@@ -99,16 +86,17 @@ LATERAL TABLE(ML_PREDICT('llm_textgen_model', question, MAP['debug', 'true'])) a
 
 #### Test Query 2: LLM Tool Calling Model
 
+This test sends one email to your configured workshop address. Confirm the `send_email` result reports success, then check your inbox and spam folder. A successful tool response does not independently confirm inbox receipt.
+
 > [!NOTE]
->
-> `uv run deploy` automatically fills your email address into the query below. If you still see `<<YOUR-EMAIL-ADDRESS-HERE>>`, replace it with your email address (do **not** add extra single quotes around it).
+> Deployment fills in your notification address. If you still see `<<YOUR-EMAIL-ADDRESS-HERE>>`, replace it without adding extra quotes or brackets. The synthetic `customer_email` values in the input are not the notification recipients.
 
 ```sql
- SELECT
+SELECT
       AI_TOOL_INVOKE(
           'remote_mcp_model',
           'Use the send_email tool to send an email. 
-           The "to" parameter must be a single string value: <<YOUR-EMAIL-ADDRESS-HERE>>
+           The "to" parameter must be a single string value: bheintz+test@confluent.io
            The "subject" parameter is: Direct Query Test
            The "body" parameter is: This email was sent directly from Confluent Cloud!
            Important: pass the to address as a string, not an array.',
@@ -120,26 +108,20 @@ LATERAL TABLE(ML_PREDICT('llm_textgen_model', question, MAP['debug', 'true'])) a
 
 ## 2. Generate Data
 
-Begin generating data with the following command:
+If the generator is not already running, start it in your terminal:
 
 ```bash
 uv run lab1_datagen --local
 ```
 
-> [!NOTE]
->
-> Leave this command running in your terminal and proceed with the lab — it publishes 10 orders, one every 2 minutes (~20 minutes total), then exits.
+Leave the terminal open and continue. The replay publishes 50 `customers`, 17 `products` priced from $5 to $365, and 10 `orders` at two-minute intervals, then exits. The full replay takes about 20 minutes, and you can inspect partial results as they arrive.
 
-The data generator creates three typical ecommerce data streams:
-
-- **`customers`**: 50 customer records with realistic names, emails, addresses, and state information
-- **`products`**: 17 product records including electronics, games, sports equipment, and household items with prices ranging from $5-$365
-- **`orders`**: 10 orders linking customers to products with timestamps
+> [!IMPORTANT]
+> Starting this command again purges the three input topics and reuses the same record IDs. It does not clear existing Flink join state or downstream results. Do not restart it while the price-match job is active; doing so can repeat evaluations and emails. See [Restarting safely](#restarting-safely).
 
 ## 3. Create `enriched_orders` table for the agent to use
 
-Enrich the incoming orders stream with customer and product details.
-We’ll use regular joins for this step and configure a state TTL to prevent the state from growing indefinitely.
+Join orders with customer and product details. The one-hour state TTL bounds retained join state; the one-time customer/product snapshot supports this workshop replay, not indefinite new-order processing.
 
 ```sql
 SET 'sql.state-ttl' = '1 HOURS';
@@ -155,12 +137,11 @@ JOIN customers c ON o.customer_id = c.customer_id
 JOIN products p ON o.product_id = p.product_id;
 ```
 
-> NOTE: Leave the query running so that it runs continously.
+**Leave this writer running.** A `CREATE TABLE ... AS SELECT` statement continues to populate its output table as records arrive.
 
 ## 4. Run `CREATE TOOL` and `CREATE AGENT`
 
-The agent will use the [Tool Calling](https://docs.confluent.io/cloud/current/ai/builtin-functions/invoke-tool-ai-workflow.html) feature to scrape competitors’ websites, extract the price of the same product, and send an email when a price match is found.
-Create a new tool that leverages the remote MCP connection:
+Register the MCP tool. It exposes only `http_get` and `send_email`; no payment or refund tool is available.
 
 ```sql
 CREATE TOOL lab1_remote_mcp
@@ -172,9 +153,7 @@ WITH (
 );
 ```
 
-Next, create a new agent and provide a **system prompt**.  
-This agent will compare the extracted competitor price with our own product price and determine whether to trigger a price match and send an email notification.
-
+Create the agent with its comparison rules and output format. See the [tool-calling guide](https://docs.confluent.io/cloud/current/ai/builtin-functions/invoke-tool-ai-workflow.html) for the underlying feature.
 
 ```sql
 CREATE AGENT price_match_agent
@@ -207,14 +186,9 @@ WITH (
 
 ## 5. Run the Agent
 
-The agent will take `enriched_orders` as input and process each order in real time as it is generated.  
-To run the agent continuously, we’ll execute it as part of a **Flink job**.  
-Provide a **user prompt** to guide how the agent processes each incoming enriched order, and create a new table named `price_match_results` to store the agent’s evaluation results.
+This writer reads `enriched_orders`, supplies the product and order price to `AI_RUN_AGENT`, and parses the result into `price_match_results`. The short email template describes the simulated price match without claiming a refund.
 
-> [!NOTE]
->
-> `uv run deploy` automatically fills your email address into the `EMAIL RECIPIENT:` line below. If you still see `<<YOUR-EMAIL-ADDRESS-HERE>>`, replace it with your email address (do **not** add extra single quotes around it).
-
+Keep the `EMAIL RECIPIENT:` address as plain text inside the prompt. Deployment fills it in for you.
 
 ```sql
 CREATE TABLE price_match_results AS
@@ -239,40 +213,19 @@ LATERAL TABLE(
           
           OUR ORDER PRICE: $', CAST(CAST(pmi.order_price AS DECIMAL(10, 2)) AS STRING), '
           
-          EMAIL RECIPIENT: <<YOUR-EMAIL-ADDRESS-HERE>>
+          EMAIL RECIPIENT: bheintz+test@confluent.io
           
-          EMAIL SUBJECT: ✅ Great News! Price Match Applied - Order #', pmi.order_id, '
+          EMAIL SUBJECT: Price match found - Order #', pmi.order_id, '
           
           EMAIL BODY TEMPLATE:
-          Subject: Your Price Match Has Been Applied - Order #', pmi.order_id, '
+          We found a lower price for your order #', pmi.order_id, '.
+          Product: ', pmi.product_name, '
+          Our price: $', CAST(CAST(pmi.order_price AS DECIMAL(10, 2)) AS STRING), '
+          Competitor price: $[INSERT_COMPETITOR_PRICE]
+          Potential savings: $[INSERT_SAVINGS]
           
-          Dear Valued Customer,
-          
-          We have great news! We found a better price for your recent purchase and have automatically applied a price match.
-          
-          📦 ORDER DETAILS:
-             • Order Number: #', pmi.order_id, '
-             • Product: ', pmi.product_name, '
-          
-          💰 PRICE MATCH DETAILS:
-             • Original Price: $', CAST(CAST(pmi.order_price AS DECIMAL(10, 2)) AS STRING), '
-             • Competitor Price Found: $[INSERT_COMPETITOR_PRICE]
-             • Your Savings: $[INSERT_SAVINGS]
-          
-          ✅ ACTION TAKEN:
-          We have processed a price match refund of $[INSERT_SAVINGS] back to your original payment method. You should see this credit within 3-5 business days.
-          
-          🛒 WHY WE DO THIS:
-          We are committed to offering you the best prices. Our automated price matching system continuously monitors competitor prices to ensure you always get the best deal.
-          
-          Thank you for choosing River Retail. We appreciate your business!
-          
-          Best regards,
-          River Retail Customer Success Team
-          📧 support@riverretail.com | 📞 1-800-RIVER-HELP
-          
-          ---
-          This is an automated message from our price matching system.'
+          This workshop demonstrates a price comparison and notification only.
+          No refund or payment adjustment has been processed.'
         ),
         pmi.order_id,
         MAP['debug', 'true']
@@ -280,46 +233,48 @@ LATERAL TABLE(
 ) as agent_result(status, response);
 ```
 
-Our real-time price matching pipeline is complete—orders stream in, competitor prices are fetched and analyzed, and customers are instantly notified when they get the best deal.
+**Leave this writer running until you finish Lab 1.** In a new cell, inspect the decisions:
 
-View the final table:
 ```sql
-SELECT * FROM `price_match_results`
+SELECT order_id, product_name, order_price, agent_status,
+       competitor_price, decision, summary
+FROM price_match_results;
 ```
 
-Then check out your email for price matched orders:
+In the supplied fixture, all 10 orders match lower competitor prices: expect `SUCCESS`, `PRICE_MATCH`, and populated price and summary fields. The fixture does not include equal/higher prices or missing products. If a parsed field is empty, inspect `raw_response` in `price_match_results` before assuming the agent failed.
 
-<details open>
-<summary>Click to collapse</summary>
-<img src="./assets/lab1/email.png" alt="Price match email" width="50%" />
+
+*Example from the workshop audit, not a console screenshot. Product prices and generated wording can change.*
+
+**Stop this SELECT reader after inspecting it.** Keep the two writer jobs running while orders arrive. Agent summaries report notification actions; check the configured inbox to confirm delivery.
+
+<details>
+<summary>Example notification email</summary>
+
+<img src="./assets/lab1/email.png" alt="Illustrative price-match notification email" width="700">
+
+*This older screenshot illustrates email delivery. The current template explicitly says that no refund is processed.*
 
 </details>
 
 ## Troubleshooting
-<details>
-<summary>Click to expand</summary>
 
-- **Not getting emails?**
-  - Ensure `<<YOUR-EMAIL-ADDRESS-HERE>>` in both Test Query 2 and the `CREATE TABLE price_match_results` query has been replaced with your email address (`uv run deploy` does this automatically). Do **not** wrap the email address in extra single quotes, as it is already inside a single-quoted SQL string.
-  - **Run the MCP test query** (Test Query 2) to confirm the `remote-mcp-connection` is working and able to send emails.
-  - **Make sure to run `uv run lab1_datagen --local`** to begin producing orders data.
-- **Need to restart data generation?**
-  - Simply re-run `uv run lab1_datagen --local`. It automatically purges any existing records in `customers`, `products`, and `orders` before publishing fresh data (do **not** drop the `orders`, `customers`, or `products` tables in Flink, as those tables were created by Terraform).
+- **No results yet:** Check that both writer jobs are `RUNNING`. Orders arrive every two minutes and model/tool calls take additional time. If the generator has exited, inspect retained input records before restarting it.
+- **`PENDING` / `POOL_EXHAUSTED`:** Stop preview SELECT cells and completed-lab writers you no longer need. A queued reader is not evidence of an empty table.
+- **Model errors:** Open the failed statement's exceptions. For native hosted inference, confirm the selected catalog contains the models and check the reported model-access or quota error. For `--bedrock`, check Claude access; for `--azure-openai`, check the configured deployment and quota. External-provider key fixes do not apply to native hosted models.
+- **No email:** Check the configured recipient in both prompts, run Test Query 2 once, and inspect spam filtering. `MCP error -32602` can mean `to` was supplied as an array instead of a plain string.
+- **Missing MCP connection:** Run `SHOW CONNECTIONS;` in the correct database. If `remote-mcp-connection` is absent, inspect deployment output before rerunning deployment.
 
-- `Runtime received bad response code 403. Please also double check if your model has multiple versions.` error?
-  - **Deployed with `--bedrock`?** Ensure you've activated Claude Sonnet 4.5 in your AWS account. See: [Prerequisites](#prerequisites)
-  - **Deployed with `--azure-openai`?** Ensure the `gpt-5-mini` deployment exists in your Azure OpenAI resource.
+### Restarting safely
 
-- `MCP error -32602: Invalid arguments for tool send_email` error?
-  - Make sure your email address is plain text inside the prompt (a plain address after `EMAIL RECIPIENT:`, without extra quotes or brackets).
-  - Modify the model prompt to be more prescriptive about what format you need the email in (string, not array).
+For a paused run, **resume the existing writers and use retained input**, rather than rerunning the data generator. A fresh replay reuses IDs and requires a deliberate reset of the workshop-created outputs and state. Stop the price-match writer first; ask the workshop host to coordinate that reset. Do not drop `orders`, `customers`, or `products`, and do not use global destroy to restart this one lab.
 
-- **`remote-mcp-connection` not found after `uv run deploy`?**
-  - Deploy creates it with a Flink `CREATE CONNECTION` statement. Run `SHOW CONNECTIONS;` in the SQL Workspace; if `remote-mcp-connection` is missing, re-run `uv run deploy`.
-  </details>
+### Moving to the next lab
+
+Stop the two Lab 1 writer statements and any remaining preview SELECTs when you finish. The tables and results remain available. `uv run destroy` removes **all deployed labs and shared core resources**; reserve it for the end of all chosen labs.
 
 ## Navigation
 
-- **← Back to Overview**: [Main README](./README.md)
-- **→ Next Lab**: [Lab2: Vector Search / RAG](./LAB2-Walkthrough.md)
-- **Cleanup**: [Cleanup Instructions](./README.md#cleanup)
+- [Back to overview](./README.md)
+- [Next: Lab 2 — Vector Search / RAG](./LAB2-Walkthrough.md)
+- [Full quickstart cleanup](./README.md#cleanup)
