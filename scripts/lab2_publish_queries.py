@@ -179,8 +179,8 @@ class QueryPublisherCLI:
                 self.logger.debug(f"Could not clean up schema file: {e}")
 
 
-def main():
-    """Main entry point for the query publisher CLI."""
+def parse_args(argv=None):
+    """Accept a question alone or an explicit provider followed by a question."""
     parser = argparse.ArgumentParser(
         description="Publish queries to Kafka using Confluent CLI (no librdkafka dependency)",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -193,22 +193,33 @@ Examples:
     )
 
     parser.add_argument(
-        "cloud_provider",
-        nargs="?",
-        choices=["aws", "azure"],
-        help="Cloud provider (aws or azure). If not specified, will auto-detect.",
-    )
-    parser.add_argument(
-        "query",
-        nargs="?",
-        help="Query to publish. If not provided, interactive mode will be used.",
+        "arguments",
+        nargs="*",
+        metavar="[provider] [question]",
+        help="Optional aws/azure provider and a quoted question; otherwise prompt once.",
     )
     parser.add_argument(
         "--topic", default="queries", help="Kafka topic name (default: queries)"
     )
     parser.add_argument("--verbose", action="store_true", help="Enable verbose logging")
 
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
+    values = args.arguments
+    args.cloud_provider = None
+    args.query = None
+    if values and values[0] in ("aws", "azure"):
+        args.cloud_provider = values.pop(0)
+    if len(values) > 1:
+        parser.error("Pass one quoted question, optionally preceded by aws or azure.")
+    if values:
+        args.query = values[0]
+    del args.arguments
+    return args
+
+
+def main():
+    """Publish one question, prompting for it when none was supplied."""
+    args = parse_args()
 
     # Set up logging
     logger = setup_logging(args.verbose)
@@ -218,25 +229,17 @@ Examples:
         cloud_provider = args.cloud_provider
         logger.debug(f"Using specified cloud provider: {cloud_provider}")
     else:
-        # If query is "aws" or "azure", treat it as cloud provider
-        if args.query in ["aws", "azure"]:
-            cloud_provider = args.query
-            args.query = None
-            logger.debug(
-                f"Interpreted first argument as cloud provider: {cloud_provider}"
-            )
-        else:
-            cloud_provider = auto_detect_cloud_provider()
-            if not cloud_provider:
-                suggestion = suggest_cloud_provider()
-                if suggestion:
-                    logger.info(f"Auto-detected cloud provider: {suggestion}")
-                    cloud_provider = suggestion
-                else:
-                    print(
-                        "❌ Could not auto-detect cloud provider. Please specify 'aws' or 'azure'."
-                    )
-                    return 1
+        cloud_provider = auto_detect_cloud_provider()
+        if not cloud_provider:
+            suggestion = suggest_cloud_provider()
+            if suggestion:
+                logger.info(f"Auto-detected cloud provider: {suggestion}")
+                cloud_provider = suggestion
+            else:
+                print(
+                    "❌ Could not auto-detect cloud provider. Please specify 'aws' or 'azure'."
+                )
+                return 1
 
     # Validate cloud provider
     if not validate_cloud_provider(cloud_provider):
