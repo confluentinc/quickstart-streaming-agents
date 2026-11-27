@@ -19,6 +19,17 @@ locals {
   mongodb_conn = "mongodb+srv://cluster0.rgtlalv.mongodb.net/"
   mongodb_user = "workshop-user"
   mongodb_pass = "DGaR5XjgdMZTigMr"
+
+  # CSP Hosted corpora are embedded with a different model than the Bedrock
+  # (Titan v1) / Azure OpenAI (ada-002) ones, so they live in their own
+  # collection/index — on Azure, their own CosmosDB container (AWS: 1024-dim
+  # Titan v2; Azure: 1536-dim text-embedding-3-small).
+  # Core state from before the llm_provider output existed was always Bedrock
+  # (AWS) / Azure OpenAI (Azure).
+  llm_provider       = try(data.terraform_remote_state.core.outputs.llm_provider, local.cloud_provider == "azure" ? "azureopenai" : "bedrock")
+  mongodb_collection = local.llm_provider == "confluent" ? "documents_csp" : "documents"
+  mongodb_index      = local.llm_provider == "confluent" ? "vector_index_csp" : "vector_index"
+  cosmosdb_container = local.llm_provider == "confluent" ? "documents_csp" : "documents"
 }
 
 # Get organization data
@@ -176,7 +187,7 @@ resource "confluent_flink_statement" "fema_policies_vectordb_azure" {
       'connector' = 'cosmosdb',
       'cosmosdb.connection' = 'cosmosdb-connection-lab4',
       'cosmosdb.database' = 'vector_search',
-      'cosmosdb.container' = 'documents'
+      'cosmosdb.container' = '${local.cosmosdb_container}'
     );
   EOT
 
@@ -282,8 +293,8 @@ resource "confluent_flink_statement" "fema_policies_vectordb_aws" {
       'connector' = 'mongodb',
       'mongodb.connection' = 'mongodb-connection-lab4',
       'mongodb.database' = 'vector_search',
-      'mongodb.collection' = 'documents',
-      'mongodb.index' = 'vector_index',
+      'mongodb.collection' = '${local.mongodb_collection}',
+      'mongodb.index' = '${local.mongodb_index}',
       'mongodb.embedding_column' = 'embedding',
       'mongodb.numCandidates' = '500'
     );

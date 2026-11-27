@@ -32,8 +32,8 @@ output "mongodb_connection_details" {
   description = "MongoDB connection configuration details"
   value = {
     database   = var.MONGODB_DATABASE
-    collection = var.MONGODB_COLLECTION
-    index_name = var.MONGODB_INDEX_NAME
+    collection = local.effective_mongodb_coll
+    index_name = local.effective_mongodb_index
     host       = local.mongodb_host
     username   = local.effective_mongodb_user
   }

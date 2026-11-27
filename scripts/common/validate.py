@@ -217,6 +217,7 @@ def validate_mongodb(
     database: str = "vector_search",
     collection: str = "documents",
     index_name: str = "vector_index",
+    expected_dims: int = 1536,
 ) -> Tuple[bool, List[str]]:
     """
     Validate MongoDB Atlas configuration.
@@ -234,6 +235,7 @@ def validate_mongodb(
         database: Database name (default: vector_search)
         collection: Collection name (default: documents)
         index_name: Vector search index name (default: vector_index)
+        expected_dims: Embedding width the index must declare (1024 for CSP Hosted Titan v2)
 
     Returns:
         Tuple of (all_checks_passed, list_of_messages)
@@ -307,7 +309,9 @@ def validate_mongodb(
 
         # Check Atlas Vector Search index using PyMongo's list_search_indexes()
         coll = db[collection]
-        index_passed, index_messages = verify_vector_search_index(coll, index_name)
+        index_passed, index_messages = verify_vector_search_index(
+            coll, index_name, expected_dims=expected_dims
+        )
 
         for msg in index_messages:
             messages.append(msg)
@@ -862,7 +866,16 @@ Examples:
             print("\n→ See MongoDB setup guide: assets/pre-setup/MongoDB-Setup.md")
             all_services_passed = False
         else:
-            passed, messages = validate_mongodb(connection_string, username, password)
+            # CSP Hosted Titan v2 (AWS default) embeds at 1024 dims; Bedrock (Titan v1)
+            # and Azure (CSP Hosted text-embedding-3-small or Azure OpenAI ada-002) at 1536
+            csp_hosted = (
+                creds.get("TF_VAR_cloud_provider", "aws").lower() == "aws"
+                and creds.get("TF_VAR_llm_provider", "confluent") == "confluent"
+            )
+            expected_dims = 1024 if csp_hosted else 1536
+            passed, messages = validate_mongodb(
+                connection_string, username, password, expected_dims=expected_dims
+            )
             for msg in messages:
                 print(msg)
 

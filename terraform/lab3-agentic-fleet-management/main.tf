@@ -28,9 +28,16 @@ locals {
   effective_mcp_endpoint = var.mcp_backend == "zapier" ? local.mcp_zapier_endpoint : local.mcp_lambda_endpoint
   effective_mcp_token    = var.mcp_backend == "zapier" ? var.zapier_token : var.mcp_token
 
-  # Core's llm_provider: "confluent" (CSP Hosted, no connection) or "bedrock" on
-  # AWS. Core state from before the output existed was always Bedrock.
-  llm_provider = try(data.terraform_remote_state.core.outputs.llm_provider, "bedrock")
+  # Core's llm_provider: "confluent" (CSP Hosted, no connection) on either cloud,
+  # "bedrock" on AWS or "azureopenai" on Azure. Core state from before the output
+  # existed was always Bedrock (AWS) / Azure OpenAI (Azure).
+  llm_provider = try(data.terraform_remote_state.core.outputs.llm_provider, local.cloud_provider == "azure" ? "azureopenai" : "bedrock")
+
+  # CSP Hosted corpora are embedded with a different model than the Bedrock
+  # (Titan v1) / Azure OpenAI (ada-002) ones, so they live in their own
+  # collection/index (AWS: 1024-dim Titan v2; Azure: 1536-dim text-embedding-3-small).
+  mongodb_collection = local.llm_provider == "confluent" ? "documents_csp" : "documents"
+  mongodb_index      = local.llm_provider == "confluent" ? "vector_index_csp" : "vector_index"
   aws_mcp_model_with = local.llm_provider == "confluent" ? join(",\n      ", [
     "'provider' = 'confluent'",
     "'task' = 'text_generation'",
@@ -41,6 +48,15 @@ locals {
     "'task' = 'text_generation'",
     "'bedrock.connection' = '${data.terraform_remote_state.core.outputs.llm_connection_name}'",
     "'bedrock.params.max_tokens' = '50000'",
+  ])
+  azure_mcp_model_with = local.llm_provider == "confluent" ? join(",\n      ", [
+    "'provider' = 'confluent'",
+    "'task' = 'text_generation'",
+    "'confluent.model' = '${try(data.terraform_remote_state.core.outputs.csp_textgen_model, "openai.gpt-5.4-mini")}'",
+    ]) : join(",\n      ", [
+    "'provider' = 'azureopenai'",
+    "'task' = 'text_generation'",
+    "'azureopenai.connection' = '${data.terraform_remote_state.core.outputs.llm_connection_name}'",
   ])
 }
 
@@ -131,8 +147,8 @@ resource "confluent_flink_statement" "documents_vectordb_lab3" {
       'connector' = 'mongodb',
       'mongodb.connection' = 'mongodb-connection-lab3',
       'mongodb.database' = 'vector_search',
-      'mongodb.collection' = 'documents',
-      'mongodb.index' = 'vector_index',
+      'mongodb.collection' = '${local.mongodb_collection}',
+      'mongodb.index' = '${local.mongodb_index}',
       'mongodb.embedding_column' = 'embedding',
       'mongodb.numCandidates' = '500'
     );
@@ -242,7 +258,7 @@ resource "confluent_flink_statement" "remote_mcp_model_lab3_aws" {
   ]
 }
 
-# Remote MCP model for Lab3 (Azure/OpenAI)
+# Remote MCP model for Lab3 (Azure: CSP Hosted or Azure OpenAI, per core's llm_provider)
 resource "confluent_flink_statement" "remote_mcp_model_lab3_azure" {
   count = local.cloud_provider == "azure" ? 1 : 0
 
@@ -271,9 +287,7 @@ resource "confluent_flink_statement" "remote_mcp_model_lab3_azure" {
     INPUT (prompt STRING)
     OUTPUT (response STRING)
     WITH (
-      'provider' = 'azureopenai',
-      'task' = 'text_generation',
-      'azureopenai.connection' = '${data.terraform_remote_state.core.outputs.llm_connection_name}',
+      ${local.azure_mcp_model_with},
       'mcp.connection' = 'remote-mcp-connection'
     );
   EOT

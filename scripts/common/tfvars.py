@@ -82,7 +82,8 @@ def generate_core_tfvars_content(
         aws_bedrock_secret_key: AWS Bedrock secret key
         azure_openai_endpoint: Azure OpenAI endpoint URL
         azure_openai_api_key: Azure OpenAI API key
-        llm_provider: What backs the AWS models: 'confluent' (CSP Hosted, no keys) or 'bedrock'
+        llm_provider: What backs the LLM models: 'confluent' (CSP Hosted, no keys),
+            'bedrock' (AWS) or 'azureopenai' (Azure)
 
     Returns:
         Formatted terraform.tfvars content
@@ -96,8 +97,8 @@ confluent_cloud_api_secret = "{api_secret}"
 cloud_provider = "{provider}"
 """
 
-    # LLM provider (AWS only). Written explicitly: tfvars outrank TF_VAR_* env vars.
-    if cloud == "aws" and llm_provider:
+    # LLM provider. Written explicitly: tfvars outrank TF_VAR_* env vars.
+    if llm_provider:
         content += f'llm_provider = "{llm_provider}"\n'
 
     # AWS Bedrock credentials (unused by CSP Hosted inference, so not written for it)
@@ -112,8 +113,13 @@ cloud_provider = "{provider}"
         if aws_session_token:
             content += f'aws_session_token = "{aws_session_token}"\n'
 
-    # Azure OpenAI credentials
-    if cloud == "azure" and azure_openai_endpoint and azure_openai_api_key:
+    # Azure OpenAI credentials (unused by CSP Hosted inference, so not written for it)
+    if (
+        cloud == "azure"
+        and llm_provider != "confluent"
+        and azure_openai_endpoint
+        and azure_openai_api_key
+    ):
         content += f'azure_openai_endpoint_raw = "{azure_openai_endpoint}"\n'
         content += f'azure_openai_api_key = "{azure_openai_api_key}"\n'
 
@@ -253,9 +259,7 @@ def write_tfvars_for_deployment(
             if cloud == "azure"
             else None
         )
-        llm_provider = (
-            get_credential_value(creds, "llm_provider") if cloud == "aws" else None
-        )
+        llm_provider = get_credential_value(creds, "llm_provider")
 
         if api_key and api_secret:
             core_tfvars_path = root / "terraform" / "core" / "terraform.tfvars"

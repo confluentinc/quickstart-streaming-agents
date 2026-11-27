@@ -260,11 +260,17 @@ def _build_llm_configuration_section(
 
     # CSP Hosted inference has no connections — the model id goes in the WITH clause
     if get_output("llm_provider") == "confluent":
+        # Mirrors terraform/core: AWS sets max_tokens, Azure sets no params
+        textgen_params = (
+            ""
+            if cloud_provider == "azure"
+            else ",\n  'confluent.params.max_tokens' = '50000'"
+        )
         return f"""## LLM Configuration
 
 ### Flink Models
 
-The following Flink AI models use CSP Hosted model inference (Confluent-hosted, no connection or AWS keys):
+The following Flink AI models use CSP Hosted model inference (Confluent-hosted, no connection or LLM keys):
 
 ```sql
 CREATE MODEL `{env_name}`.`{cluster_name}`.`llm_textgen_model`
@@ -273,8 +279,7 @@ OUTPUT (response STRING)
 WITH(
   'provider' = 'confluent',
   'task' = 'text_generation',
-  'confluent.model' = '{get_output("csp_textgen_model")}',
-  'confluent.params.max_tokens' = '50000'
+  'confluent.model' = '{get_output("csp_textgen_model")}'{textgen_params}
 );
 
 CREATE MODEL `{env_name}`.`{cluster_name}`.`llm_embedding_model`

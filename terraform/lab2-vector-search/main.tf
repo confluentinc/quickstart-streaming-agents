@@ -28,6 +28,20 @@ locals {
 
   # Extract hostname from mongodb+srv://hostname
   mongodb_host = split("//", local.effective_mongodb_conn)[1]
+
+  # CSP Hosted corpora are embedded with a different model than the Bedrock
+  # (Titan v1) / Azure OpenAI (ada-002) ones, so they live in their own
+  # collection/index (AWS: 1024-dim Titan v2; Azure: 1536-dim text-embedding-3-small).
+  # Core state from before the llm_provider output existed was always Bedrock
+  # (AWS) / Azure OpenAI (Azure).
+  llm_provider        = try(data.terraform_remote_state.core.outputs.llm_provider, local.cloud_provider == "azure" ? "azureopenai" : "bedrock")
+  shared_mongodb_coll = local.llm_provider == "confluent" ? "documents_csp" : "documents"
+  shared_mongodb_idx  = local.llm_provider == "confluent" ? "vector_index_csp" : "vector_index"
+
+  # Your own cluster (mongodb_connection_string set) keeps MONGODB_COLLECTION / MONGODB_INDEX_NAME
+  use_shared_mongodb      = var.mongodb_connection_string == ""
+  effective_mongodb_coll  = local.use_shared_mongodb ? local.shared_mongodb_coll : var.MONGODB_COLLECTION
+  effective_mongodb_index = local.use_shared_mongodb ? local.shared_mongodb_idx : var.MONGODB_INDEX_NAME
 }
 
 # ------------------------------------------------------
@@ -212,7 +226,7 @@ resource "confluent_flink_statement" "documents_vectordb_create_table" {
     secret = data.terraform_remote_state.core.outputs.app_manager_flink_api_secret
   }
 
-  statement = "CREATE TABLE IF NOT EXISTS documents_vectordb_lab2 ( document_id STRING, chunk STRING, embedding ARRAY<FLOAT> ) WITH ( 'connector' = 'mongodb', 'mongodb.connection' = 'mongodb-connection', 'mongodb.database' = '${var.MONGODB_DATABASE}', 'mongodb.collection' = '${var.MONGODB_COLLECTION}', 'mongodb.index' = '${var.MONGODB_INDEX_NAME}', 'mongodb.embedding_column' = 'embedding', 'mongodb.numCandidates' = '500' );"
+  statement = "CREATE TABLE IF NOT EXISTS documents_vectordb_lab2 ( document_id STRING, chunk STRING, embedding ARRAY<FLOAT> ) WITH ( 'connector' = 'mongodb', 'mongodb.connection' = 'mongodb-connection', 'mongodb.database' = '${var.MONGODB_DATABASE}', 'mongodb.collection' = '${local.effective_mongodb_coll}', 'mongodb.index' = '${local.effective_mongodb_index}', 'mongodb.embedding_column' = 'embedding', 'mongodb.numCandidates' = '500' );"
 
   properties = {
     "sql.current-catalog"  = data.terraform_remote_state.core.outputs.confluent_environment_display_name
@@ -348,8 +362,8 @@ resource "confluent_flink_statement" "search_results_response_create_table" {
 resource "null_resource" "generate_flink_sql_summary" {
   # Trigger regeneration when key resources change
   triggers = {
-    queries_table         = confluent_flink_statement.queries_table.id
-    mongodb_connection    = confluent_flink_statement.mongodb_connection_statement_lab2.id
+    queries_table      = confluent_flink_statement.queries_table.id
+    mongodb_connection = confluent_flink_statement.mongodb_connection_statement_lab2.id
   }
 
   provisioner "local-exec" {

@@ -33,8 +33,9 @@ from testing.helpers.kafka_helper import KafkaHelper
 from testing.helpers.polling_helper import poll_until
 
 
-# Email address for price match notifications in tests
-_TEST_EMAIL = os.environ.get("TEST_EMAIL", "bheintz@confluent.io")
+# Email address for price match notifications in tests. Set TEST_EMAIL to an inbox
+# you can check; the example.com default (reserved, never delivered) only exercises the flow.
+_TEST_EMAIL = os.environ.get("TEST_EMAIL", "price-match-test@example.com")
 
 # Statement name prefix to avoid collisions with Terraform-managed resources
 _PREFIX = "test-lab1"

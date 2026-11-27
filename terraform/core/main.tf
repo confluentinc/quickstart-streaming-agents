@@ -280,16 +280,22 @@ resource "confluent_kafka_acl" "app-manager-read-on-group" {
 # LLM INFRASTRUCTURE — CONDITIONAL PER CLOUD PROVIDER
 # ------------------------------------------------------
 
-# llm_provider = "confluent" swaps the Bedrock connections for CSP Hosted Flink
-# Model Inference: Confluent runs the models in its own AWS account, so there is
-# no connection and no AWS key. Same model names either way, so the lab SQL
+# llm_provider = "confluent" (the default on both clouds) uses CSP Hosted Flink
+# Model Inference: Confluent runs the models in its own cloud account, so there is
+# no connection and no LLM key. "bedrock" (AWS) and "azureopenai" (Azure) opt into
+# your own keys instead. The model names stay the same either way, so the lab SQL
 # doesn't change. Switching an already-applied deployment re-runs CREATE MODEL
 # IF NOT EXISTS against an existing name (a no-op) — tear down first.
 locals {
-  use_bedrock = var.cloud_provider == "aws" && var.llm_provider == "bedrock"
+  use_bedrock     = var.cloud_provider == "aws" && var.llm_provider == "bedrock"
+  use_azureopenai = var.cloud_provider == "azure" && var.llm_provider == "azureopenai"
 
-  # "azureopenai" on Azure regardless of llm_provider; labs branch on this output.
-  effective_llm_provider = var.cloud_provider == "azure" ? "azureopenai" : var.llm_provider
+  # Labs branch on this output (validated against cloud_provider in outputs.tf).
+  effective_llm_provider = var.llm_provider
+
+  # Per-cloud CSP Hosted model defaults; set csp_*_model to override.
+  csp_textgen_model   = var.csp_textgen_model != "" ? var.csp_textgen_model : (var.cloud_provider == "azure" ? "openai.gpt-5.4-mini" : "anthropic.claude-sonnet-4-6")
+  csp_embedding_model = var.csp_embedding_model != "" ? var.csp_embedding_model : (var.cloud_provider == "azure" ? "openai.text-embedding-3-small" : "amazon.titan-embed-text-v2")
 
   aws_textgen_with = local.use_bedrock ? join(", ", [
     "'provider' = 'bedrock'",
@@ -299,7 +305,7 @@ locals {
     ]) : join(", ", [
     "'provider' = 'confluent'",
     "'task' = 'text_generation'",
-    "'confluent.model' = '${var.csp_textgen_model}'",
+    "'confluent.model' = '${local.csp_textgen_model}'",
     "'confluent.params.max_tokens' = '50000'",
   ])
 
@@ -310,7 +316,31 @@ locals {
     ]) : join(", ", [
     "'provider' = 'confluent'",
     "'task' = 'embedding'",
-    "'confluent.model' = '${var.csp_embedding_model}'",
+    "'confluent.model' = '${local.csp_embedding_model}'",
+  ])
+
+  # Azure CSP Hosted: no params — the managed-model docs' Azure example sets none.
+  azure_textgen_with = local.use_azureopenai ? join(", ", [
+    "'provider' = 'azureopenai'",
+    "'task' = 'text_generation'",
+    "'azureopenai.connection' = '${one(confluent_flink_connection.azureopenai_connection[*].display_name)}'",
+    "'azureopenai.model_version' = '2025-08-07'",
+    "'azureopenai.PARAMS.max_completion_tokens' = '16384'",
+    ]) : join(", ", [
+    "'provider' = 'confluent'",
+    "'task' = 'text_generation'",
+    "'confluent.model' = '${local.csp_textgen_model}'",
+  ])
+
+  azure_embedding_with = local.use_azureopenai ? join(", ", [
+    "'provider' = 'azureopenai'",
+    "'task' = 'embedding'",
+    "'azureopenai.connection' = '${one(confluent_flink_connection.azureopenai_embedding_connection[*].display_name)}'",
+    "'azureopenai.PARAMS.max_tokens' = '16384'",
+    ]) : join(", ", [
+    "'provider' = 'confluent'",
+    "'task' = 'embedding'",
+    "'confluent.model' = '${local.csp_embedding_model}'",
   ])
 }
 
@@ -392,10 +422,10 @@ resource "confluent_flink_connection" "bedrock_embedding_connection" {
   }
 }
 
-# --- Azure OpenAI Connections (only when cloud_provider == "azure") ---
+# --- Azure OpenAI Connections (only when cloud_provider == "azure" and llm_provider == "azureopenai") ---
 
 resource "confluent_flink_connection" "azureopenai_connection" {
-  count = var.cloud_provider == "azure" ? 1 : 0
+  count = local.use_azureopenai ? 1 : 0
 
   organization {
     id = data.confluent_organization.main.id
@@ -432,7 +462,7 @@ resource "confluent_flink_connection" "azureopenai_connection" {
 }
 
 resource "confluent_flink_connection" "azureopenai_embedding_connection" {
-  count = var.cloud_provider == "azure" ? 1 : 0
+  count = local.use_azureopenai ? 1 : 0
 
   organization {
     id = data.confluent_organization.main.id
@@ -504,7 +534,7 @@ resource "confluent_flink_statement" "llm_textgen_model_aws" {
   ]
 }
 
-# Text Generation Model — Azure (OpenAI)
+# Text Generation Model — Azure (CSP Hosted or Azure OpenAI, per llm_provider)
 resource "confluent_flink_statement" "llm_textgen_model_azure" {
   count = var.cloud_provider == "azure" ? 1 : 0
 
@@ -526,7 +556,7 @@ resource "confluent_flink_statement" "llm_textgen_model_azure" {
     secret = confluent_api_key.app-manager-flink-api-key.secret
   }
 
-  statement = "CREATE MODEL IF NOT EXISTS `${confluent_environment.staging.display_name}`.`${confluent_kafka_cluster.standard.display_name}`.`llm_textgen_model` INPUT (prompt STRING) OUTPUT (response STRING) WITH( 'provider' = 'azureopenai', 'task' = 'text_generation', 'azureopenai.connection' = '${confluent_flink_connection.azureopenai_connection[0].display_name}', 'azureopenai.model_version' = '2025-08-07', 'azureopenai.PARAMS.max_completion_tokens' = '16384' );"
+  statement = "CREATE MODEL IF NOT EXISTS `${confluent_environment.staging.display_name}`.`${confluent_kafka_cluster.standard.display_name}`.`llm_textgen_model` INPUT (prompt STRING) OUTPUT (response STRING) WITH ( ${local.azure_textgen_with} );"
 
   properties = {
     "sql.current-catalog"  = confluent_environment.staging.display_name
@@ -572,7 +602,7 @@ resource "confluent_flink_statement" "llm_embedding_model_aws" {
   ]
 }
 
-# Embedding Model — Azure (OpenAI)
+# Embedding Model — Azure (CSP Hosted or Azure OpenAI, per llm_provider)
 resource "confluent_flink_statement" "llm_embedding_model_azure" {
   count = var.cloud_provider == "azure" ? 1 : 0
 
@@ -594,7 +624,7 @@ resource "confluent_flink_statement" "llm_embedding_model_azure" {
     secret = confluent_api_key.app-manager-flink-api-key.secret
   }
 
-  statement = "CREATE MODEL IF NOT EXISTS `${confluent_environment.staging.display_name}`.`${confluent_kafka_cluster.standard.display_name}`.`llm_embedding_model` INPUT (text STRING) OUTPUT (embedding ARRAY<FLOAT>) WITH( 'provider' = 'azureopenai', 'task' = 'embedding', 'azureopenai.connection' = '${confluent_flink_connection.azureopenai_embedding_connection[0].display_name}', 'azureopenai.PARAMS.max_tokens' = '16384' );"
+  statement = "CREATE MODEL IF NOT EXISTS `${confluent_environment.staging.display_name}`.`${confluent_kafka_cluster.standard.display_name}`.`llm_embedding_model` INPUT (text STRING) OUTPUT (embedding ARRAY<FLOAT>) WITH ( ${local.azure_embedding_with} );"
 
   properties = {
     "sql.current-catalog"  = confluent_environment.staging.display_name
