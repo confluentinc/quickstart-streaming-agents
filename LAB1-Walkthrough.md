@@ -35,7 +35,6 @@ winget install astral-sh.uv Git.Git Hashicorp.Terraform ConfluentInc.Confluent-C
 ### Models and MCP access
 
 - **Default models:** `uv run deploy` uses Confluent-hosted inference (Claude Sonnet 4.6 on AWS, GPT-5.4 mini on Azure). No separate cloud account or LLM API key is needed.
-- **Optional model credentials:** Use `uv run deploy --bedrock` or `uv run deploy --azure-openai` to use your own model credentials. See the [Workshop Mode Setup Guide](./assets/pre-setup/Workshop-Mode-Setup.md); `uv run api-keys create` can generate workshop credentials.
 - **Remote MCP server:** Choose **Confluent-hosted remote MCP server (Recommended)** and enter the token from your presenter. Confluent staff can see `go/mcp-keys` or `#help-tmm`. [Zapier](./assets/pre-setup/Zapier-Setup.md) is an alternative backend.
 
 > [!NOTE]
@@ -261,7 +260,7 @@ In the supplied fixture, all 10 orders match lower competitor prices: expect `SU
 
 - **No results yet:** Check that both writer jobs are `RUNNING`. Orders arrive every two minutes and model/tool calls take additional time. If the generator has exited, inspect retained input records before restarting it.
 - **`PENDING` / `POOL_EXHAUSTED`:** Stop preview SELECT cells and completed-lab writers you no longer need. A queued reader is not evidence of an empty table.
-- **Model errors:** Open the failed statement's exceptions. For native hosted inference, confirm the selected catalog contains the models and check the reported model-access or quota error. For `--bedrock`, check Claude access; for `--azure-openai`, check the configured deployment and quota. External-provider key fixes do not apply to native hosted models.
+- **Model errors:** Open the failed statement's exceptions. For native hosted inference, confirm the selected catalog contains the models and check the reported model-access or quota error. With your own AWS Bedrock keys, check Claude access; with Azure OpenAI, check the configured deployment and quota. External-provider key fixes do not apply to native hosted models.
 - **No email:** Check the configured recipient in both prompts, run Test Query 2 once, and inspect spam filtering. `MCP error -32602` can mean `to` was supplied as an array instead of a plain string.
 - **Missing MCP connection:** Run `SHOW CONNECTIONS;` in the correct database. If `remote-mcp-connection` is absent, inspect deployment output before rerunning deployment.
 

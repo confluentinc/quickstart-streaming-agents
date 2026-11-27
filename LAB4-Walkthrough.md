@@ -33,7 +33,6 @@ winget install astral-sh.uv Git.Git Hashicorp.Terraform ConfluentInc.Confluent-C
 > Credentials are provided for you in instructor-led workshops.
 
 - **Default LLM access (no keys required):** `uv run deploy` configures **CSP Hosted model inference** by default (AWS: Claude Sonnet 4.6 and Titan Text Embeddings v2; Azure: GPT-5.4 mini and text-embedding-3-small) without external cloud or LLM API keys.
-- **Optional custom model providers:** Run `uv run deploy --bedrock` (AWS Bedrock) or `uv run deploy --azure-openai` (Azure OpenAI) to use your own model credentials.
 
 ---
 
@@ -52,7 +51,7 @@ Run the deployment script and select **Lab 4: FEMA Fraud Detection**:
 uv run deploy
 ```
 
-The script prompts for Confluent Cloud credentials, plus AWS Bedrock or Azure OpenAI credentials only if you passed `--bedrock` or `--azure-openai`.
+The script also prompts for your Confluent Cloud credentials.
 
 ---
 
@@ -586,7 +585,7 @@ Confirm that `claims_table_statement_id`, `claims_table_name`, and `lab4_deploym
 
 - Check the statement's **Exceptions** tab in the Flink UI and run `SHOW MODELS;` to confirm `llm_embedding_model` and `llm_textgen_model` exist.
 - **Default CSP Hosted models:** No external LLM keys are used; if you hit regional quota or throttling errors, wait briefly or contact your instructor.
-- **Custom `--bedrock` or `--azure-openai` deployments:** Verify the cloud credentials or endpoint provided during `uv run deploy`.
+- **Your own AWS Bedrock or Azure OpenAI keys:** Verify the cloud credentials or endpoint provided during `uv run deploy`.
 
 ### 5. Resuming work vs. resetting data
 

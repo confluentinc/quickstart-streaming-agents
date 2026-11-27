@@ -10,7 +10,6 @@ Ask questions against a preloaded knowledge base of Confluent Flink documentatio
 ## Prerequisites
 
 - **Models:** `uv run deploy` uses Confluent-hosted inference by default: Claude Sonnet 4.6 and Titan Text Embeddings v2 on AWS; GPT-5.4 mini and text-embedding-3-small on Azure. No separate cloud account or LLM API key is needed.
-- **Optional model credentials:** Use `uv run deploy --bedrock` or `uv run deploy --azure-openai` to bring your own credentials. See the [Workshop Mode Setup Guide](./assets/pre-setup/Workshop-Mode-Setup.md). For Bedrock, complete the Claude Sonnet 4.5 use-case form in the [Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog) by opening its Playground and sending a test message.
 - **MongoDB Atlas:** The shared corpus and vector index are preconfigured. Deployment connects the lab to them.
 
 ## Deployment

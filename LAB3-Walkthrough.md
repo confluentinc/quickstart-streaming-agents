@@ -31,8 +31,6 @@ winget install astral-sh.uv Git.Git Hashicorp.Terraform ConfluentInc.Confluent-C
 > Workshop attendees do not need cloud LLM credentials—instructor-led environments provide required access.
 
 - **LLM Access (No keys required by default):** `uv run deploy` uses **CSP Hosted model inference** (AWS: Claude Sonnet 4.6 + Titan Text Embeddings v2; Azure: GPT-5.4 mini + text-embedding-3-small).
-  - **Optional self-managed keys:** Run `uv run deploy --bedrock` or `uv run deploy --azure-openai` (use `uv run api-keys create` or see [Workshop Mode Setup Guide](./assets/pre-setup/Workshop-Mode-Setup.md)).
-  - **`--bedrock` users:** Before running queries, enable **Claude Sonnet 4.5** in the [AWS Bedrock Model Catalog](https://console.aws.amazon.com/bedrock/home#/model-catalog) by opening it in the Playground and submitting the Anthropic use-case form.
 - **Remote MCP server backend:** Lab 3 uses a remote MCP server for HTTP vessel catalog lookups and dispatch calls. Choose your backend **before** deploying (if you need to change backends on an existing environment, contact your instructor rather than running a full destroy):
   - **Confluent-hosted remote MCP server (Recommended):** Obtain a token from your presenter (Confluent staff: see `go/mcp-keys` or `#help-tmm`).
   - **Zapier:** Third-party option; see [Zapier-Setup.md](./assets/pre-setup/Zapier-Setup.md).
@@ -499,7 +497,7 @@ MODIFY (WATERMARK FOR request_ts AS request_ts - INTERVAL '5' SECOND);
 - **Degraded or Stopped Flink statement?**
   - An active anomaly detection job may show degraded when idle and recover when data flows, whereas a statement that was manually **Stopped** must be explicitly **Resumed** in the UI.
 - **`Runtime received bad response code 403` error?**
-  - Check statement exceptions for the failing endpoint or model. If you deployed with `--bedrock`, ensure Claude Sonnet 4.5 is enabled in AWS Bedrock ([Prerequisites](#prerequisites)). If you deployed with `--azure-openai`, increase the TPM quota on your `gpt-5-mini` deployment.
+  - Check statement exceptions for the failing endpoint or model. If you use your own AWS Bedrock keys, ensure Claude Sonnet 4.5 is enabled in AWS Bedrock. If you use your own Azure OpenAI keys, increase the TPM quota on your `gpt-5-mini` deployment.
 
 </details>
 
