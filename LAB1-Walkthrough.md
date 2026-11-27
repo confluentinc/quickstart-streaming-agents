@@ -63,7 +63,7 @@ Enter an email address you can check during the workshop. Deployment fills it in
 
 ### Workspace setup
 
-Open the [SQL Workspace](https://confluent.cloud/environments/env-2kz1g1/flink) and select the **environment/catalog**, **Kafka cluster/database**, and **compute pool** shown in your deployment summary. Deployment updates this link for your environment. If you copied it from another attendee, open [Flink](https://confluent.cloud/go/flink) and select your own resources.
+Open the [SQL Workspace](https://confluent.cloud/go/flink) and select the **environment/catalog**, **Kafka cluster/database**, and **compute pool** shown in your deployment summary. Deployment updates this link for your environment. If you copied it from another attendee, open [Flink](https://confluent.cloud/go/flink) and select your own resources.
 
 Confirm `customers`, `products`, and `orders` appear in the catalog. Run each SQL block in its own cell. Keep `SET` and its following query together when shown in the same block.
 
@@ -95,7 +95,7 @@ SELECT
       AI_TOOL_INVOKE(
           'remote_mcp_model',
           'Use the send_email tool to send an email. 
-           The "to" parameter must be a single string value: bheintz+test@confluent.io
+           The "to" parameter must be a single string value: <<YOUR-EMAIL-ADDRESS-HERE>>
            The "subject" parameter is: Direct Query Test
            The "body" parameter is: This email was sent directly from Confluent Cloud!
            Important: pass the to address as a string, not an array.',
@@ -212,7 +212,7 @@ LATERAL TABLE(
           
           OUR ORDER PRICE: $', CAST(CAST(pmi.order_price AS DECIMAL(10, 2)) AS STRING), '
           
-          EMAIL RECIPIENT: bheintz+test@confluent.io
+          EMAIL RECIPIENT: <<YOUR-EMAIL-ADDRESS-HERE>>
           
           EMAIL SUBJECT: Price match found - Order #', pmi.order_id, '
           
